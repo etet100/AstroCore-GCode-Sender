@@ -12,6 +12,7 @@ uniform mat4 mv_matrix;
 uniform vec3 u_light_position;
 uniform bool u_shadow;
 uniform vec3 u_eye;
+uniform sampler2D u_palette;
 
 in vec3 a_position;
 in vec3 a_color;
@@ -55,7 +56,8 @@ void main()
 
     //v_position = vertex_position.xyz;
 
-    v_color = vec4(a_color, 1.0);
+    v_color = vec4(a_color, 0.2);
+    //v_color = texture(u_palette, vec2(a_color / 255.0, 0.0)); // Przeskaluj indeks
     v_eye = (vec4(u_eye, 1.0) * mvp_matrix).xyz;
 }
 

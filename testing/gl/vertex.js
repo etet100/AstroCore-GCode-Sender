@@ -37,9 +37,11 @@ class Vertexes extends Array {
             raw[index++] = vertex.m_position[0];
             raw[index++] = vertex.m_position[1];
             raw[index++] = vertex.m_position[2];
-            raw[index++] = vertex.m_color[0];
-            raw[index++] = vertex.m_color[1];
-            raw[index++] = vertex.m_color[2];
+            raw[index++] = vertex.m_color;
+            raw[index++] = vertex.m_color;
+            raw[index++] = vertex.m_color;
+            // raw[index++] = vertex.m_color[1];
+            // raw[index++] = vertex.m_color[2];
             raw[index++] = vertex.m_start[0];
             raw[index++] = vertex.m_start[1];
             raw[index++] = vertex.m_start[2];

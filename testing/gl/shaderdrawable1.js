@@ -200,10 +200,14 @@ class ShaderDrawable1 {
                     //
                     points[i - 1].m_start = normal;
                     points[i].m_start = normal;
-                    newPoints.push(new VertexData(points[i - 1].m_position, color4, normal));
-                    const p3 = glMatrix.vec3.fromValues(points[i - 1].m_position[0], points[i - 1].m_position[1], points[i - 1].m_position[2]);
-                    glMatrix.vec3.scaleAndAdd(p3, p3, normal, 2.0);
-                    newPoints.push(new VertexData(p3, color4, normal));
+                    // newPoints.push(new VertexData(points[i - 1].m_position, color4, normal));
+                    // const p3 = glMatrix.vec3.fromValues(
+                    //     points[i - 1].m_position[0],
+                    //     points[i - 1].m_position[1],
+                    //     points[i - 1].m_position[2]
+                    // );
+                    // glMatrix.vec3.scaleAndAdd(p3, p3, normal, 2.0);
+                    // newPoints.push(new VertexData(p3, color4, normal));
                 }
                 glMatrix.vec3.normalize(normal, normal);
                 //normals.push(normal);
@@ -218,11 +222,11 @@ class ShaderDrawable1 {
                 let color = [vertexData__[i + 3], vertexData__[i + 4], vertexData__[i + 5]];
                 //0.564706, 0, 0.027451
                 //red to dark green
-                if (color[0] == 0.564706 && color[1] == 0 && color[2] == 0.027451) {
-                    //color = [0, 0, 0];
-                    color = [0, 1, 1];
-                }
-                this.m_lines.push(new VertexData([vertexData__[i], vertexData__[i + 1], vertexData__[i + 2]], color, [vertexData__[i + 6], vertexData__[i + 7], vertexData__[i + 8]]));
+                // if (color[0] == 0.564706 && color[1] == 0 && color[2] == 0.027451) {
+                //     //color = [0, 0, 0];
+                //     color = [0, 1, 1];
+                // }
+                this.m_lines.push(new VertexData([vertexData__[i], vertexData__[i + 1], vertexData__[i + 2]], Math.floor(Math.random() * 5), [vertexData__[i + 6], vertexData__[i + 7], vertexData__[i + 8]]));
             }
             const newPoints = computeNormals(this.m_lines);
             //this.m_lines.push(...newPoints);
@@ -261,8 +265,11 @@ class ShaderDrawable1 {
             // }
         }
         this.once = false;
+        let time = performance.now();
         const ra = this.m_lines.toRawArray();
+        console.log("To raw array: ", performance.now() - time);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ra), gl.STATIC_DRAW);
+        //console.log(ra.length);
         // this.m_program.setUniformValue("u_shadow", true);
         // gl.drawArrays(gl.LINES, 0, this.m_lines.length);
         this.m_program.setUniformValue("u_shadow", false);
@@ -329,14 +336,12 @@ class ShaderDrawable1 {
         this.m_program.setAttributeBuffer(vertexLocation, gl.FLOAT, offset, 3, Utils.VERTEX_SIZE);
         // Offset for color
         offset += Utils.VECTOR3D_SIZE;
-        // console.log('Vertex size: ' + VERTEX_SIZE);
-        // console.log('Vector3D size: ' + VECTOR3D_SIZE);
         // Tell OpenGL programmable pipeline how to locate vertex color data
         const colorLocation = this.m_program.attributeLocation("a_color");
         this.m_program.enableAttributeArray(colorLocation);
-        this.m_program.setAttributeBuffer(colorLocation, gl.FLOAT, offset, 3, Utils.VERTEX_SIZE);
+        this.m_program.setAttributeBuffer(colorLocation, gl.FLOAT, offset, 3, Utils.GL_FLOAT_SIZE);
         // Offset for line start point
-        offset += Utils.VECTOR3D_SIZE;
+        offset += Utils.VECTOR3D_SIZE; //GL_FLOAT_SIZE;
         // Tell OpenGL programmable pipeline how to locate vertex line start point
         const startLocation = this.m_program.attributeLocation("a_normal");
         this.m_program.enableAttributeArray(startLocation);

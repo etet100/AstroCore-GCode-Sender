@@ -9,7 +9,7 @@ declare class Vertexes extends Array<VertexData> {
 }
 declare class VertexData {
     m_position: any; m_color: any; m_start: any;
-    constructor(position: any, color: any, start: any);
+    constructor(position: any, color: number, start: any);
 }
 
 class Cube {
@@ -83,7 +83,7 @@ class Cube {
     }
 
     drawCube() {
-
+return;
         this.m_program.bind();
 
         this.updateView();

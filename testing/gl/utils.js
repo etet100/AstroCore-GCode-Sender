@@ -83,7 +83,7 @@ class Utils {
     static GL_FLOAT_SIZE = 4;
     static VECTOR3D_SIZE = 3 * 4;
     static VECTOR2D_SIZE = 2 * 4;
-    static VERTEX_SIZE = 3 * 3 * 4;
+    static VERTEX_SIZE = 2 * (3 * 4) + 3 * 4;
 }
 const ZOOMSTEP = 1.1;
 const DEFAULT_ZOOM = 1300.0;

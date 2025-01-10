@@ -39,6 +39,7 @@ class Cube {
         this.draw();
     }
     drawCube() {
+        return;
         this.m_program.bind();
         this.updateView();
         const mvpMatrix = glMatrix.mat4.create();

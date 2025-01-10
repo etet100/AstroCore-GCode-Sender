@@ -268,24 +268,16 @@ class GLWidget {
         //        if (this.m_zBuffer)
         const bindEverything = (program) => {
             program.bind();
-            //console.log(this.m_projectionMatrix, this.m_viewMatrix);
-            // zamiast `m_projectionMatrix * m_viewMatrix`
             const mvpMatrix = glMatrix.mat4.create();
             glMatrix.mat4.multiply(mvpMatrix, this.m_projectionMatrix, this.m_viewMatrix);
             // Set modelview-projection matrix
             program.setUniformValueMatrix("mvp_matrix", mvpMatrix);
-            //console.log(this.m_eye);
-            //program.setUniformValueMatrix("mv_matrix", this.m_viewMatrix);
-            // program.setUniformValueVec3("u_light_color", glMatrix.vec3.fromValues(0.9, 0.6, 0.9));
-            // program.setUniformValueVec3("u_object_color", glMatrix.vec3.fromValues(1.0, 1.0, 1.0));
             const light_pos = glMatrix.vec3.fromValues(30, 10, 30);
             //console.log(light_pos);
             const light_matrix = glMatrix.mat4.create();
             glMatrix.mat4.identity(light_matrix);
             glMatrix.mat4.rotateZ(light_matrix, light_matrix, this.lightRot);
             glMatrix.vec3.transformMat4(light_pos, light_pos, light_matrix);
-            // /program.setUniformValueVec3("u_light_position", light_pos);
-            //console.log(light_pos);
             try {
                 program.setUniformValueVec3("u_eye", this.m_eye);
                 program.setUniformValueVec3("u_light_position", light_pos);
@@ -311,8 +303,8 @@ class GLWidget {
         this.m_shaderDrawables[0].draw(this.m_eye, mvpMatrix);
         gl.depthMask(false);
         gl.enable(gl.DEPTH_TEST);
-        // this.m_shaderDrawables[1].draw(this.m_eye2, mvpMatrix);
-        // this.m_shaderDrawables[2].draw(this.m_eye2, mvpMatrix);
+        //this.m_shaderDrawables[1].draw(this.m_eye, mvpMatrix);
+        // this.m_shaderDrawables[2].draw(this.m_eye, mvpMatrix);
         //        gl.depthMask(false);
         this.lightRot += 0.1;
         // Draw 2D
