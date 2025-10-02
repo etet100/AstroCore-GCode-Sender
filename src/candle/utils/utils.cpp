@@ -92,3 +92,10 @@ void Utils::setVisualMode(QWidget *widget, bool dark)
     widget->style()->unpolish(widget);
     widget->ensurePolished();
 }
+
+void Utils::setDockableLocked(QDockWidget *widget, bool locked)
+{
+    widget->setFeatures(locked ? QDockWidget::NoDockWidgetFeatures
+                               : QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable
+                                     | QDockWidget::DockWidgetFloatable);
+}

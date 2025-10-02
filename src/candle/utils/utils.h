@@ -11,6 +11,7 @@
 #include <QVector3D>
 #include <QEventLoop>
 #include <QTimer>
+#include <QDockWidget>
 
 class Utils
 {
@@ -20,6 +21,7 @@ class Utils
         static bool pointInTriangle(QPoint p, QPoint p0, QPoint p1, QPoint p2);
         static bool triangleDir(QPoint p0, QPoint p1, QPoint p2);
         static void setVisualMode(QWidget *widget, bool dark);
+        static void setDockableLocked(QDockWidget *widget, bool locked);
 
         static double nMin(double v1, double v2)
         {

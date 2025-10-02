@@ -10,6 +10,11 @@
 #include <QWidget>
 #include "configurationmodule.h"
 
+struct DockableState {
+    bool visible;
+    bool open;
+};
+
 class ConfigurationUI : public ConfigurationModule
 {
     friend class frmSettings;

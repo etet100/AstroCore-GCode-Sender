@@ -695,15 +695,11 @@ void frmMain::on_actViewLockWindows_toggled(bool checked)
 {
     QList<QDockWidget*> dl = findChildren<QDockWidget*>();
 
-    foreach (QDockWidget *d, dl) {
-        d->setFeatures(checked
-           ? QDockWidget::NoDockWidgetFeatures
-           : QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable
-        );
+    foreach (QDockWidget *dock, dl) {
+        Utils::setDockableLocked(dock, checked);
     }
 
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
-    uiConfiguration.setLockWindows(checked);
+    m_configuration.uiModule().setLockWindows(checked);
 }
 
 void frmMain::on_cmdFileOpen_clicked()
@@ -2173,12 +2169,15 @@ void frmMain::loadSettings()
     //     }").arg(b).arg(c));
     // ensurePolished();
 
-    foreach (QDockWidget *w, findChildren<QDockWidget*>()) w->setStyleSheet("");
+    foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
+        w->setStyleSheet("");
+    }
 
     // Restore docks
     // Signals/slots
-    foreach (QDockWidget *w, findChildren<QDockWidget*>())
+    foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
         connect(w, &QDockWidget::topLevelChanged, this, &frmMain::onDockTopLevelChanged);
+    }
 
     // Panels
     ui->scrollContentsDevice->restoreState(this, set.value("panelsDevice").toStringList());
@@ -2198,12 +2197,12 @@ void frmMain::loadSettings()
     }
 
         // Normal window state
-    restoreState(set.value("formMainState").toByteArray());
+    // restoreState(set.value("formMainState").toByteArray());
 
-        // Maximized window state
-    show();
-    qApp->processEvents();    
-    restoreState(set.value("formMainState").toByteArray());
+    //     // Maximized window state
+    // show();
+    // qApp->processEvents();
+    // restoreState(set.value("formMainState").toByteArray());
 
     // Setup coords textboxes
     // @TODO do we need this here?
@@ -2455,6 +2454,7 @@ void frmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
     dock->setObjectName("Camera");
     dock->setWidget(window);
+    Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
     addDockWidget(area, dock, orientation);
 }
 
