@@ -70,6 +70,7 @@ QString StyledToolButtonPlugin::domXml() const
            "    <height>100</height>\n"
            "   </rect>\n"
            "  </property>\n"
+           "  <property name=\"class\">StyledToolButton</property>\n"
            " </widget>\n"
            "</ui>\n";    
 }

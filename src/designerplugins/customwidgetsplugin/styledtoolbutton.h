@@ -34,18 +34,20 @@ public:
     void setHighlightColor(const QColor &highlightColor);
 
 protected:
-    void enterEvent(QEvent *);
-    void leaveEvent(QEvent *);
+    void enterEvent(QEnterEvent *) override;
+    void leaveEvent(QEvent *) override;
 
 private:
     Q_DISABLE_COPY(StyledToolButton)
 
-    void paintEvent(QPaintEvent *e);
+    void paintEvent(QPaintEvent *e) override;
 
-    bool m_hovered;
+    bool m_hovered = false;
     QColor m_backColor;
     QColor m_foreColor;
     QColor m_highlightColor;
+
+    void invertIconColors();
 };
 
 #endif // STYLEDTOOLBUTTON_H
