@@ -1,3 +1,10 @@
+Status: DOUBTS
+--------
+
+I started this project because Candle had not been developed for a long time and contained many bugs. Unfortunately, my perfectionism made me start rewriting it from scratch. At this point, I find myself at a crossroads and do not know whether to continue this project. If someone wanted to join the work on it, I would be very happy.
+
+At this point, it makes no sense to compile the code because it is being rebuilt and does not work properly.
+
 G-Pilot (formerly Candle)
 -----------
 <img src="screenshots/gpilot_big.jpg" width="200" height="200" align="right">
@@ -23,7 +30,7 @@ Supported functions:
 * Monitoring cnc-machine state.
 * Loading, editing, saving and sending of G-code files to cnc-machine.
 * Visualizing G-code files.
-* Camera 
+* Camera
 * Joystick/Joypad/Controller support.
 * Customizable interface.
 * uCNC/grblHAL virtual modes (cnc machine simulator).
@@ -55,6 +62,7 @@ G-Pilot supports the following connection modes:
 * Serial port
 * Raw TCP, uses exactly the same protocol as serial port mode, no additional handshaking is performed
 * uCNC virtual mode, no real hardware needed
+* grblHAL virtual mode, no real hardware needed
 
 ![screenshot](/screenshots/screenshot_connection_modes.png)
 
