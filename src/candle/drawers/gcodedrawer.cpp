@@ -5,13 +5,7 @@
 
 GcodeDrawer::GcodeDrawer() : QObject()
 {   
-    m_geometryUpdated = false;
     m_pointSize = 6;
-    m_ignoreZ = false;
-    m_grayscaleSegments = false;
-    m_grayscaleCode = GcodeDrawer::S;
-    m_grayscaleMin = 0;
-    m_grayscaleMax = 255;
 
     connect(&m_timerVertexUpdate, &QTimer::timeout, this, &GcodeDrawer::onTimerVertexUpdate);
     m_timerVertexUpdate.start(100);
@@ -109,7 +103,9 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
             // Draw first toolpath point
             vertex.color = palette.color(m_colorStart);
             vertex.position = list[i].getEnd();
-            if (m_ignoreZ) vertex.position.setZ(0);
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
             vertex.start = QVector3D(sNan, sNan, m_pointSize);
             m_points.append(vertex);
 
@@ -146,7 +142,7 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
             list[i].setVertexIndex(m_lines.count()); // Store vertex index
         }
 
-        vertex.color = palette.color(getSegmentColor(list[i]));
+        vertex.color = getSegmentColor(list[i], palette);
 
         // ignore shorter than 0.0001
         float segmentLen = (list[i].getEnd() - list[j].getStart()).length();
@@ -154,7 +150,9 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
             // Line start
             vertex.position = list[j].getStart();
             vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
-            if (m_ignoreZ) vertex.position.setZ(0);
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
             m_lines.append(vertex);
 
             cumSegPosition += segmentLen;
@@ -162,7 +160,9 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
             // Line end
             vertex.position = list[i].getEnd();
             vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
-            if (m_ignoreZ) vertex.position.setZ(0);
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
             m_lines.append(vertex);
         }
 
@@ -170,7 +170,9 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
         if (i == list.count() - 1) {
             vertex.color = palette.color(m_colorEnd);
             vertex.position = list[i].getEnd();
-            if (m_ignoreZ) vertex.position.setZ(0);
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
             vertex.start = QVector3D(sNan, sNan, m_pointSize);
             m_points.append(vertex);
         }
@@ -269,10 +271,10 @@ bool GcodeDrawer::updateVectors(GLPalette &palette)
         if (vertexIndex >= 0) {
             // Update vertex array            
             if (data) {
-                data[vertexIndex].color = palette.color(getSegmentColor(list[i]));
+                data[vertexIndex].color = getSegmentColor(list[i], palette);
                 data[vertexIndex + 1].color = data[vertexIndex].color;
             } else {
-                m_lines[vertexIndex].color = palette.color(getSegmentColor(list[i]));
+                m_lines[vertexIndex].color = getSegmentColor(list[i], palette);
                 m_lines[vertexIndex + 1].color = m_lines.at(vertexIndex).color;
             }
         }
@@ -284,25 +286,34 @@ bool GcodeDrawer::updateVectors(GLPalette &palette)
     return !data;
 }
 
-QColor GcodeDrawer::getSegmentColor(LineSegment& segment)
+GLuint GcodeDrawer::getSegmentColor(LineSegment& segment, GLPalette &palette)
 {
-    if (segment.drawn()) return m_colorDrawn;
-    else if (segment.isHightlight()) return m_colorHighlight;
-    else if (segment.isFastTraverse()) return m_colorRapidMovement;
-    else if (segment.isZMovement()) return m_colorZMovement;
-    else if (m_grayscaleSegments) switch (m_grayscaleCode) {
-    case GcodeDrawer::S:
-        return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getSpindleSpeed(), 255));
-    case GcodeDrawer::Z:
-        return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getStart().z(), 255));
+    if (segment.drawn()) return m_colorDrawnIndex > -1 ? m_colorDrawnIndex : getSegmentColorAndUpdateIndex(m_colorDrawnIndex, palette.color(m_colorDrawn));
+    else if (segment.isHightlight()) return m_colorHighlightIndex > -1 ? m_colorHighlightIndex : getSegmentColorAndUpdateIndex(m_colorHighlightIndex, palette.color(m_colorHighlight));
+    else if (segment.isFastTraverse()) return m_colorRapidMovementIndex > -1 ? m_colorRapidMovementIndex : getSegmentColorAndUpdateIndex(m_colorRapidMovementIndex, palette.color(m_colorRapidMovement));
+    else if (segment.isZMovement()) return m_colorZMovementIndex > -1 ? m_colorZMovementIndex : getSegmentColorAndUpdateIndex(m_colorZMovementIndex, palette.color(m_colorZMovement));
+    else if (m_grayscaleSegments) {
+        // switch (m_grayscaleCode) {
+        // case GcodeDrawer::S:
+        //     return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getSpindleSpeed(), 255));
+        // case GcodeDrawer::Z:
+        //     return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getStart().z(), 255));
+        // }
     }
 
-    return m_colorNormal;
+    return m_colorNormalIndex > -1 ? m_colorNormalIndex : getSegmentColorAndUpdateIndex(m_colorNormalIndex, palette.color(m_colorNormal));
 }
 
 int GcodeDrawer::getSegmentType(LineSegment& segment)
 {
     return segment.isFastTraverse() + segment.isZMovement() * 2;
+}
+
+GLuint GcodeDrawer::getSegmentColorAndUpdateIndex(GLuint& var, GLuint index)
+{
+    var = index;
+
+    return index;
 }
 
 QVector3D GcodeDrawer::getSizes()
@@ -316,7 +327,9 @@ QVector3D GcodeDrawer::getSizes()
 QVector3D GcodeDrawer::getMinimumExtremes()
 {
     QVector3D v = m_viewParser->getMinimumExtremes();
-    if (m_ignoreZ) v.setZ(0);
+    if (m_ignoreZ) {
+        if (m_ignoreZ) v.setZ(0);
+    }
 
     return v;
 }
@@ -342,19 +355,9 @@ GCodeViewParser *GcodeDrawer::viewParser()
     return m_viewParser;
 }
 
-bool GcodeDrawer::simplify() const
-{
-    return m_simplify;
-}
-
 void GcodeDrawer::setSimplify(bool simplify)
 {
     m_simplify = simplify;
-}
-
-double GcodeDrawer::simplifyPrecision() const
-{
-    return m_simplifyPrecision;
 }
 
 void GcodeDrawer::setSimplifyPrecision(double simplifyPrecision)
@@ -367,38 +370,20 @@ bool GcodeDrawer::geometryUpdated()
     return m_geometryUpdated;
 }
 
-QColor GcodeDrawer::colorNormal() const
-{
-    return m_colorNormal;
-}
-
 void GcodeDrawer::setColorNormal(const QColor &colorNormal)
 {
     m_colorNormal = colorNormal;
-}
-
-QColor GcodeDrawer::colorHighlight() const
-{
-    return m_colorHighlight;
+    m_colorNormalIndex = -1;
 }
 
 void GcodeDrawer::setColorHighlight(const QColor &colorHighlight)
 {
     m_colorHighlight = colorHighlight;
 }
-QColor GcodeDrawer::colorZMovement() const
-{
-    return m_colorZMovement;
-}
-
+\
 void GcodeDrawer::setColorZMovement(const QColor &colorZMovement)
 {
     m_colorZMovement = colorZMovement;
-}
-
-QColor GcodeDrawer::colorRapidMovement() const
-{
-    return m_colorRapidMovement;
 }
 
 void GcodeDrawer::setColorRapidMovement(const QColor &colorRapidMovement)
@@ -406,19 +391,9 @@ void GcodeDrawer::setColorRapidMovement(const QColor &colorRapidMovement)
     m_colorRapidMovement = colorRapidMovement;
 }
 
-QColor GcodeDrawer::colorDrawn() const
-{
-    return m_colorDrawn;
-}
-
 void GcodeDrawer::setColorDrawn(const QColor &colorDrawn)
 {
     m_colorDrawn = colorDrawn;
-}
-
-QColor GcodeDrawer::colorStart() const
-{
-    return m_colorStart;
 }
 
 void GcodeDrawer::setColorStart(const QColor &colorStart)
@@ -426,19 +401,9 @@ void GcodeDrawer::setColorStart(const QColor &colorStart)
     m_colorStart = colorStart;
 }
 
-QColor GcodeDrawer::colorEnd() const
-{
-    return m_colorEnd;
-}
-
 void GcodeDrawer::setColorEnd(const QColor &colorEnd)
 {
     m_colorEnd = colorEnd;
-}
-
-bool GcodeDrawer::getIgnoreZ() const
-{
-    return m_ignoreZ;
 }
 
 void GcodeDrawer::setIgnoreZ(bool ignoreZ)
@@ -451,19 +416,9 @@ void GcodeDrawer::onTimerVertexUpdate()
     if (!m_indexes.isEmpty()) ShaderDrawable::update();
 }
 
-int GcodeDrawer::grayscaleMax() const
-{
-    return m_grayscaleMax;
-}
-
 void GcodeDrawer::setGrayscaleMax(int grayscaleMax)
 {
     m_grayscaleMax = grayscaleMax;
-}
-
-int GcodeDrawer::grayscaleMin() const
-{
-    return m_grayscaleMin;
 }
 
 void GcodeDrawer::setGrayscaleMin(int grayscaleMin)
@@ -471,19 +426,9 @@ void GcodeDrawer::setGrayscaleMin(int grayscaleMin)
     m_grayscaleMin = grayscaleMin;
 }
 
-GcodeDrawer::GrayscaleCode GcodeDrawer::grayscaleCode() const
-{
-    return m_grayscaleCode;
-}
-
 void GcodeDrawer::setGrayscaleCode(const GrayscaleCode &grayscaleCode)
 {
     m_grayscaleCode = grayscaleCode;
-}
-
-bool GcodeDrawer::getGrayscaleSegments() const
-{
-    return m_grayscaleSegments;
 }
 
 void GcodeDrawer::setGrayscaleSegments(bool grayscaleSegments)

@@ -38,34 +38,34 @@ public:
 
     bool geometryUpdated();
 
-    QColor colorNormal() const;
+    // QColor colorNormal() const;
     void setColorNormal(const QColor &colorNormal);
-    QColor colorHighlight() const;
+    // QColor colorHighlight() const;
     void setColorHighlight(const QColor &colorHighlight);
-    QColor colorZMovement() const;
+    // QColor colorZMovement() const;
     void setColorZMovement(const QColor &colorZMovement);
-    QColor colorRapidMovement() const;
+    // QColor colorRapidMovement() const;
     void setColorRapidMovement(const QColor &colorRapidMovement);
-    QColor colorDrawn() const;
+    // QColor colorDrawn() const;
     void setColorDrawn(const QColor &colorDrawn);
-    QColor colorStart() const;
+    // QColor colorStart() const;
     void setColorStart(const QColor &colorStart);
-    QColor colorEnd() const;
+    // QColor colorEnd() const;
     void setColorEnd(const QColor &colorEnd);
 
-    bool getIgnoreZ() const;
+    // bool getIgnoreZ() const;
     void setIgnoreZ(bool ignoreZ);
 
-    bool getGrayscaleSegments() const;
+    // bool getGrayscaleSegments() const;
     void setGrayscaleSegments(bool grayscaleSegments);
 
-    GrayscaleCode grayscaleCode() const;
+    // GrayscaleCode grayscaleCode() const;
     void setGrayscaleCode(const GrayscaleCode &grayscaleCode);
 
-    int grayscaleMin() const;
+    // int grayscaleMin() const;
     void setGrayscaleMin(int grayscaleMin);
 
-    int grayscaleMax() const;
+    // int grayscaleMax() const;
     void setGrayscaleMax(int grayscaleMax);
 
     ProgramType programType() override { return ProgramType::GCode; };
@@ -80,11 +80,11 @@ private:
 
     bool m_simplify;
     double m_simplifyPrecision;
-    bool m_ignoreZ;
-    bool m_grayscaleSegments;
-    GrayscaleCode m_grayscaleCode;
-    int m_grayscaleMin;
-    int m_grayscaleMax;
+    bool m_ignoreZ = false;
+    bool m_grayscaleSegments = false;
+    GrayscaleCode m_grayscaleCode = GcodeDrawer::S;
+    int m_grayscaleMin = 0;
+    int m_grayscaleMax = 255;
 
     QVector3D m_eye;
 
@@ -95,6 +95,14 @@ private:
     QColor m_colorStart;
     QColor m_colorEnd;
     QColor m_colorRapidMovement;
+
+    GLuint m_colorNormalIndex = -1;
+    GLuint m_colorDrawnIndex = -1;
+    GLuint m_colorHighlightIndex = -1;
+    GLuint m_colorZMovementIndex = -1;
+    GLuint m_colorStartIndex = -1;
+    GLuint m_colorEndIndex = -1;
+    GLuint m_colorRapidMovementIndex = -1;
 
     QTimer m_timerVertexUpdate;
 
@@ -107,7 +115,8 @@ private:
 
     QVector3D initialNormal(QVector3D p1, QVector3D p2);
     int getSegmentType(LineSegment& segment);
-    QColor getSegmentColor(LineSegment& segment);
+    GLuint getSegmentColor(LineSegment& segment, GLPalette &palette);
+    GLuint getSegmentColorAndUpdateIndex(GLuint& var, GLuint index);
     void computeNormals();
 };
 

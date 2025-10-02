@@ -16,7 +16,7 @@ class GLPalette
         void initialize();
         void bind(GLuint unit = -1);
         void release();
-        int color(float r, float g, float b)
+        GLuint color(float r, float g, float b)
         {
             QString index = QString("%1_%2_%3").arg(r).arg(g).arg(b);
             if (m_indexes.contains(index)) {
@@ -25,7 +25,7 @@ class GLPalette
 
             return add(r, g, b);
         }
-        int color(const GLColor& color_)
+        GLuint color(const GLColor& color_)
         {
             QString index = QString("%1_%2_%3").arg(color_.x()).arg(color_.y()).arg(color_.z());
             if (m_indexes.contains(index)) {
@@ -34,12 +34,12 @@ class GLPalette
 
             return add(color_);
         }
-        int color(const QColor& color_)
+        GLuint color(const QColor& color_)
         {
             return color(color_.redF(), color_.greenF(), color_.blueF());
         }
-        int add(float r, float g, float b);
-        int add(const GLColor& color);
+        GLuint add(float r, float g, float b);
+        GLuint add(const GLColor& color);
         int count();
         QString colorAsHex(int index);
         GLPalette& operator << (const GLColor& color);

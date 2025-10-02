@@ -31,7 +31,7 @@ void GLPalette::release()
     m_texture->release();
 }
 
-int GLPalette::add(float r, float g, float b)
+GLuint GLPalette::add(float r, float g, float b)
 {
     assert(m_colors.count() < MAX_COLORS);
     assert(r <= 1.0 && g <= 1.0 && b <= 1.0);
@@ -45,7 +45,7 @@ int GLPalette::add(float r, float g, float b)
     return m_colors.count() - 1;
 }
 
-int GLPalette::add(const GLColor &color)
+GLuint GLPalette::add(const GLColor &color)
 {
     return add(color.x(), color.y(), color.z());
 }

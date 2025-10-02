@@ -85,12 +85,10 @@ protected:
     double m_lineWidth;
     double m_pointSize;
     bool m_visible;
-    float m_globalAlpha = 1;
 
     QVector<VertexData> m_lines;
     QVector<VertexData> m_points;
     QVector<VertexData> m_triangles;
-    //QOpenGLTexture *m_texture;
 
     QOpenGLBuffer m_vbo; // Protected for direct vbo access
 

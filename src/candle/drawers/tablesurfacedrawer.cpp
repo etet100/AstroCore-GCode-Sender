@@ -5,7 +5,6 @@
 #include "tablesurfacedrawer.h"
 
 TableSurfaceDrawer::TableSurfaceDrawer() {
-    m_globalAlpha = 0.1;
 }
 
 bool TableSurfaceDrawer::updateData(GLPalette &palette)

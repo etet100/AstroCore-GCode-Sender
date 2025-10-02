@@ -1831,7 +1831,7 @@ void frmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
         }
 
         m_selectionDrawer.setEndPosition(indexes.isEmpty() ? QVector3D(sNan, sNan, sNan) :
-            (m_codeDrawer->getIgnoreZ() ? QVector3D(list[indexes.last()].getEnd().x(), list[indexes.last()].getEnd().y(), 0)
+            (m_configuration.visualizerModule().ignoreZ() ? QVector3D(list[indexes.last()].getEnd().x(), list[indexes.last()].getEnd().y(), 0)
                                         : list[indexes.last()].getEnd()));
         m_selectionDrawer.update();
 
@@ -1842,7 +1842,7 @@ void frmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
     int line = (*m_currentProgram)[rowCurrent].lineNumber;
     if (line > 0 && line < lineIndexes.count() && !lineIndexes.at(line).isEmpty()) {
         QVector3D pos = list[lineIndexes.at(line).last()].getEnd();
-        m_selectionDrawer.setEndPosition(m_codeDrawer->getIgnoreZ() ? QVector3D(pos.x(), pos.y(), 0) : pos);
+        m_selectionDrawer.setEndPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(pos.x(), pos.y(), 0) : pos);
     } else {
         m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
     }
@@ -2379,7 +2379,7 @@ void frmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerCo
     m_codeDrawer->setColorRapidMovement(visualizerConfiguration.rapidMovementColor());
     m_codeDrawer->setColorStart(visualizerConfiguration.startPointColor());
     m_codeDrawer->setColorEnd(visualizerConfiguration.endPointColor());
-    m_codeDrawer->setIgnoreZ(false);
+    m_codeDrawer->setIgnoreZ(visualizerConfiguration.ignoreZ());
     m_codeDrawer->setGrayscaleSegments(visualizerConfiguration.grayscaleSegments());
     m_codeDrawer->setGrayscaleCode(visualizerConfiguration.grayscaleSegmentsBySCode() ? GcodeDrawer::S : GcodeDrawer::Z);
     m_codeDrawer->setGrayscaleMin(m_configuration.machineModule().laserPowerRange().min);
@@ -2511,7 +2511,9 @@ void frmMain::updateParser()
 
     GcodeParser parser;
     parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
-    if (m_codeDrawer->getIgnoreZ()) parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    if (m_configuration.visualizerModule().ignoreZ()) {
+        parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    }
 
     ui->tblProgram->setUpdatesEnabled(false);
 
@@ -2753,7 +2755,9 @@ void frmMain::loadLines(QList<std::string> data)
     // Prepare parser
     GcodeParser parser;
     parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
-    if (m_codeDrawer->getIgnoreZ()) parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    if (m_configuration.visualizerModule().ignoreZ()) {
+        parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    }
 
     // Block parser updates on table changes
     m_programLoading = true;
@@ -3509,7 +3513,7 @@ bool frmMain::eventFilter(QObject *obj, QEvent *event)
 
 void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
-    m_toolDrawer.setToolPosition(m_codeDrawer->getIgnoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
+    m_toolDrawer.setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
     SenderState senderState = m_communicator->senderState();
     DeviceState deviceState = m_communicator->deviceState();

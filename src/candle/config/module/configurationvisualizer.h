@@ -67,6 +67,7 @@ class ConfigurationVisualizer : public ConfigurationModule
         bool grayscaleSegments() const { return m_grayscaleSegments; }
         bool grayscaleSegmentsBySCode() const { return m_grayscaleSegmentsBySCode; }
         bool grayscaleSegmentsByZCode() const { return m_grayscaleSegmentsByZCode; }
+        bool ignoreZ() const { return grayscaleSegments(); }
         double fieldOfView() const { return m_fieldOfView; }
         double nearPlane() const { return m_nearPlane; }
         double farPlane() const { return m_farPlane; }
