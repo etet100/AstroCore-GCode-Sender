@@ -15,7 +15,7 @@ in float v_cumSegPosition;
 
 uniform sampler2D u_texture;
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 float dashLength = 0.5;
 float gapLength = 0.3;
@@ -44,5 +44,5 @@ void main()
     float ambient = 0.7;
 
     // calc fragment color
-    gl_FragColor = vec4(v_color.rgb * (diff + ambient) + spec, v_color.a);
+    fragColor = vec4(v_color.rgb * (diff + ambient) + spec, v_color.a);
 }
