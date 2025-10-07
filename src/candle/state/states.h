@@ -16,4 +16,10 @@
 #include "stateidle.h"
 #include "stateerror.h"
 
+// New states
+#include "statepause.h"
+#include "statealarm.h"
+#include "statetoolchange.h"
+#include "statecheckmode.h"
+
 #endif // STATES_H
