@@ -23,4 +23,4 @@
 	url = https://github.com/cristianadam/phantomstyle
 [submodule "src/vendor/grblHal"]
 	path = src/vendor/grblHal
-	url = https://github.com/grblHAL/core
+	url = https://github.com/etet100/grblHALCore/tree/library
