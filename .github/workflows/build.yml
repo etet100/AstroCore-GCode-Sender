@@ -24,8 +24,11 @@ jobs:
           tools: 'tools_mingw90'
 
       - name: Build
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
         run: |
-          qmake gpilot.pro
+          qmake gpilot.pro "CONFIG+=release" "DEFINES+=WINDOWS=1"
           mingw32-make -j4
 
       - name: Upload artifacts
