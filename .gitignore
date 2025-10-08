@@ -84,3 +84,5 @@ src/scriptbindings/plugins/script
 src/candle/Candle_resource.rc
 testing/gl/node_modules
 src/designerplugins/joystickplugin/SFML-2.6.1_/*
+*.o
+moc_*.cpp
