@@ -38,13 +38,11 @@ endif()
 
 include_directories(src/designerplugins/customwidgetsplugin)
 
-add_subdirectory(src/candle)
+add_subdirectory(src/gpilot)
 
 add_subdirectory(src/designerplugins)
 
 add_subdirectory(src/candleplugins)
-
-add_subdirectory(src/scriptbindings)
 
 
 

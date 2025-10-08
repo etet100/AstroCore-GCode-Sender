@@ -49,7 +49,10 @@ Usefull links:
 
 Build requirements:
 -------------------
-Qt 6.8 with MinGW/GCC 64bit compiler
+Qt 6.8 with LLVM/Clang compiler (recommended) or MinGW/GCC 64bit compiler.
+MSVC compiler is not officially supported and may not work correctly.
+
+**Note:** The project uses QMake build system (gpilot.pro). CMake files (CMakeLists.txt) exist in the repository but are not maintained and may not work correctly.
 
 Start with:
 
@@ -157,12 +160,50 @@ Another module begging for a rewrite is the configuration storage mechanism. Of 
 
 ![screenshot](/screenshots/arch2.png)
 
-Downloads:
-----------
-Only Windows preview version is available at the moment. They are not stable and contain many critical bugs. The Linux version will be available sooner or later.
+How to build (Windows, Qt, MinGW/LLVM)
+-------------------
+
+1. Clone the repository with submodules:
+    ```
+    git clone --recurse-submodules https://github.com/etet100/G-Pilot-Formerly-Candle
+    cd G-Pilot-Formerly-Candle
+    git submodule update --init --recursive
+    ```
+
+2. Build with Qt Creator (recommended):
+    - Open `gpilot.pro` in Qt Creator.
+    - Select Qt 6.x and LLVM/Clang compiler (recommended) or MinGW. MSVC is not supported.
+    - To enable multi-threaded compilation for faster builds:
+      - Go to Projects → Build → Build Steps → Make → Make arguments
+      - Add `-j8` (adjust number based on your CPU cores)
+    - Click Build (Ctrl+B).
+    - The executable and DLL files will appear in the `bin` folder.
+
+3. Build with qmake from command line:
+    - Add Qt bin directory to your PATH:
+      ```
+      set PATH=C:\Qt\6.8.1\llvm-mingw_64\bin;%PATH%
+      ```
+    - Run qmake to generate Makefile:
+      ```
+      qmake gpilot.pro
+      ```
+    - Build the project:
+      For LLVM/Clang (recommended) or MinGW:
+      ```
+      mingw32-make -j8
+      ```
+      The `-j8` flag enables parallel compilation with 8 threads - adjust the number based on your CPU cores for faster builds.
+
+    - The executable and DLL files will be generated in the `bin` folder.
+
+4. Packaging:
+    - Copy files from the `bin` folder (exe, dll, translations, LICENSE).
+    - Make sure all required DLLs are present (Qt, vendor DLLs).
+
+If you have build errors, check that all submodules are updated and you are using the correct Qt version.
 
 How it looks:
--------------
 
 Main window:
 
