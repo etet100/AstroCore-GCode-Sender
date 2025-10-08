@@ -30,7 +30,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
     LinguistTools
     OpenGL
     PrintSupport
-    Script
     SerialPort
     Widgets
 )
@@ -104,7 +103,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::PrintSupport
-    Qt${QT_VERSION_MAJOR}::Script
     Qt${QT_VERSION_MAJOR}::SerialPort
     Qt${QT_VERSION_MAJOR}::Widgets
 )
