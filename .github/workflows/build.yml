@@ -22,12 +22,20 @@ jobs:
           target: 'desktop'
           arch: 'win64_mingw'
           tools: 'tools_mingw90'
+          set-env: 'true'
+          aqtversion: '==3.1.*'
+          extra: '--archives qtbase qtserialport qtmultimedia qtmultimediawidgets qtnetwork qtopengl qtopenglwidgets qtsvg'
 
       - name: Build
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
+          QT_DEBUG_PLUGINS: "1"
         run: |
+          qmake --version
+          mingw32-make --version
+          dir %Qt6_DIR%
+          dir %Qt6_DIR%\bin
           qmake gpilot.pro "CONFIG+=release" "DEFINES+=WINDOWS=1"
           mingw32-make -j4
 
