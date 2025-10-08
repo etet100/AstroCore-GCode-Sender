@@ -1,5 +1,10 @@
 TEMPLATE = subdirs
 
+QMAKE_CC = clang
+QMAKE_CXX = clang++
+QMAKE_CFLAGS += --target=x86_64-w64-mingw32 -fuse-ld=lld
+QMAKE_CXXFLAGS += --target=x86_64-w64-mingw32 -fuse-ld=lld
+
 SUBDIRS =   src/gpilot \
             src/designerplugins \
             src/vendor
