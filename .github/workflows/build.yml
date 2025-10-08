@@ -10,34 +10,69 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - name: Remove broken WindowsApps python.exe from PATH
+        shell: pwsh
+        run: |
+          Write-Host "Cleaning PATH..."
+          $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
+          $newPath = ($paths -join ';')
+          Write-Host "New PATH set without WindowsApps"
+          [Environment]::SetEnvironmentVariable('PATH', $newPath, 'Process')
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Qt 6.8.1 (MinGW)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.1"
+          host: "windows"
+          target: "desktop"
+          arch: "win64_mingw"
+          modules: "qtmultimedia qtserialport qtimageformats qtshadertools"
+          cache: true
+
+      - name: Verify Qt installation
+        run: |
+          qmake --version
+          g++ --version || echo "g++ not found in PATH"
+          clang --version || echo "Clang not found in PATH"
+          echo $PATH
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.8.1'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_mingw'
-          tools: 'tools_mingw90'
-          set-env: 'true'
-          aqtversion: '==3.1.*'
-          extra: '--archives qtbase qtserialport qtmultimedia qtmultimediawidgets qtnetwork qtopengl qtopenglwidgets qtsvg'
+      # - name: Add Qt mingw to PATH
+      #   run: |
+      #     echo "${{ env.QT_ROOT_DIR }}\\Tools\\mingw1120_64\\bin" >> $env:GITHUB_PATH
+      #     echo "${{ env.QT_ROOT_DIR }}\\6.8.1\\mingw_64\\bin" >> $env:GITHUB_PATH
 
       - name: Build
         env:
-          QMAKESPEC: win32-g++
+          QMAKESPEC: win32-clang-g++
           WINDOWS: "1"
           QT_DEBUG_PLUGINS: "1"
         run: |
+          echo $QT_ROOT_DIR
+          echo $QT_PATH
+
+          # Sprawdzenie, co zostało zainstalowane
+          # dir $env:RUNNER_WORKSPACE/Qt
+          # dir $env:RUNNER_WORKSPACE/Qt/Tools
+          # dir $env:RUNNER_WORKSPACE/Qt/6.8.1
+
+          # Sprawdzenie dostępnych kompilatorów
+          where clang
+          clang --version || echo "Clang not found in PATH"
+          where qmake
           qmake --version
-          mingw32-make --version
-          dir %Qt6_DIR%
-          dir %Qt6_DIR%\bin
+
+          # Kompilacja z LLVM
           qmake gpilot.pro "CONFIG+=release" "DEFINES+=WINDOWS=1"
-          mingw32-make -j4
+          mingw32-make -j4 || make -j4
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
