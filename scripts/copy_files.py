@@ -15,6 +15,6 @@ def copyFile(sourceSubpath, filename):
 
     shutil.copyfile(sourcePath + sourceSubpath + filename, destPath + filename)
 
-copyFile("src\\candle\\", "GPilot.exe")
+copyFile("src\\gpilot\\", "GPilot.exe")
 copyFile("src\\vendor\\uCNC\\", "uCNC.dll")
 copyFile("src\\vendor\\PropertyEditor\\", "PropertyEditor.dll")
