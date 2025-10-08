@@ -36,48 +36,52 @@ jobs:
 
       - name: Verify Qt installation
         env:
-          QMAKESPEC: win32-clang-g++
+          QMAKESPEC: win32-g++
         run: |
           qmake --version
           g++ --version || echo "g++ not found in PATH"
-          clang --version || echo "Clang not found in PATH"
           qmake -query QMAKE_SPEC || echo "QMAKE_SPEC not found"
-          echo $PATH
 
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # - name: Add Qt mingw to PATH
-      #   run: |
-      #     echo "${{ env.QT_ROOT_DIR }}\\Tools\\mingw1120_64\\bin" >> $env:GITHUB_PATH
-      #     echo "${{ env.QT_ROOT_DIR }}\\6.8.1\\mingw_64\\bin" >> $env:GITHUB_PATH
-
-      - name: Build
+      - name: Build PropertyEditor
         env:
-          QMAKESPEC: win32-clang-g++
+          QMAKESPEC: win32-g++
           WINDOWS: "1"
         run: |
-          echo $QT_ROOT_DIR
-          echo $QT_PATH
+          cd src/vendor/PropertyEditor
+          qmake PropertyEditor.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          mingw32-make.exe -f Makefile qmake_all
+          mingw32-make -j12
 
-          # Sprawdzenie, co zostało zainstalowane
-          # dir $env:RUNNER_WORKSPACE/Qt
-          # dir $env:RUNNER_WORKSPACE/Qt/Tools
-          # dir $env:RUNNER_WORKSPACE/Qt/6.8.1
+      - name: Build uCNC
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
+        run: |
+          cd src/vendor/uCNC
+          qmake uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          mingw32-make.exe -f Makefile qmake_all
+          mingw32-make -j12
 
-          # Sprawdzenie dostępnych kompilatorów
-          where clang
-          clang --version || echo "Clang not found in PATH"
-          where qmake
-          qmake --version
+      - name: Build grblHal
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
+        run: |
+          cd src/vendor/grblHal
+          qmake grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          mingw32-make.exe -f Makefile qmake_all
+          mingw32-make -j12
 
-          # Kompilacja z LLVM
-          qmake gpilot.pro -spec win32-clang-g++ "CONFIG+=release" "DEFINES+=WINDOWS=1" "QMAKE_CC=clang" "QMAKE_CXX=clang++" "QMAKE_CFLAGS+=--target=x86_64-w64-mingw32 -fuse-ld=lld" "QMAKE_CXXFLAGS+=--target=x86_64-w64-mingw32"
-          mingw32-make -j4 || make -j4
+      - name: Build G-Pilot
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
+        run: |
+            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: GPilot-bin
-          path: bin/
