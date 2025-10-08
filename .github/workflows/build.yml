@@ -35,10 +35,13 @@ jobs:
           cache: true
 
       - name: Verify Qt installation
+        env:
+          QMAKESPEC: win32-clang-g++
         run: |
           qmake --version
           g++ --version || echo "g++ not found in PATH"
           clang --version || echo "Clang not found in PATH"
+          qmake -query QMAKE_SPEC || echo "QMAKE_SPEC not found"
           echo $PATH
 
       - uses: actions/checkout@v4
@@ -54,7 +57,6 @@ jobs:
         env:
           QMAKESPEC: win32-clang-g++
           WINDOWS: "1"
-          QT_DEBUG_PLUGINS: "1"
         run: |
           echo $QT_ROOT_DIR
           echo $QT_PATH
@@ -71,7 +73,7 @@ jobs:
           qmake --version
 
           # Kompilacja z LLVM
-          qmake gpilot.pro "CONFIG+=release" "DEFINES+=WINDOWS=1"
+          qmake gpilot.pro -spec win32-clang-g++ "CONFIG+=release" "DEFINES+=WINDOWS=1" "QMAKE_CC=clang" "QMAKE_CXX=clang++" "QMAKE_CFLAGS+=--target=x86_64-w64-mingw32 -fuse-ld=lld" "QMAKE_CXXFLAGS+=--target=x86_64-w64-mingw32"
           mingw32-make -j4 || make -j4
 
       - name: Upload artifacts
