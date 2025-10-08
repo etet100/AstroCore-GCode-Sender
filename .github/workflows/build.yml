@@ -80,8 +80,9 @@ jobs:
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
+          DISABLE_BUILD_NUMBER_INCREMENT: "1"
         run: |
-            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
 
