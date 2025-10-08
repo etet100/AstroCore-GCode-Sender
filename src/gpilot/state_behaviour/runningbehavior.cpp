@@ -2,12 +2,12 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
+#include "../globals.h"
 #include "runningbehavior.h"
 #include "idlebehavior.h"
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
 #include "toolchangebehavior.h"
-#include "../communicator.h"
 
 RunningBehavior::RunningBehavior(StateBehavior *previous, QObject *parent)
     : StateBehavior{previous, parent}
@@ -35,8 +35,8 @@ void RunningBehavior::onCommandResponse(QString command, QStringList response)
     // For example, handle M6 commands for tool change
     if (command.contains("M6")) {
         // Tool change requested
-        emit transition(this, new ToolChangeBehavior(this, command.mid(command.indexOf("T") + 1).toInt(),
-                                                  ToolChangeBehavior::ToolChangeSource::Program));
+        // emit transition(this, new ToolChangeBehavior(this, command.mid(command.indexOf("T") + 1).toInt(),
+        //                                           ToolChangeBehavior::ToolChangeSource::Program));
     }
 }
 

@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef A49B0ABA_368A_40EB_A258_D2E62D147AAF
-#define A49B0ABA_368A_40EB_A258_D2E62D147AAF
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -9,8 +6,8 @@
 #define STATEBEHAVIOR_H
 
 #include <QObject>
+#include <QDebug>
 #include "../globals.h"
-#include "../connection/connection.h"
 
 class Communicator;
 
@@ -53,6 +50,3 @@ class StateBehavior : public QObject
 };
 
 #endif // STATEBEHAVIOR_H
-
-
-#endif /* A49B0ABA_368A_40EB_A258_D2E62D147AAF */

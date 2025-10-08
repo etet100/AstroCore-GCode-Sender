@@ -2,8 +2,9 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
+#include "../globals.h"
+#include "communicator.h"
 #include "alarmbehavior.h"
-#include "../communicator.h"
 #include "idlebehavior.h"
 
 AlarmBehavior::AlarmBehavior(StateBehavior *previous, int alarmCode, QObject *parent)

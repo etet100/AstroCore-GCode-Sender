@@ -6,7 +6,6 @@
 #define STATE_H
 
 #include <QObject>
-#include "../globals.h"
 #include "../connection/connection.h"
 
 class Communicator;

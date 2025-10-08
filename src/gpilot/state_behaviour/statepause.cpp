@@ -33,7 +33,7 @@ QString StatePause::name()
 
 void StatePause::onEntry(Communicator *communicator, State *previous)
 {
-    State::onEntry(communicator, previous);
+    StateBehavior::onEntry(communicator, previous);
 
     // Here we can execute any commands needed when entering pause state
     // For example, we might want to stop the spindle

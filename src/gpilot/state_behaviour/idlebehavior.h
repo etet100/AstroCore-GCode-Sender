@@ -1,10 +1,5 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
 
-#ifndef B745AA0B_573F_46AC_9074_CE149A678FEB
-#define B745AA0B_573F_46AC_9074_CE149A678FEB
-// Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
-
 #ifndef IDLEBEHAVIOR_H
 #define IDLEBEHAVIOR_H
 
@@ -22,6 +17,3 @@ class IdleBehavior : public StateBehavior
 };
 
 #endif // IDLEBEHAVIOR_H
-
-
-#endif /* B745AA0B_573F_46AC_9074_CE149A678FEB */

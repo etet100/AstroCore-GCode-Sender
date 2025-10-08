@@ -2,10 +2,10 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "idlebehavior.h"
+#include "../globals.h"
 #include "runningbehavior.h"
 #include "alarmbehavior.h"
-#include "../communicator.h"
+#include "idlebehavior.h"
 
 IdleBehavior::IdleBehavior(StateBehavior *previous, QObject *parent)
     : StateBehavior{previous, parent}

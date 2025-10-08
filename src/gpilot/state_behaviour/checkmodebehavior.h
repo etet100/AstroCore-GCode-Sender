@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef D2D1EF6D_92B6_4349_886F_9253649C2E8C
-#define D2D1EF6D_92B6_4349_886F_9253649C2E8C
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -9,6 +6,8 @@
 #define CHECKMODEBEHAVIOR_H
 
 #include "statebehavior.h"
+
+class Communicator;
 
 class CheckModeBehavior : public StateBehavior
 {
@@ -27,6 +26,3 @@ class CheckModeBehavior : public StateBehavior
 };
 
 #endif // CHECKMODEBEHAVIOR_H
-
-
-#endif /* D2D1EF6D_92B6_4349_886F_9253649C2E8C */

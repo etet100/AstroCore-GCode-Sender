@@ -12,7 +12,7 @@ StateProbing::StateProbing(State *previous, QObject *parent): State{previous, pa
 
 void StateProbing::onEntry(Communicator *communicator, State *previous)
 {
-    State::onEntry(communicator, previous);
+    StateBehavior::onEntry(communicator, previous);
 
     m_communicator->sendCommands(
         CommandSource::GeneralUI,
