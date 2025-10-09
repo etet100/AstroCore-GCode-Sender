@@ -7,7 +7,7 @@ equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8) {
     error("Use Qt 6.8 or newer")
 }
 
-QT = core gui opengl serialport uitools network
+QT = core gui opengl serialport uitools network qml
 QT += multimedia multimediawidgets
 
 VERSION=1.0.0.0
@@ -80,55 +80,55 @@ win32-msvc*: {
 CONFIG -= debug_and_release
 
 SOURCES += main.cpp\
-    communicator.cpp \
-    communicator_processing_response.cpp \
-    communicator_utils.cpp \
-    config/configuration.cpp \
-    config/module/configurationconnection.cpp \
-    config/module/configurationconsole.cpp \
-    config/module/configurationheightmap.cpp \
-    config/module/configurationjogging.cpp \
-    config/module/configurationmachine.cpp \
-    config/module/configurationmodule.cpp \
-    config/module/configurationparser.cpp \
-    config/module/configurationsender.cpp \
-    config/module/configurationui.cpp \
-    config/module/configurationvisualizer.cpp \
-    config/persistence/ini/inipersister.cpp \
-    config/persistence/ini/iniprovider.cpp \
-    config/persistence/json/jsonpersister.cpp \
-    config/persistence/json/jsonprovider.cpp \
-    config/persistence/xml/xmlpersister.cpp \
-    config/persistence/xml/xmlprovider.cpp \
-    connection/connection.cpp \
-    connection/connectionmanager.cpp \
-    connection/rawtcpconnection.cpp \
-    connection/serialconnection.cpp \
-    connection/virtualgrblconnection.cpp \
-    connection/virtualucncconnection.cpp \
+    core/communicator/communicator.cpp \
+    core/communicator/communicator_processing_response.cpp \
+    core/communicator/communicator_utils.cpp \
+    core/config/configuration.cpp \
+    core/config/module/configurationconnection.cpp \
+    core/config/module/configurationconsole.cpp \
+    core/config/module/configurationheightmap.cpp \
+    core/config/module/configurationjogging.cpp \
+    core/config/module/configurationmachine.cpp \
+    core/config/module/configurationmodule.cpp \
+    core/config/module/configurationparser.cpp \
+    core/config/module/configurationsender.cpp \
+    core/config/module/configurationui.cpp \
+    core/config/module/configurationvisualizer.cpp \
+    core/config/persistence/ini/inipersister.cpp \
+    core/config/persistence/ini/iniprovider.cpp \
+    core/config/persistence/json/jsonpersister.cpp \
+    core/config/persistence/json/jsonprovider.cpp \
+    core/config/persistence/xml/xmlpersister.cpp \
+    core/config/persistence/xml/xmlprovider.cpp \
+    io/connection/connection.cpp \
+    io/connection/connectionmanager.cpp \
+    io/connection/rawtcpconnection.cpp \
+    io/connection/serialconnection.cpp \
+    io/connection/virtualgrblconnection.cpp \
+    io/connection/virtualucncconnection.cpp \
     drawers/cubedrawer.cpp \
     drawers/cursordrawer.cpp \
     drawers/tablesurfacedrawer.cpp \
     drawers/vertexdataexporter.cpp \
-    form_partial/main/partmainconsole.cpp \
-    form_partial/main/partmaincontrol.cpp \
-    form_partial/main/partmainheightmap.cpp \
-    form_partial/main/partmainjog.cpp \
-    form_partial/main/partmainoverride.cpp \
-    form_partial/main/partmainspindle.cpp \
-    form_partial/main/partmainstate.cpp \
-    form_partial/main/partmainstatelcd.cpp \
-    form_partial/main/partmainvirtualsettings.cpp \
-    form_partial/settings/partsettingscolors.cpp \
-    form_partial/settings/partsettingsconsole.cpp \
-    form_partial/settings/partsettingsjogging.cpp \
-    form_partial/settings/partsettingssender.cpp \
-    form_partial/settings/partsettingsshortcuts.cpp \
-    form_partial/settings/partsettingsvisualizer.cpp \
-    frmgrblconfigurator.cpp \
-    frmmain.cpp \
-    frmsettings.cpp \
-    frmabout.cpp \
+    ui/forms/partials/main/partmainconsole.cpp \
+    ui/forms/partials/main/partmaincontrol.cpp \
+    ui/forms/partials/main/partmainheightmap.cpp \
+    ui/forms/partials/main/partmainjog.cpp \
+    ui/forms/partials/main/partmainoverride.cpp \
+    ui/forms/partials/main/partmainspindle.cpp \
+    ui/forms/partials/main/partmainstate.cpp \
+    ui/forms/partials/main/partmainstatelcd.cpp \
+    ui/forms/partials/main/partmainvirtualsettings.cpp \
+    ui/forms/partials/settings/partsettingscolors.cpp \
+    ui/forms/partials/settings/partsettingsconsole.cpp \
+    ui/forms/partials/settings/partsettingsjogging.cpp \
+    ui/forms/partials/settings/partsettingssender.cpp \
+    ui/forms/partials/settings/partsettingsshortcuts.cpp \
+    ui/forms/partials/settings/partsettingsvisualizer.cpp \
+    ui/forms/frmgrblconfigurator.cpp \
+    ui/forms/frmmain.cpp \
+    ui/forms/frmsettings.cpp \
+    ui/forms/frmabout.cpp \
     drawers/gcodedrawer.cpp \
     drawers/heightmapborderdrawer.cpp \
     drawers/heightmapgriddrawer.cpp \
@@ -141,20 +141,20 @@ SOURCES += main.cpp\
     gcode/gcodeexporter.cpp \
     gcode/gcodeloader.cpp \
     gcode/gcodethreadedloader.cpp \
-    heightmap.cpp \
-    machine/machineconfiguration.cpp \
-    module/camera/camera.cpp \
+    modules/heightmap/heightmap.cpp \
+    core/machine/machineconfiguration.cpp \
+    modules/camera/camera.cpp \
     # module/camera/qvideoframeconversionhelper.cpp \
     # module/camera/videosurface.cpp \
     # module/camera/viewfinder.cpp \
-    module/camera/cameraframeprocessor.cpp \
-    module/pendant/pendant.cpp \
-    parser/arcproperties.cpp \
-    parser/gcodeparser.cpp \
-    parser/gcodepreprocessorutils.cpp \
-    parser/gcodeviewparser.cpp \
-    parser/linesegment.cpp \
-    parser/pointsegment.cpp \
+    modules/camera/cameraframeprocessor.cpp \
+    modules/pendant/pendant.cpp \
+    core/gcode/parser/arcproperties.cpp \
+    core/gcode/parser/gcodeparser.cpp \
+    core/gcode/parser/gcodepreprocessorutils.cpp \
+    core/gcode/parser/gcodeviewparser.cpp \
+    core/gcode/parser/linesegment.cpp \
+    core/gcode/parser/pointsegment.cpp \
     state_behaviour/alarmbehavior.cpp \
     state_behaviour/checkmodebehavior.cpp \
     state_behaviour/homingbehavior.cpp \
@@ -180,73 +180,73 @@ SOURCES += main.cpp\
     # state_behaviour/staterunning.cpp \
     # state_behaviour/statetoolchange.cpp \
     state_behaviour/toolchangebehavior.cpp \
-    tables/gcodetablemodel.cpp \
-    tables/heightmaptablemodel.cpp \
+    ui/tables/gcodetablemodel.cpp \
+    ui/tables/heightmaptablemodel.cpp \
     utils/utils.cpp \
-    widgets/combobox.cpp \
-    widgets/comboboxkey.cpp \
-    widgets/glcontainer.cpp \
-    widgets/glframebuffer.cpp \
-    widgets/glpalette.cpp \
-    widgets/glwidget.cpp \
+    ui/widgets/combobox.cpp \
+    ui/widgets/comboboxkey.cpp \
+    ui/widgets/glcontainer.cpp \
+    ui/widgets/glframebuffer.cpp \
+    ui/widgets/glpalette.cpp \
+    ui/widgets/glwidget.cpp \
     drawers/selectiondrawer.cpp \
     scripting/scriptvars.cpp \
-    widgets/dropwidget.cpp \
-    widgets/glzminmax.cpp \
-    widgets/qpushbuttonwithmenu.cpp
+    ui/widgets/dropwidget.cpp \
+    ui/widgets/glzminmax.cpp \
+    ui/widgets/qpushbuttonwithmenu.cpp
 
-HEADERS  += frmmain.h \
-    communicator.h \
-    config/configuration.h \
-    config/implementations.h \
-    config/module/configurationconnection.h \
-    config/module/configurationconsole.h \
-    config/module/configurationheightmap.h \
-    config/module/configurationjogging.h \
-    config/module/configurationmachine.h \
-    config/module/configurationmodule.h \
-    config/module/configurationparser.h \
-    config/module/configurationsender.h \
-    config/module/configurationui.h \
-    config/module/configurationvisualizer.h \
-    config/persistence/json/jsonpersister.h \
-    config/persistence/json/jsonprovider.h \
-    config/persistence/persister.h \
-    config/persistence/provider.h \
-    config/persistence/ini/inipersister.h \
-    config/persistence/ini/iniprovider.h \
-    config/persistence/xml/xmlpersister.h \
-    config/persistence/xml/xmlprovider.h \
-    config/registry.h \
-    connection/connection.h \
-    connection/connectionmanager.h \
-    connection/rawtcpconnection.h \
-    connection/serialconnection.h \
-    connection/virtualgrblconnection.h \
-    connection/virtualucncconnection.h \
+HEADERS  += ui/forms/frmmain.h \
+    core/communicator/communicator.h \
+    core/config/configuration.h \
+    core/config/implementations.h \
+    core/config/module/configurationconnection.h \
+    core/config/module/configurationconsole.h \
+    core/config/module/configurationheightmap.h \
+    core/config/module/configurationjogging.h \
+    core/config/module/configurationmachine.h \
+    core/config/module/configurationmodule.h \
+    core/config/module/configurationparser.h \
+    core/config/module/configurationsender.h \
+    core/config/module/configurationui.h \
+    core/config/module/configurationvisualizer.h \
+    core/config/persistence/json/jsonpersister.h \
+    core/config/persistence/json/jsonprovider.h \
+    core/config/persistence/persister.h \
+    core/config/persistence/provider.h \
+    core/config/persistence/ini/inipersister.h \
+    core/config/persistence/ini/iniprovider.h \
+    core/config/persistence/xml/xmlpersister.h \
+    core/config/persistence/xml/xmlprovider.h \
+    core/config/registry.h \
+    io/connection/connection.h \
+    io/connection/connectionmanager.h \
+    io/connection/rawtcpconnection.h \
+    io/connection/serialconnection.h \
+    io/connection/virtualgrblconnection.h \
+    io/connection/virtualucncconnection.h \
     drawers/cube.h \
     drawers/cubedrawer.h \
     drawers/cursordrawer.h \
     drawers/tablesurfacedrawer.h \
     drawers/vertexdataexporter.h \
-    form_partial/main/partmainconsole.h \
-    form_partial/main/partmaincontrol.h \
-    form_partial/main/partmainheightmap.h \
-    form_partial/main/partmainjog.h \
-    form_partial/main/partmainoverride.h \
-    form_partial/main/partmainspindle.h \
-    form_partial/main/partmainstate.h \
-    form_partial/main/partmainstatelcd.h \
-    form_partial/main/partmainvirtualsettings.h \
-    form_partial/settings/partsettingscolors.h \
-    form_partial/settings/partsettingsconsole.h \
-    form_partial/settings/partsettingsjogging.h \
-    form_partial/settings/partsettingssender.h \
-    form_partial/settings/partsettingsshortcuts.h \
-    form_partial/settings/partsettingsvisualizer.h \
-    frmgrblconfigurator.h \
-    frmsettings.h \
-    frmabout.h \
+    ui/forms/partials/main/partmainconsole.h \
+    ui/forms/partials/main/partmaincontrol.h \
+    ui/forms/partials/main/partmainheightmap.h \
+    ui/forms/partials/main/partmainjog.h \
+    ui/forms/partials/main/partmainoverride.h \
+    ui/forms/partials/main/partmainspindle.h \
+    ui/forms/partials/main/partmainstate.h \
+    ui/forms/partials/main/partmainstatelcd.h \
+    ui/forms/partials/main/partmainvirtualsettings.h \
+    ui/forms/partials/settings/partsettingscolors.h \
+    ui/forms/partials/settings/partsettingsconsole.h \
+    ui/forms/partials/settings/partsettingsjogging.h \
+    ui/forms/partials/settings/partsettingssender.h \
+    ui/forms/partials/settings/partsettingsshortcuts.h \
+    ui/forms/partials/settings/partsettingsvisualizer.h \
+    ui/forms/frmgrblconfigurator.h \
+    ui/forms/frmsettings.h \
+    ui/forms/frmabout.h \
     drawers/gcodedrawer.h \
     drawers/heightmapborderdrawer.h \
     drawers/heightmapgriddrawer.h \
@@ -259,21 +259,21 @@ HEADERS  += frmmain.h \
     gcode/gcodeexporter.h \
     gcode/gcodeloader.h \
     gcode/gcodethreadedloader.h \
-    globals.h \
-    heightmap.h \
+    core/globals.h \
+    modules/heightmap/heightmap.h \
     machine/machineconfiguration.h \
-    module/camera/camera.h \
+    modules/camera/camera.h \
     # module/camera/qvideoframeconversionhelper.h \
     # module/camera/videosurface.h \
     # module/camera/viewfinder.h \
-    module/camera/cameraframeprocessor.h \
-    module/pendant/pendant.h \
-    parser/arcproperties.h \
-    parser/gcodeparser.h \
-    parser/gcodepreprocessorutils.h \
-    parser/gcodeviewparser.h \
-    parser/linesegment.h \
-    parser/pointsegment.h \
+    modules/camera/cameraframeprocessor.h \
+    modules/pendant/pendant.h \
+    core/gcode/parser/arcproperties.h \
+    core/gcode/parser/gcodeparser.h \
+    core/gcode/parser/gcodepreprocessorutils.h \
+    core/gcode/parser/gcodeviewparser.h \
+    core/gcode/parser/linesegment.h \
+    core/gcode/parser/pointsegment.h \
     state_behaviour/alarmbehavior.h \
     state_behaviour/behaviors.h \
     state_behaviour/checkmodebehavior.h \
@@ -301,53 +301,53 @@ HEADERS  += frmmain.h \
     state_behaviour/states.h \
     state_behaviour/statetoolchange.h \
     state_behaviour/toolchangebehavior.h \
-    tables/gcodetablemodel.h \
-    tables/heightmaptablemodel.h \
+    ui/tables/gcodetablemodel.h \
+    ui/tables/heightmaptablemodel.h \
     utils.h \
     utils/interpolation.h \
     utils/utils.h \
     utils/validators.h \
-    widgets/combobox.h \
-    widgets/comboboxkey.h \
-    widgets/glcontainer.h \
-    widgets/glframebuffer.h \
-    widgets/glpalette.h \
-    widgets/glwidget.h \
+    ui/widgets/combobox.h \
+    ui/widgets/comboboxkey.h \
+    ui/widgets/glcontainer.h \
+    ui/widgets/glframebuffer.h \
+    ui/widgets/glpalette.h \
+    ui/widgets/glwidget.h \
     drawers/selectiondrawer.h \
     scripting/scriptvars.h \
-    widgets/dropwidget.h \
-    widgets/glzminmax.h \
-    widgets/qpushbuttonwithmenu.h
+    ui/widgets/dropwidget.h \
+    ui/widgets/glzminmax.h \
+    ui/widgets/qpushbuttonwithmenu.h
 
-FORMS    += frmmain.ui \
-    form_partial/main/partmainconsole.ui \
-    form_partial/main/partmaincontrol.ui \
-    form_partial/main/partmainheightmap.ui \
-    form_partial/main/partmainjog.ui \
-    form_partial/main/partmainoverride.ui \
-    form_partial/main/partmainspindle.ui \
-    form_partial/main/partmainstate.ui \
-    form_partial/main/partmainstatelcd.ui \
-    form_partial/main/partmainvirtualsettings.ui \
-    form_partial/settings/partsettingscolors.ui \
-    form_partial/settings/partsettingsconsole.ui \
-    form_partial/settings/partsettingsjogging.ui \
-    form_partial/settings/partsettingssender.ui \
-    form_partial/settings/partsettingsshortcuts.ui \
-    form_partial/settings/partsettingsvisualizer.ui \
-    frmdebug.ui \
-    frmgrblconfigurator.ui \
-    frmsettings.ui \
-    frmabout.ui \
-    module/camera/camera.ui
+FORMS    += ui/forms/frmmain.ui \
+    ui/forms/partials/main/partmainconsole.ui \
+    ui/forms/partials/main/partmaincontrol.ui \
+    ui/forms/partials/main/partmainheightmap.ui \
+    ui/forms/partials/main/partmainjog.ui \
+    ui/forms/partials/main/partmainoverride.ui \
+    ui/forms/partials/main/partmainspindle.ui \
+    ui/forms/partials/main/partmainstate.ui \
+    ui/forms/partials/main/partmainstatelcd.ui \
+    ui/forms/partials/main/partmainvirtualsettings.ui \
+    ui/forms/partials/settings/partsettingscolors.ui \
+    ui/forms/partials/settings/partsettingsconsole.ui \
+    ui/forms/partials/settings/partsettingsjogging.ui \
+    ui/forms/partials/settings/partsettingssender.ui \
+    ui/forms/partials/settings/partsettingsshortcuts.ui \
+    ui/forms/partials/settings/partsettingsvisualizer.ui \
+    ui/forms/frmdebug.ui \
+    ui/forms/frmgrblconfigurator.ui \
+    ui/forms/frmsettings.ui \
+    ui/forms/frmabout.ui \
+    modules/camera/camera.ui
 
 DEFINES += _USE_MATH_DEFINES
 
 RESOURCES += \
-    fonts.qrc \
-    shaders.qrc \
-    images.qrc \
-    stylesheets.qrc
+    ui/resources/fonts.qrc \
+    ui/resources/shaders.qrc \
+    ui/resources/images.qrc \
+    ui/resources/stylesheets.qrc
 
 INCLUDEPATH += ../designerplugins/customwidgetsplugin
 INCLUDEPATH += ../vendor/PropertyEditor

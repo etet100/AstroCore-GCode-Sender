@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../shaders/base_fragment.glsl</file>
+        <file>../shaders/base_vertex.glsl</file>
+        <file>../shaders/cube_fragment.glsl</file>
+        <file>../shaders/cube_vertex.glsl</file>
+        <file>../shaders/2dcopy_vertex.glsl</file>
+        <file>../shaders/2dcopy_fragment.glsl</file>
+        <file>../shaders/gcode_fragment.glsl</file>
+        <file>../shaders/gcode_vertex.glsl</file>
+    </qresource>
+</RCC>
