@@ -10,14 +10,14 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Remove broken WindowsApps python.exe from PATH
-        shell: pwsh
-        run: |
-          Write-Host "Cleaning PATH..."
-          $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
-          $newPath = ($paths -join ';')
-          Write-Host "New PATH set without WindowsApps"
-          [Environment]::SetEnvironmentVariable('PATH', $newPath, 'Process')
+      # - name: Remove broken WindowsApps python.exe from PATH
+      #   shell: pwsh
+      #   run: |
+      #     Write-Host "Cleaning PATH..."
+      #     $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
+      #     $newPath = ($paths -join ';')
+      #     Write-Host "New PATH set without WindowsApps"
+      #     [Environment]::SetEnvironmentVariable('PATH', $newPath, 'Process')
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -80,9 +80,8 @@ jobs:
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
-          DISABLE_BUILD_NUMBER_INCREMENT: "1"
         run: |
-            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
 
