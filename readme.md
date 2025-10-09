@@ -80,7 +80,64 @@ The original Candle was built in a way that was not transparent and difficult to
 * Much easier addition of new features
 * Easier testing
 
-![screenshot](/screenshots/arch1.png)
+```mermaid
+flowchart TD
+    %% Sekcja: machine
+    PhysicalMachine["Physical machine"]
+
+    Serial["Serial"]
+    RawTCP["Raw TCP"]
+    Virtual["Virtual"]
+
+    ConnectionManager["Connection manager"]
+    Communicator["Communicator"]
+    Jogger["Jogger"]
+    Streamer["Streamer"]
+
+    %% Sekcja: interfejsy użytkownika
+    Joystick["Joystick Pendant"]:::blue
+    UI["User interface"]:::blue
+
+    %% Sekcja: parser
+    Parser["Parser"]
+    FileParser["File parser"]
+    BufferParser["Buffer parser"]
+
+    %% Połączenia komunikacyjne
+    PhysicalMachine <--> Serial
+    PhysicalMachine <--> RawTCP
+    PhysicalMachine <--> Virtual
+
+    Serial --> ConnectionManager
+    RawTCP --> ConnectionManager
+    Virtual --> ConnectionManager
+
+    ConnectionManager <--> Communicator
+
+    Communicator --> Jogger
+    Communicator --> Streamer
+    Jogger --> Communicator
+    Streamer --> Communicator
+
+    %% Połączenia z UI i joystickiem
+    Joystick --> Jogger
+    Joystick --> Streamer
+    Joystick --> UI
+
+    UI --> Jogger
+    UI --> Streamer
+    UI --> Parser
+
+    Streamer --> Parser
+
+    %% Połączenia parsera
+    Parser --> FileParser
+    Parser --> BufferParser
+
+    %% Style
+    classDef purple fill:#e8d9f1,stroke:#800080,stroke-width:1px;
+    classDef blue fill:#cfe2ff,stroke:#0033cc,stroke-width:1px;
+```
 
 Application states:
 -------------------
@@ -158,7 +215,35 @@ Configurations:
 
 Another module begging for a rewrite is the configuration storage mechanism. Of course, it will be detached into a separate module. Settings sets will be wrapped in separate classes. The reading and writing of fields will be partially automated. Persistence layer will be separated from the configuration logic. The configuration will be stored in a local file or in a cloud, for example Dropbox or Google Drive.
 
-![screenshot](/screenshots/arch2.png)
+```mermaid
+flowchart TB
+
+    %% Główne bloki
+    Modules["Modules"]:::purple
+    Configurator["Configurator"]:::blue
+    Persistence["Persistence"]
+
+    ConfigConnection["ConfigurationConnection"]
+    ConfigSender["ConfigurationSender"]
+    ConfigVisualizer["ConfigurationVisualizer"]
+    ConfigOther["..."]
+
+    %% Połączenia
+    Modules <--> Configurator
+    Configurator <--> Persistence
+
+    Configurator --> ConfigConnection
+    Configurator --> ConfigSender
+    Configurator --> ConfigVisualizer
+    Configurator --> ConfigOther
+
+    %% Układ dolnych elementów w jednym wierszu
+    ConfigConnection --- ConfigSender --- ConfigVisualizer --- ConfigOther
+
+    %% Style
+    classDef purple fill:#e8d9f1,stroke:#800080,stroke-width:1px;
+    classDef blue fill:#cfe2ff,stroke:#0033cc,stroke-width:1px;
+```
 
 How to build (Windows, Qt, MinGW/LLVM)
 -------------------
