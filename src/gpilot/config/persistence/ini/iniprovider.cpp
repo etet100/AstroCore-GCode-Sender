@@ -3,7 +3,7 @@
 #include "qguiapplication.h"
 #include <QDebug>
 
-IniProvider::IniProvider(QObject *parent) : Provider(parent)
+IniProvider::IniProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }
@@ -14,9 +14,9 @@ bool IniProvider::open()
         return false;
     }
 
-    qDebug() << "Open configuration file: " << qApp->applicationDirPath() + "/" + CONFIGURATION_FILE;
+    qDebug() << "Open configuration file: " << m_filePath;
 
-    m_settings = new QSettings(qApp->applicationDirPath() + "/" + CONFIGURATION_FILE, QSettings::IniFormat);
+    m_settings = new QSettings(m_filePath, QSettings::IniFormat);
     //m_settings->setIniCodec("UTF-8");
 
     return true;

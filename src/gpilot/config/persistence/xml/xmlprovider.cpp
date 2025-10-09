@@ -3,7 +3,7 @@
 #include "qguiapplication.h"
 #include <QDebug>
 
-XmlProvider::XmlProvider(QObject *parent) : Provider(parent)
+XmlProvider::XmlProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }
@@ -14,7 +14,7 @@ bool XmlProvider::open()
         return false;
     }
 
-    m_settings = new QSettings(qApp->applicationDirPath() + "/" + CONFIGURATION_FILE, QSettings::CustomFormat1);
+    m_settings = new QSettings(m_filePath, QSettings::CustomFormat1);
 
     return true;
 }

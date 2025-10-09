@@ -4,7 +4,7 @@
 #include <QMetaProperty>
 #include <QDebug>
 
-Configuration::Configuration(QObject *parent)
+Configuration::Configuration(QObject *parent, Persister *persister, Provider *provider)
     : QObject(parent),
     m_sender(parent),
     m_connection(parent),
@@ -15,8 +15,8 @@ Configuration::Configuration(QObject *parent)
     m_machine(parent),
     m_heightmap(parent),
     m_jogging(parent),
-    m_persister(parent),
-    m_provider(parent)
+    m_persister(persister),
+    m_provider(provider)
 {
     m_modules << &m_sender
         << &m_connection
@@ -43,29 +43,29 @@ void Configuration::save()
 {
     qDebug() << "Save configurations";
 
-    m_persister.open();
+    m_persister->open();
     for (ConfigurationModule* module : std::as_const(m_modules)) {
         saveModule(module);
     }
-    m_persister.close();
+    m_persister->close();
 }
 
 bool Configuration::persistByType(QString module, QString name, QVariant value, QString type)
 {
     if (type == "QString") {
-        m_persister.setString(module, name, value.toString());
+        m_persister->setString(module, name, value.toString());
     } else if (type == "int") {
-        m_persister.setInt(module, name, value.toInt());
+        m_persister->setInt(module, name, value.toInt());
     } else if (type == "bool") {
-        m_persister.setBool(module, name, value.toBool());
+        m_persister->setBool(module, name, value.toBool());
     } else if (type == "double" || type == "float") {
-        m_persister.setDouble(module, name, value.toDouble());
+        m_persister->setDouble(module, name, value.toDouble());
     } else if (type == "QStringList") {
-        m_persister.setStringList(module, name, value.toStringList());
+        m_persister->setStringList(module, name, value.toStringList());
     } else if (type == "QVariantMap") {
-        m_persister.setVariantMap(module, name, value.toMap());
+        m_persister->setVariantMap(module, name, value.toMap());
     } else if (type == "QVariant") {
-        m_persister.setVariant(module, name, value);
+        m_persister->setVariant(module, name, value);
     } else {
         return false;
     }
@@ -144,7 +144,7 @@ void Configuration::setModuleDefaults(ConfigurationModule *module)
         } else if (type == "double" || type == "float") {
             prop.write(module, defaults[prop.name()].toDouble());
         } else if (type == "QStringList") {
-            //m_persister.setStringList(module, name, value.toStringList());
+            //m_persister->setStringList(module, name, value.toStringList());
         } else if (type == "QVariantMap") {
             prop.write(module, defaults[prop.name()].toMap());
         } else if (type == "QVariant") {
@@ -157,11 +157,11 @@ void Configuration::load()
 {
     qInfo() << "Load configurations";
 
-    m_provider.open();
+    m_provider->open();
     for (ConfigurationModule* module : std::as_const(m_modules)) {
         loadModule(module);
     }
-    m_provider.close();
+    m_provider->close();
 
     qDebug() << "Configurations loaded";
 }
@@ -191,24 +191,24 @@ void Configuration::loadModule(ConfigurationModule *module)
         QString type(prop.typeName());
         QString name(prop.name());
         if (type == "QString") {
-            prop.write(module, m_provider.getString(module->getSectionName(), name, defaults[prop.name()].toString()));
+            prop.write(module, m_provider->getString(module->getSectionName(), name, defaults[prop.name()].toString()));
         } else if (type == "int") {
-            prop.write(module, m_provider.getInt(module->getSectionName(), name, defaults[prop.name()].toInt()));
+            prop.write(module, m_provider->getInt(module->getSectionName(), name, defaults[prop.name()].toInt()));
         } else if (type == "bool") {
-            prop.write(module, m_provider.getBool(module->getSectionName(), name, defaults[prop.name()].toBool()));
+            prop.write(module, m_provider->getBool(module->getSectionName(), name, defaults[prop.name()].toBool()));
         } else if (type == "double" || type == "float") {
-            prop.write(module, m_provider.getDouble(module->getSectionName(), name, defaults[prop.name()].toDouble()));
+            prop.write(module, m_provider->getDouble(module->getSectionName(), name, defaults[prop.name()].toDouble()));
         } else if (type == "QStringList") {
-            prop.write(module, m_provider.getStringList(module->getSectionName(), name, defaults[prop.name()].toStringList()));
+            prop.write(module, m_provider->getStringList(module->getSectionName(), name, defaults[prop.name()].toStringList()));
         } else if (prop.isEnumType()) {
-            QString value = m_provider.getString(module->getSectionName(), name, defaults[prop.name()].toString());
+            QString value = m_provider->getString(module->getSectionName(), name, defaults[prop.name()].toString());
             QStringList typeNameElements = QString(prop.typeName()).split("::");
             int indexOfEnum = metaObj->indexOfEnumerator(typeNameElements.last().toStdString().c_str());
             if (indexOfEnum == -1) {
                 qDebug() << "Enum not found" << prop.typeName() << prop.name() << "; trying to find in registry..";
                 auto registryItem = ConfigurationRegistry::getInfo(prop.typeName());
                 if (registryItem.type == ConfigurationRegistry::Type::Enum) {
-                    prop.write(module, m_provider.getInt(module->getSectionName(), QString(prop.name()), defaults[prop.name()].toInt()));
+                    prop.write(module, m_provider->getInt(module->getSectionName(), QString(prop.name()), defaults[prop.name()].toInt()));
                 } else {
                     qDebug() << "Enum not found in registry" << prop.typeName() << prop.name();
                 }
@@ -240,7 +240,7 @@ void Configuration::loadModule(ConfigurationModule *module)
                     break;
                 case ConfigurationRegistry::Type::Value: {
                     QVariant denormalized = registryItem.denormalizeValue(
-                        m_provider.getVariant(module->getSectionName(), prop.name(), defaults[prop.name()])
+                        m_provider->getVariant(module->getSectionName(), prop.name(), defaults[prop.name()])
                     );
 
                     prop.write(module, denormalized);
@@ -249,7 +249,7 @@ void Configuration::loadModule(ConfigurationModule *module)
                 }
                 case ConfigurationRegistry::Type::Struct: {
                     QVariant denormalized = registryItem.denormalizeStruct(
-                        m_provider.getVariantMap(module->getSectionName(), prop.name(), defaults[prop.name()].toMap())
+                        m_provider->getVariantMap(module->getSectionName(), prop.name(), defaults[prop.name()].toMap())
                     );
 
                     prop.write(module, denormalized);
@@ -257,7 +257,7 @@ void Configuration::loadModule(ConfigurationModule *module)
                     break;
                 }
                 case ConfigurationRegistry::Type::Enum:
-                    prop.write(module, m_provider.getInt(module->getSectionName(), QString(prop.name()), defaults[prop.name()].toInt()));
+                    prop.write(module, m_provider->getInt(module->getSectionName(), QString(prop.name()), defaults[prop.name()].toInt()));
 
                     break;
             }

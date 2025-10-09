@@ -8,7 +8,7 @@
 class IniProvider : public Provider
 {
     public:
-        IniProvider(QObject *parent);
+        IniProvider(QObject *parent, const QString &filePath);
         bool open() override;
         void close() override;
         int getInt(const QString group, const QString key, int defaultValue) override;
@@ -21,6 +21,7 @@ class IniProvider : public Provider
 
     private:
         QSettings *m_settings;
+        QString m_filePath;
 };
 
 #endif // INI_CONFIG_PROVIDER_H

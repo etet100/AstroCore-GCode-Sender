@@ -1,14 +1,16 @@
-#ifndef INI_CONFIG_PERSISTER_H
-#define INI_CONFIG_PERSISTER_H
+#ifndef JSON_CONFIG_PERSISTER_H
+#define JSON_CONFIG_PERSISTER_H
 
-#include <QSettings>
 #include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFile>
 #include "../persister.h"
 
-class IniPersister : public Persister
+class JsonPersister : public Persister
 {
     public:
-        IniPersister(QObject *parent, const QString &filePath);
+        JsonPersister(QObject *parent, const QString &filePath);
         bool open() override;
         void close() override;
         bool setInt(const QString group, const QString key, const int value) override;
@@ -20,8 +22,10 @@ class IniPersister : public Persister
         bool setVariant(const QString group, const QString key, const QVariant value) override;
 
     private:
-        QSettings *m_settings;
+        QJsonObject m_rootObject;
         QString m_filePath;
+        bool saveDocument();
+        QJsonObject& getOrCreateGroup(const QString& group);
 };
 
-#endif // INI_CONFIG_PERSISTER_H
+#endif // JSON_CONFIG_PERSISTER_H

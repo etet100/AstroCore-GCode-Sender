@@ -1,14 +1,16 @@
-#ifndef XML_CONFIG_PROVIDER_H
-#define XML_CONFIG_PROVIDER_H
+#ifndef JSON_CONFIG_PROVIDER_H
+#define JSON_CONFIG_PROVIDER_H
 
-#include <QSettings>
 #include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFile>
 #include "../provider.h"
 
-class XmlProvider : public Provider
+class JsonProvider : public Provider
 {
-   public:
-        XmlProvider(QObject *parent, const QString &filePath);
+    public:
+        JsonProvider(QObject *parent, const QString &filePath);
         bool open() override;
         void close() override;
         int getInt(const QString group, const QString key, int defaultValue) override;
@@ -16,10 +18,13 @@ class XmlProvider : public Provider
         QString getString(const QString group, const QString key, QString defaultValue) override;
         double getDouble(const QString group, const QString key, double defaultValue) override;
         QVariant getVariant(const QString group, const QString key, QVariant defaultValue) override;
+        QStringList getStringList(const QString group, const QString key, QStringList defaultValue) override;
+        QVariantMap getVariantMap(const QString group, const QString key, QVariantMap defaultValue) override;
 
     private:
-        QSettings *m_settings;
+        QJsonObject m_rootObject;
         QString m_filePath;
+        QJsonObject getGroup(const QString& group) const;
 };
 
-#endif // XML_CONFIG_PROVIDER_H
+#endif // JSON_CONFIG_PROVIDER_H

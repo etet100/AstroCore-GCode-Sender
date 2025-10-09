@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <QJsonObject>
 
-IniPersister::IniPersister(QObject *parent) : Persister(parent)
+IniPersister::IniPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }
@@ -16,7 +16,7 @@ bool IniPersister::open()
         return false;
     }
 
-    m_settings = new QSettings(qApp->applicationDirPath() + "/" + CONFIGURATION_FILE, QSettings::IniFormat);
+    m_settings = new QSettings(m_filePath, QSettings::IniFormat);
     //m_settings->setIniCodec("UTF-8");
 
     return true;

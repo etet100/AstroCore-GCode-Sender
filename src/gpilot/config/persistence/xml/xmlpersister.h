@@ -8,7 +8,7 @@
 class XmlPersister : public Persister
 {
     public:
-        XmlPersister(QObject *parent);
+        XmlPersister(QObject *parent, const QString &filePath);
         bool open() override;
         void close() override;
         bool setInt(const QString group, const QString key, const int value) override;
@@ -18,6 +18,7 @@ class XmlPersister : public Persister
 
     private:
         QSettings *m_settings;
+        QString m_filePath;
 };
 
 #endif // XML_CONFIG_PERSISTER_H

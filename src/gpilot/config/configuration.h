@@ -11,8 +11,8 @@
 #include "module/configurationmachine.h"
 #include "module/configurationheightmap.h"
 #include "module/configurationjogging.h"
-#include "persistence/ini/inipersister.h"
-#include "persistence/ini/iniprovider.h"
+#include "persistence/persister.h"
+#include "persistence/provider.h"
 #include <QObject>
 
 class Configuration : public QObject
@@ -20,7 +20,7 @@ class Configuration : public QObject
     Q_OBJECT;
 
     public:
-        Configuration(QObject *parent);
+        Configuration(QObject *parent, Persister *persister, Provider *provider);
         QString language();
         void setLanguage(QString);
         void save();
@@ -51,8 +51,8 @@ class Configuration : public QObject
         ConfigurationJogging m_jogging;
 
         // Read/Write
-        IniPersister m_persister;
-        IniProvider m_provider;
+        Persister* m_persister;
+        Provider* m_provider;
 
         void saveModule(ConfigurationModule*);
         void setModuleDefaults(ConfigurationModule*);

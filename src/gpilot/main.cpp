@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "frmmain.h"
 #include "phantomstyle/src/phantom/phantomstyle.h"
+#include "config/implementations.h"
 
 void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
@@ -112,6 +113,9 @@ int main(int argc, char *argv[])
     QCommandLineOption logToFileOption(QStringList{"l", "log-to-file"}, "Log debug info to `GPilot.log`.");
     parser.addOption(logToFileOption);
 
+    QCommandLineOption configTypeOption(QStringList{"c", "config-type"}, "Set config type (ini, json).", "type", "ini");
+    parser.addOption(configTypeOption);
+
     parser.process(app);
 
     if (parser.isSet(logToFileOption)) {
@@ -151,7 +155,18 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    Configuration configuration(nullptr);
+    Provider *provider = nullptr;
+    Persister *persister = nullptr;
+    QString configFilePath = app.applicationDirPath() + "/config.";
+    if (parser.value(configTypeOption) == "json") {
+        provider = new JsonProvider(nullptr, configFilePath + "json");
+        persister = new JsonPersister(nullptr, configFilePath + "json");
+    } else {
+        provider = new IniProvider(nullptr, configFilePath + "ini");
+        persister = new IniPersister(nullptr, configFilePath + "ini");
+    }
+
+    Configuration configuration(nullptr, persister, provider);
     configuration.load();
 
     setTheme(app, configuration.uiModule().darkTheme());

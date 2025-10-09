@@ -96,6 +96,8 @@ SOURCES += main.cpp\
     config/module/configurationvisualizer.cpp \
     config/persistence/ini/inipersister.cpp \
     config/persistence/ini/iniprovider.cpp \
+    config/persistence/json/jsonpersister.cpp \
+    config/persistence/json/jsonprovider.cpp \
     config/persistence/xml/xmlpersister.cpp \
     config/persistence/xml/xmlprovider.cpp \
     connection/connection.cpp \
@@ -196,6 +198,7 @@ SOURCES += main.cpp\
 HEADERS  += frmmain.h \
     communicator.h \
     config/configuration.h \
+    config/implementations.h \
     config/module/configurationconnection.h \
     config/module/configurationconsole.h \
     config/module/configurationheightmap.h \
@@ -206,6 +209,8 @@ HEADERS  += frmmain.h \
     config/module/configurationsender.h \
     config/module/configurationui.h \
     config/module/configurationvisualizer.h \
+    config/persistence/json/jsonpersister.h \
+    config/persistence/json/jsonprovider.h \
     config/persistence/persister.h \
     config/persistence/provider.h \
     config/persistence/ini/inipersister.h \

@@ -2,7 +2,7 @@
 #include "../../../globals.h"
 #include "qguiapplication.h"
 
-XmlPersister::XmlPersister(QObject *parent) : Persister(parent)
+XmlPersister::XmlPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }
@@ -13,7 +13,7 @@ bool XmlPersister::open()
         return false;
     }
 
-    m_settings = new QSettings(qApp->applicationDirPath() + "/" + CONFIGURATION_FILE, QSettings::CustomFormat1);
+    m_settings = new QSettings(m_filePath, QSettings::CustomFormat1);
 
     return true;
 }
