@@ -5,7 +5,7 @@
 #ifndef GCODEEXPORTER_H
 #define GCODEEXPORTER_H
 
-#include "gcode.h"
+#include "core/gcode/gcode.h"
 
 class GCodeExporter
 {

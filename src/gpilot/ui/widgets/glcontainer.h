@@ -6,7 +6,7 @@
 #include <QOpenGLWindow>
 #endif
 #include "glwidget.h"
-#include "drawers/shaderdrawable.h"
+#include "ui/drawers/shaderdrawable.h"
 
 #ifdef USE_GLWINDOW
 class GLContainer : public QWidget

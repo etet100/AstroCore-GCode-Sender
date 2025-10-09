@@ -5,7 +5,7 @@
 #ifndef GCODELOADER_H
 #define GCODELOADER_H
 
-#include "gcode.h"
+#include "core/gcode/gcode.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include "core/config/module/configurationparser.h"
 #include <QFile>

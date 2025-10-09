@@ -2,7 +2,7 @@
 #define COMMUNICATOR_H
 
 #include "core/globals.h"
-#include "gcode/gcode.h"
+#include "core/gcode/gcode.h"
 #include "core/config/configuration.h"
 #include "io/connection/connection.h"
 #include "scripting/scriptvars.h"

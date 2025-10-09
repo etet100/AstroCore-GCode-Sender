@@ -33,8 +33,8 @@
 #include "ui_partmainoverride.h"
 #include "ui/widgets/widgetmimedata.h"
 #include "io/connection/connectionmanager.h"
-#include "drawers/vertexdataexporter.h"
-#include "gcode/gcodethreadedloader.h"
+#include "ui/drawers/vertexdataexporter.h"
+#include "core/gcode/loader/gcodethreadedloader.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 

@@ -100,16 +100,17 @@ SOURCES += main.cpp\
     core/config/persistence/json/jsonprovider.cpp \
     core/config/persistence/xml/xmlpersister.cpp \
     core/config/persistence/xml/xmlprovider.cpp \
+    core/gcode/converter/converter.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
     io/connection/serialconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
-    drawers/cubedrawer.cpp \
-    drawers/cursordrawer.cpp \
-    drawers/tablesurfacedrawer.cpp \
-    drawers/vertexdataexporter.cpp \
+    ui/drawers/cubedrawer.cpp \
+    ui/drawers/cursordrawer.cpp \
+    ui/drawers/tablesurfacedrawer.cpp \
+    ui/drawers/vertexdataexporter.cpp \
     ui/forms/partials/main/partmainconsole.cpp \
     ui/forms/partials/main/partmaincontrol.cpp \
     ui/forms/partials/main/partmainheightmap.cpp \
@@ -129,18 +130,18 @@ SOURCES += main.cpp\
     ui/forms/frmmain.cpp \
     ui/forms/frmsettings.cpp \
     ui/forms/frmabout.cpp \
-    drawers/gcodedrawer.cpp \
-    drawers/heightmapborderdrawer.cpp \
-    drawers/heightmapgriddrawer.cpp \
-    drawers/heightmapinterpolationdrawer.cpp \
-    drawers/origindrawer.cpp \
-    drawers/shaderdrawable.cpp \
-    drawers/tooldrawer.cpp \
-    drawers/machineboundsdrawer.cpp \
-    gcode/gcode.cpp \
-    gcode/gcodeexporter.cpp \
-    gcode/gcodeloader.cpp \
-    gcode/gcodethreadedloader.cpp \
+    ui/drawers/gcodedrawer.cpp \
+    ui/drawers/heightmapborderdrawer.cpp \
+    ui/drawers/heightmapgriddrawer.cpp \
+    ui/drawers/heightmapinterpolationdrawer.cpp \
+    ui/drawers/origindrawer.cpp \
+    ui/drawers/shaderdrawable.cpp \
+    ui/drawers/tooldrawer.cpp \
+    ui/drawers/machineboundsdrawer.cpp \
+    core/gcode/gcode.cpp \
+    core/gcode/exporter/gcodeexporter.cpp \
+    core/gcode/loader/gcodeloader.cpp \
+    core/gcode/loader/gcodethreadedloader.cpp \
     modules/heightmap/heightmap.cpp \
     core/machine/machineconfiguration.cpp \
     modules/camera/camera.cpp \
@@ -189,7 +190,7 @@ SOURCES += main.cpp\
     ui/widgets/glframebuffer.cpp \
     ui/widgets/glpalette.cpp \
     ui/widgets/glwidget.cpp \
-    drawers/selectiondrawer.cpp \
+    ui/drawers/selectiondrawer.cpp \
     scripting/scriptvars.cpp \
     ui/widgets/dropwidget.cpp \
     ui/widgets/glzminmax.cpp \
@@ -218,17 +219,18 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/persistence/xml/xmlpersister.h \
     core/config/persistence/xml/xmlprovider.h \
     core/config/registry.h \
+    core/gcode/converter/converter.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
     io/connection/serialconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
-    drawers/cube.h \
-    drawers/cubedrawer.h \
-    drawers/cursordrawer.h \
-    drawers/tablesurfacedrawer.h \
-    drawers/vertexdataexporter.h \
+    ui/drawers/cube.h \
+    ui/drawers/cubedrawer.h \
+    ui/drawers/cursordrawer.h \
+    ui/drawers/tablesurfacedrawer.h \
+    ui/drawers/vertexdataexporter.h \
     ui/forms/partials/main/partmainconsole.h \
     ui/forms/partials/main/partmaincontrol.h \
     ui/forms/partials/main/partmainheightmap.h \
@@ -247,18 +249,18 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/frmgrblconfigurator.h \
     ui/forms/frmsettings.h \
     ui/forms/frmabout.h \
-    drawers/gcodedrawer.h \
-    drawers/heightmapborderdrawer.h \
-    drawers/heightmapgriddrawer.h \
-    drawers/heightmapinterpolationdrawer.h \
-    drawers/origindrawer.h \
-    drawers/shaderdrawable.h \
-    drawers/tooldrawer.h \
-    drawers/machineboundsdrawer.h \
-    gcode/gcode.h \
-    gcode/gcodeexporter.h \
-    gcode/gcodeloader.h \
-    gcode/gcodethreadedloader.h \
+    ui/drawers/gcodedrawer.h \
+    ui/drawers/heightmapborderdrawer.h \
+    ui/drawers/heightmapgriddrawer.h \
+    ui/drawers/heightmapinterpolationdrawer.h \
+    ui/drawers/origindrawer.h \
+    ui/drawers/shaderdrawable.h \
+    ui/drawers/tooldrawer.h \
+    ui/drawers/machineboundsdrawer.h \
+    core/gcode/gcode.h \
+    core/gcode/exporter/gcodeexporter.h \
+    core/gcode/loader/gcodeloader.h \
+    core/gcode/loader/gcodethreadedloader.h \
     core/globals.h \
     modules/heightmap/heightmap.h \
     core/machine/machineconfiguration.h \
@@ -313,7 +315,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/glframebuffer.h \
     ui/widgets/glpalette.h \
     ui/widgets/glwidget.h \
-    drawers/selectiondrawer.h \
+    ui/drawers/selectiondrawer.h \
     scripting/scriptvars.h \
     ui/widgets/dropwidget.h \
     ui/widgets/glzminmax.h \

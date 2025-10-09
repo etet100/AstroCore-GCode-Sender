@@ -14,8 +14,8 @@
 #include <QOpenGLFunctions_3_0>
 #include <QTimer>
 #include <QTime>
-#include "drawers/shaderdrawable.h"
-#include "drawers/cubedrawer.h"
+#include "ui/drawers/shaderdrawable.h"
+#include "ui/drawers/cubedrawer.h"
 #include "glpalette.h"
 #include "glzminmax.h"
 

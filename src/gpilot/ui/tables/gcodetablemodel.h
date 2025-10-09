@@ -5,7 +5,7 @@
 #ifndef GCODETABLEMODEL_H
 #define GCODETABLEMODEL_H
 
-#include "gcode/gcode.h"
+#include "core/gcode/gcode.h"
 #include <QAbstractTableModel>
 #include <QString>
 
