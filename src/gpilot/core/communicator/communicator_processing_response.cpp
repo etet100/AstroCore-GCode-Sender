@@ -1,7 +1,7 @@
 
-#include "globals.h"
-#include "communicator.h"
-#include "parser/gcodepreprocessorutils.h"
+#include "core/globals.h"
+#include "core/communicator/communicator.h"
+#include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>

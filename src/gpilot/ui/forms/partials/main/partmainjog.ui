@@ -397,7 +397,7 @@
   <customwidget>
    <class>ComboBoxKey</class>
    <extends>QComboBox</extends>
-   <header>widgets/comboboxkey.h</header>
+   <header>ui/widgets/comboboxkey.h</header>
   </customwidget>
  </customwidgets>
  <resources>

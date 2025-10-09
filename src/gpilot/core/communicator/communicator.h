@@ -1,12 +1,12 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
-#include "globals.h"
+#include "core/globals.h"
 #include "gcode/gcode.h"
-#include "config/configuration.h"
-#include "connection/connection.h"
+#include "core/config/configuration.h"
+#include "io/connection/connection.h"
 #include "scripting/scriptvars.h"
-#include "machine/machineconfiguration.h"
+#include "core/machine/machineconfiguration.h"
 #include "state_behaviour/behaviors.h"
 #include <QTimer>
 

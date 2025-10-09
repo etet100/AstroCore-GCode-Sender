@@ -20,19 +20,19 @@
 #include <QDockWidget>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "globals.h"
-#include "frmmain.h"
+#include "core/globals.h"
+#include "ui/forms/frmmain.h"
 #include "utils/utils.h"
-#include "form_partial/main/partmainjog.h"
-#include "form_partial/main/partmaincontrol.h"
-#include "form_partial/main/partmainvirtualsettings.h"
-#include "module/pendant/pendant.h"
-#include "module/camera/camera.h"
+#include "ui/forms/partials/main/partmainjog.h"
+#include "ui/forms/partials/main/partmaincontrol.h"
+#include "ui/forms/partials/main/partmainvirtualsettings.h"
+#include "modules/pendant/pendant.h"
+#include "modules/camera/camera.h"
 #include "ui_frmmain.h"
 #include "ui_frmsettings.h"
 #include "ui_partmainoverride.h"
-#include "widgets/widgetmimedata.h"
-#include "connection/connectionmanager.h"
+#include "ui/widgets/widgetmimedata.h"
+#include "io/connection/connectionmanager.h"
 #include "drawers/vertexdataexporter.h"
 #include "gcode/gcodethreadedloader.h"
 
@@ -265,7 +265,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     if (qApp->arguments().count() > 1 && Utils::isGCodeFile(qApp->arguments().last())) {
         loadFile(qApp->arguments().last());
     }
-    
+
     // Signals/slots
     connect(&m_timerConnection, SIGNAL(timeout()), this, SLOT(onTimerConnection()));
 
@@ -428,8 +428,8 @@ void frmMain::closeEvent(QCloseEvent *ce)
 
     if ((m_communicator->senderState() != SenderState::Stopped) &&
         QMessageBox::warning(this, this->windowTitle(), tr("File sending in progress. Terminate and exit?"),
-        QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) 
-    {    
+        QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+    {
         ce->ignore();
         m_heightmapMode = mode;
         return;
@@ -464,7 +464,7 @@ void frmMain::dragEnterEvent(QDragEnterEvent *dee)
 }
 
 void frmMain::dropEvent(QDropEvent *de)
-{    
+{
     QString fileName = de->mimeData()->urls().at(0).toLocalFile();
 
     if (!m_heightmapMode) {
@@ -516,7 +516,7 @@ QMenu *frmMain::createPopupMenu()
         if (a->text().contains("_spacer")) {
             a->setVisible(false);
         }
-    } 
+    }
 
     return menu;
 }
@@ -997,7 +997,7 @@ void frmMain::on_grpSpindle_toggled(bool checked)
 //         ui->grpSpindle->setTitle(tr("Spindle") + QString(tr(" (%1)")).arg(ui->slbSpindle->value()));
 //     }
     updateLayouts();
-    
+
     // ui->spindle->setVisible(checked);
 }
 
@@ -1726,7 +1726,7 @@ void frmMain::onTimerConnection()
 
 void frmMain::onTableInsertLine()
 {
-    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 || 
+    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) return;
 
     int row = ui->tblProgram->selectionModel()->selectedRows()[0].row();
@@ -1741,7 +1741,7 @@ void frmMain::onTableInsertLine()
 
 void frmMain::onTableDeleteLines()
 {
-    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 || 
+    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping) ||
         QMessageBox::warning(this, this->windowTitle(), tr("Delete lines?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return;
 
@@ -1820,7 +1820,7 @@ void frmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
         if (linePrevious < lineCurrent) qSwap(linePrevious, lineCurrent);
 
         QList<int> indexes;
-        for (int i = lineCurrent + 1; i <= linePrevious; i++) {            
+        for (int i = lineCurrent + 1; i <= linePrevious; i++) {
             foreach (int l, lineIndexes.at(i)) {
                 list[l].setIsHightlight(rowCurrent > rowPrevious);
                 indexes.append(l);
@@ -2150,8 +2150,8 @@ void frmMain::loadSettings()
     // ui->cboCommand->addItems(set.value("recentCommands", QStringList()).toStringList());
     // ui->cboCommand->setCurrentIndex(-1);
 
-    // Adjust docks width 
-    int w = qMax(ui->dockDevice->widget()->sizeHint().width(), 
+    // Adjust docks width
+    int w = qMax(ui->dockDevice->widget()->sizeHint().width(),
         ui->dockModification->widget()->sizeHint().width());
     // ui->dockDevice->setMinimumWidth(w);
     // ui->dockDevice->setMaximumWidth(w + ui->dockDeviceScrollArea->verticalScrollBar()->width());
@@ -2189,7 +2189,7 @@ void frmMain::loadSettings()
     foreach (QString s, hiddenPanels) {
         QGroupBox *b = findChild<QGroupBox*>(s);
         if (b) b->setHidden(true);
-    }    
+    }
 
     QStringList collapsedPanels = set.value("collapsedPanels").toStringList();
     foreach (QString s, collapsedPanels) {
@@ -2213,11 +2213,11 @@ void frmMain::loadSettings()
     // m_settings->restoreGeometry(set.value("formSettingsGeometry").toByteArray());
     // m_settings->ui->splitMain->restoreState(set.value("settingsSplitMain").toByteArray());
 
-    // Shortcuts  
+    // Shortcuts
     ShortcutsMap m;
     QByteArray ba = set.value("shortcuts").toByteArray();
     QDataStream s(&ba, QIODevice::ReadOnly);
-    
+
     s >> m;
     for (int i = 0; i < m.count(); i++) {
         QAction *a = findChild<QAction*>(m.keys().at(i));
@@ -2293,7 +2293,7 @@ void frmMain::saveSettings()
         QGroupBox *b = findChild<QGroupBox*>(s);
         if (b && b->isHidden()) hiddenPanels << s;
         if (b && b->isCheckable() && !b->isChecked()) collapsedPanels << s;
-    }    
+    }
     set.setValue("hiddenPanels", hiddenPanels);
     set.setValue("collapsedPanels", collapsedPanels);
 
@@ -2590,7 +2590,7 @@ void frmMain::updateParser()
 //             gx.cap(3).toDouble(),
 //             gx.cap(4).toDouble()
 //         ));
-            
+
 //         p += gx.matchedLength();
 //     }
 
@@ -3127,7 +3127,7 @@ void frmMain::updateControlsState()
     ui->actFileSaveAs->setEnabled(m_programModel.rowCount() > 1);
 
     ui->tblProgram->setEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
-        QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked | 
+        QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
         QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
 
     if (!portOpened) {
@@ -3189,7 +3189,7 @@ void frmMain::updateControlsState()
 
     ui->cmdFileSend->menu()->actions().first()->setEnabled(!ui->cmdHeightMapMode->isChecked());
 
-    m_selectionDrawer.setVisible(!ui->cmdHeightMapMode->isChecked());    
+    m_selectionDrawer.setVisible(!ui->cmdHeightMapMode->isChecked());
 }
 
 void frmMain::updateLayouts()
@@ -3738,7 +3738,7 @@ void frmMain::jogContinuous()
     if ((ui->jog->isContinuous()) && !block) {
         if (ui->jog->jogVector() != lastVector) {
             // Store jog vector before block
-            QVector3D vector = ui->jog->jogVector();            
+            QVector3D vector = ui->jog->jogVector();
 
             // Stop jogging
             if (lastVector.length()) {
@@ -3809,7 +3809,7 @@ QString frmMain::getLineInitCommands(int row)
     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
     QString commands;
     int lineNumber = m_currentModel->data(m_currentModel->index(commandIndex, 4)).toInt();
-    
+
     if (lineNumber != -1) {
         LineSegment& firstSegment = list[lineIndexes.at(lineNumber).first()];
         LineSegment& lastSegment = list[lineIndexes.at(lineNumber).last()];

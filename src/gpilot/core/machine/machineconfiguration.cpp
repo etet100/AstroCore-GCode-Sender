@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "../globals.h"
+#include "core/globals.h"
 #include "machineconfiguration.h"
 
 MachineConfiguration::MachineConfiguration(QMap<int, double> settings, ConfigurationMachine &configuration)

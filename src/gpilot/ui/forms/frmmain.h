@@ -19,22 +19,22 @@
 #include <QGroupBox>
 #include <exception>
 
-#include "connection/connection.h"
-#include "communicator.h"
-#include "connection/connectionmanager.h"
+#include "io/connection/connection.h"
+#include "core/communicator/communicator.h"
+#include "io/connection/connectionmanager.h"
 #include "drawers/cursordrawer.h"
 #include "drawers/tablesurfacedrawer.h"
-#include "form_partial/main/partmainvirtualsettings.h"
+#include "ui/forms/partials/main/partmainvirtualsettings.h"
 #include "gcode/gcode.h"
-#include "globals.h"
+#include "core/globals.h"
 #include "gcode/gcodeloader.h"
 
-#include "connection/connection.h"
-#include "form_partial/main/partmainjog.h"
-#include "form_partial/main/partmainstate.h"
-#include "form_partial/main/partmainconsole.h"
-#include "frmgrblconfigurator.h"
-#include "parser/gcodeviewparser.h"
+#include "io/connection/connection.h"
+#include "ui/forms/partials/main/partmainjog.h"
+#include "ui/forms/partials/main/partmainstate.h"
+#include "ui/forms/partials/main/partmainconsole.h"
+#include "ui/forms/frmgrblconfigurator.h"
+#include "core/gcode/parser/gcodeviewparser.h"
 
 #include "drawers/origindrawer.h"
 #include "drawers/gcodedrawer.h"
@@ -46,19 +46,19 @@
 #include "drawers/selectiondrawer.h"
 #include "drawers/machineboundsdrawer.h"
 
-#include "tables/gcodetablemodel.h"
-#include "tables/heightmaptablemodel.h"
+#include "ui/tables/gcodetablemodel.h"
+#include "ui/tables/heightmaptablemodel.h"
 
 #include "utils/interpolation.h"
 
 #include "styledtoolbutton.h"
 #include "sliderbox.h"
 
-#include "frmsettings.h"
-#include "frmabout.h"
+#include "ui/forms/frmsettings.h"
+#include "ui/forms/frmabout.h"
 
 #include "scripting/scriptvars.h"
-#include "widgets/dropwidget.h"
+#include "ui/widgets/dropwidget.h"
 
 #ifdef WINDOWS
     // #include <QtWinExtras/QtWinExtras>
@@ -90,7 +90,7 @@ class frmMain : public QMainWindow
 public:
     explicit frmMain(Configuration &configuration, QWidget *parent = 0);
     ~frmMain();
-    
+
     //void writeConsole(QString command);
     void initializeCommunicator();
 
@@ -226,7 +226,7 @@ protected:
 
 private:
     static const int PROGRESSMINLINES = 10000;
-    static const int PROGRESSSTEP = 1000;    
+    static const int PROGRESSSTEP = 1000;
 
     // Ui
     Ui::frmMain *ui;
@@ -246,7 +246,7 @@ private:
     // TODO: Add machine table visualizer
     TableSurfaceDrawer m_tableSurfaceDrawer;
     OriginDrawer *m_originDrawer;
-    GcodeDrawer *m_codeDrawer;    
+    GcodeDrawer *m_codeDrawer;
     GcodeDrawer *m_probeDrawer;
     GcodeDrawer *m_currentDrawer;
     ToolDrawer m_toolDrawer;
@@ -306,7 +306,7 @@ private:
 
     Configuration &m_configuration;
     ScriptVars m_scriptVars;
-    
+
     // Settings
     void preloadSettings();
     void loadSettings();

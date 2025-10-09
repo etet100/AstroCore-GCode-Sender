@@ -5,8 +5,8 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include "../globals.h"
-#include "config/module/configurationconnection.h"
+#include "core/globals.h"
+#include "core/config/module/configurationconnection.h"
 
 class Connection : public QObject
 {

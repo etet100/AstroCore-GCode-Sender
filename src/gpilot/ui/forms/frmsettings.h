@@ -11,7 +11,7 @@
 #include <QSettings>
 #include <QGroupBox>
 #include <QVector3D>
-#include "config/configuration.h"
+#include "core/config/configuration.h"
 #include "utils/validators.h"
 #include "colorpicker.h"
 

@@ -8,7 +8,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
 #include "utils/utils.h"
-#include "../widgets/glpalette.h"
+#include "ui/widgets/glpalette.h"
 
 struct VertexData
 {

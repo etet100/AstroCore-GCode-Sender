@@ -3,7 +3,7 @@
 // Copyright 2024 BTS
 
 #include "connectionmanager.h"
-#include "../globals.h"
+#include "core/globals.h"
 
 ConnectionManager::ConnectionManager(QObject *parent, const ConfigurationConnection &configurationConnection)
     : QObject(parent)

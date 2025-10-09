@@ -5,7 +5,7 @@
 #ifndef PARTMAINCONTROL_H
 #define PARTMAINCONTROL_H
 
-#include "globals.h"
+#include "core/globals.h"
 #include <QWidget>
 
 namespace Ui {

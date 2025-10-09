@@ -11,7 +11,7 @@
 #include <QVector3D>
 #include <QOpenGLShaderProgram>
 #include <QMouseEvent>
-#include "../widgets/glpalette.h"
+#include "ui/widgets/glpalette.h"
 
 struct CubeVertexData
 {

@@ -6,7 +6,7 @@
 #define CONNECTIONMANAGER_H
 
 #include <QObject>
-#include "config/module/configurationconnection.h"
+#include "core/config/module/configurationconnection.h"
 #include "serialconnection.h"
 #include "rawtcpconnection.h"
 #include "virtualucncconnection.h"

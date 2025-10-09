@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "glwidget.h"
-#include "../drawers/gcodedrawer.h"
+#include "drawers/gcodedrawer.h"
 #include <QDebug>
 #include <QtWidgets>
 #include <QPainter>

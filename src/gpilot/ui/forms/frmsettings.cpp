@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
-#include "frmsettings.h"
+#include "ui/forms/frmsettings.h"
 #include "ui_frmsettings.h"
 #include "utils/utils.h"
 #include <QtSerialPort/QSerialPort>
@@ -353,7 +353,7 @@ void frmSettings::undo()
 void frmSettings::addCustomSettings(QGroupBox *box)
 {
     static_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout())->addWidget(box);
-    
+
     ui->listCategories->addItem(box->title());
     ui->listCategories->item(ui->listCategories->count() - 1)->setData(Qt::UserRole, box->objectName());
 
@@ -488,7 +488,7 @@ void frmSettings::onCmdDefaultsClicked()
     d["actSpindleSpeedMinus"] = "Num+/";
 
     ui->shortcuts->setDefaults();
-    
+
     ui->sender->setStartCommands("");
     ui->sender->setEndCommands("");
     ui->sender->setToolChangeCommands("");

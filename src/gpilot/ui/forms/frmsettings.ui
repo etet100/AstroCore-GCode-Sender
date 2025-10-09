@@ -1585,25 +1585,25 @@ QSplitter::handle {
   <customwidget>
    <class>partSettingsColors</class>
    <extends>QWidget</extends>
-   <header>form_partial/settings/partsettingscolors.h</header>
+   <header>ui/forms/partials/settings/partsettingscolors.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partSettingsSender</class>
    <extends>QWidget</extends>
-   <header>form_partial/settings/partsettingssender.h</header>
+   <header>ui/forms/partials/settings/partsettingssender.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partSettingsJogging</class>
    <extends>QWidget</extends>
-   <header>form_partial/settings/partsettingsjogging.h</header>
+   <header>ui/forms/partials/settings/partsettingsjogging.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partSettingsShortcuts</class>
    <extends>QWidget</extends>
-   <header>form_partial/settings/partsettingsshortcuts.h</header>
+   <header>ui/forms/partials/settings/partsettingsshortcuts.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

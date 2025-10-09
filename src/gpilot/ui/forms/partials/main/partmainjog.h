@@ -1,8 +1,8 @@
 #ifndef PARTMAINJOG_H
 #define PARTMAINJOG_H
 
-#include "config/module/configurationjogging.h"
-#include "globals.h"
+#include "core/config/module/configurationjogging.h"
+#include "core/globals.h"
 #include <QWidget>
 
 namespace Ui {

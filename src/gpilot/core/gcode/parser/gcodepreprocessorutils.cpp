@@ -10,7 +10,7 @@
 #include <QVector3D>
 #include "gcodepreprocessorutils.h"
 #include "limits"
-#include "../tables/gcodetablemodel.h"
+#include "ui/tables/gcodetablemodel.h"
 
 /**
 * std::string utils

@@ -52,7 +52,7 @@ contains(QT_CONFIG, opengles.) {
 TARGET = GPilot
 TEMPLATE = app
 
-RC_ICONS = images/gpilot.ico
+RC_ICONS = ui/images/gpilot.ico
 
 DEFINES += sNan=\"65536\"
 
@@ -261,7 +261,7 @@ HEADERS  += ui/forms/frmmain.h \
     gcode/gcodethreadedloader.h \
     core/globals.h \
     modules/heightmap/heightmap.h \
-    machine/machineconfiguration.h \
+    core/machine/machineconfiguration.h \
     modules/camera/camera.h \
     # module/camera/qvideoframeconversionhelper.h \
     # module/camera/videosurface.h \

@@ -9,7 +9,7 @@
 #define JOGGINGBEHAVIOR_H
 
 #include "statebehavior.h"
-#include "../globals.h"
+#include "core/globals.h"
 
 class JoggingBehavior : public StateBehavior
 {

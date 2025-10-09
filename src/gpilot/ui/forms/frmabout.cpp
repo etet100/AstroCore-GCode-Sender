@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include <QDesktopServices>
-#include "frmabout.h"
+#include "ui/forms/frmabout.h"
 #include "ui_frmabout.h"
 #include <QFile>
 

@@ -1,7 +1,7 @@
 #ifndef PARTMAINOVERRIDE_H
 #define PARTMAINOVERRIDE_H
 
-#include "config/module/configurationmachine.h"
+#include "core/config/module/configurationmachine.h"
 #include <QWidget>
 
 namespace Ui {

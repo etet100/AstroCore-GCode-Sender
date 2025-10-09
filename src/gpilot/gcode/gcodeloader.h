@@ -6,8 +6,8 @@
 #define GCODELOADER_H
 
 #include "gcode.h"
-#include "parser/gcodeviewparser.h"
-#include "config/module/configurationparser.h"
+#include "core/gcode/parser/gcodeviewparser.h"
+#include "core/config/module/configurationparser.h"
 #include <QFile>
 #include <QThread>
 

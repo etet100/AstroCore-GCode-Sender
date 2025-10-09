@@ -8,8 +8,8 @@
 #include <QWidget>
 #include <QTextBlock>
 #include <QAbstractListModel>
-#include "../../config/module/configurationconsole.h"
-#include "globals.h"
+#include "core/config/module/configurationconsole.h"
+#include "core/globals.h"
 
 namespace Ui {
 class partMainConsole;
@@ -91,7 +91,7 @@ class partMainConsole : public QWidget
 
     private slots:
         void onClearClicked();
-        void onSendClicked();        
+        void onSendClicked();
 };
 
 #endif // PARTMAINCONSOLE_H

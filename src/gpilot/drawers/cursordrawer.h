@@ -9,7 +9,7 @@
 #include <QColor>
 #include "shaderdrawable.h"
 #include <chrono>
-#include "../widgets/glwidget.h"
+#include "ui/widgets/glwidget.h"
 
 using namespace std::chrono;
 

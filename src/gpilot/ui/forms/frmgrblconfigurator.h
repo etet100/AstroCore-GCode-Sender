@@ -6,7 +6,7 @@
 #define FRMGRBLCONFIGURATOR_H
 
 #include <QDialog>
-#include "communicator.h"
+#include "core/communicator/communicator.h"
 #include <CPropertyHeader.h>
 #include <CBaseProperty.h>
 

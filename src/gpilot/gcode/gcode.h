@@ -6,7 +6,7 @@
 #define GCODE_H
 
 #include <QObject>
-#include "../parser/gcodeparser.h"
+#include "core/gcode/parser/gcodeparser.h"
 
 enum StreamerStartResult
 {

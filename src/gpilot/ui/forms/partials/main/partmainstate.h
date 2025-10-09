@@ -1,8 +1,8 @@
 #ifndef PARTMAINSTATE_H
 #define PARTMAINSTATE_H
 
-#include "globals.h"
-#include "../../config/configuration.h"
+#include "core/globals.h"
+#include "core/config/configuration.h"
 #include <QWidget>
 #include <QVector3D>
 

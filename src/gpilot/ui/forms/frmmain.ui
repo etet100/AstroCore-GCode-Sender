@@ -80,11 +80,11 @@ QGroupBox[checkable=&quot;true&quot;]::indicator {
 	height: 13;
 }
 
-QGroupBox[checkable=&quot;true&quot;]::indicator:checked {	
+QGroupBox[checkable=&quot;true&quot;]::indicator:checked {
 	image: url(:/images/collapse.png);
 }
 
-QGroupBox[checkable=&quot;true&quot;]::indicator:unchecked {	
+QGroupBox[checkable=&quot;true&quot;]::indicator:unchecked {
 	image: url(:/images/expand.png);
 }
 
@@ -112,16 +112,16 @@ QSlider::horizontal {
 
 QSlider::groove:horizontal {
     border: 1px solid #999999;
-    height: 2px; 
+    height: 2px;
     background: #8f8f91;
     margin: 2px 0;
 }
 
-QSlider::handle:horizontal {	
+QSlider::handle:horizontal {
     background-image: url(:/images/handle2s.png);
     border: 0px;
     width: 16px;
-    margin: -7px 0; 
+    margin: -7px 0;
 }
 
 QSlider::handle:horizontal:hover {
@@ -2066,54 +2066,54 @@ border-top: 0;</string>
   <customwidget>
    <class>DropWidget</class>
    <extends>QWidget</extends>
-   <header>widgets/dropwidget.h</header>
+   <header>ui/widgets/dropwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainConsole</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmainconsole.h</header>
+   <header>ui/forms/partials/main/partmainconsole.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainJog</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmainjog.h</header>
+   <header>ui/forms/partials/main/partmainjog.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainControl</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmaincontrol.h</header>
+   <header>ui/forms/partials/main/partmaincontrol.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainOverride</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmainoverride.h</header>
+   <header>ui/forms/partials/main/partmainoverride.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainSpindle</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmainspindle.h</header>
+   <header>ui/forms/partials/main/partmainspindle.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>QPushButtonWithMenu</class>
    <extends>QPushButton</extends>
-   <header>widgets/qpushbuttonwithmenu.h</header>
+   <header>ui/widgets/qpushbuttonwithmenu.h</header>
   </customwidget>
   <customwidget>
    <class>GLContainer</class>
    <extends>QWidget</extends>
-   <header>widgets/glcontainer.h</header>
+   <header>ui/widgets/glcontainer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>partMainStateLcd</class>
    <extends>QWidget</extends>
-   <header>form_partial/main/partmainstatelcd.h</header>
+   <header>ui/forms/partials/main/partmainstatelcd.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

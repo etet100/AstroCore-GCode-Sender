@@ -1,8 +1,8 @@
 #ifndef PARTMAINSTATELCD_H
 #define PARTMAINSTATELCD_H
 
-#include "globals.h"
-#include "../../config/configuration.h"
+#include "core/globals.h"
+#include "core/config/configuration.h"
 #include <QWidget>
 #include <QVector3D>
 
@@ -33,7 +33,7 @@ class partMainStateLcd : public QWidget
 
         void initializeColorsAndCaptions();
         QString formatPos(float val);
-        
+
     signals:
         void grblCommand(GRBLCommand command);
 

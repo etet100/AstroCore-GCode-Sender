@@ -5,8 +5,8 @@
 #ifndef PARTMAINVIRTUALSETTINGS_H
 #define PARTMAINVIRTUALSETTINGS_H
 
-#include "globals.h"
-#include "machine/machineconfiguration.h"
+#include "core/globals.h"
+#include "core/machine/machineconfiguration.h"
 #include <QWidget>
 
 namespace Ui {

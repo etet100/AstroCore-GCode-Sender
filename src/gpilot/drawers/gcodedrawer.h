@@ -6,10 +6,10 @@
 
 #include <QObject>
 #include <QVector3D>
-#include "parser/linesegment.h"
-#include "parser/gcodeviewparser.h"
+#include "core/gcode/parser/linesegment.h"
+#include "core/gcode/parser/gcodeviewparser.h"
 #include "shaderdrawable.h"
-#include "widgets/glpalette.h"
+#include "ui/widgets/glpalette.h"
 
 class GcodeDrawer : public QObject, public ShaderDrawable
 {

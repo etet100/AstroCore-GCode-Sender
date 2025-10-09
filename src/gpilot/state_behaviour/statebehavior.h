@@ -7,7 +7,7 @@
 
 #include <QObject>
 #include <QDebug>
-#include "../globals.h"
+#include "core/globals.h"
 
 class Communicator;
 

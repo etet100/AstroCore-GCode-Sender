@@ -3,8 +3,8 @@
 // Copyright 2024 BTS
 
 #include "gcodeloader.h"
-#include "parser/gcodeparser.h"
-#include "parser/gcodeviewparser.h"
+#include "core/gcode/parser/gcodeparser.h"
+#include "core/gcode/parser/gcodeviewparser.h"
 #include <QDebug>
 
 GCodeLoader::GCodeLoader(QObject *parent)

@@ -1,5 +1,5 @@
-#include "globals.h"
-#include "frmgrblconfigurator.h"
+#include "core/globals.h"
+#include "ui/forms/frmgrblconfigurator.h"
 #include "ui_frmgrblconfigurator.h"
 #include "utils/utils.h"
 #include <QMessageBox>

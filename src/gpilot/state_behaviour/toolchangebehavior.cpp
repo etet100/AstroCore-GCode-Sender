@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
-#include "../globals.h"
+#include "core/globals.h"
 #include "statebehavior.h"
 #include "toolchangebehavior.h"
 

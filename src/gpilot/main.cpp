@@ -12,10 +12,10 @@
 #include <QStyleHints>
 #include <QFontDatabase>
 #include <QCommandLineParser>
-#include "globals.h"
-#include "frmmain.h"
+#include "core/globals.h"
+#include "ui/forms/frmmain.h"
 #include "phantomstyle/src/phantom/phantomstyle.h"
-#include "config/implementations.h"
+#include "core/config/implementations.h"
 
 void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {

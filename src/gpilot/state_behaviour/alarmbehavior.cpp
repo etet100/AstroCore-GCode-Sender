@@ -2,8 +2,8 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "../globals.h"
-#include "communicator.h"
+#include "core/globals.h"
+#include "core/communicator/communicator.h"
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
 

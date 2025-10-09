@@ -7,7 +7,7 @@
 
 #include <QObject>
 #include <QTcpServer>
-#include "communicator.h"
+#include "core/communicator/communicator.h"
 
 class Pendant : public QObject
 {
