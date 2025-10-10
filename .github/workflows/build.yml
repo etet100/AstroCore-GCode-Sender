@@ -30,7 +30,7 @@ jobs:
           version: "6.8.1"
           host: "windows"
           target: "desktop"
-          arch: "win64_mingw"
+          arch: "win64_mingw1310"
           modules: "qtmultimedia qtserialport qtimageformats qtshadertools"
           cache: true
 
