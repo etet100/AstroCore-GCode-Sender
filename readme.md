@@ -305,3 +305,13 @@ Settings:
 GRBL configurator:
 
 ![grbl configurator](/screenshots/screenshot_grbl_configurator.png)
+
+---
+
+## Last build (pre-release)
+
+Automatic build from GitHub Actions – contains only selected project files (mainly .exe and .dll). This is not a full version of the program!
+
+[Last build (pre-release)](https://github.com/etet100/Candle/releases/latest)
+
+---
