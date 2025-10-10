@@ -4,4 +4,6 @@
 
 #include "converter.h"
 
-Converter::Converter() {}
+Converter::Converter(GCode &data) : m_data(data)
+{
+}

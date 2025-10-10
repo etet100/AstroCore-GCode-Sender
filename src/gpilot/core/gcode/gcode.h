@@ -17,14 +17,18 @@ enum StreamerStartResult
 
 struct GCodeItem
 {
-        enum States { InQueue = 0, Sent, Processed, Skipped };
+    enum States { InQueue = 0, Sent, Processed, Skipped };
 
-        QString command;
-        QString comment;
-        QString response;
-        int lineNumber;
-        States state = InQueue;
-        QStringList args;
+    QString command;
+    QString comment;
+    QString response;
+    int lineNumber;
+    States state = InQueue;
+    QStringList args;
+
+    bool isArc() const {
+        return command.startsWith('G') && (command == "G2" || command == "G3");
+    }
 };
 
 class GCode : public QObject , public QList<GCodeItem>

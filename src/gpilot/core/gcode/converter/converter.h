@@ -5,10 +5,16 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
+#include "core/gcode/gcode.h"
+
 class Converter
 {
     public:
-        Converter();
+        Converter(GCode &data);
+        virtual GCode &convert() = 0;
+
+    protected:
+        GCode &m_data;
 };
 
 #endif // CONVERTER_H
