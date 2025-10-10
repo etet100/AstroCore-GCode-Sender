@@ -10,15 +10,6 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      # - name: Remove broken WindowsApps python.exe from PATH
-      #   shell: pwsh
-      #   run: |
-      #     Write-Host "Cleaning PATH..."
-      #     $paths = $env:PATH -split ';' | Where-Object {$_ -notmatch 'WindowsApps'}
-      #     $newPath = ($paths -join ';')
-      #     Write-Host "New PATH set without WindowsApps"
-      #     [Environment]::SetEnvironmentVariable('PATH', $newPath, 'Process')
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -30,7 +21,8 @@ jobs:
           version: "6.8.1"
           host: "windows"
           target: "desktop"
-          arch: "win64_mingw1310"
+          arch: "win64_mingw"
+          tools: "tools_mingw1310"
           modules: "qtmultimedia qtserialport qtimageformats qtshadertools"
           cache: true
 
@@ -42,11 +34,20 @@ jobs:
           g++ --version || echo "g++ not found in PATH"
           qmake -query QMAKE_SPEC || echo "QMAKE_SPEC not found"
 
+      - name: Test GCC version
+        shell: cmd
+        run: |
+          where gcc
+          gcc --version
+          where g++
+          g++ --version
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Build PropertyEditor
+        shell: cmd
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
@@ -57,6 +58,7 @@ jobs:
           mingw32-make -j12
 
       - name: Build uCNC
+        shell: cmd
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
@@ -67,6 +69,7 @@ jobs:
           mingw32-make -j12
 
       - name: Build grblHal
+        shell: cmd
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
@@ -77,11 +80,12 @@ jobs:
           mingw32-make -j12
 
       - name: Build G-Pilot
+        shell: cmd
         env:
           QMAKESPEC: win32-g++
           WINDOWS: "1"
         run: |
-            qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
-            mingw32-make.exe -f Makefile qmake_all
-            mingw32-make -j12
+          qmake gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+          mingw32-make.exe -f Makefile qmake_all
+          mingw32-make -j12
 
