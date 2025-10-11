@@ -7,6 +7,34 @@
 #include "core/gcode/parser/gcodeviewparser.h"
 #include <QDebug>
 
+class StringListIODevice : public QIODevice {
+    public:
+        StringListIODevice(const QStringList &lines, QObject *parent = nullptr)
+            : QIODevice(parent), lines(lines), index(0) {}
+
+        bool open(OpenMode mode) override {
+            index = 0;
+            return QIODevice::open(mode);
+        }
+
+        bool isSequential() const override { return true; }
+
+    protected:
+        qint64 readData(char *data, qint64 maxSize) override {
+            if (index >= lines.size()) return -1;
+            QByteArray ba = lines[index++].toUtf8() + '\n';
+            qint64 size = qMin(maxSize, (qint64)ba.size());
+            memcpy(data, ba.constData(), size);
+            return size;
+        }
+
+        qint64 writeData(const char*, qint64) override { return -1; }
+
+    private:
+        QStringList lines;
+        int index;
+};
+
 GCodeLoader::GCodeLoader(QObject *parent)
     : AbstractGCodeLoader(parent)
 {
@@ -19,40 +47,21 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
     if (!file.open(QIODevice::ReadOnly)) {
         emit cancelled();
 
-        //        QMessageBox::critical(this, this->windowTitle(), tr("Can't open file:\n") + fileName);
         return;
     }
 
-    // Set filename
-    // m_programFileName = fileName;
-
-    // Prepare text stream
-    // QTextStream textStream(&file);
-    // textStream.setCodec("UTF-8");
-
-    qDebug() << "Size: " << file.size();
-
-    loadFromFileObject(file, file.size(), configuration);
-
+    loadFromIODevice(file, file.size(), configuration);
     file.close();
-
-    // Read lines
-    // QList<std::string> data;
-    // while (!textStream.atEnd()) {
-    //     data.append(textStream.readLine().toStdString());
-    // }
-
-    //qDebug() << "Lines: " << count();
-
-    //loadFromString(data);
 }
 
 void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration)
 {
+    StringListIODevice io(lines);
 
+    loadFromIODevice(io, lines.size(), configuration);
 }
 
-void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfiguration &configuration)
+void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfiguration &configuration)
 {
     emit started();
 
@@ -60,48 +69,6 @@ void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfigura
     qDebug() << configuration.arcApproximationMode();
 
     m_cancel = false;
-
-    // assert(m_communicator->isMachineConfigurationReady());
-    // if (!m_communicator->isMachineConfigurationReady()) {
-    //     return;
-    // }
-
-    // Reset tables
-    // clearTable();
-    // m_probeModel.clear();
-    // m_programHeightmapModel.clear();
-    // updateCurrentModel(&m_programModel);
-
-    // Reset parsers
-    // m_viewParser.reset();
-    // m_probeParser.reset();
-
-    // Reset code drawer
-    // m_currentDrawer = m_codeDrawer;
-    // m_codeDrawer->update();
-    // ui->glwVisualizer->fitDrawable(m_codeDrawer);
-    // updateProgramEstimatedTime(QList<LineSegment*>());
-
-    // Update interface
-    // ui->chkHeightMapUse->setChecked(false);
-    // ui->grpHeightMap->setProperty("overrided", false);
-    // style()->unpolish(ui->grpHeightMap);
-    // ui->grpHeightMap->ensurePolished();
-
-    // Reset tableview
-    // QByteArray headerState = ui->tblProgram->horizontalHeader()->saveState();
-    // ui->tblProgram->setModel(NULL);
-
-    // Prepare parser
-    // parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
-    // if (m_codeDrawer->getIgnoreZ()) parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
-
-    // Block parser updates on table changes
-    // m_programLoading = true;
-
-    // Prepare model
-    // m_programModel.data().clear();
-    // m_programModel.data().reserve(data.count());
 
     std::string command;
     std::string stripped;
@@ -111,8 +78,8 @@ void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfigura
     GcodeParser parser;
     GCode* gcode = new GCode();
 
-    while (!file.atEnd()) {
-        command = file.readLine().toStdString();
+    while (!io.atEnd()) {
+        command = io.readLine().toStdString();
 
         trimmed = GcodePreprocessorUtils::trimCommand(command);
 
@@ -133,7 +100,7 @@ void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfigura
             *gcode << item;
         }
 
-        remaining = size - file.pos();
+        remaining = size - io.pos();
 
         int percentage = 100 - (remaining * 100 / size);
         static int lastPercentage = 0;
@@ -142,45 +109,18 @@ void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfigura
             emit progress(percentage);
         }
 
-        // if (progress.isVisible() && (remaining % PROGRESSSTEP == 0)) {
-        //     progress.setValue(progress.maximum() - remaining);
-        //     qApp->processEvents();
-        //     if (progress.wasCanceled()) break;
-        // }
-
         if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
             emit cancelled();
             return;
         }
     }
 
-    // m_programModel.insertRow(m_programModel.rowCount());
-
-    // updateProgramEstimatedTime(
     GCodeViewParser* viewParser = new GCodeViewParser();
     viewParser->getLinesFromParser(
         &parser,
         configuration.arcApproximationValue(),
         configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
     );
-    //     );
-
-    // m_programLoading = false;
-
-    // Set table model
-    // ui->tblProgram->setModel(&m_programModel);
-    // ui->tblProgram->horizontalHeader()->restoreState(headerState);
-
-    // Update tableview
-    // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
-    // ui->tblProgram->selectRow(0);
-
-    //  Update code drawer
-    // m_codeDrawer->update();
-    // ui->glwVisualizer->fitDrawable(m_codeDrawer);
-
-    // resetHeightmap();
-    // updateControlsState();
 
     if (m_cancel) {
         emit cancelled();

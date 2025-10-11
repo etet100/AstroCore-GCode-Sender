@@ -57,7 +57,7 @@ class GCodeLoader : public AbstractGCodeLoader
     private:
     //    static const int PROGRESSSTEP = 1000;
         bool m_cancel;
-        void loadFromFileObject(QFile &stream, int size, GCodeLoaderConfiguration &configuration);
+        void loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfiguration &configuration);
 };
 
 #endif // GCODELOADER_H
