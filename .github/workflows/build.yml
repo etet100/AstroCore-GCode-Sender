@@ -83,6 +83,17 @@ jobs:
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
+      - name: Build designerplugins
+        shell: cmd
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
+        run: |
+          mkdir build\designerplugins
+          cd build\designerplugins
+          qmake ../../src/designerplugins/designerplugins.pro -r
+          mingw32-make -j12
+
       - name: Build G-Pilot
         shell: cmd
         env:
