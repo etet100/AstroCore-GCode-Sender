@@ -105,6 +105,7 @@ PointSegment* GcodeParser::addCommand(QString command)
 {
     QString stripped = GcodePreprocessorUtils::removeComment(command);
     QStringList args = GcodePreprocessorUtils::splitCommand(stripped);
+
     return this->addCommand(args);
 }
 
@@ -116,6 +117,7 @@ PointSegment* GcodeParser::addCommand(const QStringList &args)
     if (args.isEmpty()) {
         return NULL;
     }
+
     return processCommand(args);
 }
 
@@ -378,7 +380,6 @@ QStringList GcodeParser::preprocessCommand(QString command) {
     }
 
     if (newCommand.length() > 0) {
-
         // Override feed speed
         if (m_speedOverride > 0) {
             newCommand = GcodePreprocessorUtils::overrideSpeed(newCommand, m_speedOverride);

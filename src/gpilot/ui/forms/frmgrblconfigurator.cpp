@@ -16,7 +16,7 @@
 #include <CListProperty.h>
 #include <CFontProperty.h>
 
-enum Group {
+enum class ConfigGroupEnum {
     General,
     StepInvert,
     DirInvert,
@@ -33,7 +33,7 @@ enum Group {
 };
 
 struct ConfigGroup {
-    Group group;
+    ConfigGroupEnum group;
     QColor color;
     QByteArray name;
     std::vector<ConfigEntry> entries;
@@ -128,7 +128,7 @@ const std::vector<QColor> COLORS = {
 
 std::vector<ConfigGroup> ConfigMap = {
     {
-        General,
+        ConfigGroupEnum::General,
         COLORS[0],
         "General settings",
         {
@@ -143,7 +143,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Reporting,
+        ConfigGroupEnum::Reporting,
         COLORS[1],
         "Reporting machine status",
         {
@@ -153,7 +153,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Quality,
+        ConfigGroupEnum::Quality,
         COLORS[2],
         "Quality",
         {
@@ -162,7 +162,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Limits,
+        ConfigGroupEnum::Limits,
         COLORS[3],
         "Limits",
         {
@@ -171,7 +171,7 @@ std::vector<ConfigGroup> ConfigMap = {
         },
     },
     {
-        StepInvert,
+        ConfigGroupEnum::StepInvert,
         COLORS[4],
         "Step signal polarity",
         {
@@ -179,7 +179,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        DirInvert,
+        ConfigGroupEnum::DirInvert,
         COLORS[5],
         "Dir signal polarity",
         {
@@ -187,7 +187,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Homing,
+        ConfigGroupEnum::Homing,
         COLORS[6],
         "Homing settings",
         {
@@ -199,7 +199,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        HomingInvert,
+        ConfigGroupEnum::HomingInvert,
         COLORS[7],
         "Homing signal polarity",
         {
@@ -207,7 +207,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Spindle,
+        ConfigGroupEnum::Spindle,
         COLORS[8],
         "Spindle",
         {
@@ -216,7 +216,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Steps,
+        ConfigGroupEnum::Steps,
         COLORS[9],
         "Steps per mm",
         {
@@ -226,7 +226,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        MaxRate,
+        ConfigGroupEnum::MaxRate,
         COLORS[10],
         "Max axis rate",
         {
@@ -236,7 +236,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        Acceleration,
+        ConfigGroupEnum::Acceleration,
         COLORS[11],
         "Max axis acceleration",
         {
@@ -246,7 +246,7 @@ std::vector<ConfigGroup> ConfigMap = {
         }
     },
     {
-        MaxTravel,
+        ConfigGroupEnum::MaxTravel,
         COLORS[12],
         "Max axis travel",
         {

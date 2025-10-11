@@ -128,6 +128,7 @@ void GCodeLoader::loadFromFileObject(QFile &file, int size, GCodeLoaderConfigura
             item.state = GCodeItem::InQueue;
             item.lineNumber = parser.getCommandNumber();
             item.args = args;
+            item.group = GCodeItemGroup::Unknown; // TODO: determine group
 
             *gcode << item;
         }

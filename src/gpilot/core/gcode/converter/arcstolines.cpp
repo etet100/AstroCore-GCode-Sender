@@ -5,7 +5,7 @@
 #include "arcstolines.h"
 #include "core/gcode/gcode.h"
 
-ArcsToLines::ArcsToLines(GCode &data) :    Converter(data)
+ArcsToLines::ArcsToLines(GCode &data) : Converter(data)
 {
 }
 
@@ -23,4 +23,6 @@ GCode &ArcsToLines::convert()
             // }
         }
     }
+
+
 }

@@ -8,11 +8,31 @@
 #include <QObject>
 #include "core/gcode/parser/gcodeparser.h"
 
-enum StreamerStartResult
+enum class StreamerStartResult
 {
     Success = 0,
     UnacceptableCommunicatorState = 1,
     UnacceptableConnectionState = 2,
+};
+
+enum class GCodeItemGroup
+{
+    Movement = 0,
+    RapidMovement = 1,
+    ArcMovement = 2,
+    Dwell = 3,
+    Spindle = 4,
+    Coolant = 5,
+    ToolChange = 6,
+    CoordinateSystemSelection = 7,
+    UnitsSelection = 8,
+    FeedRateMode = 9,
+    PlaneSelection = 10,
+    CutterCompensation = 11,
+    ReturnToReferencePoint = 12,
+    Miscellaneous = 13,
+    Comment = 14,
+    Unknown = 15
 };
 
 struct GCodeItem
@@ -25,6 +45,7 @@ struct GCodeItem
     int lineNumber;
     States state = InQueue;
     QStringList args;
+    GCodeItemGroup group = GCodeItemGroup::Unknown;
 
     bool isArc() const {
         return command.startsWith('G') && (command == "G2" || command == "G3");
@@ -46,7 +67,7 @@ class GCode : public QObject , public QList<GCodeItem>
         void advanceCommandIndex();
         StreamerStartResult start();
         void stop();
-        void pause();        
+        void pause();
         bool isLastCommand();
         bool noMoreCommands();
         bool hasMoreCommands();
