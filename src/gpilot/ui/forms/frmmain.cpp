@@ -41,6 +41,7 @@
 frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
+    m_heightmapModel(m_heightmap),
     m_programModel(m_program),
     m_probeModel(m_program),
     m_programHeightmapModel(m_program),

@@ -100,13 +100,18 @@ SOURCES += main.cpp\
     core/config/persistence/json/jsonprovider.cpp \
     core/config/persistence/xml/xmlpersister.cpp \
     core/config/persistence/xml/xmlprovider.cpp \
+    core/gcode/converter/applyheightmap.cpp \
+    core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/converter.cpp \
+    core/heightmap/exporter/heightmapexporter.cpp \
+    core/heightmap/loader/heightmaploader.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
     io/connection/serialconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
+    core/heightmap/heightmapinterpolator.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
@@ -142,7 +147,7 @@ SOURCES += main.cpp\
     core/gcode/exporter/gcodeexporter.cpp \
     core/gcode/loader/gcodeloader.cpp \
     core/gcode/loader/gcodethreadedloader.cpp \
-    modules/heightmap/heightmap.cpp \
+    core/heightmap/heightmap.cpp \
     core/machine/machineconfiguration.cpp \
     modules/camera/camera.cpp \
     # module/camera/qvideoframeconversionhelper.cpp \
@@ -219,13 +224,18 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/persistence/xml/xmlpersister.h \
     core/config/persistence/xml/xmlprovider.h \
     core/config/registry.h \
+    core/gcode/converter/applyheightmap.h \
+    core/gcode/converter/arcstolines.h \
     core/gcode/converter/converter.h \
+    core/heightmap/exporter/heightmapexporter.h \
+    core/heightmap/loader/heightmaploader.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
     io/connection/serialconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
+    core/heightmap/heightmapinterpolator.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \
@@ -262,7 +272,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/loader/gcodeloader.h \
     core/gcode/loader/gcodethreadedloader.h \
     core/globals.h \
-    modules/heightmap/heightmap.h \
+    core/heightmap/heightmap.h \
     core/machine/machineconfiguration.h \
     modules/camera/camera.h \
     # module/camera/qvideoframeconversionhelper.h \

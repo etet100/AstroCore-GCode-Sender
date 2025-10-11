@@ -295,7 +295,9 @@ private:
     // bool m_updateSpindleSpeed;
     // bool m_updateParserStatus;
 
+    // Heightmap
     bool m_heightmapMode;
+    Heightmap m_heightmap;
 
     // Current values
     int m_lastDrawnLineIndex;

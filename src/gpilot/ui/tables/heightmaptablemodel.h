@@ -6,12 +6,13 @@
 
 #include <QObject>
 #include <QAbstractTableModel>
+#include "core/heightmap/heightmap.h"
 
 class HeightmapTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit HeightmapTableModel(QObject *parent = 0);
+    explicit HeightmapTableModel(Heightmap &data, QObject *parent = 0);
 
     void resize(int cols, int rows);
 
