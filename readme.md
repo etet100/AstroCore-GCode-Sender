@@ -310,7 +310,7 @@ GRBL configurator:
 
 ## Last build (pre-release)
 
-Automatic build from GitHub Actions – contains only selected project files (mainly .exe and .dll). This is not a full version of the program!
+This build contains only DLL and EXE files. You can use these files by replacing them in the folder of a full release (downloaded from Releases). This is not a full version of the program!
 
 [Last build (pre-release)](https://github.com/etet100/Candle/releases/latest)
 

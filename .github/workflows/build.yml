@@ -125,6 +125,6 @@ jobs:
           prerelease: true
           body: |
             Automatic build created from commit ${{ github.sha }}.
-            This is not a full release of the program.
-            Howewer, it can be used to test new features and fixes.
+            This build contains only DLL and EXE files. This is not a full version of the program!
+            You can use these files by replacing them in the folder of a full release (downloaded from Releases).
           files: build_artifacts.zip
