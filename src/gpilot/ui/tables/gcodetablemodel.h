@@ -9,6 +9,15 @@
 #include <QAbstractTableModel>
 #include <QString>
 
+enum class GCodeTableColumn {
+    Number = 0,
+    Command = 1,
+    State,
+    Response,
+    Line,
+    Args
+};
+
 class GCodeTableModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -28,9 +37,15 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
+    void setCommentsVisible(bool visible);
+
 private:
     GCode &m_data;
     QStringList m_headers;
+    bool m_filtered = false;
+    QList<int> m_filteredRows; // rows without comments
+
+    void prepareNoCommentFilter();
 };
 
 #endif // GCODETABLEMODEL_H

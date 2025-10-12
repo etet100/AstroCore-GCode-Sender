@@ -186,6 +186,7 @@ SOURCES += main.cpp\
     # state_behaviour/staterunning.cpp \
     # state_behaviour/statetoolchange.cpp \
     state_behaviour/toolchangebehavior.cpp \
+    ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
     utils/utils.cpp \
@@ -313,6 +314,7 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/states.h \
     state_behaviour/statetoolchange.h \
     state_behaviour/toolchangebehavior.h \
+    ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
     utils.h \
@@ -367,7 +369,6 @@ INCLUDEPATH += ../vendor/PropertyEditor
 include(../vendor/CRC.pri)
 include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
-
 
 LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
 

@@ -73,6 +73,7 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
     std::string command;
     std::string stripped;
     std::string trimmed;
+    std::string comment;
     QList<QString> args;
     int remaining = size;
     GcodeParser parser;
@@ -87,15 +88,24 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
             // Split command
             stripped = GcodePreprocessorUtils::removeComment(command);
             args = GcodePreprocessorUtils::splitCommand(stripped);
+            comment = GcodePreprocessorUtils::getComment(command);
+            if (stripped.empty() && comment.empty()) {
+                break;
+            }
 
             parser.addCommand(args);
 
             GCodeItem item;
-            item.command = QString::fromStdString(trimmed);
+            item.command = QString::fromStdString(stripped);
+            item.comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command));
             item.state = GCodeItem::InQueue;
             item.lineNumber = parser.getCommandNumber();
             item.args = args;
             item.group = GCodeItemGroup::Unknown; // TODO: determine group
+            if (stripped.empty()) {
+                item.state = GCodeItem::Comment;
+                item.group = GCodeItemGroup::Comment;
+            }
 
             *gcode << item;
         }

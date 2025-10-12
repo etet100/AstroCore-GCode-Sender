@@ -21,6 +21,7 @@ public:
     static QString trimCommand(QString command);
     static std::string trimCommand(std::string command);
     static QString removeComment(QString command);
+    static std::string getComment(std::string command);
     static std::string removeComment(std::string command);
     static QString parseComment(QString command);
     static QString truncateDecimals(int length, QString command);

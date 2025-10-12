@@ -91,6 +91,31 @@ QString GcodePreprocessorUtils::removeComment(QString command)
     return command.trimmed();
 }
 
+// Get comment from a command string
+std::string GcodePreprocessorUtils::getComment(std::string command)
+{
+    size_t pos, pos2;
+
+    // Get any comment beginning with ';'
+    pos = command.find(";");
+    if (pos != std::string::npos) {
+        std::string comment = command.substr(pos);
+
+        return trim(comment);
+    }
+
+    // Get any comments within ( parentheses )
+    pos = command.find("(");
+    pos2 = command.find(")");
+    if (pos != std::string::npos && pos2 != std::string::npos && pos2 > pos) {
+        std::string comment = command.substr(pos, pos2 - pos + 1);
+
+        return trim(comment);
+    }
+
+    return "";
+}
+
 /**
 * Removes any comments within parentheses or beginning with a semi-colon.
 */

@@ -278,6 +278,13 @@ QLabel[overrided=&quot;false&quot;] {
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="chkHideComments">
+           <property name="text">
+            <string>Hide all comments</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="spacerBot_2">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
@@ -444,7 +451,7 @@ QLabel[overrided=&quot;false&quot;] {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>223</width>
+          <width>222</width>
           <height>771</height>
          </rect>
         </property>

@@ -48,6 +48,7 @@
 
 #include "ui/tables/gcodetablemodel.h"
 #include "ui/tables/heightmaptablemodel.h"
+#include "ui/tables/gcodeitemdelegate.h"
 
 #include "utils/interpolation.h"
 
@@ -265,6 +266,7 @@ private:
     GCodeTableModel m_programHeightmapModel;
     GCodeTableModel *m_currentModel;
     HeightmapTableModel m_heightmapModel;
+    GCodeItemDelegate m_programItemDelegate;
 
     // @TODO to be moved to separate core class
     ConnectionManager m_connectionManager;

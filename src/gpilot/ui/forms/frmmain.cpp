@@ -87,6 +87,10 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     ui->console->append(QString("G-Candle %1 started").arg( qApp->applicationVersion()));
     ui->console->append("---");
 
+    connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
+        m_programModel.setCommentsVisible(state != Qt::Checked);
+    });
+
     connect(ui->control, &partMainControl::unlock, this, [this]() {
         m_communicator->m_updateSpindleSpeed = true;
         m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
@@ -232,6 +236,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     connect(&m_heightmapModel, SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
 
     ui->tblProgram->setModel(&m_programModel);
+    ui->tblProgram->setItemDelegate(&m_programItemDelegate);
     ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
     connect(ui->tblProgram->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, &frmMain::onScroolBarAction);
     connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &frmMain::onTableCurrentChanged);

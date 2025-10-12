@@ -37,7 +37,7 @@ enum class GCodeItemGroup
 
 struct GCodeItem
 {
-    enum States { InQueue = 0, Sent, Processed, Skipped };
+    enum States { InQueue = 0, Sent, Processed, Skipped, Comment };
 
     QString command;
     QString comment;
