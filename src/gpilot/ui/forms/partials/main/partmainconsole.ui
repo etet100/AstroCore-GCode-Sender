@@ -97,7 +97,7 @@ padding-right: 8;</string>
            <string>Send command</string>
           </property>
           <property name="icon">
-           <iconset resource="../../images.qrc">
+           <iconset resource="../../../resources/images.qrc">
             <normaloff>:/images/send_1.png</normaloff>:/images/send_1.png</iconset>
           </property>
           <property name="iconSize">
@@ -114,7 +114,7 @@ padding-right: 8;</string>
            <string>Clear console</string>
           </property>
           <property name="icon">
-           <iconset resource="../../images.qrc">
+           <iconset resource="../../../resources/images.qrc">
             <normaloff>:/images/erase_1.png</normaloff>:/images/erase_1.png</iconset>
           </property>
           <property name="iconSize">
@@ -143,7 +143,7 @@ padding-right: 8;</string>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../images.qrc"/>
+  <include location="../../../resources/images.qrc"/>
  </resources>
  <connections>
   <connection>

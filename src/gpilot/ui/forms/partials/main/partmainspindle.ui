@@ -45,7 +45,7 @@
       <string>Spindle on/off</string>
      </property>
      <property name="icon">
-      <iconset resource="../../images.qrc">
+      <iconset resource="../../../resources/images.qrc">
        <normaloff>:/images/cutter.png</normaloff>:/images/cutter.png</iconset>
      </property>
      <property name="iconSize">
@@ -81,7 +81,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../images.qrc"/>
+  <include location="../../../resources/images.qrc"/>
  </resources>
  <connections/>
 </ui>

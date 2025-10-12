@@ -67,7 +67,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/restart.png</normaloff>:/images/restart.png</iconset>
        </property>
        <property name="iconSize">
@@ -96,7 +96,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/power4.png</normaloff>:/images/power4.png</iconset>
        </property>
        <property name="iconSize">
@@ -125,7 +125,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/search_for_home2.png</normaloff>:/images/search_for_home2.png</iconset>
        </property>
        <property name="iconSize">
@@ -163,7 +163,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/unlock1.png</normaloff>:/images/unlock1.png</iconset>
        </property>
        <property name="iconSize">
@@ -192,7 +192,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
        </property>
        <property name="iconSize">
@@ -224,7 +224,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/check1.png</normaloff>:/images/check1.png</iconset>
        </property>
        <property name="iconSize">
@@ -256,7 +256,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/door.png</normaloff>:/images/door.png</iconset>
        </property>
        <property name="iconSize">
@@ -285,7 +285,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/flood.png</normaloff>:/images/flood.png</iconset>
        </property>
        <property name="iconSize">
@@ -314,7 +314,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/search_z.svg</normaloff>:/images/search_z.svg</iconset>
        </property>
        <property name="iconSize">
@@ -337,7 +337,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/axis_zero.svg</normaloff>:/images/axis_zero.svg</iconset>
        </property>
        <property name="iconSize">
@@ -360,7 +360,7 @@
         <string>...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../images.qrc">
+        <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/zero_z.svg</normaloff>:/images/zero_z.svg</iconset>
        </property>
        <property name="iconSize">
@@ -379,11 +379,11 @@
   <customwidget>
    <class>StyledToolButton</class>
    <extends>QToolButton</extends>
-   <header location="global">styledtoolbutton.h</header>
+   <header>styledtoolbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../images.qrc"/>
+  <include location="../../../resources/images.qrc"/>
  </resources>
  <connections>
   <connection>

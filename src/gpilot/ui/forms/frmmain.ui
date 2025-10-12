@@ -17,7 +17,7 @@
    <string>G-Pilot</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="images.qrc">
+   <iconset resource="../resources/images.qrc">
     <normaloff>:/images/gpilot_icon.png</normaloff>:/images/gpilot_icon.png</iconset>
   </property>
   <property name="styleSheet">
@@ -1458,7 +1458,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
           </property>
           <property name="iconSize">
@@ -1484,7 +1484,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/toggle.png</normaloff>:/images/toggle.png</iconset>
           </property>
           <property name="iconSize">
@@ -1510,7 +1510,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/visualizer_top.png</normaloff>:/images/visualizer_top.png</iconset>
           </property>
           <property name="iconSize">
@@ -1562,7 +1562,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/visualizer_front.png</normaloff>:/images/visualizer_front.png</iconset>
           </property>
           <property name="iconSize">
@@ -1588,7 +1588,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
           </property>
           <property name="iconSize">
@@ -1614,7 +1614,7 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="images.qrc">
+           <iconset resource="../resources/images.qrc">
             <normaloff>:/images/rotation_cube.png</normaloff>:/images/rotation_cube.png</iconset>
           </property>
           <property name="iconSize">
@@ -2145,7 +2145,7 @@ border-top: 0;</string>
   <tabstop>cmdHeightMapMode</tabstop>
  </tabstops>
  <resources>
-  <include location="images.qrc"/>
+  <include location="../resources/images.qrc"/>
  </resources>
  <connections>
   <connection>

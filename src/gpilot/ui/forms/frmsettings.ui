@@ -100,8 +100,8 @@ QSplitter::handle {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>627</width>
-         <height>1345</height>
+         <width>624</width>
+         <height>1409</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -353,7 +353,7 @@ QSplitter::handle {
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset resource="images.qrc">
+                     <iconset resource="../resources/images.qrc">
                       <normaloff>:/images/restart.png</normaloff>:/images/restart.png</iconset>
                     </property>
                    </widget>
@@ -1621,7 +1621,7 @@ QSplitter::handle {
   <tabstop>cmdCancel</tabstop>
  </tabstops>
  <resources>
-  <include location="images.qrc"/>
+  <include location="../resources/images.qrc"/>
  </resources>
  <connections>
   <connection>
