@@ -281,19 +281,19 @@ void Communicator::setConnection(Connection *newConnection)
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
-    execute(new ConnectingBehavior(this));
+    // execute(new InitializationBehavior(this));
 }
 
-bool Communicator::openConnection()
-{
-    if (m_connection) {
-        m_connection->open();
+// bool Communicator::openConnection()
+// {
+//     if (m_connection) {
+//         m_connection->open();
 
-        return true;
-    }
+//         return true;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 Connection *Communicator::connection()
 {
@@ -420,6 +420,10 @@ void Communicator::execute(StateBehavior *sb)
 {
     if (m_sb != nullptr) {
         m_sb->onExit(sb);
+
+        qDebug() << "State behavior changed from" << m_sb->name() << "to" << sb->name();
+    } else {
+        qDebug() << "State behavior set to" << sb->name();
     }
 
     emit stateBehaviorChanged(sb);

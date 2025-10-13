@@ -13,6 +13,8 @@ class ConnectingBehavior : public StateBehavior
         explicit ConnectingBehavior(QObject *parent = nullptr);
         QString name() override { return "Connecting"; }
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        void onExit(StateBehavior *next = nullptr) override;
+        void onConnectionStateChanged(ConnectionState state) override;
 };
 
 #endif // CONNECTINGBEHAVIOR_H

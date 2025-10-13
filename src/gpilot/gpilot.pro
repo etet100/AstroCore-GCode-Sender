@@ -393,7 +393,7 @@ LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
 #LIBS += C:/Projekty/Qt/Candle/src/vendor/build/uCNC-Debug
 
 LIBS += -L../vendor/uCNC -luCNC
-LIBS += -L../vendor/grblHal -lgrblHal
+# LIBS += -L../vendor/grblHal -lgrblHal
 
 DISTFILES += \
     shaders/2dcopy_fragment.glsl \

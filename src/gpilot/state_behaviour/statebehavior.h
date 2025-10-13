@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QTimer>
 #include "core/globals.h"
 
 class Communicator;
@@ -23,7 +24,7 @@ class StateBehavior : public QObject
         StateBehavior* previous() const { return m_previous; }
         virtual void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
 
-        virtual void onExit(StateBehavior *next = nullptr) {};
+        virtual void onExit(StateBehavior *next = nullptr);
         virtual void onAlarm(int code) {
             qDebug() << "Alarm: " << code;
         };
@@ -50,6 +51,9 @@ class StateBehavior : public QObject
     protected:
         StateBehavior *m_previous;
         Communicator *m_communicator;
+        QTimer *m_timer;
+
+        void stopTimer();
 };
 
 #endif // STATEBEHAVIOR_H

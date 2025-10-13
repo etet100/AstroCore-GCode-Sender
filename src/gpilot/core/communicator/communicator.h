@@ -35,7 +35,7 @@ class Communicator : public QObject
         void abort();
         // disconnect, dispose and delete old connection, connect new connection
         void setConnection(Connection *);
-        bool openConnection();
+        // bool openConnection();
         Connection* connection();
         void stopUpdatingState();
         void startUpdatingState(int interval = -1);

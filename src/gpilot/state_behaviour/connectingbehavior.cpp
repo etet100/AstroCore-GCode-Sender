@@ -5,7 +5,6 @@
 #include "connectingbehavior.h"
 #include <QTimer>
 #include "core/communicator/communicator.h"
-#include "connectedbehavior.h"
 
 ConnectingBehavior::ConnectingBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -13,17 +12,35 @@ ConnectingBehavior::ConnectingBehavior(QObject *parent)
 
 void ConnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
-    QTimer *timer = new QTimer(this);
-    timer->setInterval(1000);
-    connect(timer, &QTimer::timeout, this, [this, communicator, timer]() {
+    qDebug() << "Attempting to connect...";
+    if (communicator->connection()->open() && communicator->connection()->isConnected()) {
+        return;
+    }
+
+    m_timer = new QTimer(this);
+    m_timer->setInterval(1000);
+    connect(m_timer, &QTimer::timeout, this, [this, communicator]() {
+        qDebug() << "Attempting to connect...";
         if (communicator->connection()->isConnected()) {
-            timer->stop();
-            timer->deleteLater();
-            // emit transition(this, new ConnectedBehavior());
+            stopTimer();
 
             return;
         }
 
-        communicator->openConnection();
+        communicator->connection()->open();
     });
+    m_timer->start();
+}
+
+void ConnectingBehavior::onExit(StateBehavior *next)
+{
+    StateBehavior::onExit(next);
+}
+
+void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
+{
+    if (state == ConnectionState::Connected) {
+        stopTimer();
+        emit transition(this, new IdleBehavior());
+    }
 }

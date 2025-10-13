@@ -6,6 +6,7 @@
 #include "initializationbehavior.h"
 #include "runningbehavior.h"
 #include "alarmbehavior.h"
+#include "connectingbehavior.h"
 #include "core/communicator/communicator.h"
 
 InitializationBehavior::InitializationBehavior(QObject *parent) : StateBehavior{parent}
@@ -42,5 +43,27 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
 void InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
-    communicator->openConnection();
+
+    if (communicator->connection()) {
+        emit transition(this, new ConnectingBehavior());
+
+        return;
+    }
+
+    m_timer = new QTimer(this);
+    m_timer->setInterval(1000);
+    connect(m_timer, &QTimer::timeout, this, [this]() {
+        if (m_communicator->connection()) {
+            stopTimer();
+            emit transition(this, new ConnectingBehavior());
+
+            return;
+        }
+    });
+    m_timer->start();
+}
+
+void InitializationBehavior::onExit(StateBehavior *next)
+{
+    StateBehavior::onExit(next);
 }

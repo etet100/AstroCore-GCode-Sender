@@ -46,6 +46,11 @@ void RunningBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
+void RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
+
+}
+
 void RunningBehavior::handleFeedOverride(int percentage)
 {
     // Validate range

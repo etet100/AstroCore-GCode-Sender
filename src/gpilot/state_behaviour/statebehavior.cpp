@@ -8,7 +8,23 @@ StateBehavior::StateBehavior(QObject *parent) : QObject{parent}
 {
 }
 
-void StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous) {
+void StateBehavior::onExit(StateBehavior *next)
+{
+    Q_UNUSED(next);
+    stopTimer();
+}
+
+void StateBehavior::stopTimer()
+{
+    if (m_timer) {
+        m_timer->stop();
+        m_timer->deleteLater();
+        m_timer = nullptr;
+    }
+}
+
+void StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
     if (previous) {
         m_previous = previous;
     }

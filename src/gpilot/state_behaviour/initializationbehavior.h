@@ -16,6 +16,7 @@ class InitializationBehavior : public StateBehavior
         void onCommandResponse(QString command, QStringList response) override;
         void onConnectionStateChanged(ConnectionState state) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        void onExit(StateBehavior *next = nullptr) override;
 };
 
 #endif // INITIALIZATIONBEHAVIOR_H
