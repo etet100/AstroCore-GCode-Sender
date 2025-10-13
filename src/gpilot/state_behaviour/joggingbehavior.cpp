@@ -9,8 +9,8 @@
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
 
-JoggingBehavior::JoggingBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+JoggingBehavior::JoggingBehavior(QObject *parent)
+    : StateBehavior{parent}
     , m_currentDirection(JoggindDir::None)
     , m_feedRate(100)
     , m_distance(0)
@@ -26,7 +26,7 @@ void JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previou
     m_isJogging = false;
 }
 
-void JoggingBehavior::onExit()
+void JoggingBehavior::onExit(StateBehavior *next)
 {
     // Stop jogging before exiting
     if (m_isJogging) {
@@ -39,15 +39,15 @@ void JoggingBehavior::onDeviceStateChanged(DeviceState state)
     if (state == DeviceState::Idle) {
         // Return to idle if not jogging
         if (!m_isJogging) {
-            emit transition(this, new IdleBehavior(this));
+            emit transition(this, new IdleBehavior());
         }
     } else if (state == DeviceState::Alarm) {
         // Stop jogging and handle alarm
         stopJogging();
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
         // Machine hold - go to pause state
-        emit transition(this, new PauseBehavior(this, PauseBehavior::PauseSource::Jogging));
+        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Jogging));
     }
 }
 

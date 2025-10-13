@@ -6,10 +6,12 @@
 #include "initializationbehavior.h"
 #include "runningbehavior.h"
 #include "alarmbehavior.h"
+#include "core/communicator/communicator.h"
 
-InitializationBehavior::InitializationBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
-{}
+InitializationBehavior::InitializationBehavior(QObject *parent) : StateBehavior{parent}
+{
+
+}
 
 void InitializationBehavior::onDeviceStateChanged(DeviceState state)
 {
@@ -19,7 +21,7 @@ void InitializationBehavior::onDeviceStateChanged(DeviceState state)
         emit transition(this, new RunningBehavior(this));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 
@@ -27,4 +29,18 @@ void InitializationBehavior::onCommandResponse(QString command, QStringList resp
 {
     // Process command responses in idle state
     // This could be used to transition to other behaviors based on command responses
+}
+
+void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
+{
+    if (state == ConnectionState::Disconnected) {
+        // Handle disconnection if necessary
+        emit transition(this, new AlarmBehavior()); // Example: transition to alarm on disconnect
+    }
+}
+
+void InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
+    StateBehavior::onEntry(communicator, previous);
+    communicator->openConnection();
 }

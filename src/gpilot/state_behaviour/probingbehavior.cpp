@@ -9,12 +9,11 @@
 #include "alarmbehavior.h"
 #include <QDebug>
 
-ProbingBehavior::ProbingBehavior(StateBehavior *previous,
-                              ProbeDirection direction,
+ProbingBehavior::ProbingBehavior(ProbeDirection direction,
                               double distance,
                               double feedRate,
                               QObject *parent)
-    : StateBehavior{previous, parent}
+    : StateBehavior{parent}
     , m_direction(direction)
     , m_distance(distance)
     , m_feedRate(feedRate)
@@ -47,7 +46,7 @@ void ProbingBehavior::onDeviceStateChanged(DeviceState state)
     } else if (state == DeviceState::Alarm && m_probeStarted) {
         // Alarm occurred during probing - something likely went wrong
         emit error(this, "Probing failed - device entered alarm state");
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 

@@ -13,7 +13,7 @@
 class HomingBehavior : public StateBehavior
 {
     public:
-        explicit HomingBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit HomingBehavior(QObject *parent = nullptr);
         QString name() override { return "Homing"; }
         bool isJoggingAllowed() override { return false; } // Cannot jog during homing
         bool isHomingAllowed() override { return false; } // Cannot start homing when already in progress

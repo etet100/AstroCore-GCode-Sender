@@ -17,7 +17,7 @@ class SerialConnection : public Connection
     public:
         SerialConnection(QObject*);
         ~SerialConnection();
-        bool openConnection() override;
+        bool open() override;
         void setPortName(QString);
         void setBaudRate(int);
         void sendByteArray(QByteArray) override;

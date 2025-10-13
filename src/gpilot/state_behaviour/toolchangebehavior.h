@@ -10,7 +10,7 @@
 class ToolChangeBehavior : public StateBehavior
 {
     public:
-        explicit ToolChangeBehavior(StateBehavior *previous, QObject *parent);
+        explicit ToolChangeBehavior(QObject *parent);
         QString name() override { return "Tool Change"; }
 
         enum ToolChangeSource {

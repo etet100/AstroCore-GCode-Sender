@@ -4,7 +4,7 @@
 
 #include "statebehavior.h"
 
-StateBehavior::StateBehavior(StateBehavior *previous, QObject *parent) : QObject{parent}, m_previous{previous}
+StateBehavior::StateBehavior(QObject *parent) : QObject{parent}
 {
 }
 

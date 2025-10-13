@@ -16,14 +16,14 @@ class StateBehavior : public QObject
     Q_OBJECT
 
     public:
-        explicit StateBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit StateBehavior(QObject *parent = nullptr);
         virtual QString name() = 0;
         virtual bool isJoggingAllowed() { return false; };
         virtual bool isHomingAllowed() { return false; };
         StateBehavior* previous() const { return m_previous; }
-        virtual void onEntry(Communicator *communicator, StateBehavior *previous = nullptr);
+        virtual void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
 
-        virtual void onExit() {};
+        virtual void onExit(StateBehavior *next = nullptr) {};
         virtual void onAlarm(int code) {
             qDebug() << "Alarm: " << code;
         };
@@ -34,15 +34,18 @@ class StateBehavior : public QObject
             Q_UNUSED(command);
             Q_UNUSED(response);
         };
+        virtual void onConnectionStateChanged(ConnectionState state) {
+            Q_UNUSED(state);
+        };
 
     signals:
         void transition(StateBehavior *state, StateBehavior *newState);
         void error(StateBehavior *state, QString message);
 
-    public slots:
-        virtual void onConnectionStateChanged(ConnectionState state) {
-            Q_UNUSED(state);
-        };
+    // public slots:
+    //     virtual void onConnectionStateChanged(ConnectionState state) {
+    //         Q_UNUSED(state);
+    //     };
 
     protected:
         StateBehavior *m_previous;

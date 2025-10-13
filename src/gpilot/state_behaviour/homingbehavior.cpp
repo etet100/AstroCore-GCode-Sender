@@ -8,8 +8,8 @@
 #include "idlebehavior.h"
 #include "alarmbehavior.h"
 
-HomingBehavior::HomingBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+HomingBehavior::HomingBehavior(QObject *parent)
+    : StateBehavior{parent}
     , m_homingStarted(false)
     , m_homingCompleted(false)
 {
@@ -42,7 +42,7 @@ void HomingBehavior::onDeviceStateChanged(DeviceState state)
     } else if (state == DeviceState::Alarm && m_homingStarted) {
         // Alarm occurred during homing - homing likely failed
         emit error(this, "Homing failed - device entered alarm state");
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 

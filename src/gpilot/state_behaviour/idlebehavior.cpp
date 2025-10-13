@@ -7,8 +7,8 @@
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
 
-IdleBehavior::IdleBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+IdleBehavior::IdleBehavior(QObject *parent)
+    : StateBehavior{parent}
 {}
 
 void IdleBehavior::onDeviceStateChanged(DeviceState state)
@@ -19,7 +19,7 @@ void IdleBehavior::onDeviceStateChanged(DeviceState state)
         emit transition(this, new RunningBehavior(this));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 
@@ -27,4 +27,9 @@ void IdleBehavior::onCommandResponse(QString command, QStringList response)
 {
     // Process command responses in idle state
     // This could be used to transition to other behaviors based on command responses
+}
+
+void IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
+
 }

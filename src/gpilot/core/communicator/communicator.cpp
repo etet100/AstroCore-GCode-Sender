@@ -39,7 +39,6 @@ Communicator::Communicator(
     m_statusReceived = false;
     m_spindleCW = true;
 
-    m_sb = nullptr;
     execute(new InitializationBehavior(nullptr));
 
     resetStateVariables();
@@ -269,7 +268,7 @@ void Communicator::abort()
 /*
 * @todo make sure we can replace connection at this point!!
 */
-void Communicator::replaceConnection(Connection *newConnection)
+void Communicator::setConnection(Connection *newConnection)
 {
     if (m_connection != nullptr || m_connection == newConnection) return;
 
@@ -281,6 +280,24 @@ void Communicator::replaceConnection(Connection *newConnection)
 
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
+
+    execute(new ConnectingBehavior(this));
+}
+
+bool Communicator::openConnection()
+{
+    if (m_connection) {
+        m_connection->open();
+
+        return true;
+    }
+
+    return false;
+}
+
+Connection *Communicator::connection()
+{
+    return m_connection;
 }
 
 void Communicator::stopUpdatingState()
@@ -380,7 +397,7 @@ bool Communicator::isSenderState(SenderState state) const
 
 void Communicator::probe()
 {
-    execute(new ProbingBehavior(m_sb));
+    execute(new ProbingBehavior());
 
     // sendCommands(
     //     CommandSource::GeneralUI,
@@ -396,13 +413,13 @@ void Communicator::probe()
 
 void Communicator::home()
 {
-    execute(new HomingBehavior(m_sb));
+    execute(new HomingBehavior());
 }
 
 void Communicator::execute(StateBehavior *sb)
 {
     if (m_sb != nullptr) {
-        m_sb->onExit();
+        m_sb->onExit(sb);
     }
 
     emit stateBehaviorChanged(sb);
@@ -560,9 +577,11 @@ void Communicator::onConnectionError(QString message)
 
 void Communicator::onConnectionStateChanged(ConnectionState state)
 {
-    if (state == ConnectionState::Connected) {
-        reset();
-    }
+
+
+    // if (state == ConnectionState::Connected) {
+    //     reset();
+    // }
     m_sb->onConnectionStateChanged(state);
 }
 

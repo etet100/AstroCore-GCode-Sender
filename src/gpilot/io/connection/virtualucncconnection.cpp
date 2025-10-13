@@ -49,7 +49,7 @@ void VirtualUCNCConnection::startWorkerThread()
     m_thread->start();
 }
 
-bool VirtualUCNCConnection::openConnection()
+bool VirtualUCNCConnection::open()
 {
     if (m_state == ConnectionState::Connecting) {
         return false;

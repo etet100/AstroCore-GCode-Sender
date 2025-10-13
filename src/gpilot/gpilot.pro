@@ -112,6 +112,7 @@ SOURCES += main.cpp\
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
     core/heightmap/heightmapinterpolator.cpp \
+    state_behaviour/connectingbehavior.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
@@ -237,6 +238,7 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
     core/heightmap/heightmapinterpolator.h \
+    state_behaviour/connectingbehavior.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \

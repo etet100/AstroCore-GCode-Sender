@@ -24,8 +24,7 @@ class ProbingBehavior : public StateBehavior
             YPlus       // Probe forward
         };
 
-        explicit ProbingBehavior(StateBehavior *previous,
-                               ProbeDirection direction = ProbeDirection::ZMinus,
+        explicit ProbingBehavior(ProbeDirection direction = ProbeDirection::ZMinus,
                                double distance = 20.0,
                                double feedRate = 100.0,
                                QObject *parent = nullptr);

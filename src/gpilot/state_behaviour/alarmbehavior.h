@@ -10,7 +10,7 @@
 class AlarmBehavior : public StateBehavior
 {
     public:
-        explicit AlarmBehavior(StateBehavior *previous, int alarmCode = 0, QObject *parent = nullptr);
+        explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
         QString name() override { return "Alarm: " + m_alarmMessage; }
         bool isJoggingAllowed() override { return false; }
         bool isHomingAllowed() override { return true; } // Homing is usually allowed in alarm state (may help exit this state)

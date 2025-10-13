@@ -197,6 +197,7 @@ struct CommandAttributes : CommandQueue {
 
 enum class ConnectionState
 {
+    NoConnectionDevice,
     Initialization,
     Connecting,
     Connected,

@@ -206,12 +206,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     menu = ui->cmdFileSend->menu();
     menu->addAction(tr("Send from current line"), this, SLOT(onActSendFromLineTriggered()));
 
-    // connect(ui->cboCommand, SIGNAL(returnPressed()), this, SLOT(onCboCommandReturnPressed()));
-
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
-
 
     m_originDrawer = new OriginDrawer();
     m_codeDrawer = new GcodeDrawer();
@@ -328,7 +325,7 @@ void frmMain::initializeCommunicator()
     );
     //m_program = new GCode();
     // @TODO temporary!
-    m_communicator->streamCommands(m_program);
+    // m_communicator->streamCommands(m_program);
 
     connect(m_communicator, &Communicator::machinePosChanged, this, &frmMain::onMachinePosChanged);
     connect(m_communicator, &Communicator::workPosChanged, this, &frmMain::onWorkPosChanged);
@@ -1713,7 +1710,7 @@ void frmMain::onStateBehaviorChanged(StateBehavior *sb)
 
 void frmMain::onTimerConnection()
 {
-    openPortIfNeeded();
+    // /openPortIfNeeded();
 
     // @TODO move it completely to communicator
     m_communicator->processConnectionTimer();
@@ -2495,22 +2492,22 @@ void frmMain::applySettings()
 
     if (!m_connection || m_connection->getSupportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
-        m_communicator->replaceConnection(m_connection);
+        m_communicator->setConnection(m_connection);
     }
 }
 
-void frmMain::openPortIfNeeded()
-{
-    assert(m_communicator != nullptr);
+// void frmMain::openPortIfNeeded()
+// {
+//     assert(m_communicator != nullptr);
 
-    if (m_connection->state() == ConnectionState::Connecting || m_connection->state() == ConnectionState::Connected) {
-        return;
-    }
+//     if (m_connection->state() == ConnectionState::Connecting || m_connection->state() == ConnectionState::Connected) {
+//         return;
+//     }
 
-    if (m_connection->openConnection()) {
-        ui->state->setStatusText(tr("Port opened"), "palette(button)", "palette(text)");
-    }
-}
+//     if (m_connection->open()) {
+//         ui->state->setStatusText(tr("Port opened"), "palette(button)", "palette(text)");
+//     }
+// }
 
 void frmMain::updateParser()
 {

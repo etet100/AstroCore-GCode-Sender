@@ -12,7 +12,7 @@ SerialConnection::~SerialConnection()
     if (m_serialPort.isOpen()) m_serialPort.close();
 }
 
-bool SerialConnection::openConnection()
+bool SerialConnection::open()
 {
     if (m_state == ConnectionState::Connecting) {
         return false;

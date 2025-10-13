@@ -8,8 +8,8 @@
 #include "runningbehavior.h"
 #include "joggingbehavior.h"
 
-PauseBehavior::PauseBehavior(StateBehavior *previous, PauseSource source, QObject *parent)
-    : StateBehavior{previous, parent}
+PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
+    : StateBehavior{parent}
     , m_source(source)
 {
 }
@@ -51,7 +51,7 @@ void PauseBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     }
 }
 
-void PauseBehavior::onExit()
+void PauseBehavior::onExit(StateBehavior *next)
 {
     // Clean up resources or prepare for next state
 }

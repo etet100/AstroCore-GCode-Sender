@@ -34,7 +34,9 @@ class Communicator : public QObject
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
         // disconnect, dispose and delete old connection, connect new connection
-        void replaceConnection(Connection *);
+        void setConnection(Connection *);
+        bool openConnection();
+        Connection* connection();
         void stopUpdatingState();
         void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
@@ -70,7 +72,7 @@ class Communicator : public QObject
         // States
         SenderState m_senderState;
         DeviceState m_deviceState;
-        StateBehavior *m_sb;
+        StateBehavior *m_sb = nullptr;
 
         ScriptVars m_storedVars;
 

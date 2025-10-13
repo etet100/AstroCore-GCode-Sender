@@ -11,6 +11,7 @@
 // Behavior implementations
 #include "idlebehavior.h"
 #include "initializationbehavior.h"
+#include "connectingbehavior.h"
 #include "runningbehavior.h"
 #include "joggingbehavior.h"
 #include "homingbehavior.h"

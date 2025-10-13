@@ -7,17 +7,17 @@
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
 
-AlarmBehavior::AlarmBehavior(StateBehavior *previous, int alarmCode, QObject *parent)
-    : StateBehavior{previous, parent}
+AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
+    : StateBehavior{parent}
     , m_alarmCode(alarmCode)
 {
-    setAlarmMessage();
 }
 
 void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
 
+    setAlarmMessage();
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);
 }

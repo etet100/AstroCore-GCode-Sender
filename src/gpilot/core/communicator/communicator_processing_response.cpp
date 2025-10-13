@@ -705,7 +705,7 @@ void Communicator::processWelcomeMessageDetected(QString message)
     setSenderStateAndEmitSignal(SenderState::Stopped);
     setDeviceStateAndEmitSignal(DeviceState::Unknown);
 
-    m_streamer->reset();
+    // m_streamer->reset();
     //m_form->fileCommandIndex() = 0;
 
     m_reseting = false;

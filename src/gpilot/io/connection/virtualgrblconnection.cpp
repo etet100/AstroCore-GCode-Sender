@@ -49,7 +49,7 @@ void VirtualGRBLConnection::startWorkerThread()
     m_thread->start();
 }
 
-bool VirtualGRBLConnection::openConnection()
+bool VirtualGRBLConnection::open()
 {
     if (m_state == ConnectionState::Connecting) {
         return false;

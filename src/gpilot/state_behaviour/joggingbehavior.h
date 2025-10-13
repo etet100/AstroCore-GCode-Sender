@@ -14,13 +14,13 @@
 class JoggingBehavior : public StateBehavior
 {
     public:
-        explicit JoggingBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit JoggingBehavior(QObject *parent = nullptr);
         QString name() override { return "Jogging"; }
         bool isJoggingAllowed() override { return true; } // Jogging is allowed in this state
         bool isHomingAllowed() override { return false; } // Cannot home during jogging
 
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit() override;
+        void onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
         void onCommandResponse(QString command, QStringList response) override;
 

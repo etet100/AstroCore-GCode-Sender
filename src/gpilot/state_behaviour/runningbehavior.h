@@ -13,13 +13,14 @@
 class RunningBehavior : public StateBehavior
 {
     public:
-        explicit RunningBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit RunningBehavior(QObject *parent = nullptr);
         QString name() override { return "Running"; }
         bool isJoggingAllowed() override { return false; } // Cannot jog while running
         bool isHomingAllowed() override { return false; } // Cannot home while running
         void onDeviceStateChanged(DeviceState state) override;
         void onCommandResponse(QString command, QStringList response) override;
         void onAlarm(int code) override;
+        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
         // Running-specific methods
         void handleFeedOverride(int percentage);
