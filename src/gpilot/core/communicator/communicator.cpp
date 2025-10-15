@@ -202,7 +202,7 @@ bool Communicator::streamCommands(GCode &streamer)
 
 void Communicator::clearCommandsAndQueue()
 {
-    qDebug() << "clearing commands and queue";
+    qDebug() << "[Communicator] Clearing commands and queue";
     m_commands.clear();
     clearQueue();
 }
@@ -214,45 +214,53 @@ void Communicator::clearQueue()
 
 void Communicator::reset()
 {
-    assert(m_connection != nullptr);
+    //m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+    m_sb->reset();
 
-    qDebug() << "resetting communicator";
+//     assert(m_connection != nullptr);
 
-    m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+//     qDebug() << "[Communicator] Resetting";
 
-    resetStateVariables();
+//     m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
 
-    setSenderStateAndEmitSignal(SenderState::Stopped);
-    setDeviceStateAndEmitSignal(DeviceState::Unknown);
-    // in main form
-    //m_fileCommandIndex = 0;
+//     resetStateVariables();
 
-    m_reseting = true;
-    m_homing = false;
-    m_resetCompleted = false;
-    // in main form
-//    m_updateSpindleSpeed = true;
-    m_statusReceived = true;
+//     setSenderStateAndEmitSignal(SenderState::Stopped);
+//     setDeviceStateAndEmitSignal(DeviceState::Unknown);
+//     // in main form
+//     //m_fileCommandIndex = 0;
 
-    // Drop all remaining commands in buffer
-    clearCommandsAndQueue();
-    // m_commands.clear();
-    // m_queue.clear();
+//     m_reseting = true;
+//     m_homing = false;
+//     m_resetCompleted = false;
+//     // in main form
+// //    m_updateSpindleSpeed = true;
+//     m_statusReceived = true;
 
-    // Prepare reset response catch
-    QString command = "[CTRL+X]";
-    CommandAttributes commandAttributes(
-        CommandSource::System,
-        m_commandIndex++,
-        TABLE_INDEX_UI, // why UI ??
-        command
-    );
-    m_commands.append(commandAttributes);
+//     // Drop all remaining commands in buffer
+//     clearCommandsAndQueue();
+//     // m_commands.clear();
+//     // m_queue.clear();
 
-    if (m_streamer != nullptr) {
-        m_streamer->reset();
-    }
-    m_updateSpindleSpeed = true;
+//     // Prepare reset response catch
+//     QString command = "[CTRL+X]";
+//     CommandAttributes commandAttributes(
+//         CommandSource::System,
+//         m_commandIndex++,
+//         TABLE_INDEX_UI, // why UI ??
+//         command
+//     );
+//     m_commands.append(commandAttributes);
+
+//     if (m_streamer != nullptr) {
+//         m_streamer->reset();
+//     }
+//     m_updateSpindleSpeed = true;
+}
+
+void Communicator::unlock()
+{
+    m_sb->unlock();
 }
 
 void Communicator::abort()
@@ -421,9 +429,9 @@ void Communicator::execute(StateBehavior *sb)
     if (m_sb != nullptr) {
         m_sb->onExit(sb);
 
-        qDebug() << "State behavior changed from" << m_sb->name() << "to" << sb->name();
+        qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name();
     } else {
-        qDebug() << "State behavior set to" << sb->name();
+        qDebug() << "[Communicator][Behavior] State behavior set to" << sb->name();
     }
 
     emit stateBehaviorChanged(sb);
@@ -490,6 +498,8 @@ void Communicator::processOffsetsVars(QString response)
             )
         );
     }
+
+    qDebug() << "[Communicator] Offsets updated";
 }
 
 void Communicator::onTimerStateQuery()

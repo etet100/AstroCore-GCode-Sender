@@ -19,6 +19,8 @@ class StateBehavior : public QObject
     public:
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString name() = 0;
+        virtual void reset();
+        virtual void unlock() {};
         virtual bool isJoggingAllowed() { return false; };
         virtual bool isHomingAllowed() { return false; };
         StateBehavior* previous() const { return m_previous; }
@@ -35,6 +37,10 @@ class StateBehavior : public QObject
             Q_UNUSED(command);
             Q_UNUSED(response);
         };
+        virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response) {
+            Q_UNUSED(commandAttributes);
+            onCommandResponse(command, response);
+        }
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
         };
@@ -49,9 +55,9 @@ class StateBehavior : public QObject
     //     };
 
     protected:
-        StateBehavior *m_previous;
-        Communicator *m_communicator;
-        QTimer *m_timer;
+        StateBehavior *m_previous = nullptr;
+        Communicator *m_communicator = nullptr;
+        QTimer *m_timer = nullptr;
 
         void stopTimer();
 };

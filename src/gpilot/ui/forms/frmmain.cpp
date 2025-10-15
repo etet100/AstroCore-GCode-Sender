@@ -92,8 +92,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->control, &partMainControl::unlock, this, [this]() {
-        m_communicator->m_updateSpindleSpeed = true;
-        m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+        // m_communicator->m_updateSpindleSpeed = true;
+        // m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+        m_communicator->unlock();
     });
     connect(ui->control, &partMainControl::home, this, [this]() {
         // m_communicator->m_homing = true;

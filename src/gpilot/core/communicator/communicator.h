@@ -13,6 +13,9 @@
 class Communicator : public QObject
 {
     friend class frmMain;
+    friend class StateBehavior;
+    friend class ConnectingBehavior;
+    friend class IdleBehavior;
 
     Q_OBJECT
 
@@ -31,6 +34,7 @@ class Communicator : public QObject
         void clearCommandsAndQueue();
         void clearQueue();
         void reset();
+        void unlock();
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
         // disconnect, dispose and delete old connection, connect new connection
@@ -60,7 +64,7 @@ class Communicator : public QObject
     private:
         static const int BUFFERLENGTH = 127;
 
-        Connection *m_connection;
+        Connection *m_connection = nullptr;;
         Configuration *m_configuration;
         GCode *m_streamer = nullptr;
         MachineConfiguration *m_machineConfiguration = nullptr;
@@ -132,7 +136,10 @@ class Communicator : public QObject
         void completeTransfer();
 
         void resetStateVariables();
-
+        void processDeviceConfiguration(QString response);
+        
+        void processGCodeParserState(CommandAttributes commandAttributes, QString response);
+        
     private slots:
         void onTimerStateQuery();
         void onConnectionLineReceived(QString);

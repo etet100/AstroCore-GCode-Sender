@@ -11,10 +11,14 @@ class ConnectingBehavior : public StateBehavior
 {
     public:
         explicit ConnectingBehavior(QObject *parent = nullptr);
-        QString name() override { return "Connecting"; }
+        QString name() override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onExit(StateBehavior *next = nullptr) override;
         void onConnectionStateChanged(ConnectionState state) override;
+        void onCommandResponse(QString command, QStringList response) override;
+
+    private:
+        bool dataIsReset(QString data);
 };
 
 #endif // CONNECTINGBEHAVIOR_H

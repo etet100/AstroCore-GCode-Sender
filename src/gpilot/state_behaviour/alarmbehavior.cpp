@@ -13,8 +13,18 @@ AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
 {
 }
 
+void AlarmBehavior::onDeviceStateChanged(DeviceState state)
+{
+    qDebug() << "[AlarmBehavior] Device State Changed:" << static_cast<int>(state);
+    // Handle device state changes
+    if (state == DeviceState::Idle) {
+        emit transition(this, new IdleBehavior());
+    }
+}
+
 void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
+    qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     setAlarmMessage();
@@ -60,30 +70,29 @@ void AlarmBehavior::setAlarmMessage()
 
 void AlarmBehavior::onCommandResponse(QString command, QStringList response)
 {
+    qDebug() << "[AlarmBehavior] Command Response:" << command << response;
     // Handle command responses in alarm state
     if (command == "$X") {  // Unlock command
         if (!response.contains("error")) {
             // Unlock successful, go to idle state
-            emit transition(this, new IdleBehavior(this));
+            // emit transition(this, new IdleBehavior(this));
         } else {
             // Unlock failed, stay in alarm state
-            emit error(this, "Failed to unlock alarm: " + response.join(" "));
+            // emit error(this, "Failed to unlock alarm: " + response.join(" "));
         }
     }
 }
 
-void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
-{
-    if (state != ConnectionState::Connected) {
-        // If connection is lost, we might want to transition to a different state
-        // For now, we don't do anything special
-    }
-}
+// void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
+// {
+//     qDebug() << "[AlarmBehavior] Connection State Changed:" << static_cast<int>(state);
+//     if (state != ConnectionState::Connected) {
+//         // If connection is lost, we might want to transition to a different state
+//         // For now, we don't do anything special
+//     }
+// }
 
-void AlarmBehavior::unlockAlarm()
+void AlarmBehavior::unlock()
 {
-    // Send unlock alarm command
-    if (m_communicator) {
-        m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
-    }
+    m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
 }

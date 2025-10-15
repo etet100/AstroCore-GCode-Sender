@@ -113,6 +113,7 @@ SOURCES += main.cpp\
     io/connection/virtualucncconnection.cpp \
     core/heightmap/heightmapinterpolator.cpp \
     state_behaviour/connectingbehavior.cpp \
+    state_behaviour/resetbehavior.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
@@ -239,6 +240,7 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualucncconnection.h \
     core/heightmap/heightmapinterpolator.h \
     state_behaviour/connectingbehavior.h \
+    state_behaviour/resetbehavior.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \

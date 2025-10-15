@@ -9,6 +9,8 @@
 
 void Communicator::onConnectionLineReceived(QString data)
 {
+    // qDebug() << "[Communicator][Resp] " + data;
+
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
     assert(data.length() < 100);
 
@@ -207,7 +209,7 @@ void Communicator::processStatus(QString data)
 
         // Update status
         if (state != m_deviceState) {
-            emit deviceStateChanged(state);
+            // emit deviceStateChanged(state);
             m_sb->onDeviceStateChanged(state);
         }
 
@@ -299,6 +301,112 @@ void Communicator::processStatus(QString data)
     emit statusReceived(data);
 }
 
+void Communicator::processDeviceConfiguration(QString response)
+{
+    static QRegularExpression gs("\\$(\\d+)\\=([^;]+)\\; ");
+
+    QMap<int, double> rawMachineConfiguration;
+    int p = 0;
+    QRegularExpressionMatch match = gs.match(response);
+    while (match.hasMatch()) {
+        rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
+        p += match.capturedLength();
+        match = gs.match(response, p);
+    }
+
+    MachineConfiguration *machineConfiguration = m_machineConfiguration = new MachineConfiguration(
+        rawMachineConfiguration,
+        m_configuration->machineModule()
+    );
+
+    emit deviceConfigurationReceived(
+        *machineConfiguration,
+        rawMachineConfiguration
+    );
+
+    // if (commandAttributes.callback != nullptr) {
+    //     commandAttributes.callback(machineConfiguration);
+    // }
+
+
+    // Command sent after reset
+    // if (ca.tableIndex == -2) {
+    //     QList<int> keys = rawMachineConfiguration.keys();
+    //     if (keys.contains(13)) m_settings->setUnits(rawMachineConfiguration[13]);
+    //     {...}
+
+    //     //moved to settingsReceived signal handler
+    //     //setupCoordsTextboxes();
+    // }
+
+    qDebug() << "[Communicator] Device configuration processed.";
+}
+
+void Communicator::processGCodeParserState(CommandAttributes commandAttributes, QString response)
+{
+    static QRegularExpression g("G5[4-9]");
+
+    QRegularExpressionMatch match = g.match(response);
+    if (match.hasMatch()) {
+        m_storedVars.setCS(match.captured(0));
+        // @TODO how to update drawer? signal? timer?
+        // m_form->machineBoundsDrawer().setOffset(
+        //     QPointF(
+        //         toMetric(m_storedVars.x()),
+        //         toMetric(m_storedVars.y())
+        //     ) + QPointF(
+        //         toMetric(m_storedVars.G92x()),
+        //         toMetric(m_storedVars.G92y()
+        //     )
+        // ));
+    }
+
+    static QRegularExpression t("T(\\d+)(?!\\d)");
+
+    match = t.match(response);
+    if (match.hasMatch()) {
+        m_storedVars.setTool(match.captured(1).toInt());
+    }
+
+    // TODO: Store firmware version, features, buffer size on $I command
+    // [VER:1.1d.20161014:Some string]
+    // [OPT:VL,15,128]
+
+    // Restore absolute/relative coordinate system after jog
+    if (commandAttributes.tableIndex == TABLE_INDEX_UTIL1) {
+        // @TODO how to handle keyboard control?? not like this!
+        // if (ui->chkKeyboardControl->isChecked()) m_form->absoluteCoordinates() = response.contains("G90");
+        // else if (response.contains("G90")) sendCommand(CommandSource::System, "G90", COMMAND_TI_UI);
+        if (response.contains("G90")) sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
+    }
+
+    // Process GCore parser state
+    if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {
+        // @TODO what is this ; for? is it '; ok'?
+        m_lastParserState = response.left(response.indexOf("; "));
+
+        // Update status in visualizer window
+        emit parserStateReceived(m_lastParserState);
+
+        // Store parser status
+        if ((m_senderState == SenderState::Transferring) || (m_senderState == SenderState::Stopping)) {
+            storeParserState();
+        }
+
+        // Spindle speed
+        // @TODO what is the difference between this and processFeedSpindleSpeed??
+        static QRegularExpression rx(".*S([\\d\\.]+)");
+
+        match = rx.match(response);
+        if (match.hasMatch()) {
+            double spindleSpeed = match.captured(1).toDouble();
+            emit spindleSpeedReceived(spindleSpeed);
+        }
+
+        m_updateParserState = true;
+    }
+}
+
 void Communicator::processCommandResponse(QString data)
 {
     // @TODO why static?? what is this for???
@@ -328,114 +436,21 @@ void Communicator::processCommandResponse(QString data)
     QString command = GcodePreprocessorUtils::removeComment(commandAttributes.commandLine).toUpper();
 
     if (m_sb != nullptr) {
-        m_sb->onCommandResponse(command, lines);
+        m_sb->onCommandResponse(command, commandAttributes, lines);
     }
 
     // Store current coordinate system
-    if (command == "$G") {
-        static QRegularExpression g("G5[4-9]");
+    // if (command == "$G") {
+    //     processGCodeParserState(commandAttributes, response);
+    // }
 
-        QRegularExpressionMatch match = g.match(response);
-        if (match.hasMatch()) {
-            m_storedVars.setCS(match.captured(0));
-            // @TODO how to update drawer? signal? timer?
-            // m_form->machineBoundsDrawer().setOffset(
-            //     QPointF(
-            //         toMetric(m_storedVars.x()),
-            //         toMetric(m_storedVars.y())
-            //     ) + QPointF(
-            //         toMetric(m_storedVars.G92x()),
-            //         toMetric(m_storedVars.G92y()
-            //     )
-            // ));
-        }
+    // // Offsets
+    // if (command == "$#") processOffsetsVars(response);
 
-        static QRegularExpression t("T(\\d+)(?!\\d)");
-
-        match = t.match(response);
-        if (match.hasMatch()) {
-            m_storedVars.setTool(match.captured(1).toInt());
-        }
-
-        // TODO: Store firmware version, features, buffer size on $I command
-        // [VER:1.1d.20161014:Some string]
-        // [OPT:VL,15,128]
-
-        // Restore absolute/relative coordinate system after jog
-        if (commandAttributes.tableIndex == TABLE_INDEX_UTIL1) {
-            // @TODO how to handle keyboard control?? not like this!
-            // if (ui->chkKeyboardControl->isChecked()) m_form->absoluteCoordinates() = response.contains("G90");
-            // else if (response.contains("G90")) sendCommand(CommandSource::System, "G90", COMMAND_TI_UI);
-            if (response.contains("G90")) sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
-        }
-
-        // Process GCore parser state
-        if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {
-            // @TODO what is this ; for? is it '; ok'?
-            m_lastParserState = response.left(response.indexOf("; "));
-
-            // Update status in visualizer window
-            emit parserStateReceived(m_lastParserState);
-
-            // Store parser status
-            if ((m_senderState == SenderState::Transferring) || (m_senderState == SenderState::Stopping)) {
-                storeParserState();
-            }
-
-            // Spindle speed
-            // @TODO what is the difference between this and processFeedSpindleSpeed??
-            static QRegularExpression rx(".*S([\\d\\.]+)");
-
-            match = rx.match(response);
-            if (match.hasMatch()) {
-                double spindleSpeed = match.captured(1).toDouble();
-                emit spindleSpeedReceived(spindleSpeed);
-            }
-
-            m_updateParserState = true;
-        }
-    }
-
-    // Offsets
-    if (command == "$#") processOffsetsVars(response);
-
-    // Settings response
-    if (command == "$$") {
-        static QRegularExpression gs("\\$(\\d+)\\=([^;]+)\\; ");
-
-        QMap<int, double> rawMachineConfiguration;
-        int p = 0;
-        QRegularExpressionMatch match = gs.match(response);
-        while (match.hasMatch()) {
-            rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
-            p += match.capturedLength();
-            match = gs.match(response, p);
-        }
-
-        MachineConfiguration *machineConfiguration = m_machineConfiguration = new MachineConfiguration(
-            rawMachineConfiguration,
-            m_configuration->machineModule()
-        );
-
-        emit deviceConfigurationReceived(
-            *machineConfiguration,
-            rawMachineConfiguration
-        );
-
-        if (commandAttributes.callback != nullptr) {
-            commandAttributes.callback(machineConfiguration);
-        }
-
-        // Command sent after reset
-        // if (ca.tableIndex == -2) {
-        //     QList<int> keys = rawMachineConfiguration.keys();
-        //     if (keys.contains(13)) m_settings->setUnits(rawMachineConfiguration[13]);
-        //     {...}
-
-        //     //moved to settingsReceived signal handler
-        //     //setupCoordsTextboxes();
-        // }
-    }
+    // // Settings response
+    // if (command == "$$") {
+    //     processDeviceConfiguration(response, commandAttributes);
+    // }
 
     // Homing response
     if ((command == "$H" || command == "$T") && m_homing) m_homing = false;
@@ -700,6 +715,7 @@ void Communicator::processUnhandledResponse(QString data)
 
 void Communicator::processWelcomeMessageDetected(QString message)
 {
+    return;
     emit welcomeMessageReceived(message);
 
     setSenderStateAndEmitSignal(SenderState::Stopped);

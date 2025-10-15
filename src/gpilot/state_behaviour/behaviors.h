@@ -19,5 +19,6 @@
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
 #include "checkmodebehavior.h"
+#include "resetbehavior.h"
 
 #endif // BEHAVIORS_H

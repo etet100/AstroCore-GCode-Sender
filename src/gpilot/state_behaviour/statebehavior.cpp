@@ -3,9 +3,15 @@
 // Copyright 2024 BTS
 
 #include "statebehavior.h"
+#include "core/communicator/communicator.h"
 
 StateBehavior::StateBehavior(QObject *parent) : QObject{parent}
 {
+}
+
+void StateBehavior::reset()
+{
+    emit transition(this, new ResetBehavior(this));
 }
 
 void StateBehavior::onExit(StateBehavior *next)
