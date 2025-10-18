@@ -212,6 +212,7 @@ void Communicator::processStatus(QString data)
             // emit deviceStateChanged(state);
             m_sb->onDeviceStateChanged(state);
         }
+        m_sb->onDeviceState(state);
 
         emit deviceStateReceived(state);
 
@@ -732,8 +733,8 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
     clearCommandsAndQueue();
 
-    sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-    sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+    // sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+    // sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
 
     // @TODO moved to senderStateReceived handler, is it too soon??
     // m_form->updateControlsState();

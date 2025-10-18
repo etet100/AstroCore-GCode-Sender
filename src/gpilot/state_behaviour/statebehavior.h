@@ -41,6 +41,9 @@ class StateBehavior : public QObject
         virtual void onDeviceStateChanged(DeviceState state) {
             Q_UNUSED(state);
         };
+        virtual void onDeviceState(DeviceState state) {
+            Q_UNUSED(state);
+        };
         virtual void onCommandResponse(QString command, QStringList response) {
             Q_UNUSED(command);
             Q_UNUSED(response);

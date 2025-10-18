@@ -152,11 +152,10 @@ void partMainJog::onCmdFeedRateChanged(int index)
         return;
     }
 
-   \
-    // joggingConfiguration.setJogStep(ui->cboJogStep->currentText().toDouble());
-    // joggingConfiguration.setJogFeed(ui->cboJogFeed->currentText().toInt());
+    m_feedRate = m_configurationJogging->feedChoices().at(index).toInt();
+    m_configurationJogging->setJogFeed(m_feedRate);
 
-    qDebug() << "Feed rate changed" << index << m_feedRate;
+    qDebug() << "[Jog UI] Feed rate changed" << index << m_feedRate;
 
     emit this->parametersChanged(m_feedRate, m_stepSize);
 }
@@ -173,8 +172,9 @@ void partMainJog::onCmdStepSizeChanged(int index)
     } else {
         m_stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
     }
+    m_configurationJogging->setJogStep(m_stepSize);
 
-    qDebug() << "Step size changed" << index << m_stepSize;
+    qDebug() << "[Jog UI] Step size changed" << index << m_stepSize;
 
     emit this->parametersChanged(m_feedRate, m_stepSize);
 }

@@ -15,11 +15,12 @@ class ResetBehavior : public StateBehavior
         QString name() override { return "Reset"; }
         bool isJoggingAllowed() override { return true; }
         bool isHomingAllowed() override { return true; }
-        void onDeviceStateChanged(DeviceState state) override;
+        void onDeviceState(DeviceState state) override;
         void onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
     private:
         bool dataIsReset(QString data);
+        bool m_resetCompleted = false;
 };
 
 #endif // RESETBEHAVIOR_H

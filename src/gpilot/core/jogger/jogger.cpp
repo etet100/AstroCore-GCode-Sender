@@ -30,6 +30,7 @@ void Jogger::jog(Axis axis, bool positiveDir)
 
     bool unitsInches = m_communicator.machineConfiguration().unitsInches();
     vector *= m_configuration.jogStep();
+    qDebug() << "[Jogger]" << (int)axis << positiveDir << m_configuration.jogStep();
 
     m_communicator.sendCommand(
         CommandSource::System,

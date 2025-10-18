@@ -13,19 +13,19 @@ ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-void ResetBehavior::onDeviceStateChanged(DeviceState state)
+void ResetBehavior::onDeviceState(DeviceState state)
 {
-    qDebug() << "[ResetBehavior] Device State Changed:" << static_cast<int>(state);
+    if (!m_resetCompleted) {
+        return;
+    }
+
+    qDebug() << "[ResetBehavior] Device State:" << static_cast<int>(state);
     // // Handle device state changes
     if (state == DeviceState::Alarm) {
         emit transition(this, new AlarmBehavior());
+    } else {
+        qDebug() << "[ResetBehavior] Unhandled state after reset:" << int(state);
     }
-    //     // Machine started running - transition to running behavior
-    //     emit transition(this, new RunningBehavior(this));
-    // } else if (state == DeviceState::Alarm) {
-    //     // Machine entered alarm state
-    //     emit transition(this, new AlarmBehavior());
-    // }
 }
 
 void ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response)
@@ -33,7 +33,8 @@ void ResetBehavior::onCommandResponse(QString command, CommandAttributes command
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
 
     if (dataIsReset(response.first())) {
-        qDebug() << "[ResetBehavior] Reset detected in response.";
+        qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
+
         m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
         m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
 
@@ -50,7 +51,15 @@ void ResetBehavior::onCommandResponse(QString command, CommandAttributes command
     if (command == "$#") {
         qDebug() << "[ConnectingBehavior] Processing offsets.";
         m_communicator->processOffsetsVars(response.first());
-        emit transition(this, new IdleBehavior());
+
+        m_resetCompleted = true;
+        m_communicator->connection()->sendByteArray(QByteArray(1, '?'));
+
+        // if (m_state == DeviceState::Alarm) {
+        //     emit transition(this, new IdleBehavior());
+        // } else {
+        //     qDebug() << "[ConnectingBehavior] Unhandled state after reset:" << int(m_state);
+        // }
 
         return;
     }
@@ -65,6 +74,7 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
+
     QString command = "[CTRL+X]";
     CommandAttributes commandAttributes(
         CommandSource::System,
@@ -73,10 +83,9 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
         command
     );
     m_communicator->m_commands.append(commandAttributes);
-    m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
 
-    // m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-    // m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+    qDebug() << "[ResetBehavior] Soft reset";
+    m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
 }
 
 bool ResetBehavior::dataIsReset(QString data)
