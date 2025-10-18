@@ -12,6 +12,7 @@
 #include <QStyleHints>
 #include <QFontDatabase>
 #include <QCommandLineParser>
+#include <QLoggingCategory>
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
 #include "phantomstyle/src/phantom/phantomstyle.h"
@@ -100,6 +101,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationDisplayName("G-Pilot");
     app.setOrganizationName("G-Pilot");
+
+    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Test helper");

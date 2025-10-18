@@ -3,6 +3,7 @@
 // Copyright 2024 BTS
 
 #include "core/globals.h"
+#include <QRegularExpression>
 #include "runningbehavior.h"
 #include "alarmbehavior.h"
 #include "resetbehavior.h"
@@ -31,6 +32,29 @@ void ResetBehavior::onCommandResponse(QString command, CommandAttributes command
 {
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
 
+    if (dataIsReset(response.first())) {
+        qDebug() << "[ResetBehavior] Reset detected in response.";
+        m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+        m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+
+        return;
+    }
+
+    if (command == "$$") {
+        qDebug() << "[ConnectingBehavior] Processing device configuration.";
+        m_communicator->processDeviceConfiguration(response);
+
+        return;
+    }
+
+    if (command == "$#") {
+        qDebug() << "[ConnectingBehavior] Processing offsets.";
+        m_communicator->processOffsetsVars(response.first());
+        emit transition(this, new IdleBehavior());
+
+        return;
+    }
+
     // if (command == "$G") {
     //     m_communicator->processGCodeParserState(commandAttributes, response.first());
     // }
@@ -41,5 +65,30 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
+    QString command = "[CTRL+X]";
+    CommandAttributes commandAttributes(
+        CommandSource::System,
+        m_communicator->m_commandIndex++,
+        TABLE_INDEX_UI, // why UI ??
+        command
+    );
+    m_communicator->m_commands.append(commandAttributes);
     m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+
+    // m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+    // m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+}
+
+bool ResetBehavior::dataIsReset(QString data)
+{
+    // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
+    // followed by a version number in the format x.y.
+    // This matches e.g.
+    // Grbl 1.1h ['$' for help]
+    // GrblHAL 1.1f ['$' or '' for help]
+    // Grbl 1.8 [uCNC v1.8.8 '$' for help]
+    // Gcarvin ?? https://github.com/inventables/gCarvin
+    static QRegularExpression re("^(GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+
+    return data.contains(re);
 }

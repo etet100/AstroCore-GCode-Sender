@@ -14,6 +14,7 @@ Communicator::Communicator(
 ) : QObject(parent),
     m_connection(connection),
     m_configuration(configuration),
+    m_jogger(*this, configuration->joggingModule()),
     m_timerStateQuery(this),
     m_deviceStatesDictionary({
         {DeviceState::Unknown, "Unknown"},

@@ -103,8 +103,10 @@ SOURCES += main.cpp\
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/converter.cpp \
+    core/gcode/pipeline.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/loader/heightmaploader.cpp \
+    core/jogger/jogger.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
@@ -112,6 +114,7 @@ SOURCES += main.cpp\
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
     core/heightmap/heightmapinterpolator.cpp \
+    state_behaviour/action.cpp \
     state_behaviour/connectingbehavior.cpp \
     state_behaviour/resetbehavior.cpp \
     ui/drawers/cubedrawer.cpp \
@@ -230,8 +233,10 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/applyheightmap.h \
     core/gcode/converter/arcstolines.h \
     core/gcode/converter/converter.h \
+    core/gcode/pipeline.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/loader/heightmaploader.h \
+    core/jogger/jogger.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
@@ -239,6 +244,7 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
     core/heightmap/heightmapinterpolator.h \
+    state_behaviour/action.h \
     state_behaviour/connectingbehavior.h \
     state_behaviour/resetbehavior.h \
     ui/drawers/cube.h \

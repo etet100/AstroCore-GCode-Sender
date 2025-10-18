@@ -68,7 +68,7 @@ void ConnectingBehavior::onCommandResponse(QString command, QStringList response
 
     if (command == "$$") {
         qDebug() << "[ConnectingBehavior] Processing device configuration.";
-        m_communicator->processDeviceConfiguration(response.first());
+        m_communicator->processDeviceConfiguration(response);
     }
 
     if (command == "$#") {

@@ -21,13 +21,6 @@ enum Type {
     Axes,
 };
 
-enum class Axis : int {
-    None = -1,
-    X = 0,
-    Y = 1,
-    Z = 2,
-};
-
 struct ConfigEntry {
     int index;
     QString description;

@@ -87,6 +87,16 @@ class HomingDirs {
         HomingDir m_z;
 };
 
+enum class Axis {
+    None = -1,
+    X,
+    Y,
+    Z,
+    A,
+    B,
+    C
+};
+
 enum class JoggindDir {
     None,
     XPlus,

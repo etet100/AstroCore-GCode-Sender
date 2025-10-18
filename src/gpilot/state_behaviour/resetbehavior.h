@@ -18,6 +18,8 @@ class ResetBehavior : public StateBehavior
         void onDeviceStateChanged(DeviceState state) override;
         void onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+    private:
+        bool dataIsReset(QString data);
 };
 
 #endif // RESETBEHAVIOR_H

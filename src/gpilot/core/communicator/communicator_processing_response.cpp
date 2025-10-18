@@ -301,17 +301,17 @@ void Communicator::processStatus(QString data)
     emit statusReceived(data);
 }
 
-void Communicator::processDeviceConfiguration(QString response)
+void Communicator::processDeviceConfiguration(QStringList response)
 {
-    static QRegularExpression gs("\\$(\\d+)\\=([^;]+)\\; ");
+    static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
     QMap<int, double> rawMachineConfiguration;
-    int p = 0;
-    QRegularExpressionMatch match = gs.match(response);
-    while (match.hasMatch()) {
-        rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
-        p += match.capturedLength();
-        match = gs.match(response, p);
+
+    for (QString line : response) {
+        QRegularExpressionMatch match = gs.match(line);
+        if (match.hasMatch()) {
+            rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
+        }
     }
 
     MachineConfiguration *machineConfiguration = m_machineConfiguration = new MachineConfiguration(
@@ -456,14 +456,14 @@ void Communicator::processCommandResponse(QString data)
     if ((command == "$H" || command == "$T") && m_homing) m_homing = false;
 
     // Reset complete response
-    if (command == "[CTRL+X]") {
-        m_resetCompleted = true;
-        m_updateParserState = true;
+    // if (command == "[CTRL+X]") {
+    //     m_resetCompleted = true;
+    //     m_updateParserState = true;
 
-        // Query grbl settings
-        sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-        sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
-    }
+    //     // Query grbl settings
+    //     sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+    //     sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+    // }
 
     // Clear command buffer on "M2" & "M30" command (old firmwares)
     static QRegularExpression M230("(M0*2|M30)(?!\\d)");

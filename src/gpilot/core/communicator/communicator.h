@@ -7,15 +7,17 @@
 #include "io/connection/connection.h"
 #include "scripting/scriptvars.h"
 #include "core/machine/machineconfiguration.h"
+#include "core/jogger/jogger.h"
 #include "state_behaviour/behaviors.h"
 #include <QTimer>
 
 class Communicator : public QObject
 {
     friend class frmMain;
-    friend class StateBehavior;
+    friend class ResetBehavior;
     friend class ConnectingBehavior;
     friend class IdleBehavior;
+    friend class Jogger;
 
     Q_OBJECT
 
@@ -61,6 +63,7 @@ class Communicator : public QObject
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
+        Jogger& jogger() { return m_jogger; }
     private:
         static const int BUFFERLENGTH = 127;
 
@@ -68,6 +71,7 @@ class Communicator : public QObject
         Configuration *m_configuration;
         GCode *m_streamer = nullptr;
         MachineConfiguration *m_machineConfiguration = nullptr;
+        Jogger m_jogger;
 
         // Queues
         QList<CommandAttributes> m_commands;
@@ -136,7 +140,7 @@ class Communicator : public QObject
         void completeTransfer();
 
         void resetStateVariables();
-        void processDeviceConfiguration(QString response);
+        void processDeviceConfiguration(QStringList response);
         
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
         

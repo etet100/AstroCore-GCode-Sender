@@ -96,3 +96,22 @@ void AlarmBehavior::unlock()
 {
     m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
 }
+
+bool AlarmBehavior::execute(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Unlock:
+            unlock();
+            return true;
+    }
+}
+
+bool AlarmBehavior::isActionAllowed(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Unlock:
+            return true;
+    }
+
+    return StateBehavior::isActionAllowed(action);
+}

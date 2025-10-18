@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QTimer>
 #include "core/globals.h"
+#include "action.h"
 
 class Communicator;
 
@@ -19,6 +20,13 @@ class StateBehavior : public QObject
     public:
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString name() = 0;
+        virtual bool execute(const Action &action) {
+            Q_UNUSED(action);
+        };
+        virtual bool isActionAllowed(const Action &action) {
+            Q_UNUSED(action);
+            return false;
+        };
         virtual void reset();
         virtual void unlock() {};
         virtual bool isJoggingAllowed() { return false; };

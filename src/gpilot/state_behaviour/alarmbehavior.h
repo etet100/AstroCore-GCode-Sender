@@ -19,11 +19,15 @@ class AlarmBehavior : public StateBehavior
         void onCommandResponse(QString command, QStringList response) override;
         // void onConnectionStateChanged(ConnectionState state) override;
         void unlock() override;
+        bool execute(const Action &action) override;
+        bool isActionAllowed(const Action &action) override;
 
     private:
         int m_alarmCode;
         QString m_alarmMessage;
         void setAlarmMessage();
+
+        // StateBehavior interface
 };
 
 #endif // ALARMBEHAVIOR_H

@@ -139,16 +139,19 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->jog, &partMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
-        Q_UNUSED(dir)
-        qDebug() << "Jog: " << jog;
-        jogStep(jog);
+        m_communicator->jogger().jog(dir);
+
+        // Q_UNUSED(dir)
+        // qDebug() << "Jog: " << jog;
+        // jogStep(jog);
     });
     connect(ui->jog, &partMainJog::stop, this, [this]() {
-        m_communicator->clearQueue();
-        m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
-        while (m_communicator->deviceState() == DeviceState::Jog) {
-            qApp->processEvents();
-        }
+        m_communicator->jogger().stop();
+        // m_communicator->clearQueue();
+        // m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
+        // while (m_communicator->deviceState() == DeviceState::Jog) {
+        //     qApp->processEvents();
+        // }
     });
 
     // Drag&drop placeholders
@@ -2457,6 +2460,7 @@ void frmMain::appendSpacer(DropWidget *dockPanel)
 void frmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
+    dock->setMinimumHeight(200);
     dock->setObjectName("Camera");
     dock->setWidget(window);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
@@ -2512,6 +2516,8 @@ void frmMain::applySettings()
 
 void frmMain::updateParser()
 {
+    assert(m_communicator->isMachineConfigurationReady());
+
     GCodeViewParser *viewParse = m_currentDrawer->viewParser();
 
     GcodeParser parser;

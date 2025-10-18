@@ -18,13 +18,6 @@
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
-enum class Axis {
-    None = -1,
-    X = 0,
-    Y,
-    Z,
-};
-
 enum class PacketType: uint8_t {
     STATE = 0,
     WIFI_CONFIG = 1,
