@@ -30,8 +30,22 @@ void partMainJog::configurationUpdated()
     m_storedKeyboardControl = m_configurationJogging->keyboardControl();
 
     ui->cboJogStep->setItems(QStringList("Continuous") + m_configurationJogging->stepChoices());
+    for (QString ch : m_configurationJogging->stepChoices()) {
+        if (ch.toDouble() == m_configurationJogging->jogStep()) {
+            ui->cboJogStep->setCurrentText(ch);
+            break;
+        }
+    }
 
     ui->cboJogFeed->setItems(m_configurationJogging->feedChoices());
+    for (QString ch : m_configurationJogging->feedChoices()) {
+        if (ch.toInt() == m_configurationJogging->jogFeed()) {
+            ui->cboJogFeed->setCurrentText(ch);
+            break;
+        }
+    }
+
+    m_initialized = true;
 }
 
 void partMainJog::restoreKeyboardControl()
@@ -42,7 +56,6 @@ void partMainJog::restoreKeyboardControl()
 void partMainJog::initialize(ConfigurationJogging &configurationJogging)
 {
     m_configurationJogging = &configurationJogging;
-    configurationUpdated();
 }
 
 partMainJog::~partMainJog()
@@ -154,6 +167,10 @@ void partMainJog::onCmdStopClicked()
 
 void partMainJog::onCmdFeedRateChanged(int index)
 {
+    if (!m_initialized) {
+        return;
+    }
+
     // should not happen in real life, only during initialization (clear old items)
     if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
         return;
@@ -169,6 +186,10 @@ void partMainJog::onCmdFeedRateChanged(int index)
 
 void partMainJog::onCmdStepSizeChanged(int index)
 {
+    if (!m_initialized) {
+        return;
+    }
+
     // should not happen in real life, only during initialization (clear old items)
     if (index < 0 || index >= m_configurationJogging->stepChoices().count()) {
         return;

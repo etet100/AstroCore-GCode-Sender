@@ -33,6 +33,7 @@ public:
 private:
     Ui::partMainJog *ui;
     int m_feedRate;
+    bool m_initialized = false;
     double m_stepSize;
     bool m_storedKeyboardControl = false;
     ConfigurationJogging *m_configurationJogging;

@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef D1DB2AB9_9615_41B9_8224_AC77F9B9B431
-#define D1DB2AB9_9615_41B9_8224_AC77F9B9B431
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -44,6 +41,3 @@ class JoggingBehavior : public StateBehavior
 };
 
 #endif // JOGGINGBEHAVIOR_H
-
-
-#endif /* D1DB2AB9_9615_41B9_8224_AC77F9B9B431 */

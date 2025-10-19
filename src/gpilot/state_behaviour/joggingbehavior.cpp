@@ -106,30 +106,38 @@ void JoggingBehavior::startJogging()
         // ...
     }
 
+    double distance = m_distance;
+
     if (m_distance == JoggingContinuous) {
+        qDebug() << "[JoggingBehavior] Continuous mode";
+
         // Sent multiple small moves to simulate continuous jogging
-        m_distance = 1.0;
+        // Each move will be 1% of the feed rate distance
+        distance = m_feedRate / 100.0;
+        if (distance < 2.0) {
+            distance = 2.0;
+        }
     }
 
     m_jogCommand = "$J=";
     switch (m_currentDirection) {
         case JoggindDir::XPlus:
-            m_jogCommand += "G91 G21 X" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 X" + QString::number(distance > 0 ? distance : 100);
             break;
         case JoggindDir::XMinus:
-            m_jogCommand += "G91 G21 X-" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 X-" + QString::number(distance > 0 ? distance : 100);
             break;
         case JoggindDir::YPlus:
-            m_jogCommand += "G91 G21 Y" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 Y" + QString::number(distance > 0 ? distance : 100);
             break;
         case JoggindDir::YMinus:
-            m_jogCommand += "G91 G21 Y-" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 Y-" + QString::number(distance > 0 ? distance : 100);
             break;
         case JoggindDir::ZPlus:
-            m_jogCommand += "G91 G21 Z" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 Z" + QString::number(distance > 0 ? distance : 100);
             break;
         case JoggindDir::ZMinus:
-            m_jogCommand += "G91 G21 Z-" + QString::number(m_distance > 0 ? m_distance : 100);
+            m_jogCommand += "G91 G21 Z-" + QString::number(distance > 0 ? distance : 100);
             break;
         default:
             return; // Nieznany kierunek
