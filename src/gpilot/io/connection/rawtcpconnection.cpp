@@ -70,13 +70,17 @@ void RawTcpConnection::sendLine(QString line)
 
 void RawTcpConnection::closeConnection()
 {
+    if (m_socket != nullptr) {
+        return;
+    }
+
     qDebug() << "[IP][RawTCP] Closing connection";
 
-    if (m_socket != nullptr) {
-        m_socket->close();
-        m_socket->deleteLater();
-        m_socket = nullptr;
-    }
+    QTcpSocket* oldSocket = m_socket;
+    m_socket = nullptr;
+
+    oldSocket->close();
+    oldSocket->deleteLater();
 
     setState(ConnectionState::Disconnected);
 }
