@@ -28,12 +28,11 @@ class RawTcpConnection : public Connection
     private:
         QString m_host;
         int m_port;
-        bool m_connected = false;
         QString m_incoming = "";
         QTcpSocket* m_socket = nullptr;
-        QTcpServer* m_server = nullptr;
         void flushOutgoingData();
         void processIncomingData();
+        void onReadyRead();
 };
 
 #endif // RAWTCPCONNECTION_H
