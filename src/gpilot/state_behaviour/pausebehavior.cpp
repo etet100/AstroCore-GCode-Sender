@@ -67,7 +67,7 @@ void PauseBehavior::onDeviceStateChanged(DeviceState state)
                 break;
             case PauseSource::Jogging:
                 // For jogging pause, return to Jogging state
-                emit transition(this, new JoggingBehavior(this));
+                // emit transition(this, new JoggingBehavior(this));
                 break;
             case PauseSource::UserRequest:
             case PauseSource::External:
@@ -83,7 +83,7 @@ void PauseBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void PauseBehavior::onCommandResponse(QString command, QStringList response)
+void PauseBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // Process command responses in pause state
 }

@@ -78,8 +78,9 @@ void ShaderDrawable::bindAttributes(QOpenGLShaderProgram *&shaderProgram)
 void ShaderDrawable::updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette)
 {
     // Init in context
-    if (!m_vbo.isCreated())
+    if (!m_vbo.isCreated()) {
         init();
+    }
 
     // if (m_vao.isCreated()) {
     //     //m_vao.bind();

@@ -116,6 +116,7 @@ SOURCES += main.cpp\
     core/heightmap/heightmapinterpolator.cpp \
     state_behaviour/action.cpp \
     state_behaviour/connectingbehavior.cpp \
+    state_behaviour/gotobehavior.cpp \
     state_behaviour/resetbehavior.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
@@ -246,6 +247,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/heightmapinterpolator.h \
     state_behaviour/action.h \
     state_behaviour/connectingbehavior.h \
+    state_behaviour/gotobehavior.h \
     state_behaviour/resetbehavior.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \

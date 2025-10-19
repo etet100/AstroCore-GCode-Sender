@@ -28,11 +28,11 @@ void ResetBehavior::onDeviceState(DeviceState state)
     }
 }
 
-void ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response)
+void ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
 
-    if (dataIsReset(response.first())) {
+    if (dataIsReset(response)) {
         qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
 
         m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
@@ -43,14 +43,14 @@ void ResetBehavior::onCommandResponse(QString command, CommandAttributes command
 
     if (command == "$$") {
         qDebug() << "[ConnectingBehavior] Processing device configuration.";
-        m_communicator->processDeviceConfiguration(response);
+        m_communicator->processDeviceConfiguration(fullResponse);
 
         return;
     }
 
     if (command == "$#") {
         qDebug() << "[ConnectingBehavior] Processing offsets.";
-        m_communicator->processOffsetsVars(response.first());
+        m_communicator->processOffsetsVars(response);
 
         m_resetCompleted = true;
         m_communicator->connection()->sendByteArray(QByteArray(1, '?'));
@@ -74,6 +74,7 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
+    m_communicator->clearCommandsAndQueue();
 
     QString command = "[CTRL+X]";
     CommandAttributes commandAttributes(

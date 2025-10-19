@@ -19,7 +19,7 @@ class HomingBehavior : public StateBehavior
         bool isHomingAllowed() override { return false; } // Cannot start homing when already in progress
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
     private:
         bool m_homingStarted;

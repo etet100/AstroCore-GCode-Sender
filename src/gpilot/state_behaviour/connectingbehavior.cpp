@@ -53,7 +53,7 @@ void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-void ConnectingBehavior::onCommandResponse(QString command, QStringList response)
+void ConnectingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // qDebug() << "[ConnectingBehavior] Command Response:" << command << response;
 

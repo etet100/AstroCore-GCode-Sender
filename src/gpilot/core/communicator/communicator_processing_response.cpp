@@ -437,7 +437,7 @@ void Communicator::processCommandResponse(QString data)
     QString command = GcodePreprocessorUtils::removeComment(commandAttributes.commandLine).toUpper();
 
     if (m_sb != nullptr) {
-        m_sb->onCommandResponse(command, commandAttributes, lines);
+        m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
     }
 
     // Store current coordinate system

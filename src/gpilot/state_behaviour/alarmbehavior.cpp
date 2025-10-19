@@ -68,7 +68,7 @@ void AlarmBehavior::setAlarmMessage()
     }
 }
 
-void AlarmBehavior::onCommandResponse(QString command, QStringList response)
+void AlarmBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "[AlarmBehavior] Command Response:" << command << response;
     // Handle command responses in alarm state

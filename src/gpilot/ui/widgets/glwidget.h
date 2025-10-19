@@ -30,6 +30,7 @@ class GLWidget : public QGLWidget, protected QOpenGLFunctions
 #endif
 {
     Q_OBJECT
+
 public:
     explicit GLWidget(QWidget *parent = 0);
     ~GLWidget();
@@ -116,8 +117,8 @@ signals:
     void rotationChanged();
     void cursorPosChanged(QPointF);
     void resized();
-
-public slots:
+    void entered();
+    void left();
 
 private slots:
     void onFramesTimer();
@@ -173,7 +174,7 @@ private:
     QColor m_colorBackground;
     QColor m_colorText;
 
-    QPointF getClickPositionOnXYPlane(QVector2D mouseClickPosition, QMatrix4x4 projectionMatrix, QMatrix4x4 viewMatrix);
+    QPointF getClickPositionOnXYPlane(QVector2D mouseClickPosition);
     void drawText(QPainter &painter, QPoint &pos, QString text, int lineHeight, Qt::AlignmentFlag align = Qt::AlignLeft);
     void drawTexts(QPainter &painter, QPoint &pos, QStringList texts, int lineHeight);
 
@@ -194,6 +195,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void enterEvent(QEnterEvent *event) override;
     void wheelEvent(QWheelEvent *we) override;
 
     void timerEvent(QTimerEvent *) override;

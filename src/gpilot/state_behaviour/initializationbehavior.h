@@ -13,7 +13,7 @@ class InitializationBehavior : public StateBehavior
         bool isJoggingAllowed() override { return true; } // Jogging should be allowed in idle state
         bool isHomingAllowed() override { return true; } // Homing should be allowed in idle state
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onConnectionStateChanged(ConnectionState state) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onExit(StateBehavior *next = nullptr) override;

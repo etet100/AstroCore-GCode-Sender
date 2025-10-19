@@ -47,14 +47,14 @@ void HomingBehavior::onDeviceStateChanged(DeviceState state)
     // }
 }
 
-void HomingBehavior::onCommandResponse(QString command, QStringList response)
+void HomingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "[HomingBehavior] Command Response:" << command << response;
     if (command == "$H") {
         if (response.contains("error")) {
             qDebug() << "[HomingBehavior] Homing error";
             // Error occurred during homing command
-            emit error(this, "Homing failed - " + response.join(" "));
+            emit error(this, "Homing failed - " + response);
 
             // Return to previous state or idle state
             if (m_previous) {

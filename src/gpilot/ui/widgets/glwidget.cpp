@@ -703,8 +703,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     pos = QPoint(10, this->height() - 80);
 
     if (!qIsNaN(m_bottomSurfaceCursorPos.x())) {
-        //drawText(painter, pos, QString("Cursor: %1, %2").arg(m_bottomSurfaceCursorPos.x(), 0, 'f', 2).arg(m_bottomSurfaceCursorPos.y(), 0, 'f', 2), 15);
-        drawText(painter, pos, QString("Cursor: %1, %2").arg(m_xRot, 0, 'f', 2).arg(m_yRot, 0, 'f', 2), 15);
+        drawText(painter, pos, QString("Cursor: %1, %2").arg(m_bottomSurfaceCursorPos.x(), 0, 'f', 2).arg(m_bottomSurfaceCursorPos.y(), 0, 'f', 2), 15);
     } else {
         drawText(painter, pos, "Cursor: ??", 15);
     }
@@ -771,11 +770,11 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     m_yLastRot = m_yRot;
 }
 
-QPointF GLWidget::getClickPositionOnXYPlane(QVector2D mouseClickPosition, QMatrix4x4 projectionMatrix, QMatrix4x4 viewMatrix)
+QPointF GLWidget::getClickPositionOnXYPlane(QVector2D mouseClickPosition)
 {
     // Invert the matrices
-    QMatrix4x4 invertedProjection = projectionMatrix.inverted();
-    QMatrix4x4 invertedView = viewMatrix.inverted();
+    QMatrix4x4 invertedProjection = m_projectionMatrix.inverted();
+    QMatrix4x4 invertedView = m_viewMatrix.inverted();
 
     // Convert 2D mouse position to 3D position with Z = -1 (near plane)
     QVector3D nearPlanePosition(mouseClickPosition, -1.0f);
@@ -823,7 +822,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         -(pos.y() / (height() * 0.5f) - 1.0f)
     );
 
-    m_bottomSurfaceCursorPos = getClickPositionOnXYPlane(normalizedPos, m_projectionMatrix, m_viewMatrix);
+    m_bottomSurfaceCursorPos = getClickPositionOnXYPlane(normalizedPos);
     if (!qIsNaN(m_bottomSurfaceCursorPos.x())) {
         emit cursorPosChanged(m_bottomSurfaceCursorPos);
     }
@@ -899,7 +898,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GLWidget::leaveEvent(QEvent *event)
 {
+    QOpenGLWidget::leaveEvent(event);
     m_cubeDrawer.leaveEvent(event);
+    emit left();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *we)
@@ -947,3 +948,10 @@ double GLWidget::normalizeAngle(double angle)
 
     return angle;
 }
+
+void GLWidget::enterEvent(QEnterEvent *event)
+{
+    QOpenGLWidget::enterEvent(event);
+    emit entered();
+}
+

@@ -50,7 +50,7 @@ void ProbingBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void ProbingBehavior::onCommandResponse(QString command, QStringList response)
+void ProbingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "Probing response: " << response;
 
@@ -58,8 +58,8 @@ void ProbingBehavior::onCommandResponse(QString command, QStringList response)
     if (command.contains("G38.2")) {
         if (response.contains("error")) {
             // Error occurred during probing command
-            emit error(this, "Probing failed - " + response.join(" "));
-        } else if (response.join(" ").contains("PRB:")) {
+            emit error(this, "Probing failed - " + fullResponse.join(" "));
+        } else if (fullResponse.join(" ").contains("PRB:")) {
             // Found probing information in the response
             // Response format is usually [PRB:X,Y,Z:R] where X,Y,Z are coordinates and R is status (1=success)
 

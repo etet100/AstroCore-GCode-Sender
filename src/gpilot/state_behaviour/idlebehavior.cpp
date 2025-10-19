@@ -24,12 +24,12 @@ void IdleBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response)
+void IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
     qDebug() << "[IdleBehavior] Command Response:" << command << response;
 
     if (command == "$G") {
-        m_communicator->processGCodeParserState(commandAttributes, response.first());
+        m_communicator->processGCodeParserState(commandAttributes, response);
     }
 }
 

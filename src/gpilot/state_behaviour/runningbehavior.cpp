@@ -29,8 +29,9 @@ void RunningBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void RunningBehavior::onCommandResponse(QString command, QStringList response)
+void RunningBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
+
     // Process command responses during running state
     // For example, handle M6 commands for tool change
     if (command.contains("M6")) {
@@ -48,7 +49,8 @@ void RunningBehavior::onAlarm(int code)
 
 void RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
-
+    qDebug() << "[RunningBehavior] Entry";
+    StateBehavior::onEntry(communicator, previous);
 }
 
 void RunningBehavior::handleFeedOverride(int percentage)

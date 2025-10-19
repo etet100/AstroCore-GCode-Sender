@@ -15,7 +15,7 @@ class ConnectingBehavior : public StateBehavior
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onExit(StateBehavior *next = nullptr) override;
         void onConnectionStateChanged(ConnectionState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
     private:
         bool dataIsReset(QString data);

@@ -16,7 +16,7 @@ class ResetBehavior : public StateBehavior
         bool isJoggingAllowed() override { return true; }
         bool isHomingAllowed() override { return true; }
         void onDeviceState(DeviceState state) override;
-        void onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response) override;
+        void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
     private:
         bool dataIsReset(QString data);

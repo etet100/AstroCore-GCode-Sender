@@ -26,7 +26,7 @@ void InitializationBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void InitializationBehavior::onCommandResponse(QString command, QStringList response)
+void InitializationBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // Process command responses in idle state
     // This could be used to transition to other behaviors based on command responses

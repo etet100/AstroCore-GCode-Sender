@@ -139,7 +139,19 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->jog, &partMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
-        m_communicator->jogger().jog(dir);
+        //m_communicator->jogger().jog(dir);
+
+        m_configuration.save();
+
+        if (dir != JoggindDir::None) {
+            JoggingBehavior *joggingBehavior = new JoggingBehavior(
+                // jog
+                dir,
+                m_configuration.joggingModule().jogStep(),
+                m_configuration.joggingModule().jogFeed()
+            );
+            m_communicator->execute(joggingBehavior);
+        }
 
         // Q_UNUSED(dir)
         // qDebug() << "Jog: " << jog;
@@ -231,6 +243,12 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     connect(ui->glwVisualizer, &GLContainer::resized, this, &frmMain::placeVisualizerButtons);
     connect(ui->glwVisualizer, &GLContainer::cursorPosChanged, this, &frmMain::onVisualizerCursorPosChanged);
+    connect(ui->glwVisualizer, &GLContainer::entered, this, [this]() {
+        m_cursorDrawer.setVisible(true);
+    });
+    connect(ui->glwVisualizer, &GLContainer::left, this, [this]() {
+        m_cursorDrawer.setVisible(false);
+    });
     connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
@@ -416,7 +434,7 @@ void frmMain::timerEvent(QTimerEvent *te)
     if (te->timerId() == m_timerToolAnimation.timerId()) {
         // m_toolDrawer.rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
         //                     / (ui->slbSpindle->maximum()));
-        m_cursorDrawer.rotate();
+        // m_cursorDrawer.rotate();
     } else {
         QMainWindow::timerEvent(te);
     }
@@ -3259,7 +3277,7 @@ void frmMain::updateJogTitle()
         ui->grpJog->setTitle(tr("Jog"));
     } else if (ui->jog->keyboardControl()) {
         ui->grpJog->setTitle(tr("Jog") + QString(tr(" (%1/%2)"))
-                                             .arg((ui->jog->stepSize() != ui->jog->CONTINUOUS) ? QString::number(ui->jog->stepSize()) : tr("C"))
+                                             .arg((ui->jog->stepSize() != JoggingContinuous) ? QString::number(ui->jog->stepSize()) : tr("C"))
                             .arg(ui->jog->feedRate()));
     }
 }

@@ -44,13 +44,13 @@ class StateBehavior : public QObject
         virtual void onDeviceState(DeviceState state) {
             Q_UNUSED(state);
         };
-        virtual void onCommandResponse(QString command, QStringList response) {
+        virtual void onCommandResponse(QString command, QString response, QStringList fullResponse) {
             Q_UNUSED(command);
             Q_UNUSED(response);
         };
-        virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QStringList response) {
+        virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);
-            onCommandResponse(command, response);
+            onCommandResponse(command, response, fullResponse);
         }
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
