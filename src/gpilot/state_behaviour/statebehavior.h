@@ -47,6 +47,7 @@ class StateBehavior : public QObject
         virtual void onCommandResponse(QString command, QString response, QStringList fullResponse) {
             Q_UNUSED(command);
             Q_UNUSED(response);
+            Q_UNUSED(fullResponse);
         };
         virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);

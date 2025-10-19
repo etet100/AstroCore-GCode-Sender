@@ -2222,8 +2222,8 @@ void frmMain::loadSettings()
         if (b) b->setChecked(false);
     }
 
-        // Normal window state
-    // restoreState(set.value("formMainState").toByteArray());
+    // Normal window state
+    restoreState(set.value("formMainState").toByteArray());
 
     //     // Maximized window state
     // show();

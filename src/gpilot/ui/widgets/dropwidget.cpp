@@ -32,7 +32,9 @@ QStringList DropWidget::saveState()
 
     for (int i = 0; i < lo->count(); i++) {
         QString n = lo->itemAt(i)->widget()->objectName();
-        if (n.startsWith("grp")) sl << n;
+        if (n.startsWith("grp")) {
+            sl << n;
+        }
     }
 
     return sl;
