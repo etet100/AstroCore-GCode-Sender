@@ -36,3 +36,13 @@ void StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     }
     m_communicator = communicator;
 }
+
+void StateBehavior::waitForStateResponse(StateResponseCallback callback)
+{
+    m_stateResponseCallbacks.append(callback);
+}
+
+void StateBehavior::log(QString message)
+{
+    emit logSignal(message);
+}

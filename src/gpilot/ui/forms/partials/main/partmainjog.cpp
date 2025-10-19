@@ -29,17 +29,20 @@ void partMainJog::configurationUpdated()
 {
     m_storedKeyboardControl = m_configurationJogging->keyboardControl();
 
+    m_stepSize = m_configurationJogging->jogStep();
+    m_feedRate = m_configurationJogging->jogFeed();
+
     ui->cboJogStep->setItems(QStringList("Continuous") + m_configurationJogging->stepChoices());
-    for (QString ch : m_configurationJogging->stepChoices()) {
-        if (ch.toDouble() == m_configurationJogging->jogStep()) {
+    for (const QString &ch : m_configurationJogging->stepChoices()) {
+        if (ch.toDouble() == m_stepSize) {
             ui->cboJogStep->setCurrentText(ch);
             break;
         }
     }
 
     ui->cboJogFeed->setItems(m_configurationJogging->feedChoices());
-    for (QString ch : m_configurationJogging->feedChoices()) {
-        if (ch.toInt() == m_configurationJogging->jogFeed()) {
+    for (const QString &ch : m_configurationJogging->feedChoices()) {
+        if (ch.toInt() == m_feedRate) {
             ui->cboJogFeed->setCurrentText(ch);
             break;
         }

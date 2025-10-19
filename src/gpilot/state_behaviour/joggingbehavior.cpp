@@ -25,6 +25,11 @@ JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, QObject *parent
 {
 }
 
+bool JoggingBehavior::isNewStateAllowed(StateBehavior *newState)
+{
+    return newState->inherits("ResetBehavior") && newState->name() == "Reset";
+}
+
 void JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[JoggingBehavior] Entering Jogging State";
@@ -44,6 +49,7 @@ void JoggingBehavior::onDeviceStateChanged(DeviceState state)
 
     if (state == DeviceState::Jog) {
         qDebug() << "[JoggingBehavior] Device is jogging";
+        m_isJoggingState = true;
     } else
     if (state == DeviceState::Idle) {
         qDebug() << "[JoggingBehavior] Device is not jogging anymore";
@@ -59,24 +65,70 @@ void JoggingBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
+void JoggingBehavior::onDeviceState(DeviceState state)
+{
+    if (m_stopping && state == DeviceState::Idle) {
+        qDebug() << "[JoggingBehavior] Device is not jogging anymore";
+        emit transition(this, new IdleBehavior());
+    }
+}
+
 void JoggingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
+    qDebug() << "[JoggingBehavior] Command Response:" << command << "->" << response;
+
     if (!command.startsWith("$J=")) {
         // error
     }
 
+    m_acked++;
     if (response == "ok") {
-        m_acked++;
-        if (m_distance == JoggingContinuous) {
+        if (m_distance == JoggingContinuous && !m_stopping) {
             // Fill buffer with more jogging commands
             while (m_sent - m_acked < 5) {
                 continueJogging();
             }
         }
+
+        // if (m_stopping && !m_isJoggingState) {
+        //     // It means that we having received jogging status
+        //     m_communicator->requestStatusUpdate();
+        //     waitForStateResponse([this](DeviceState state) {
+        //         if (state == DeviceState::Idle) {
+        //             emit transition(this, new IdleBehavior());
+        //         }
+        //     });
+        // }
     } else if (response.startsWith("error")) {
         qDebug() << "[JoggingBehavior] Jogging command error:" << response;
-        stopJogging();
+        if (response == "error:15") {
+            if (!m_stopping) {
+                log("Jogging stopped: next move exceeds machine limits.");
+            }
+        } else {
+            log("Jogging error: " + response);
+        }
+
+        // stopJogging();
+        // m_communicator->clearCommandsAndQueue();
+        // m_communicator->requestStatusUpdate();
+        // waitForStateResponse([this](DeviceState state) {
+        //     if (state == DeviceState::Idle) {
+        //         emit transition(this, new IdleBehavior());
+        //     }
+        // });
+
+        m_communicator->clearQueue(); // Delete unsent jog commands
+
+        if (m_firstCommand) {
+            qDebug() << "[JoggingBehavior] First jogging command failed, should be in Idle state";
+            emit transition(this, new IdleBehavior());
+        }
+
+        m_stopping = true;
     }
+
+    m_firstCommand = false;
 }
 
 void JoggingBehavior::continueJogging()
@@ -87,7 +139,7 @@ void JoggingBehavior::continueJogging()
         return;
     }
 
-    qDebug() << "[JoggingBehavior] Continuing jogging: " << m_sent << m_jogCommand;
+    qDebug() << "[JoggingBehavior] Continuing jogging: " << m_sent << m_jogCommand << m_sent << m_acked;
     m_communicator->sendCommand(CommandSource::GeneralUI, m_jogCommand, TABLE_INDEX_UI);
     m_sent++;
 }
@@ -113,9 +165,9 @@ void JoggingBehavior::startJogging()
 
         // Sent multiple small moves to simulate continuous jogging
         // Each move will be 1% of the feed rate distance
-        distance = m_feedRate / 100.0;
-        if (distance < 2.0) {
-            distance = 2.0;
+        distance = m_feedRate / 500.0;
+        if (distance < 1.0) {
+            distance = 1.0;
         }
     }
 
@@ -151,15 +203,21 @@ void JoggingBehavior::startJogging()
 
 void JoggingBehavior::stopJogging()
 {
+    if (!m_isJogging) {
+        return;
+    }
+
+    qDebug() << "[JoggingBehavior] Stopping jogging";
+
     m_joggingTimer.stop();
     if (!m_communicator || !m_isJogging) {
         return;
     }
 
-    // Wysłanie komendy zatrzymania joggingu
+    m_communicator->clearQueue(); // Delete unsent jog commands
     m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
     m_isJogging = false;
-    // m_currentDirection = JoggindDir::None;
+    m_stopping = true;
 }
 
 void JoggingBehavior::setJoggingFeedRate(double feedRate)

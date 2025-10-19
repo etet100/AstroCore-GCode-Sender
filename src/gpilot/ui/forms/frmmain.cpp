@@ -158,7 +158,11 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         // jogStep(jog);
     });
     connect(ui->jog, &partMainJog::stop, this, [this]() {
-        m_communicator->jogger().stop();
+        JoggingBehavior *joggingBehavior = dynamic_cast<JoggingBehavior*>(m_communicator->stateBehavior());
+        if (joggingBehavior) {
+            joggingBehavior->stopJogging();
+        }
+
         // m_communicator->clearQueue();
         // m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
         // while (m_communicator->deviceState() == DeviceState::Jog) {
@@ -361,6 +365,9 @@ void frmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::parserStateReceived, this, &frmMain::onParserStateReceived);
     connect(m_communicator, &Communicator::welcomeMessageReceived, this, [this](QString message) {
         ui->console->appendSystem(message);
+    });
+    connect(m_communicator, &Communicator::log, this, [this](QString message) {
+        ui->console->append(message);
     });
     connect(m_communicator, &Communicator::pinStateReceived, this, &frmMain::onPinStateReceived);
     connect(m_communicator, &Communicator::spindleSpeedReceived, this, &frmMain::onSpindleSpeedReceived);

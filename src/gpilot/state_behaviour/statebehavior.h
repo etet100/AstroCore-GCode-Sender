@@ -10,6 +10,8 @@
 #include <QTimer>
 #include "core/globals.h"
 #include "action.h"
+#include <functional>
+#include <QMap>
 
 class Communicator;
 
@@ -27,6 +29,12 @@ class StateBehavior : public QObject
             Q_UNUSED(action);
             return false;
         };
+
+        virtual bool isNewStateAllowed(StateBehavior *newState) {
+            Q_UNUSED(newState);
+            return true;
+        };
+
         virtual void reset();
         virtual void unlock() {};
         virtual bool isJoggingAllowed() { return false; };
@@ -35,43 +43,54 @@ class StateBehavior : public QObject
         virtual void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
 
         virtual void onExit(StateBehavior *next = nullptr);
+
         virtual void onAlarm(int code) {
             qDebug() << "Alarm: " << code;
         };
+
         virtual void onDeviceStateChanged(DeviceState state) {
             Q_UNUSED(state);
         };
+
+        using StateResponseCallback = std::function<void(DeviceState)>;
+
         virtual void onDeviceState(DeviceState state) {
-            Q_UNUSED(state);
+            for (auto cbk : m_stateResponseCallbacks) {
+                cbk(state);
+            }
+            m_stateResponseCallbacks.clear();
         };
+
         virtual void onCommandResponse(QString command, QString response, QStringList fullResponse) {
             Q_UNUSED(command);
             Q_UNUSED(response);
             Q_UNUSED(fullResponse);
         };
+
         virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);
             onCommandResponse(command, response, fullResponse);
         }
+
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
         };
 
+        void waitForStateResponse(StateResponseCallback callback);
+
     signals:
         void transition(StateBehavior *state, StateBehavior *newState);
         void error(StateBehavior *state, QString message);
-
-    // public slots:
-    //     virtual void onConnectionStateChanged(ConnectionState state) {
-    //         Q_UNUSED(state);
-    //     };
+        void logSignal(QString message);
 
     protected:
         StateBehavior *m_previous = nullptr;
         Communicator *m_communicator = nullptr;
         QTimer *m_timer = nullptr;
+        QList<StateResponseCallback> m_stateResponseCallbacks;
 
         void stopTimer();
+        void log(QString message);
 };
 
 #endif // STATEBEHAVIOR_H

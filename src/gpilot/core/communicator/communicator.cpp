@@ -167,6 +167,11 @@ void Communicator::sendRealtimeCommand(QString command)
     m_connection->sendByteArray(QByteArray(command.toLatin1(), 1));
 }
 
+void Communicator::requestStatusUpdate()
+{
+    m_connection->sendByteArray(QByteArray(1, '?'));
+}
+
 void Communicator::sendRealtimeCommand(int command)
 {
     QByteArray data;
@@ -203,13 +208,14 @@ bool Communicator::streamCommands(GCode &streamer)
 
 void Communicator::clearCommandsAndQueue()
 {
-    qDebug() << "[Communicator] Clearing commands and queue";
+    qDebug() << "[Communicator] Clearing commands";
     m_commands.clear();
     clearQueue();
 }
 
 void Communicator::clearQueue()
 {
+    qDebug() << "[Communicator] Clearing queue";
     m_queue.clear();
 }
 
@@ -425,9 +431,15 @@ void Communicator::home()
     execute(new HomingBehavior());
 }
 
-void Communicator::execute(StateBehavior *sb)
+void Communicator::execute(StateBehavior *sb, bool force)
 {
     if (m_sb != nullptr) {
+        if (!force && !m_sb->isNewStateAllowed(sb)) {
+            qDebug() << "[Communicator][Behavior] Transition from" << m_sb->name() << "to" << sb->name() << "is not allowed";
+
+            return;
+        }
+
         m_sb->onExit(sb);
 
         qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name();
@@ -439,6 +451,7 @@ void Communicator::execute(StateBehavior *sb)
 
     connect(sb, &StateBehavior::transition, this, &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
     connect(sb, &StateBehavior::error, this, &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
+    connect(sb, &StateBehavior::logSignal, this, &Communicator::log, Qt::ConnectionType::UniqueConnection);
 
     StateBehavior *psb = m_sb;
     m_sb = sb;
@@ -602,7 +615,7 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
 {
-    execute(nsb);
+    execute(nsb, true);
 }
 
 void Communicator::onStateError(StateBehavior *sb, QString message)

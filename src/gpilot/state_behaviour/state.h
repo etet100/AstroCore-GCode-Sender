@@ -37,6 +37,7 @@ class State : public QObject
     signals:
         void transition(State *state, State *newState);
         void error(State *state, QString message);
+        void logSignal(QString message);
 
     public slots:
         virtual void onConnectionStateChanged(ConnectionState state) {
@@ -46,6 +47,11 @@ class State : public QObject
     protected:
         State *m_previous;
         Communicator *m_communicator;
+
+    private:
+        void log(QString message) {
+            emit logSignal(message);
+        }
 };
 
 #endif // STATE_H

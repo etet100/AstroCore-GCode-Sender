@@ -59,11 +59,14 @@ class Communicator : public QObject
         }
         void probe();
         void home();
-        void execute(StateBehavior *stateBehaviour);
+        void execute(StateBehavior *stateBehaviour, bool force = false);
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
+        void requestStatusUpdate();
+
+        StateBehavior* stateBehavior() const { return m_sb; }
     private:
         static const int BUFFERLENGTH = 127;
 
@@ -182,6 +185,7 @@ class Communicator : public QObject
         void aborted();
         void transferCompleted();
         void stateBehaviorChanged(StateBehavior *sb);
+        void log(QString message);
 };
 
 #endif // COMMUNICATOR_H
