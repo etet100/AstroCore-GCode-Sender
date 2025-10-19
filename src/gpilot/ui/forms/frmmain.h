@@ -318,8 +318,8 @@ private:
     void applySettings();
 
     // Communication
-    void openPortIfNeeded();
-    QString evaluateCommand(QString command);
+    // void openPortIfNeeded();
+    // QString evaluateCommand(QString command);
 
     // Parser
     void updateParser();

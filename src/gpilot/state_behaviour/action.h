@@ -1,0 +1,32 @@
+// This file is a part of "G-Pilot (formerly Candle)" application.
+// Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
+
+#ifndef ACTION_H
+#define ACTION_H
+
+class Action
+{
+    public:
+        enum class Type {
+            None,
+            Reset,
+            Start,
+            Stop,
+            Pause,
+            Resume,
+            FeedHold,
+            CycleStart,
+            Jog,
+            Home,
+            Unlock,
+        };
+
+        Action();
+        Type type() const { return m_type; }
+
+    private:
+        Type m_type;
+};
+
+#endif // ACTION_H

@@ -7,17 +7,27 @@
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
 
-AlarmBehavior::AlarmBehavior(StateBehavior *previous, int alarmCode, QObject *parent)
-    : StateBehavior{previous, parent}
+AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
+    : StateBehavior{parent}
     , m_alarmCode(alarmCode)
 {
-    setAlarmMessage();
+}
+
+void AlarmBehavior::onDeviceStateChanged(DeviceState state)
+{
+    qDebug() << "[AlarmBehavior] Device State Changed:" << static_cast<int>(state);
+    // Handle device state changes
+    if (state == DeviceState::Idle) {
+        emit transition(this, new IdleBehavior());
+    }
 }
 
 void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
+    qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
+    setAlarmMessage();
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);
 }
@@ -58,32 +68,50 @@ void AlarmBehavior::setAlarmMessage()
     }
 }
 
-void AlarmBehavior::onCommandResponse(QString command, QStringList response)
+void AlarmBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
+    qDebug() << "[AlarmBehavior] Command Response:" << command << response;
     // Handle command responses in alarm state
     if (command == "$X") {  // Unlock command
         if (!response.contains("error")) {
             // Unlock successful, go to idle state
-            emit transition(this, new IdleBehavior(this));
+            // emit transition(this, new IdleBehavior(this));
         } else {
             // Unlock failed, stay in alarm state
-            emit error(this, "Failed to unlock alarm: " + response.join(" "));
+            // emit error(this, "Failed to unlock alarm: " + response.join(" "));
         }
     }
 }
 
-void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
+// void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
+// {
+//     qDebug() << "[AlarmBehavior] Connection State Changed:" << static_cast<int>(state);
+//     if (state != ConnectionState::Connected) {
+//         // If connection is lost, we might want to transition to a different state
+//         // For now, we don't do anything special
+//     }
+// }
+
+void AlarmBehavior::unlock()
 {
-    if (state != ConnectionState::Connected) {
-        // If connection is lost, we might want to transition to a different state
-        // For now, we don't do anything special
+    m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+}
+
+bool AlarmBehavior::execute(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Unlock:
+            unlock();
+            return true;
     }
 }
 
-void AlarmBehavior::unlockAlarm()
+bool AlarmBehavior::isActionAllowed(const Action &action)
 {
-    // Send unlock alarm command
-    if (m_communicator) {
-        m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+    switch (action.type()) {
+        case Action::Type::Unlock:
+            return true;
     }
+
+    return StateBehavior::isActionAllowed(action);
 }

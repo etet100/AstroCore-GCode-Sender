@@ -10,21 +10,24 @@
 class AlarmBehavior : public StateBehavior
 {
     public:
-        explicit AlarmBehavior(StateBehavior *previous, int alarmCode = 0, QObject *parent = nullptr);
-        QString name() override { return "Alarm: " + m_alarmMessage; }
+        explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
+        QString name() override { return "Alarm"; }
         bool isJoggingAllowed() override { return false; }
         bool isHomingAllowed() override { return true; } // Homing is usually allowed in alarm state (may help exit this state)
+        void onDeviceStateChanged(DeviceState state) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onCommandResponse(QString command, QStringList response) override;
-        void onConnectionStateChanged(ConnectionState state) override;
-
-        // Alarm-specific methods
-        void unlockAlarm(); // Method to send unlock command ($X)
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        // void onConnectionStateChanged(ConnectionState state) override;
+        void unlock() override;
+        bool execute(const Action &action) override;
+        bool isActionAllowed(const Action &action) override;
 
     private:
         int m_alarmCode;
         QString m_alarmMessage;
         void setAlarmMessage();
+
+        // StateBehavior interface
 };
 
 #endif // ALARMBEHAVIOR_H

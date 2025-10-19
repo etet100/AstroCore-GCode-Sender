@@ -87,6 +87,16 @@ class HomingDirs {
         HomingDir m_z;
 };
 
+enum class Axis : int {
+    None = -1,
+    X,
+    Y,
+    Z,
+    A,
+    B,
+    C
+};
+
 enum class JoggindDir {
     None,
     XPlus,
@@ -99,6 +109,8 @@ enum class JoggindDir {
 
 typedef QVector3D JoggingVector;
 
+const double JoggingContinuous = -1.0;
+
 enum class SenderState {
     Unknown = -1,
     Transferring = 0,
@@ -110,7 +122,7 @@ enum class SenderState {
     Pausing2 = 6
 };
 
-enum class DeviceState {
+enum class DeviceState : int {
     Unknown = 0,
     Idle = 1,
     Alarm = 2,
@@ -128,7 +140,7 @@ enum class DeviceState {
     Sleep = 14
 };
 
-enum class SendCommandResult: int {
+enum class SendCommandResult : int {
     Done = 0,
     Empty = 1,
     Queue = 2
@@ -197,6 +209,7 @@ struct CommandAttributes : CommandQueue {
 
 enum class ConnectionState
 {
+    NoConnectionDevice,
     Initialization,
     Connecting,
     Connected,

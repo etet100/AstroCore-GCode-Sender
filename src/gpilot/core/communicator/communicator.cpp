@@ -14,6 +14,7 @@ Communicator::Communicator(
 ) : QObject(parent),
     m_connection(connection),
     m_configuration(configuration),
+    m_jogger(*this, configuration->joggingModule()),
     m_timerStateQuery(this),
     m_deviceStatesDictionary({
         {DeviceState::Unknown, "Unknown"},
@@ -39,7 +40,6 @@ Communicator::Communicator(
     m_statusReceived = false;
     m_spindleCW = true;
 
-    m_sb = nullptr;
     execute(new InitializationBehavior(nullptr));
 
     resetStateVariables();
@@ -203,7 +203,7 @@ bool Communicator::streamCommands(GCode &streamer)
 
 void Communicator::clearCommandsAndQueue()
 {
-    qDebug() << "clearing commands and queue";
+    qDebug() << "[Communicator] Clearing commands and queue";
     m_commands.clear();
     clearQueue();
 }
@@ -215,45 +215,53 @@ void Communicator::clearQueue()
 
 void Communicator::reset()
 {
-    assert(m_connection != nullptr);
+    //m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+    m_sb->reset();
 
-    qDebug() << "resetting communicator";
+//     assert(m_connection != nullptr);
 
-    m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+//     qDebug() << "[Communicator] Resetting";
 
-    resetStateVariables();
+//     m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
 
-    setSenderStateAndEmitSignal(SenderState::Stopped);
-    setDeviceStateAndEmitSignal(DeviceState::Unknown);
-    // in main form
-    //m_fileCommandIndex = 0;
+//     resetStateVariables();
 
-    m_reseting = true;
-    m_homing = false;
-    m_resetCompleted = false;
-    // in main form
-//    m_updateSpindleSpeed = true;
-    m_statusReceived = true;
+//     setSenderStateAndEmitSignal(SenderState::Stopped);
+//     setDeviceStateAndEmitSignal(DeviceState::Unknown);
+//     // in main form
+//     //m_fileCommandIndex = 0;
 
-    // Drop all remaining commands in buffer
-    clearCommandsAndQueue();
-    // m_commands.clear();
-    // m_queue.clear();
+//     m_reseting = true;
+//     m_homing = false;
+//     m_resetCompleted = false;
+//     // in main form
+// //    m_updateSpindleSpeed = true;
+//     m_statusReceived = true;
 
-    // Prepare reset response catch
-    QString command = "[CTRL+X]";
-    CommandAttributes commandAttributes(
-        CommandSource::System,
-        m_commandIndex++,
-        TABLE_INDEX_UI, // why UI ??
-        command
-    );
-    m_commands.append(commandAttributes);
+//     // Drop all remaining commands in buffer
+//     clearCommandsAndQueue();
+//     // m_commands.clear();
+//     // m_queue.clear();
 
-    if (m_streamer != nullptr) {
-        m_streamer->reset();
-    }
-    m_updateSpindleSpeed = true;
+//     // Prepare reset response catch
+//     QString command = "[CTRL+X]";
+//     CommandAttributes commandAttributes(
+//         CommandSource::System,
+//         m_commandIndex++,
+//         TABLE_INDEX_UI, // why UI ??
+//         command
+//     );
+//     m_commands.append(commandAttributes);
+
+//     if (m_streamer != nullptr) {
+//         m_streamer->reset();
+//     }
+//     m_updateSpindleSpeed = true;
+}
+
+void Communicator::unlock()
+{
+    m_sb->unlock();
 }
 
 void Communicator::abort()
@@ -269,7 +277,7 @@ void Communicator::abort()
 /*
 * @todo make sure we can replace connection at this point!!
 */
-void Communicator::replaceConnection(Connection *newConnection)
+void Communicator::setConnection(Connection *newConnection)
 {
     if (m_connection != nullptr || m_connection == newConnection) return;
 
@@ -281,6 +289,24 @@ void Communicator::replaceConnection(Connection *newConnection)
 
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
+
+    // execute(new InitializationBehavior(this));
+}
+
+// bool Communicator::openConnection()
+// {
+//     if (m_connection) {
+//         m_connection->open();
+
+//         return true;
+//     }
+
+//     return false;
+// }
+
+Connection *Communicator::connection()
+{
+    return m_connection;
 }
 
 void Communicator::stopUpdatingState()
@@ -380,7 +406,7 @@ bool Communicator::isSenderState(SenderState state) const
 
 void Communicator::probe()
 {
-    execute(new ProbingBehavior(m_sb));
+    execute(new ProbingBehavior());
 
     // sendCommands(
     //     CommandSource::GeneralUI,
@@ -396,13 +422,17 @@ void Communicator::probe()
 
 void Communicator::home()
 {
-    execute(new HomingBehavior(m_sb));
+    execute(new HomingBehavior());
 }
 
 void Communicator::execute(StateBehavior *sb)
 {
     if (m_sb != nullptr) {
-        m_sb->onExit();
+        m_sb->onExit(sb);
+
+        qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name();
+    } else {
+        qDebug() << "[Communicator][Behavior] State behavior set to" << sb->name();
     }
 
     emit stateBehaviorChanged(sb);
@@ -469,6 +499,8 @@ void Communicator::processOffsetsVars(QString response)
             )
         );
     }
+
+    qDebug() << "[Communicator] Offsets updated";
 }
 
 void Communicator::onTimerStateQuery()
@@ -560,9 +592,11 @@ void Communicator::onConnectionError(QString message)
 
 void Communicator::onConnectionStateChanged(ConnectionState state)
 {
-    if (state == ConnectionState::Connected) {
-        reset();
-    }
+
+
+    // if (state == ConnectionState::Connected) {
+    //     reset();
+    // }
     m_sb->onConnectionStateChanged(state);
 }
 

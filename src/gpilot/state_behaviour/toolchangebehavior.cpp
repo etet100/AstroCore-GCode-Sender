@@ -6,6 +6,6 @@
 #include "statebehavior.h"
 #include "toolchangebehavior.h"
 
-ToolChangeBehavior::ToolChangeBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior(previous, parent) {
+ToolChangeBehavior::ToolChangeBehavior(QObject *parent)
+    : StateBehavior(parent) {
 }

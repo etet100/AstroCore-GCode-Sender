@@ -80,9 +80,16 @@ void partMainJog::stopJogging()
     emit this->command(GRBLCommand::JogStop);
 }
 
+void partMainJog::stopJoggingIfContinuous()
+{
+    if (m_stepSize == JoggingContinuous) {
+        stopJogging();
+    }
+}
+
 void partMainJog::onCmdYPlusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdYMinusPressed()
@@ -93,7 +100,7 @@ void partMainJog::onCmdYMinusPressed()
 
 void partMainJog::onCmdYMinusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdXPlusPressed()
@@ -104,7 +111,7 @@ void partMainJog::onCmdXPlusPressed()
 
 void partMainJog::onCmdXPlusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdXMinusPressed()
@@ -115,7 +122,7 @@ void partMainJog::onCmdXMinusPressed()
 
 void partMainJog::onCmdXMinusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdZPlusPressed()
@@ -126,7 +133,7 @@ void partMainJog::onCmdZPlusPressed()
 
 void partMainJog::onCmdZPlusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdZMinusPressed()
@@ -137,7 +144,7 @@ void partMainJog::onCmdZMinusPressed()
 
 void partMainJog::onCmdZMinusReleased()
 {
-    stopJogging();
+    stopJoggingIfContinuous();
 }
 
 void partMainJog::onCmdStopClicked()
@@ -152,11 +159,10 @@ void partMainJog::onCmdFeedRateChanged(int index)
         return;
     }
 
-   \
-    // joggingConfiguration.setJogStep(ui->cboJogStep->currentText().toDouble());
-    // joggingConfiguration.setJogFeed(ui->cboJogFeed->currentText().toInt());
+    m_feedRate = m_configurationJogging->feedChoices().at(index).toInt();
+    m_configurationJogging->setJogFeed(m_feedRate);
 
-    qDebug() << "Feed rate changed" << index << m_feedRate;
+    qDebug() << "[Jog UI] Feed rate changed" << index << m_feedRate;
 
     emit this->parametersChanged(m_feedRate, m_stepSize);
 }
@@ -169,12 +175,13 @@ void partMainJog::onCmdStepSizeChanged(int index)
     }
 
     if (index == 0) {
-        m_stepSize = CONTINUOUS;
+        m_stepSize = JoggingContinuous;
     } else {
         m_stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
     }
+    m_configurationJogging->setJogStep(m_stepSize);
 
-    qDebug() << "Step size changed" << index << m_stepSize;
+    qDebug() << "[Jog UI] Step size changed" << index << m_stepSize;
 
     emit this->parametersChanged(m_feedRate, m_stepSize);
 }

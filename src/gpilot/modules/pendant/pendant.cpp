@@ -18,13 +18,6 @@
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
-enum class Axis {
-    None = -1,
-    X = 0,
-    Y,
-    Z,
-};
-
 enum class PacketType: uint8_t {
     STATE = 0,
     WIFI_CONFIG = 1,
@@ -93,13 +86,14 @@ class Queue {
 
 Pendant::Pendant(QObject *parent, Communicator &communicator) : QObject{parent}, m_communicator{communicator}
 {
-    qDebug() << "Pendant created";
+    qDebug() << "[Pendant] Created";
+    return;
 
     this->m_server = new QTcpServer(this);
     this->m_server->listen(QHostAddress::Any, 5555);
 
     connect(this->m_server, &QTcpServer::newConnection, [this]() {
-        qDebug() << "New pendant connection";
+        qDebug() << "[Pendant] New pendant connection";
 
         m_socket = this->m_server->nextPendingConnection();
         connect(m_socket, &QTcpSocket::readyRead, [this]() {
@@ -119,7 +113,7 @@ Pendant::Pendant(QObject *parent, Communicator &communicator) : QObject{parent},
             timer->deleteLater();
             m_socket->deleteLater();
             m_socket = nullptr;
-            qDebug() << "Pendant disconnected";
+            qDebug() << "[Pendant] Pendant disconnected";
         });
 
         connect(timer, &QTimer::timeout, [this]() {
@@ -175,7 +169,7 @@ void Pendant::sendWifiConfig()
 
 void Pendant::sendStepSizeConfig()
 {
-    qDebug() << "Sending step size config";
+    qDebug() << "[Pendant] Sending step size config";
 
     StepSizeConfigMessage message;
 
@@ -189,7 +183,7 @@ void Pendant::sendStepSizeConfig()
 
 void Pendant::sendFeedRateConfig()
 {
-    qDebug() << "Sending feed rate config";
+    qDebug() << "[Pendant] Sending feed rate config";
 
     FeedRateConfigMessage message;
 

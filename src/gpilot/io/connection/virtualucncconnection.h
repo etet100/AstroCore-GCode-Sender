@@ -28,7 +28,7 @@ class VirtualUCNCConnection : public Connection
 public:
     VirtualUCNCConnection(QObject*);
     ~VirtualUCNCConnection();
-    bool openConnection() override;
+    bool open() override;
     void sendByteArray(QByteArray) override;
     void sendLine(QString) override;
     void closeConnection() override;

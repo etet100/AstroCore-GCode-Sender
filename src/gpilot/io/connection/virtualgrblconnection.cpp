@@ -20,7 +20,7 @@ Q_OS_WIN
 #ifdef STATIC_GRBL
 extern "C" {
     // Q_DECL_IMPORT
-    void GRBL(QString serverName);
+    // void GRBL(QString serverName);
 }
 #else
 typedef void (*GRBLFunction)(QString serverName);
@@ -49,7 +49,7 @@ void VirtualGRBLConnection::startWorkerThread()
     m_thread->start();
 }
 
-bool VirtualGRBLConnection::openConnection()
+bool VirtualGRBLConnection::open()
 {
     if (m_state == ConnectionState::Connecting) {
         return false;
@@ -184,7 +184,7 @@ VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName) : QThread(n
 void VirtualGRBLWorkerThread::run() {
     qInfo() << "Starting virtual GRBL, server " << m_serverName;
     #ifdef STATIC_GRBL
-        GRBL(m_serverName.toStdString().c_str());
+        // GRBL(m_serverName.toStdString().c_str());
     #else
         qDebug() << "GRBL dynamic mode";
         QLibrary lib("GRBL.dll");

@@ -14,26 +14,33 @@
 class JoggingBehavior : public StateBehavior
 {
     public:
-        explicit JoggingBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent = nullptr);
+        explicit JoggingBehavior(QVector3D vector, int feedRate,  QObject *parent = nullptr);
         QString name() override { return "Jogging"; }
         bool isJoggingAllowed() override { return true; } // Jogging is allowed in this state
         bool isHomingAllowed() override { return false; } // Cannot home during jogging
 
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit() override;
+        void onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Jogging-specific methods
-        void startJogging(JoggindDir direction, double feedRate, double distance = 0);
+        void startJogging();
         void stopJogging();
         void setJoggingFeedRate(double feedRate);
 
     private:
         JoggindDir m_currentDirection;
-        double m_feedRate;
+        int m_feedRate;
         double m_distance; // 0 means continuous jogging
-        bool m_isJogging;
+        bool m_isJogging = false;
+        QString m_jogCommand;
+        QVector3D m_vector;
+        QTimer m_joggingTimer;
+        int m_sent = 0;
+        int m_acked = 0;
+        void continueJogging();
 };
 
 #endif // JOGGINGBEHAVIOR_H

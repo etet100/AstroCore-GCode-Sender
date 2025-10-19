@@ -7,8 +7,8 @@
 #include "checkmodebehavior.h"
 #include "idlebehavior.h"
 
-CheckModeBehavior::CheckModeBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+CheckModeBehavior::CheckModeBehavior(QObject *parent)
+    : StateBehavior{parent}
     , m_checkModeEnabled(false)
 {
 }
@@ -21,7 +21,7 @@ void CheckModeBehavior::onEntry(Communicator *communicator, StateBehavior *previ
     m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
 }
 
-void CheckModeBehavior::onExit()
+void CheckModeBehavior::onExit(StateBehavior *next)
 {
     // Disable check mode if it was enabled
     if (m_checkModeEnabled) {
@@ -38,7 +38,7 @@ void CheckModeBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void CheckModeBehavior::onCommandResponse(QString command, QStringList response)
+void CheckModeBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // Process $C command responses
     if (command == "$C") {

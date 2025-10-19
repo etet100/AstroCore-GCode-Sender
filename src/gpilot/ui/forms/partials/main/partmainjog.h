@@ -18,11 +18,11 @@ public:
     void initialize(ConfigurationJogging &configurationJogging);
     ~partMainJog();
 
-    constexpr static const double CONTINUOUS = -1;
+    // constexpr static const double CONTINUOUS = -1;
 
     int feedRate() const { return m_feedRate; };
     double stepSize() const { return m_stepSize; };
-    bool isContinuous() const { return m_stepSize == CONTINUOUS; };
+    bool isContinuous() const { return m_stepSize == JoggingContinuous; };
     JoggingVector jogVector() const { return m_jogVector; };
     void storeAndResetKeyboardControl();
     bool keyboardControl();
@@ -40,6 +40,7 @@ private:
     void updateControls();
     void stopJogging();
 
+    void stopJoggingIfContinuous();
 private slots:
     void onCmdYPlusPressed();
     void onCmdYPlusReleased();

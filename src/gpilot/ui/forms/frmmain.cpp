@@ -92,8 +92,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->control, &partMainControl::unlock, this, [this]() {
-        m_communicator->m_updateSpindleSpeed = true;
-        m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+        // m_communicator->m_updateSpindleSpeed = true;
+        // m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+        m_communicator->unlock();
     });
     connect(ui->control, &partMainControl::home, this, [this]() {
         // m_communicator->m_homing = true;
@@ -138,16 +139,31 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->jog, &partMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
-        Q_UNUSED(dir)
-        qDebug() << "Jog: " << jog;
-        jogStep(jog);
+        //m_communicator->jogger().jog(dir);
+
+        m_configuration.save();
+
+        if (dir != JoggindDir::None) {
+            JoggingBehavior *joggingBehavior = new JoggingBehavior(
+                // jog
+                dir,
+                m_configuration.joggingModule().jogStep(),
+                m_configuration.joggingModule().jogFeed()
+            );
+            m_communicator->execute(joggingBehavior);
+        }
+
+        // Q_UNUSED(dir)
+        // qDebug() << "Jog: " << jog;
+        // jogStep(jog);
     });
     connect(ui->jog, &partMainJog::stop, this, [this]() {
-        m_communicator->clearQueue();
-        m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
-        while (m_communicator->deviceState() == DeviceState::Jog) {
-            qApp->processEvents();
-        }
+        m_communicator->jogger().stop();
+        // m_communicator->clearQueue();
+        // m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
+        // while (m_communicator->deviceState() == DeviceState::Jog) {
+        //     qApp->processEvents();
+        // }
     });
 
     // Drag&drop placeholders
@@ -206,12 +222,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     menu = ui->cmdFileSend->menu();
     menu->addAction(tr("Send from current line"), this, SLOT(onActSendFromLineTriggered()));
 
-    // connect(ui->cboCommand, SIGNAL(returnPressed()), this, SLOT(onCboCommandReturnPressed()));
-
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
-
 
     m_originDrawer = new OriginDrawer();
     m_codeDrawer = new GcodeDrawer();
@@ -230,6 +243,12 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     connect(ui->glwVisualizer, &GLContainer::resized, this, &frmMain::placeVisualizerButtons);
     connect(ui->glwVisualizer, &GLContainer::cursorPosChanged, this, &frmMain::onVisualizerCursorPosChanged);
+    connect(ui->glwVisualizer, &GLContainer::entered, this, [this]() {
+        m_cursorDrawer.setVisible(true);
+    });
+    connect(ui->glwVisualizer, &GLContainer::left, this, [this]() {
+        m_cursorDrawer.setVisible(false);
+    });
     connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
@@ -328,7 +347,7 @@ void frmMain::initializeCommunicator()
     );
     //m_program = new GCode();
     // @TODO temporary!
-    m_communicator->streamCommands(m_program);
+    // m_communicator->streamCommands(m_program);
 
     connect(m_communicator, &Communicator::machinePosChanged, this, &frmMain::onMachinePosChanged);
     connect(m_communicator, &Communicator::workPosChanged, this, &frmMain::onWorkPosChanged);
@@ -415,7 +434,7 @@ void frmMain::timerEvent(QTimerEvent *te)
     if (te->timerId() == m_timerToolAnimation.timerId()) {
         // m_toolDrawer.rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
         //                     / (ui->slbSpindle->maximum()));
-        m_cursorDrawer.rotate();
+        // m_cursorDrawer.rotate();
     } else {
         QMainWindow::timerEvent(te);
     }
@@ -1713,7 +1732,7 @@ void frmMain::onStateBehaviorChanged(StateBehavior *sb)
 
 void frmMain::onTimerConnection()
 {
-    openPortIfNeeded();
+    // /openPortIfNeeded();
 
     // @TODO move it completely to communicator
     m_communicator->processConnectionTimer();
@@ -2459,6 +2478,7 @@ void frmMain::appendSpacer(DropWidget *dockPanel)
 void frmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
+    dock->setMinimumHeight(200);
     dock->setObjectName("Camera");
     dock->setWidget(window);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
@@ -2495,25 +2515,27 @@ void frmMain::applySettings()
 
     if (!m_connection || m_connection->getSupportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
-        m_communicator->replaceConnection(m_connection);
+        m_communicator->setConnection(m_connection);
     }
 }
 
-void frmMain::openPortIfNeeded()
-{
-    assert(m_communicator != nullptr);
+// void frmMain::openPortIfNeeded()
+// {
+//     assert(m_communicator != nullptr);
 
-    if (m_connection->state() == ConnectionState::Connecting || m_connection->state() == ConnectionState::Connected) {
-        return;
-    }
+//     if (m_connection->state() == ConnectionState::Connecting || m_connection->state() == ConnectionState::Connected) {
+//         return;
+//     }
 
-    if (m_connection->openConnection()) {
-        ui->state->setStatusText(tr("Port opened"), "palette(button)", "palette(text)");
-    }
-}
+//     if (m_connection->open()) {
+//         ui->state->setStatusText(tr("Port opened"), "palette(button)", "palette(text)");
+//     }
+// }
 
 void frmMain::updateParser()
 {
+    assert(m_communicator->isMachineConfigurationReady());
+
     GCodeViewParser *viewParse = m_currentDrawer->viewParser();
 
     GcodeParser parser;
@@ -3255,7 +3277,7 @@ void frmMain::updateJogTitle()
         ui->grpJog->setTitle(tr("Jog"));
     } else if (ui->jog->keyboardControl()) {
         ui->grpJog->setTitle(tr("Jog") + QString(tr(" (%1/%2)"))
-                                             .arg((ui->jog->stepSize() != ui->jog->CONTINUOUS) ? QString::number(ui->jog->stepSize()) : tr("C"))
+                                             .arg((ui->jog->stepSize() != JoggingContinuous) ? QString::number(ui->jog->stepSize()) : tr("C"))
                             .arg(ui->jog->feedRate()));
     }
 }

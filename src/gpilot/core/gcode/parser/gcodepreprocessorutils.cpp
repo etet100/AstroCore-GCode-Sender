@@ -235,6 +235,7 @@ QList<int> GcodePreprocessorUtils::parseMCodes(QString command)
 QVector3D GcodePreprocessorUtils::updatePointWithCommand(const QString &command, const QVector3D &initial, bool absoluteMode)
 {
     QStringList l = splitCommand(command);
+
     return updatePointWithCommand(l, initial, absoluteMode);
 }
 

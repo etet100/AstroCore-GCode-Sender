@@ -17,7 +17,7 @@ class Connection : public QObject
         virtual ~Connection() {}
 
         // true = waiting for connection, false = already connected or failed to connect
-        virtual bool openConnection() = 0;
+        virtual bool open() = 0;
         virtual void sendChar(QChar);
         virtual void sendChar(char);
         virtual void sendByteArray(QByteArray) = 0;

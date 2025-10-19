@@ -24,8 +24,7 @@ class ProbingBehavior : public StateBehavior
             YPlus       // Probe forward
         };
 
-        explicit ProbingBehavior(StateBehavior *previous,
-                               ProbeDirection direction = ProbeDirection::ZMinus,
+        explicit ProbingBehavior(ProbeDirection direction = ProbeDirection::ZMinus,
                                double distance = 20.0,
                                double feedRate = 100.0,
                                QObject *parent = nullptr);
@@ -35,7 +34,7 @@ class ProbingBehavior : public StateBehavior
 
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Probing-specific methods
         void setProbeParameters(ProbeDirection direction, double distance, double feedRate);

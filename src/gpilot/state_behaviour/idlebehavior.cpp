@@ -6,9 +6,10 @@
 #include "runningbehavior.h"
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
+#include "core/communicator/communicator.h"
 
-IdleBehavior::IdleBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+IdleBehavior::IdleBehavior(QObject *parent)
+    : StateBehavior{parent}
 {}
 
 void IdleBehavior::onDeviceStateChanged(DeviceState state)
@@ -19,12 +20,21 @@ void IdleBehavior::onDeviceStateChanged(DeviceState state)
         emit transition(this, new RunningBehavior(this));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 
-void IdleBehavior::onCommandResponse(QString command, QStringList response)
+void IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
-    // Process command responses in idle state
-    // This could be used to transition to other behaviors based on command responses
+    qDebug() << "[IdleBehavior] Command Response:" << command << response;
+
+    if (command == "$G") {
+        m_communicator->processGCodeParserState(commandAttributes, response);
+    }
+}
+
+void IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
+    qDebug() << "[IdleBehavior] Entry";
+    StateBehavior::onEntry(communicator, previous);
 }

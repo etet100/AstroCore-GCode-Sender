@@ -1,5 +1,6 @@
 // This file is a part of "Candle" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
 
 #ifndef GCODEDRAWER_H
 #define GCODEDRAWER_H

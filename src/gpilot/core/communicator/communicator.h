@@ -7,12 +7,17 @@
 #include "io/connection/connection.h"
 #include "scripting/scriptvars.h"
 #include "core/machine/machineconfiguration.h"
+#include "core/jogger/jogger.h"
 #include "state_behaviour/behaviors.h"
 #include <QTimer>
 
 class Communicator : public QObject
 {
     friend class frmMain;
+    friend class ResetBehavior;
+    friend class ConnectingBehavior;
+    friend class IdleBehavior;
+    friend class Jogger;
 
     Q_OBJECT
 
@@ -31,10 +36,13 @@ class Communicator : public QObject
         void clearCommandsAndQueue();
         void clearQueue();
         void reset();
+        void unlock();
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
         // disconnect, dispose and delete old connection, connect new connection
-        void replaceConnection(Connection *);
+        void setConnection(Connection *);
+        // bool openConnection();
+        Connection* connection();
         void stopUpdatingState();
         void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
@@ -55,13 +63,15 @@ class Communicator : public QObject
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
+        Jogger& jogger() { return m_jogger; }
     private:
         static const int BUFFERLENGTH = 127;
 
-        Connection *m_connection;
+        Connection *m_connection = nullptr;;
         Configuration *m_configuration;
         GCode *m_streamer = nullptr;
         MachineConfiguration *m_machineConfiguration = nullptr;
+        Jogger m_jogger;
 
         // Queues
         QList<CommandAttributes> m_commands;
@@ -70,7 +80,7 @@ class Communicator : public QObject
         // States
         SenderState m_senderState;
         DeviceState m_deviceState;
-        StateBehavior *m_sb;
+        StateBehavior *m_sb = nullptr;
 
         ScriptVars m_storedVars;
 
@@ -130,7 +140,10 @@ class Communicator : public QObject
         void completeTransfer();
 
         void resetStateVariables();
-
+        void processDeviceConfiguration(QStringList response);
+        
+        void processGCodeParserState(CommandAttributes commandAttributes, QString response);
+        
     private slots:
         void onTimerStateQuery();
         void onConnectionLineReceived(QString);

@@ -17,7 +17,7 @@ class RawTcpConnection : public Connection
     public:
         RawTcpConnection(QObject*);
         ~RawTcpConnection();
-        bool openConnection() override;
+        bool open() override;
         void setHost(QString);
         void setPort(int);
         void sendByteArray(QByteArray) override;

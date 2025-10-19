@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef D4735774_9D03_4D99_81CA_1470151E54AE
-#define D4735774_9D03_4D99_81CA_1470151E54AE
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -21,14 +18,14 @@ class PauseBehavior : public StateBehavior
             External      // Pause from external source (e.g. hold signal)
         };
 
-        explicit PauseBehavior(StateBehavior *previous, PauseSource source = PauseSource::Program, QObject *parent = nullptr);
+        explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
         QString name() override;
         bool isJoggingAllowed() override { return true; } // Jogging is allowed during pause
         bool isHomingAllowed() override { return false; } // Homing is not allowed during pause
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit() override;
+        void onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Pause-specific methods
         void resumeOperation(); // Resume paused operation
@@ -39,5 +36,3 @@ class PauseBehavior : public StateBehavior
 
 #endif // PAUSEBEHAVIOR_H
 
-
-#endif /* D4735774_9D03_4D99_81CA_1470151E54AE */

@@ -9,12 +9,11 @@
 #include "alarmbehavior.h"
 #include <QDebug>
 
-ProbingBehavior::ProbingBehavior(StateBehavior *previous,
-                              ProbeDirection direction,
+ProbingBehavior::ProbingBehavior(ProbeDirection direction,
                               double distance,
                               double feedRate,
                               QObject *parent)
-    : StateBehavior{previous, parent}
+    : StateBehavior{parent}
     , m_direction(direction)
     , m_distance(distance)
     , m_feedRate(feedRate)
@@ -47,11 +46,11 @@ void ProbingBehavior::onDeviceStateChanged(DeviceState state)
     } else if (state == DeviceState::Alarm && m_probeStarted) {
         // Alarm occurred during probing - something likely went wrong
         emit error(this, "Probing failed - device entered alarm state");
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 
-void ProbingBehavior::onCommandResponse(QString command, QStringList response)
+void ProbingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "Probing response: " << response;
 
@@ -59,8 +58,8 @@ void ProbingBehavior::onCommandResponse(QString command, QStringList response)
     if (command.contains("G38.2")) {
         if (response.contains("error")) {
             // Error occurred during probing command
-            emit error(this, "Probing failed - " + response.join(" "));
-        } else if (response.join(" ").contains("PRB:")) {
+            emit error(this, "Probing failed - " + fullResponse.join(" "));
+        } else if (fullResponse.join(" ").contains("PRB:")) {
             // Found probing information in the response
             // Response format is usually [PRB:X,Y,Z:R] where X,Y,Z are coordinates and R is status (1=success)
 

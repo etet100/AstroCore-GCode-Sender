@@ -12,14 +12,14 @@ class Communicator;
 class CheckModeBehavior : public StateBehavior
 {
     public:
-        explicit CheckModeBehavior(StateBehavior *previous, QObject *parent = nullptr);
+        explicit CheckModeBehavior(QObject *parent = nullptr);
         QString name() override { return "Check Mode"; }
         bool isJoggingAllowed() override { return false; }
         bool isHomingAllowed() override { return false; }
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit() override;
+        void onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QStringList response) override;
+        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
     private:
         bool m_checkModeEnabled;

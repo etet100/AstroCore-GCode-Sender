@@ -28,7 +28,7 @@ class VirtualGRBLConnection : public Connection
 public:
     VirtualGRBLConnection(QObject*);
     ~VirtualGRBLConnection();
-    bool openConnection() override;
+    bool open() override;
     void sendByteArray(QByteArray) override;
     void sendLine(QString) override;
     void closeConnection() override;

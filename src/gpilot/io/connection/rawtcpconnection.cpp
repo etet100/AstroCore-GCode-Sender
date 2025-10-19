@@ -10,7 +10,7 @@ RawTcpConnection::~RawTcpConnection()
 
 }
 
-bool RawTcpConnection::openConnection()
+bool RawTcpConnection::open()
 {
     return true;
 }

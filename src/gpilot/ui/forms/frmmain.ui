@@ -1417,6 +1417,12 @@ QLabel[overrided=&quot;false&quot;] {
      </property>
      <item>
       <widget class="QFrame" name="fraProgram">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>200</height>
+        </size>
+       </property>
        <property name="styleSheet">
         <string notr="true">border: 1px solid silver;
 border-top: 0;</string>

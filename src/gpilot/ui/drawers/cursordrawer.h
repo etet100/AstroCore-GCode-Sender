@@ -1,41 +1,41 @@
-// This file is a part of "Candle" application.
+// This file is a part of "G-Pilot (formerly Candle)" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
 
 #ifndef CURSORDRAWER_H
 #define CURSORDRAWER_H
 
-#include <QVector3D>
-#include <QTimer>
-#include <QColor>
+#include <QPropertyAnimation>
 #include "shaderdrawable.h"
-#include <chrono>
-#include "ui/widgets/glwidget.h"
 
-using namespace std::chrono;
-
-class CursorDrawer : public ShaderDrawable
+class CursorDrawer : public QObject, public ShaderDrawable
 {
+    Q_OBJECT
+    Q_PROPERTY(float animation WRITE setAnimation)
+
     public:
         explicit CursorDrawer();
 
         void setPosition(QPointF position);
-        void setColor(const QColor &color);
-        void rotate();
+        void setVisible(bool visible);
 
     protected:
         bool updateData(GLPalette &palette) override;
+        double m_toolDiameter;
+        double m_toolLength;
+        double m_endLength;
+        QVector3D m_position;
+        double m_tipAngle;
+        QColor m_color;
+        float m_animation;
+
+        QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, int color);
 
     private:
-        static const int DIAMETER = 5;
-        static const int LENGTH = 25;
-        double m_distanceFromSurface = 0;
-        double m_endLength = 10;
-        QPointF m_position = {0, 0};
-        QColor m_color = {255, 255, 0};
-        double m_rotationAngle = 0;
-        high_resolution_clock m_clock;
-        double normalizeAngle(double angle);
-        QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, int color);
+        QPropertyAnimation *m_animator;
+
+        void startAnimator();
+        void setAnimation(float value);
 };
 
 #endif // CURSORDRAWER_H

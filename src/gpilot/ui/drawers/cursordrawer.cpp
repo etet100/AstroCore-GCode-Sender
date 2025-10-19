@@ -1,5 +1,6 @@
 // This file is a part of "Candle" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
 
 #include "cursordrawer.h"
 #include <cmath>
@@ -9,11 +10,19 @@ using namespace std::chrono;
 
 CursorDrawer::CursorDrawer() : ShaderDrawable()
 {
+    m_toolDiameter = 3;
+    m_toolLength = 15;
+    m_endLength = 10;
+    m_position = QVector3D(0, 0, 0);
+    m_color = QColor(0, 0, 0);
+
+    startAnimator();
 }
 
 bool CursorDrawer::updateData(GLPalette &palette)
 {
     const int arcs = 5;
+    const float z = m_position.z() + m_animation;
 
     // Clear data
     m_lines.clear();
@@ -22,72 +31,58 @@ bool CursorDrawer::updateData(GLPalette &palette)
     // Prepare vertex
     VertexData vertex;
     vertex.color = palette.color(m_color);
-    vertex.start = QVector3D(sNan, sNan, sNan);
-
-    // Draw lines
-    for (int i = 0; i < arcs; i++) {
-        double x = m_position.x() + DIAMETER / 2 * cos(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
-        double y = m_position.y() + DIAMETER / 2 * sin(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
-
-        // Side lines
-        vertex.position = QVector3D(x, y, m_distanceFromSurface + m_endLength);
-        m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_distanceFromSurface + LENGTH);
-        m_lines.append(vertex);
-
-        // Bottom lines
-        vertex.position = QVector3D(m_position.x(), m_position.y(), m_distanceFromSurface);
-        m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_distanceFromSurface + m_endLength);
-        m_lines.append(vertex);
-
-        // Top lines
-        vertex.position = QVector3D(m_position.x(), m_position.y(), m_distanceFromSurface + LENGTH);
-        m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_distanceFromSurface + LENGTH);
-        m_lines.append(vertex);
-
-        // Zero Z lines
-        if (m_endLength == 0) {
-            vertex.position = QVector3D(m_position.x(), m_position.y(), 0);
-            m_lines.append(vertex);
-            vertex.position = QVector3D(x, y, 0);
-            m_lines.append(vertex);
-        }
-    }
 
     // Draw circles
     // Bottom
-    m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), m_distanceFromSurface + m_endLength),
-                            DIAMETER / 2, 20, vertex.color);
+    m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), z + m_endLength),
+                            m_toolDiameter / 2, 20, vertex.color);
 
     // Top
-    m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), m_distanceFromSurface + LENGTH),
-                            DIAMETER / 2, 20, vertex.color);
+    m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), z + m_toolLength),
+                            m_toolDiameter / 2, 20, vertex.color);
 
     // Zero Z circle
     if (m_endLength == 0) {
         m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), 0),
-                                DIAMETER / 2, 20, vertex.color);
+                                m_toolDiameter / 2, 20, vertex.color);
+    }
+
+    // Draw lines
+    for (int i = 0; i < arcs; i++) {
+        double x = m_position.x() + m_toolDiameter / 2 * cos((2 * M_PI / arcs) * i);
+        double y = m_position.y() + m_toolDiameter / 2 * sin((2 * M_PI / arcs) * i);
+
+        // Side lines
+        vertex.position = QVector3D(x, y, z + m_endLength);
+        m_lines.append(vertex);
+        vertex.position = QVector3D(x, y, z + m_toolLength);
+        m_lines.append(vertex);
+
+        // Bottom lines
+        vertex.position = QVector3D(m_position.x(), m_position.y(), z);
+        m_lines.append(vertex);
+        vertex.position = QVector3D(x, y, z + m_endLength);
+        m_lines.append(vertex);
+
+        // Top lines
+        vertex.position = QVector3D(m_position.x(), m_position.y(), z + m_toolLength);
+        m_lines.append(vertex);
+        vertex.position = QVector3D(x, y, z + m_toolLength);
+        m_lines.append(vertex);
+    }
+
+    for (int i = 0; i < arcs; i++) {
+        // Zero Z lines
+        double x = m_position.x() + m_toolDiameter / 2 * cos((2 * M_PI / arcs) * i);
+        double y = m_position.y() + m_toolDiameter / 2 * sin((2 * M_PI / arcs) * i);
+
+        vertex.position = QVector3D(m_position.x(), m_position.y(), 0);
+        m_lines.append(vertex);
+        vertex.position = QVector3D(x, y, 0);
+        m_lines.append(vertex);
     }
 
     return true;
-}
-
-void CursorDrawer::setColor(const QColor &color)
-{
-    m_color = color;
-}
-
-void CursorDrawer::rotate()
-{
-    uint64_t ms = duration_cast<milliseconds>(m_clock.now().time_since_epoch()).count();
-
-    double newAngle = (ms / 10) % 360;
-    if (m_rotationAngle != newAngle) {
-        m_rotationAngle = newAngle;
-        update();
-    }
 }
 
 QVector<VertexData> CursorDrawer::createCircle(QVector3D center, double radius, int arcs, int color)
@@ -120,12 +115,41 @@ QVector<VertexData> CursorDrawer::createCircle(QVector3D center, double radius, 
 
 void CursorDrawer::setPosition(QPointF position)
 {
-    position = QPointF(
-        trunc(position.x()),
-        trunc(position.y())
-    );
-    if (m_position != position) {
-        m_position = position;
+    QVector3D pos3d(position.x(), position.y(), 0);
+    if (m_position != pos3d) {
+        m_position = pos3d;
         update();
     }
 }
+
+void CursorDrawer::setAnimation(float value)
+{
+    m_animation = value;
+    if (m_visible) {
+        update();
+    }
+}
+
+void CursorDrawer::setVisible(bool visible) {
+    m_visible = visible;
+    update();
+}
+
+void CursorDrawer::startAnimator()
+{
+    m_animator = new QPropertyAnimation(this, "animation");
+    m_animator->setDuration(500);
+    m_animator->setStartValue(0);
+    m_animator->setEndValue(3);
+    m_animator->setEasingCurve(QEasingCurve::InOutSine);
+    QObject::connect(m_animator, &QPropertyAnimation::finished, [this]() {
+        if (m_animator->direction() == QAbstractAnimation::Forward)
+            m_animator->setDirection(QAbstractAnimation::Backward);
+        else
+            m_animator->setDirection(QAbstractAnimation::Forward);
+        m_animator->start();
+    });
+    m_animator->start();
+}
+
+

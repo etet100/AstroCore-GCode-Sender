@@ -9,8 +9,8 @@
 #include "alarmbehavior.h"
 #include "toolchangebehavior.h"
 
-RunningBehavior::RunningBehavior(StateBehavior *previous, QObject *parent)
-    : StateBehavior{previous, parent}
+RunningBehavior::RunningBehavior(QObject *parent)
+    : StateBehavior{parent}
     , m_feedOverride(100)
     , m_spindleOverride(100)
 {}
@@ -19,18 +19,19 @@ void RunningBehavior::onDeviceStateChanged(DeviceState state)
 {
     if (state == DeviceState::Idle) {
         // Program finished or was stopped
-        emit transition(this, new IdleBehavior(this));
+        emit transition(this, new IdleBehavior());
     } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
         // Machine is in hold state - transition to pause
-        emit transition(this, new PauseBehavior(this, PauseBehavior::PauseSource::Program));
+        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
-        emit transition(this, new AlarmBehavior(this));
+        emit transition(this, new AlarmBehavior());
     }
 }
 
-void RunningBehavior::onCommandResponse(QString command, QStringList response)
+void RunningBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
+
     // Process command responses during running state
     // For example, handle M6 commands for tool change
     if (command.contains("M6")) {
@@ -43,7 +44,13 @@ void RunningBehavior::onCommandResponse(QString command, QStringList response)
 void RunningBehavior::onAlarm(int code)
 {
     // Handle alarm during running state
-    emit transition(this, new AlarmBehavior(this, code));
+    emit transition(this, new AlarmBehavior(code));
+}
+
+void RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+{
+    qDebug() << "[RunningBehavior] Entry";
+    StateBehavior::onEntry(communicator, previous);
 }
 
 void RunningBehavior::handleFeedOverride(int percentage)
