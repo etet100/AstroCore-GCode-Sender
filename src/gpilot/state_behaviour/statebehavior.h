@@ -12,6 +12,7 @@
 #include "action.h"
 #include <functional>
 #include <QMap>
+#include <QPointer>
 
 class Communicator;
 
@@ -22,18 +23,23 @@ class StateBehavior : public QObject
     public:
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString name() = 0;
+
+        bool eventsAttached() const { return m_eventsAttached; }
+        void markEventsAttached() { m_eventsAttached = true; }
+
         virtual bool execute(const Action &action) {
             Q_UNUSED(action);
-        };
+        }
+
         virtual bool isActionAllowed(const Action &action) {
             Q_UNUSED(action);
             return false;
-        };
+        }
 
         virtual bool isNewStateAllowed(StateBehavior *newState) {
             Q_UNUSED(newState);
             return true;
-        };
+        }
 
         virtual void reset();
         virtual void unlock() {};
@@ -46,11 +52,11 @@ class StateBehavior : public QObject
 
         virtual void onAlarm(int code) {
             qDebug() << "Alarm: " << code;
-        };
+        }
 
         virtual void onDeviceStateChanged(DeviceState state) {
             Q_UNUSED(state);
-        };
+        }
 
         using StateResponseCallback = std::function<void(DeviceState)>;
 
@@ -59,22 +65,35 @@ class StateBehavior : public QObject
                 cbk(state);
             }
             m_stateResponseCallbacks.clear();
-        };
+        }
 
-        virtual void onCommandResponse(QString command, QString response, QStringList fullResponse) {
+        // returns true if the response was handled and should not be processed further, for example
+        // passed to onCommandResponse.
+        virtual bool onRawResponse(QString response) {
+            Q_UNUSED(response);
+
+            return false;
+        }
+
+        // returns true if the response was handled and should not be processed further.
+        virtual bool onCommandResponse(QString command, QString response, QStringList fullResponse) {
             Q_UNUSED(command);
             Q_UNUSED(response);
             Q_UNUSED(fullResponse);
-        };
 
-        virtual void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
+            return false;
+        }
+
+        // returns true if the response was handled and should not be processed further.
+        virtual bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);
-            onCommandResponse(command, response, fullResponse);
+
+            return onCommandResponse(command, response, fullResponse);
         }
 
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
-        };
+        }
 
         void waitForStateResponse(StateResponseCallback callback);
 
@@ -85,12 +104,15 @@ class StateBehavior : public QObject
 
     protected:
         StateBehavior *m_previous = nullptr;
-        Communicator *m_communicator = nullptr;
+        QPointer<Communicator> m_communicator = nullptr;
         QTimer *m_timer = nullptr;
         QList<StateResponseCallback> m_stateResponseCallbacks;
 
         void stopTimer();
         void log(QString message);
+
+    private:
+        bool m_eventsAttached = false; // used by Communicator
 };
 
 #endif // STATEBEHAVIOR_H

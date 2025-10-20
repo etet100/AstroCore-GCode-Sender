@@ -53,7 +53,7 @@ void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-void ConnectingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool ConnectingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // qDebug() << "[ConnectingBehavior] Command Response:" << command << response;
 
@@ -126,18 +126,20 @@ void ConnectingBehavior::onCommandResponse(QString command, QString response, QS
     // //     sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
     // //     sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
     // // }
+
+    return true;
 }
 
-bool ConnectingBehavior::dataIsReset(QString data)
-{
-    // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
-    // followed by a version number in the format x.y.
-    // This matches e.g.
-    // Grbl 1.1h ['$' for help]
-    // GrblHAL 1.1f ['$' or '' for help]
-    // Grbl 1.8 [uCNC v1.8.8 '$' for help]
-    // Gcarvin ?? https://github.com/inventables/gCarvin
-    static QRegularExpression re("^(GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+// bool ConnectingBehavior::dataIsReset(QString data)
+// {
+//     // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
+//     // followed by a version number in the format x.y.
+//     // This matches e.g.
+//     // Grbl 1.1h ['$' for help]
+//     // GrblHAL 1.1f ['$' or '' for help]
+//     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
+//     // Gcarvin ?? https://github.com/inventables/gCarvin
+//     static QRegularExpression re("^(GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
 
-    return data.contains(re);
-}
+//     return data.contains(re);
+// }

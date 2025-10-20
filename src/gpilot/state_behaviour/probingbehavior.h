@@ -34,7 +34,7 @@ class ProbingBehavior : public StateBehavior
 
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Probing-specific methods
         void setProbeParameters(ProbeDirection direction, double distance, double feedRate);

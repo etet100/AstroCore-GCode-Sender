@@ -26,7 +26,7 @@ void GoToBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+bool GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
     qDebug() << "[GoToBehavior] Command Response:" << command << response;
 }

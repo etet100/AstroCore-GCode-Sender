@@ -50,7 +50,7 @@ void ProbingBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void ProbingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool ProbingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "Probing response: " << response;
 

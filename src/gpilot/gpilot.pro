@@ -13,7 +13,7 @@ QT += multimedia multimediawidgets
 VERSION=1.0.0.0
 
 # DEFINES += DEBUG_UCNC_COMMUNICATION=1
-# DEFINES += DEBUG_GRBL_COMMUNICATION=1
+DEFINES += DEBUG_GRBL_COMMUNICATION=1
 # DEFINES += DEBUG_RAW_TCP_COMMUNICATION=1
 # QT_DEBUG_PLUGINS=1
 # DEFINES += QT_DEBUG_PLUGINS=1
@@ -403,7 +403,7 @@ LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
 #LIBS += C:/Projekty/Qt/Candle/src/vendor/build/uCNC-Debug
 
 LIBS += -L../vendor/uCNC -luCNC
-# LIBS += -L../vendor/grblHal -lgrblHal
+LIBS += -L../vendor/grblHal -lgrblHal
 
 DISTFILES += \
     shaders/2dcopy_fragment.glsl \

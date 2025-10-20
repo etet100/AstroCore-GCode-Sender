@@ -17,20 +17,26 @@ void IdleBehavior::onDeviceStateChanged(DeviceState state)
     // Handle device state changes
     if (state == DeviceState::Run) {
         // Machine started running - transition to running behavior
-        emit transition(this, new RunningBehavior(this));
+        // emit transition(this, new RunningBehavior(this));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }
 }
 
-void IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+bool IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
+    assert(m_communicator != nullptr && !m_communicator.isNull());
+
     qDebug() << "[IdleBehavior] Command Response:" << command << response;
 
     if (command == "$G") {
         m_communicator->processGCodeParserState(commandAttributes, response);
+
+        return true;
     }
+
+    return false;
 }
 
 void IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)

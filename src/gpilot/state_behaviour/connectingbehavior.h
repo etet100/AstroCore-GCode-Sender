@@ -15,10 +15,10 @@ class ConnectingBehavior : public StateBehavior
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onExit(StateBehavior *next = nullptr) override;
         void onConnectionStateChanged(ConnectionState state) override;
-        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
     private:
-        bool dataIsReset(QString data);
+        // bool dataIsReset(QString data);
 };
 
 #endif // CONNECTINGBEHAVIOR_H

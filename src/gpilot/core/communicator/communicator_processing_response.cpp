@@ -16,22 +16,24 @@ void Communicator::onConnectionLineReceived(QString data)
 
     if (data.startsWith("[MSG:")) {
         processMessage(data);
+        processStateBehaviorTransition();
 
         return;
     }
 
     if (data.startsWith("ALARM:")) {
         processAlarm(data);
+        processStateBehaviorTransition();
 
         return;
     }
 
-    if (m_reseting) {
-        if (!dataIsReset(data)) return;
-        m_reseting = false;
-        stopUpdatingState();
-        startUpdatingState(m_configuration->connectionModule().queryStateInterval());
-    }
+    // if (m_reseting) {
+    //     if (!dataIsReset(data)) return;
+    //     m_reseting = false;
+    //     stopUpdatingState();
+    //     startUpdatingState(m_configuration->connectionModule().queryStateInterval());
+    // }
 
     if (data.isEmpty()) {
         // blank response
@@ -41,6 +43,7 @@ void Communicator::onConnectionLineReceived(QString data)
     // Status response
     if (data[0] == '<') {
         processStatus(data);
+        processStateBehaviorTransition();
 
         return;
     }
@@ -51,15 +54,27 @@ void Communicator::onConnectionLineReceived(QString data)
     //     qDebug() << "< RST <" << data;
     // }
 
-    if (m_commands.length() > 0 && !dataIsFloating(data) && !(m_commands[0].commandLine != "[CTRL+X]" && dataIsReset(data))) {
-        processCommandResponse(data);
+    if (m_sb) {
+        assert(m_sb != nullptr && !m_sb.isNull());
+        if (m_sb->onRawResponse(data)) {
+            processStateBehaviorTransition();
 
-        return;
+            return;
+        }
+    }
+
+    if (m_commands.length() > 0 && !dataIsFloating(data) && !(m_commands[0].commandLine != "[CTRL+X]" && dataIsReset(data))) {
+        if (processCommandResponse(data)) {
+            processStateBehaviorTransition();
+
+            return;
+        }
     }
 
     // Unprocessed responses
     // Handle hardware reset
     processUnhandledResponse(data);
+    processStateBehaviorTransition();
 }
 
 void Communicator::processFeedSpindleSpeed(QString data)
@@ -408,8 +423,10 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
     }
 }
 
-void Communicator::processCommandResponse(QString data)
+bool Communicator::processCommandResponse(QString data)
 {
+    bool result;
+
     // @TODO why static?? what is this for???
     static QString response; // Full response string
     static QStringList lines; // Response lines
@@ -418,13 +435,14 @@ void Communicator::processCommandResponse(QString data)
 
     assert(m_commands.length() > 0);
 
+    // This part is used to collect multi-line responses, e.g. $$
     // Was opposite: if ((m_commands[0].commandLine != "[CTRL+X]" && dataIsEnd(data)) || (m_commands[0].commandLine == "[CTRL+X]" && dataIsReset(data))) {
     QString firstCommand = m_commands[0].commandLine;
     if ((firstCommand == "[CTRL+X]" || !dataIsEnd(data)) && (firstCommand != "[CTRL+X]" || !dataIsReset(data))) {
         response.append(data + "; ");
         lines.append(data);
 
-        return;
+        return false;;
     }
 
     response.append(data);
@@ -437,7 +455,18 @@ void Communicator::processCommandResponse(QString data)
     QString command = GcodePreprocessorUtils::removeComment(commandAttributes.commandLine).toUpper();
 
     if (m_sb != nullptr) {
-        m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
+        assert(m_sb != nullptr && !m_sb.isNull());
+
+        IdleBehavior *idleBehavior = qobject_cast<IdleBehavior *>(m_sb.data());
+        if (!idleBehavior) {
+            qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+            qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+            result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
+        } else {
+            qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+            qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+            result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
+        }
     }
 
     // Store current coordinate system
@@ -454,7 +483,7 @@ void Communicator::processCommandResponse(QString data)
     // }
 
     // Homing response
-    if ((command == "$H" || command == "$T") && m_homing) m_homing = false;
+    // if ((command == "$H" || command == "$T") && m_homing) m_homing = false;
 
     // Reset complete response
     // if (command == "[CTRL+X]") {
@@ -467,27 +496,27 @@ void Communicator::processCommandResponse(QString data)
     // }
 
     // Clear command buffer on "M2" & "M30" command (old firmwares)
-    static QRegularExpression M230("(M0*2|M30)(?!\\d)");
-    if (command.contains(M230) && response.contains("ok") && !response.contains("Pgm End")) {
-        m_commands.clear();
-        m_queue.clear();
+    // static QRegularExpression M230("(M0*2|M30)(?!\\d)");
+    // if (command.contains(M230) && response.contains("ok") && !response.contains("Pgm End")) {
+    //     m_commands.clear();
+    //     m_queue.clear();
 
-        emit aborted();
-    }
+    //     emit aborted();
+    // }
 
     // Update probe coords on user commands
-    if (command.contains("G38.2") && commandAttributes.tableIndex < 0) {
-        static QRegularExpression PRB(".*PRB:([^,]*),([^,]*),([^,:]*)");
+    // if (command.contains("G38.2") && commandAttributes.tableIndex < 0) {
+    //     static QRegularExpression PRB(".*PRB:([^,]*),([^,]*),([^,:]*)");
 
-        QRegularExpressionMatch match = PRB.match(response);
-        if (match.hasMatch()) {
-            m_storedVars.setCoords("PRB", QVector3D(
-                match.captured(1).toDouble(),
-                match.captured(2).toDouble(),
-                match.captured(3).toDouble()
-            ));
-        }
-    }
+    //     QRegularExpressionMatch match = PRB.match(response);
+    //     if (match.hasMatch()) {
+    //         m_storedVars.setCoords("PRB", QVector3D(
+    //             match.captured(1).toDouble(),
+    //             match.captured(2).toDouble(),
+    //             match.captured(3).toDouble()
+    //         ));
+    //     }
+    // }
 
     // Process probing on heightmap mode only from table commands
     // @TODO refactor height map mode
@@ -524,9 +553,9 @@ void Communicator::processCommandResponse(QString data)
     // }
 
     // Change state query time on check mode on
-    if (command.contains(QRegularExpression("$[cC]"))) {
-        m_timerStateQuery.setInterval(response.contains("Enable") ? 1000 : m_configuration->connectionModule().queryStateInterval());
-    }
+    // if (command.contains(QRegularExpression("$[cC]"))) {
+    //     m_timerStateQuery.setInterval(response.contains("Enable") ? 1000 : m_configuration->connectionModule().queryStateInterval());
+    // }
 
     // emit signal, was `Add response to console`
     commandAttributes.response = response;
@@ -557,136 +586,136 @@ void Communicator::processCommandResponse(QString data)
         processingQueue = false;
     }
 
-    // Add response to table, send next program commands
-    if (m_senderState != SenderState::Stopped) {
-        // Only if command from table
-        if (commandAttributes.tableIndex > -1) {
-            m_streamer->resetProcessed(commandAttributes.tableIndex);
+//     // Add response to table, send next program commands
+//     if (m_senderState != SenderState::Stopped) {
+//         // Only if command from table
+//         if (commandAttributes.tableIndex > -1) {
+//             m_streamer->resetProcessed(commandAttributes.tableIndex);
 
-            emit commandProcessed(commandAttributes.tableIndex, response);
-        }
+//             emit commandProcessed(commandAttributes.tableIndex, response);
+//         }
 
-// Update taskbar progress
-#ifdef WINDOWS
-        // @TODO move progress to streamer??
-        // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-        //     if (m_taskBarProgress) m_taskBarProgress->setValue(m_fileProcessedCommandIndex);
-        // }
-#endif
-        // Process error messages
-        static bool holding = false;
-        static QString errors;
+// // Update taskbar progress
+// #ifdef WINDOWS
+//         // @TODO move progress to streamer??
+//         // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+//         //     if (m_taskBarProgress) m_taskBarProgress->setValue(m_fileProcessedCommandIndex);
+//         // }
+// #endif
+//         // Process error messages
+//         static bool holding = false;
+//         static QString errors;
 
-        if (
-            commandAttributes.tableIndex > -1 &&
-            response.toUpper().contains("ERROR") &&
-            !m_configuration->senderModule().ignoreErrorResponses()
-        ) {
-            errors.append(QString::number(commandAttributes.tableIndex + 1) + ": " + commandAttributes.commandLine + " < " + response + "\n");
+//         if (
+//             commandAttributes.tableIndex > -1 &&
+//             response.toUpper().contains("ERROR") &&
+//             !m_configuration->senderModule().ignoreErrorResponses()
+//         ) {
+//             errors.append(QString::number(commandAttributes.tableIndex + 1) + ": " + commandAttributes.commandLine + " < " + response + "\n");
 
-            // @TODO move to UI
-            // m_form->senderErrorBox().setText(tr("Error message(s) received:\n") + errors);
+//             // @TODO move to UI
+//             // m_form->senderErrorBox().setText(tr("Error message(s) received:\n") + errors);
 
-            if (!holding) {
-                holding = true;         // Hold transmit while messagebox is visible
-                response.clear();
+//             if (!holding) {
+//                 holding = true;         // Hold transmit while messagebox is visible
+//                 response.clear();
 
-                sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
-                // @TODO move to UI
-                // m_form->senderErrorBox().checkBox()->setChecked(false);
-                // qApp->beep();
-                // int result = m_form->senderErrorBox().exec();
-                int result = QMessageBox::Ignore;
+//                 sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
+//                 // @TODO move to UI
+//                 // m_form->senderErrorBox().checkBox()->setChecked(false);
+//                 // qApp->beep();
+//                 // int result = m_form->senderErrorBox().exec();
+//                 int result = QMessageBox::Ignore;
 
-                holding = false;
-                errors.clear();
-                // @TODO move to UI
-                // if (m_form->senderErrorBox().checkBox()->isChecked()) m_settings->setIgnoreErrors(true);
-                if (result == QMessageBox::Ignore) {
-                    sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
-                } else {
-                    sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+//                 holding = false;
+//                 errors.clear();
+//                 // @TODO move to UI
+//                 // if (m_form->senderErrorBox().checkBox()->isChecked()) m_settings->setIgnoreErrors(true);
+//                 if (result == QMessageBox::Ignore) {
+//                     sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+//                 } else {
+//                     sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
 
-                    emit aborted();
-                }
-            }
-        }
+//                     emit aborted();
+//                 }
+//             }
+//         }
 
-        // Check transfer complete (last row always blank, last command row = rowcount - 2)
-//        if ((m_streamer->processedCommandIndex() == m_form->currentModel().rowCount() - 2) || uncomment.contains(QRegularExpression("(M0*2|M30)(?!\\d)"))) {
-        if (m_streamer->isLastCommandProcessed() || command.contains(QRegularExpression("(M0*2|M30)(?!\\d)"))) {
-            if (m_deviceState == DeviceState::Run) {
-                setSenderStateAndEmitSignal(SenderState::Stopping);
-            } else {
-                completeTransfer();
-            }
-        } else if (m_streamer->hasMoreCommands()  // /*(m_streamer->commandIndex() < m_form->currentModel().rowCount())
-                   && (m_senderState == SenderState::Transferring)
-                   && !holding)
-        {
-            // Send next program commands
-            sendStreamerCommandsUntilBufferIsFull();
-            //m_form->sendNextFileCommands();
-        }
-    }
+//         // Check transfer complete (last row always blank, last command row = rowcount - 2)
+// //        if ((m_streamer->processedCommandIndex() == m_form->currentModel().rowCount() - 2) || uncomment.contains(QRegularExpression("(M0*2|M30)(?!\\d)"))) {
+//         if (m_streamer->isLastCommandProcessed() || command.contains(QRegularExpression("(M0*2|M30)(?!\\d)"))) {
+//             if (m_deviceState == DeviceState::Run) {
+//                 setSenderStateAndEmitSignal(SenderState::Stopping);
+//             } else {
+//                 completeTransfer();
+//             }
+//         } else if (m_streamer->hasMoreCommands()  // /*(m_streamer->commandIndex() < m_form->currentModel().rowCount())
+//                    && (m_senderState == SenderState::Transferring)
+//                    && !holding)
+//         {
+//             // Send next program commands
+//             sendStreamerCommandsUntilBufferIsFull();
+//             //m_form->sendNextFileCommands();
+//         }
+//     }
 
-    // Tool change mode
-    static QRegularExpression M6("(M0*6)(?!\\d)");
-    if ((m_senderState == SenderState::Pausing) && command.contains(M6)) {
-        response.clear();
+    // // Tool change mode
+    // static QRegularExpression M6("(M0*6)(?!\\d)");
+    // if ((m_senderState == SenderState::Pausing) && command.contains(M6)) {
+    //     response.clear();
         
-        if (m_configuration->senderModule(). pauseSenderOnToolChange()) {
-            // QMessageBox::information(this, qApp->applicationDisplayName(),
-            //                          tr("Change tool and press 'Pause' button to continue job"));
-        }
+    //     if (m_configuration->senderModule(). pauseSenderOnToolChange()) {
+    //         // QMessageBox::information(this, qApp->applicationDisplayName(),
+    //         //                          tr("Change tool and press 'Pause' button to continue job"));
+    //     }
 
-        if (m_configuration->senderModule().useToolChangeCommands()) {
-            if (m_configuration->senderModule().confirmToolChangeCommandsExecution()) {
-                // QMessageBox box(this);
-                // box.setIcon(QMessageBox::Information);
-                // box.setText(tr("M6 command detected. Send tool change commands?\n"));
-                // box.setWindowTitle(qApp->applicationDisplayName());
-                // box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                // box.setCheckBox(new QCheckBox(tr("Don't show again")));
-                // int res = box.exec();
-                // if (box.checkBox()->isChecked()) m_settings->setToolChangeUseCommandsConfirm(false);
-                // if (res == QMessageBox::Yes) {
-                //     sendCommands(m_settings->toolChangeCommands());
-                // }
-            } else {
-                sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration->senderModule().toolChangeCommands());
-            }
-        }
+    //     if (m_configuration->senderModule().useToolChangeCommands()) {
+    //         if (m_configuration->senderModule().confirmToolChangeCommandsExecution()) {
+    //             // QMessageBox box(this);
+    //             // box.setIcon(QMessageBox::Information);
+    //             // box.setText(tr("M6 command detected. Send tool change commands?\n"));
+    //             // box.setWindowTitle(qApp->applicationDisplayName());
+    //             // box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    //             // box.setCheckBox(new QCheckBox(tr("Don't show again")));
+    //             // int res = box.exec();
+    //             // if (box.checkBox()->isChecked()) m_settings->setToolChangeUseCommandsConfirm(false);
+    //             // if (res == QMessageBox::Yes) {
+    //             //     sendCommands(m_settings->toolChangeCommands());
+    //             // }
+    //         } else {
+    //             sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration->senderModule().toolChangeCommands());
+    //         }
+    //     }
 
-        setSenderStateAndEmitSignal(SenderState::ChangingTool);
-    }
+    //     setSenderStateAndEmitSignal(SenderState::ChangingTool);
+    // }
 
-    // Pausing on button?
-    if ((m_senderState == SenderState::Pausing) && !command.contains(M6)) {
-        if (m_configuration->senderModule().usePauseCommands()) {
-            sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration->senderModule().beforePauseCommands());
-            setSenderStateAndEmitSignal(SenderState::Pausing2);
-        }
-    }
-    if ((m_senderState == SenderState::ChangingTool) && !m_configuration->senderModule().pauseSenderOnToolChange()
-        && m_commands.isEmpty())
-    {
-        setSenderStateAndEmitSignal(SenderState::Transferring);
-    }
+    // // Pausing on button?
+    // if ((m_senderState == SenderState::Pausing) && !command.contains(M6)) {
+    //     if (m_configuration->senderModule().usePauseCommands()) {
+    //         sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration->senderModule().beforePauseCommands());
+    //         setSenderStateAndEmitSignal(SenderState::Pausing2);
+    //     }
+    // }
+    // if ((m_senderState == SenderState::ChangingTool) && !m_configuration->senderModule().pauseSenderOnToolChange()
+    //     && m_commands.isEmpty())
+    // {
+    //     setSenderStateAndEmitSignal(SenderState::Transferring);
+    // }
 
-    // Switch to pause mode
-    if (isSenderState(SenderState::Pausing, SenderState::Pausing2)) {
-        if (m_commands.isEmpty()) {
-            setSenderStateAndEmitSignal(SenderState::Paused);
-        }
-    }
+    // // Switch to pause mode
+    // if (isSenderState(SenderState::Pausing, SenderState::Pausing2)) {
+    //     if (m_commands.isEmpty()) {
+    //         setSenderStateAndEmitSignal(SenderState::Paused);
+    //     }
+    // }
 
-    // Same as M2, Program End, turn off spindle/laser and stops the machine.
-    // Scroll to first line on "M30" command
-    if (command.contains("M30")) {
-        // @TODO new signal here?
-        emit commandProcessed(-1, "");
-    }
+    // // Same as M2, Program End, turn off spindle/laser and stops the machine.
+    // // Scroll to first line on "M30" command
+    // if (command.contains("M30")) {
+    //     // @TODO new signal here?
+    //     emit commandProcessed(-1, "");
+    // }
 
     // Toolpath shadowing on check mode - moved to responseReceived signal handler
     // if (m_deviceState == DeviceCheck) {
@@ -701,6 +730,8 @@ void Communicator::processCommandResponse(QString data)
 
     response.clear();
     lines.clear();
+
+    return result;
 }
 
 void Communicator::processUnhandledResponse(QString data)

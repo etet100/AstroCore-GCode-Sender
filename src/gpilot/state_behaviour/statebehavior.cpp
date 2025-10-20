@@ -5,7 +5,7 @@
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
 
-StateBehavior::StateBehavior(QObject *parent) : QObject{parent}
+StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 {
 }
 

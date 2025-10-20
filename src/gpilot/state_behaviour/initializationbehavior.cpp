@@ -19,18 +19,18 @@ void InitializationBehavior::onDeviceStateChanged(DeviceState state)
     // Handle device state changes
     if (state == DeviceState::Run) {
         // Machine started running - transition to running behavior
-        emit transition(this, new RunningBehavior(this));
+        // emit transition(this, new RunningBehavior(this));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }
 }
 
-void InitializationBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
-{
-    // Process command responses in idle state
-    // This could be used to transition to other behaviors based on command responses
-}
+// bool InitializationBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+// {
+//     // Process command responses in idle state
+//     // This could be used to transition to other behaviors based on command responses
+// }
 
 void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
 {
@@ -45,12 +45,12 @@ void InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *
     qDebug() << "[InitializationBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    if ((bool) communicator->connection()) {
-        qDebug() << "[InitializationBehavior] Connection object exists";
-        emit transition(this, new ConnectingBehavior());
+    // if ((bool) communicator->connection()) {
+    //     qDebug() << "[InitializationBehavior] Connection object exists";
+    //     emit transition(this, new ConnectingBehavior());
 
-        return;
-    }
+    //     return;
+    // }
 
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);

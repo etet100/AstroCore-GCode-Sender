@@ -15,44 +15,73 @@ ResetBehavior::ResetBehavior(QObject *parent)
 
 void ResetBehavior::onDeviceState(DeviceState state)
 {
-    if (!m_resetCompleted) {
+    if (m_stage != Completed) {
         return;
     }
 
     qDebug() << "[ResetBehavior] Device State:" << static_cast<int>(state);
     // // Handle device state changes
-    if (state == DeviceState::Alarm) {
+    if (state == DeviceState::Idle) {
+        emit transition(this, new IdleBehavior());
+
+        return;
+    } else if (state == DeviceState::Alarm) {
         emit transition(this, new AlarmBehavior());
+
+        return;
     } else {
         qDebug() << "[ResetBehavior] Unhandled state after reset:" << int(state);
     }
 }
 
-void ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+bool ResetBehavior::onRawResponse(QString response)
+{
+    qDebug() << "[ResetBehavior] Raw Response:" << response;
+
+    if (dataIsReset(response)) {
+        if (m_stage == SentReset) {
+            qDebug() << "[ResetBehavior] Reset detected in raw response. Sending $$ and $#.";
+
+            m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+            m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+
+            m_stage = SentSettingsAndOffsets;
+        } else {
+            // Ignore silently
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
 
-    if (dataIsReset(response)) {
-        qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
+    // if (dataIsReset(response)) {
+    //     qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
 
-        m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-        m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+    //     m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
+    //     m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
 
-        return;
-    }
+    //     return true;
+    // }
 
     if (command == "$$") {
         qDebug() << "[ConnectingBehavior] Processing device configuration.";
         m_communicator->processDeviceConfiguration(fullResponse);
 
-        return;
+        m_stage = ReceivedSettings;
+
+        return true;
     }
 
     if (command == "$#") {
         qDebug() << "[ConnectingBehavior] Processing offsets.";
         m_communicator->processOffsetsVars(response);
 
-        m_resetCompleted = true;
         m_communicator->connection()->sendByteArray(QByteArray(1, '?'));
 
         // if (m_state == DeviceState::Alarm) {
@@ -61,12 +90,16 @@ void ResetBehavior::onCommandResponse(QString command, CommandAttributes command
         //     qDebug() << "[ConnectingBehavior] Unhandled state after reset:" << int(m_state);
         // }
 
-        return;
+        m_stage = Completed;
+
+        return true;
     }
 
     // if (command == "$G") {
     //     m_communicator->processGCodeParserState(commandAttributes, response.first());
     // }
+
+    return false;
 }
 
 void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
@@ -76,17 +109,19 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 
     m_communicator->clearCommandsAndQueue();
 
-    QString command = "[CTRL+X]";
-    CommandAttributes commandAttributes(
-        CommandSource::System,
-        m_communicator->m_commandIndex++,
-        TABLE_INDEX_UI, // why UI ??
-        command
-    );
-    m_communicator->m_commands.append(commandAttributes);
+    // QString command = "[CTRL+X]";
+    // CommandAttributes commandAttributes(
+    //     CommandSource::System,
+    //     m_communicator->m_commandIndex++,
+    //     TABLE_INDEX_UI, // why UI ??
+    //     command
+    // );
+    // m_communicator->m_commands.append(commandAttributes);
 
     qDebug() << "[ResetBehavior] Soft reset";
     m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+
+    m_stage = SentReset;
 }
 
 bool ResetBehavior::dataIsReset(QString data)
@@ -98,7 +133,7 @@ bool ResetBehavior::dataIsReset(QString data)
     // GrblHAL 1.1f ['$' or '' for help]
     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
     // Gcarvin ?? https://github.com/inventables/gCarvin
-    static QRegularExpression re("^(GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+    static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
 
     return data.contains(re);
 }

@@ -10,6 +10,7 @@
 #include "core/jogger/jogger.h"
 #include "state_behaviour/behaviors.h"
 #include <QTimer>
+#include <QPointer>
 
 class Communicator : public QObject
 {
@@ -65,8 +66,9 @@ class Communicator : public QObject
         void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
         void requestStatusUpdate();
+        void processStateBehaviorTransition();
 
-        StateBehavior* stateBehavior() const { return m_sb; }
+        StateBehavior* stateBehavior() const { return m_sb.data(); }
     private:
         static const int BUFFERLENGTH = 127;
 
@@ -83,7 +85,8 @@ class Communicator : public QObject
         // States
         SenderState m_senderState;
         DeviceState m_deviceState;
-        StateBehavior *m_sb = nullptr;
+        QPointer<StateBehavior> m_sb = nullptr;
+        QPointer<StateBehavior> m_nsb = nullptr; // next state behavior to be set
 
         ScriptVars m_storedVars;
 
@@ -130,7 +133,7 @@ class Communicator : public QObject
         double toInches(double value);
 
         void processStatus(QString data);
-        void processCommandResponse(QString data);
+        bool processCommandResponse(QString data);
         void processUnhandledResponse(QString data);
         void processMessage(QString data);
         void processAlarm(QString data);

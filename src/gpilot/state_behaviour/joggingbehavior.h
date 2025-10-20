@@ -10,6 +10,8 @@
 
 class JoggingBehavior : public StateBehavior
 {
+    Q_OBJECT
+
     public:
         explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent = nullptr);
         explicit JoggingBehavior(QVector3D vector, int feedRate,  QObject *parent = nullptr);
@@ -22,7 +24,7 @@ class JoggingBehavior : public StateBehavior
         void onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
         void onDeviceState(DeviceState state) override;
-        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Jogging-specific methods
         void startJogging();

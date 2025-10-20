@@ -38,7 +38,7 @@ void CheckModeBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void CheckModeBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool CheckModeBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     // Process $C command responses
     if (command == "$C") {

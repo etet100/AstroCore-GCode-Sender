@@ -47,7 +47,7 @@ void HomingBehavior::onDeviceStateChanged(DeviceState state)
     // }
 }
 
-void HomingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool HomingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "[HomingBehavior] Command Response:" << command << response;
     if (command == "$H") {
@@ -69,7 +69,15 @@ void HomingBehavior::onCommandResponse(QString command, QString response, QStrin
             // Some controllers don't give direct response about homing completion
             // So we check device state in onDeviceStateChanged
 
+            qDebug() << "Test";
+            qDebug() << "Test" << response;
+            qDebug() << "Test" << fullResponse;
+
             emit transition(this, new IdleBehavior(this));
         }
+
+        return true;
     }
+
+    return false;
 }

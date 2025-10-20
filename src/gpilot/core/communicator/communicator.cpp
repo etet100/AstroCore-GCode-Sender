@@ -40,13 +40,13 @@ Communicator::Communicator(
     m_statusReceived = false;
     m_spindleCW = true;
 
-    execute(new InitializationBehavior(nullptr));
+    execute(new InitializationBehavior());
 
     resetStateVariables();
 
     // this->connect(m_connection, &Connection::error, this, &Communicator::onConnectionError(QString));
     if (m_connection) {
-        connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
+        connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived, Qt::QueuedConnection);
     }
 
     setSenderStateAndEmitSignal(SenderState::Stopped);
@@ -172,6 +172,18 @@ void Communicator::requestStatusUpdate()
     m_connection->sendByteArray(QByteArray(1, '?'));
 }
 
+// Process new state requested be current state behavior
+void Communicator::processStateBehaviorTransition()
+{
+    if (m_nsb != nullptr) {
+        assert(!m_sb.isNull());
+        // Clear to avoid re-entrance
+        StateBehavior *nsb = m_nsb;
+        m_nsb = nullptr;
+        execute(nsb, true);
+    }
+}
+
 void Communicator::sendRealtimeCommand(int command)
 {
     QByteArray data;
@@ -221,6 +233,8 @@ void Communicator::clearQueue()
 
 void Communicator::reset()
 {
+    assert(m_sb != nullptr && !m_sb.isNull());
+
     //m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
     m_sb->reset();
 
@@ -267,6 +281,8 @@ void Communicator::reset()
 
 void Communicator::unlock()
 {
+    assert(m_sb != nullptr && !m_sb.isNull());
+
     m_sb->unlock();
 }
 
@@ -447,19 +463,29 @@ void Communicator::execute(StateBehavior *sb, bool force)
         qDebug() << "[Communicator][Behavior] State behavior set to" << sb->name();
     }
 
-    emit stateBehaviorChanged(sb);
+    if (!sb->eventsAttached()) {
+        connect(sb, &StateBehavior::transition, this, &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
+        connect(sb, &StateBehavior::error, this, &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
+        connect(sb, &StateBehavior::logSignal, this, &Communicator::log, Qt::ConnectionType::UniqueConnection);
+        connect(sb, &QObject::destroyed, this, [](){
+            qDebug() << "[Communicator][Behavior] State behavior destroyed";
+        });
 
-    connect(sb, &StateBehavior::transition, this, &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
-    connect(sb, &StateBehavior::error, this, &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
-    connect(sb, &StateBehavior::logSignal, this, &Communicator::log, Qt::ConnectionType::UniqueConnection);
+        sb->markEventsAttached();
+    }
 
-    StateBehavior *psb = m_sb;
+    QPointer<StateBehavior> psb = m_sb;
+    sb->onEntry(this, psb);
     m_sb = sb;
-    m_sb->onEntry(this, psb);
+
+    emit stateBehaviorChanged(sb);
 }
 
 void Communicator::processConnectionTimer()
 {
+    // TODO!!
+    processStateBehaviorTransition();
+
     if (m_connection == nullptr || !m_connection->isConnected()) {
         return;
     }
@@ -476,6 +502,7 @@ void Communicator::processConnectionTimer()
             sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
         }
     }
+
 }
 
 /* used by scripting engine only?? emit signal and do not use m_storedVars directly */
@@ -611,11 +638,14 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
     //     reset();
     // }
     m_sb->onConnectionStateChanged(state);
+    // processStateBehaviorTransition();
 }
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
 {
-    execute(nsb, true);
+    qDebug() << "[Communicator] State transition requested from " << sb->name() << " to " << nsb->name();
+    m_nsb = nsb;
+    //execute(nsb, true);
 }
 
 void Communicator::onStateError(StateBehavior *sb, QString message)

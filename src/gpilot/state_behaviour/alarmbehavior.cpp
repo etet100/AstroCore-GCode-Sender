@@ -27,7 +27,7 @@ void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    setAlarmMessage();
+    // setAlarmMessage();
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);
 }
@@ -68,19 +68,23 @@ void AlarmBehavior::setAlarmMessage()
     }
 }
 
-void AlarmBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool AlarmBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "[AlarmBehavior] Command Response:" << command << response;
     // Handle command responses in alarm state
     if (command == "$X") {  // Unlock command
-        if (!response.contains("error")) {
+        if (!fullResponse.contains("error")) {
             // Unlock successful, go to idle state
-            // emit transition(this, new IdleBehavior(this));
+            // emit transition(this, new IdleBehavior());
         } else {
             // Unlock failed, stay in alarm state
             // emit error(this, "Failed to unlock alarm: " + response.join(" "));
         }
+
+        return true;
     }
+
+    return false;
 }
 
 // void AlarmBehavior::onConnectionStateChanged(ConnectionState state)

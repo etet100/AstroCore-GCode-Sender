@@ -16,7 +16,7 @@ class GoToBehavior : public StateBehavior
         bool isJoggingAllowed() override { return false; }
         bool isHomingAllowed() override { return false; }
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
+        bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
     private:

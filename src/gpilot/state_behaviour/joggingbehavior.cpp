@@ -32,7 +32,7 @@ bool JoggingBehavior::isNewStateAllowed(StateBehavior *newState)
 
 void JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
-    qDebug() << "[JoggingBehavior] Entering Jogging State";
+    qDebug() << "[JoggingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     startJogging();
@@ -73,7 +73,7 @@ void JoggingBehavior::onDeviceState(DeviceState state)
     }
 }
 
-void JoggingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool JoggingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
     qDebug() << "[JoggingBehavior] Command Response:" << command << "->" << response;
 
@@ -129,6 +129,8 @@ void JoggingBehavior::onCommandResponse(QString command, QString response, QStri
     }
 
     m_firstCommand = false;
+
+    return true;
 }
 
 void JoggingBehavior::continueJogging()

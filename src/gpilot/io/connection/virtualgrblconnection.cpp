@@ -19,8 +19,7 @@ Q_OS_WIN
 
 #ifdef STATIC_GRBL
 extern "C" {
-    // Q_DECL_IMPORT
-    // void GRBL(QString serverName);
+    Q_DECL_IMPORT void GRBL(QString serverName);
 }
 #else
 typedef void (*GRBLFunction)(QString serverName);
@@ -70,7 +69,7 @@ bool VirtualGRBLConnection::open()
 void VirtualGRBLConnection::flushOutgoingData()
 {
     if (!m_socket) {
-        qDebug() << "No socket connection!";
+        qDebug() << "[IO][GRBL] No socket connection!";
         return;
     }
     if (m_socket->bytesToWrite()) {
@@ -85,7 +84,7 @@ void VirtualGRBLConnection::sendByteArray(QByteArray byteArray)
     flushOutgoingData();
 
     #ifdef DEBUG_GRBL_COMMUNICATION
-        qDebug() << "GRBL (byte) >> " << byteArray.toHex();
+        qDebug() << "[IO][GRBL] GRBL (byte) >> " << byteArray.toHex();
     #endif
 
     m_socket->write(byteArray.data(), 1);
@@ -97,7 +96,7 @@ void VirtualGRBLConnection::sendLine(QString line)
     flushOutgoingData();
 
     #ifdef DEBUG_GRBL_COMMUNICATION
-        qDebug() << "GRBL >> " << line;
+        qDebug() << "[IO][GRBL] GRBL >> " << line;
     #endif
 
     std::string str = QString(line + "\n").toStdString();
@@ -132,9 +131,11 @@ void VirtualGRBLConnection::closeConnection()
 void VirtualGRBLConnection::onNewConnection()
 {
     if (m_socket != nullptr) {
-        qWarning() << "Virtual GRBL connection already exists!";
+        qWarning() << "[IO][GRBL] Connection already exists!";
         return;
     }
+
+    qDebug() << "[IO][GRBL] New connection received.";
 
     m_socket = m_server->nextPendingConnection();
     connect(m_socket, &QIODevice::readyRead, this, &VirtualGRBLConnection::onReadyRead);
@@ -145,6 +146,8 @@ void VirtualGRBLConnection::onNewConnection()
 
 void VirtualGRBLConnection::onDisconnected()
 {
+    qDebug() << "[IO][GRBL] Disconnected from GRBL.";
+
     closeConnection();
 }
 
@@ -171,7 +174,7 @@ void VirtualGRBLConnection::processIncomingData()
         m_incoming.remove(0, pos + 1);
 
         #ifdef DEBUG_GRBL_COMMUNICATION
-            qDebug() << "GRBL << " << line;
+            qDebug() << "[IO][GRBL] GRBL << " << line;
         #endif
 
         emit this->lineReceived(line);
@@ -182,9 +185,9 @@ VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName) : QThread(n
 }
 
 void VirtualGRBLWorkerThread::run() {
-    qInfo() << "Starting virtual GRBL, server " << m_serverName;
+    qInfo() << "[IO][GRBL] Starting virtual GRBL, server " << m_serverName;
     #ifdef STATIC_GRBL
-        // GRBL(m_serverName.toStdString().c_str());
+        GRBL(m_serverName.toStdString().c_str());
     #else
         qDebug() << "GRBL dynamic mode";
         QLibrary lib("GRBL.dll");
@@ -201,5 +204,5 @@ void VirtualGRBLWorkerThread::run() {
         }
         lib.unload();
     #endif
-    qInfo() << "GRBL stopped!";
+    qInfo() << "[IO][GRBL] GRBL stopped!";
 }

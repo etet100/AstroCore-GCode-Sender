@@ -9,10 +9,11 @@
 #include "alarmbehavior.h"
 #include "toolchangebehavior.h"
 
-RunningBehavior::RunningBehavior(QObject *parent)
+RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
     : StateBehavior{parent}
     , m_feedOverride(100)
     , m_spindleOverride(100)
+    , m_program(program)
 {}
 
 void RunningBehavior::onDeviceStateChanged(DeviceState state)
@@ -29,7 +30,7 @@ void RunningBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void RunningBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool RunningBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
 
     // Process command responses during running state
@@ -64,10 +65,10 @@ void RunningBehavior::handleFeedOverride(int percentage)
     // Send real-time override command to the controller
     // Assuming we have methods to send real-time override commands
     // for GRBL controllers
-    if (m_communicator) {
-        // Code to send override commands depending on controller type
-        // m_communicator->sendFeedOverride(percentage);
-    }
+    // if (m_communicator) {
+    //     // Code to send override commands depending on controller type
+    //     // m_communicator->sendFeedOverride(percentage);
+    // }
 }
 
 void RunningBehavior::handleSpindleOverride(int percentage)
@@ -79,7 +80,7 @@ void RunningBehavior::handleSpindleOverride(int percentage)
     m_spindleOverride = percentage;
 
     // Send real-time override command to the controller
-    if (m_communicator) {
+    if (m_communicator.isNull()) {
         // Code to send spindle override commands
         // m_communicator->sendSpindleOverride(percentage);
     }

@@ -9,16 +9,17 @@
 #define RUNNINGBEHAVIOR_H
 
 #include "statebehavior.h"
+#include "core/gcode/gcode.h"
 
 class RunningBehavior : public StateBehavior
 {
     public:
-        explicit RunningBehavior(QObject *parent = nullptr);
+        explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString name() override { return "Running"; }
         bool isJoggingAllowed() override { return false; } // Cannot jog while running
         bool isHomingAllowed() override { return false; } // Cannot home while running
         void onDeviceStateChanged(DeviceState state) override;
-        void onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
@@ -27,9 +28,9 @@ class RunningBehavior : public StateBehavior
         void handleSpindleOverride(int percentage);
 
     private:
-        // Running-specific attributes
         int m_feedOverride;
         int m_spindleOverride;
+        GCode &m_program;
 };
 
 #endif // RUNNINGBEHAVIOR_H
