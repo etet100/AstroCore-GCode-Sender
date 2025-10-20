@@ -12,6 +12,7 @@
 #include "idlebehavior.h"
 #include "initializationbehavior.h"
 #include "connectingbehavior.h"
+#include "reconnectingbehavior.h"
 #include "runningbehavior.h"
 #include "joggingbehavior.h"
 #include "homingbehavior.h"

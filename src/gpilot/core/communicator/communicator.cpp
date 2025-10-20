@@ -447,22 +447,39 @@ void Communicator::home()
     execute(new HomingBehavior());
 }
 
-void Communicator::execute(StateBehavior *sb, bool force)
+bool Communicator::execute(StateBehavior *sb, bool force)
 {
     if (m_sb != nullptr) {
         if (!force && !m_sb->isNewStateAllowed(sb)) {
             qDebug() << "[Communicator][Behavior] Transition from" << m_sb->name() << "to" << sb->name() << "is not allowed";
 
-            return;
+            return false;
+        }
+
+        if (m_sb->exitAsync()) {
+            connect(m_sb, &StateBehavior::exitCompleted, this, [this, sb]() {
+                qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
+
+                this->finalizeExecute(sb);
+            }, Qt::ConnectionType::SingleShotConnection);
         }
 
         m_sb->onExit(sb);
+
+        if (m_sb->exitAsync()) {
+            return true;
+        }
 
         qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name();
     } else {
         qDebug() << "[Communicator][Behavior] State behavior set to" << sb->name();
     }
 
+    return finalizeExecute(sb);
+}
+
+bool Communicator::finalizeExecute(StateBehavior *sb)
+{
     if (!sb->eventsAttached()) {
         connect(sb, &StateBehavior::transition, this, &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
         connect(sb, &StateBehavior::error, this, &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
@@ -479,6 +496,8 @@ void Communicator::execute(StateBehavior *sb, bool force)
     m_sb = sb;
 
     emit stateBehaviorChanged(sb);
+
+    return true;
 }
 
 void Communicator::processConnectionTimer()

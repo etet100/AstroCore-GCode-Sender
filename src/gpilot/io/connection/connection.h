@@ -22,7 +22,7 @@ class Connection : public QObject
         virtual void sendChar(char);
         virtual void sendByteArray(QByteArray) = 0;
         virtual void sendLine(QString) = 0;
-        virtual void closeConnection() = 0;
+        virtual void close() = 0;
         virtual ConfigurationConnection::ConnectionMode getSupportedMode() = 0;
 
         ConnectionState state() const { return m_state; }

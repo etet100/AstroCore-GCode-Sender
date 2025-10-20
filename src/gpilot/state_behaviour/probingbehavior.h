@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef C2C1B619_D54C_4260_9997_6906E6DBB180
-#define C2C1B619_D54C_4260_9997_6906E6DBB180
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -54,5 +51,3 @@ class ProbingBehavior : public StateBehavior
 
 #endif // PROBINGBEHAVIOR_H
 
-
-#endif /* C2C1B619_D54C_4260_9997_6906E6DBB180 */

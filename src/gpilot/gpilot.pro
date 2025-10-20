@@ -13,7 +13,7 @@ QT += multimedia multimediawidgets
 VERSION=1.0.0.0
 
 # DEFINES += DEBUG_UCNC_COMMUNICATION=1
-DEFINES += DEBUG_GRBL_COMMUNICATION=1
+# DEFINES += DEBUG_GRBL_COMMUNICATION=1
 # DEFINES += DEBUG_RAW_TCP_COMMUNICATION=1
 # QT_DEBUG_PLUGINS=1
 # DEFINES += QT_DEBUG_PLUGINS=1
@@ -117,6 +117,7 @@ SOURCES += main.cpp\
     state_behaviour/action.cpp \
     state_behaviour/connectingbehavior.cpp \
     state_behaviour/gotobehavior.cpp \
+    state_behaviour/reconnectingbehavior.cpp \
     state_behaviour/resetbehavior.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
@@ -248,6 +249,7 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/action.h \
     state_behaviour/connectingbehavior.h \
     state_behaviour/gotobehavior.h \
+    state_behaviour/reconnectingbehavior.h \
     state_behaviour/resetbehavior.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \

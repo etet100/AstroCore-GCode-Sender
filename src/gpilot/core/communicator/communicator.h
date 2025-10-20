@@ -60,7 +60,7 @@ class Communicator : public QObject
         }
         void probe();
         void home();
-        void execute(StateBehavior *stateBehaviour, bool force = false);
+        bool execute(StateBehavior *stateBehaviour, bool force = false);
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
@@ -147,9 +147,10 @@ class Communicator : public QObject
 
         void resetStateVariables();
         void processDeviceConfiguration(QStringList response);
-        
+
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
-        
+
+        bool finalizeExecute(StateBehavior *sb);
     private slots:
         void onTimerStateQuery();
         void onConnectionLineReceived(QString);

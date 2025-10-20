@@ -105,8 +105,10 @@ void VirtualGRBLConnection::sendLine(QString line)
     m_socket->flush();
 }
 
-void VirtualGRBLConnection::closeConnection()
+void VirtualGRBLConnection::close()
 {
+    qDebug() << "[IO][GRBL] Closing connection";
+
     m_thread->terminate();
     m_thread->wait();
     delete m_thread;
@@ -126,6 +128,8 @@ void VirtualGRBLConnection::closeConnection()
         delete m_server;
         m_server = nullptr;
     }
+
+    setState(ConnectionState::Disconnected);
 }
 
 void VirtualGRBLConnection::onNewConnection()
@@ -148,7 +152,7 @@ void VirtualGRBLConnection::onDisconnected()
 {
     qDebug() << "[IO][GRBL] Disconnected from GRBL.";
 
-    closeConnection();
+    close();
 }
 
 void VirtualGRBLConnection::onReadyRead()

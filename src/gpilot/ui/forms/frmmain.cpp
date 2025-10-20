@@ -468,7 +468,7 @@ void frmMain::closeEvent(QCloseEvent *ce)
     }
 
     m_timerConnection.stop();
-    m_connection->closeConnection();
+    m_connection->close();
 
     m_communicator->clearCommandsAndQueue();
     // moved to communicator
@@ -2522,7 +2522,14 @@ void frmMain::applySettings()
 
     if (!m_connection || m_connection->getSupportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
-        m_communicator->setConnection(m_connection);
+
+        if (m_communicator->connection()) {
+            if (!m_communicator->execute(new ReconnectingBehavior(m_connection))) {
+                ui->console->appendSystem("Couldn't update connection. Restart application.");
+            }
+        } else {
+            m_communicator->setConnection(m_connection);
+        }
     }
 }
 

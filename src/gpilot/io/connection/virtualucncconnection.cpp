@@ -106,14 +106,15 @@ void VirtualUCNCConnection::sendLine(QString line)
     m_socket->flush();
 }
 
-void VirtualUCNCConnection::closeConnection()
+void VirtualUCNCConnection::close()
 {
+    qDebug() << "[IO][uCNC] Closing connection";
+
     m_thread->terminate();
     m_thread->wait();
     delete m_thread;
     m_thread = nullptr;
 
-    setState(ConnectionState::Disconnected);
     if (m_socket != nullptr) {
         if (m_socket->isOpen()) {
             disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualUCNCConnection::onDisconnected);
@@ -127,6 +128,8 @@ void VirtualUCNCConnection::closeConnection()
         delete m_server;
         m_server = nullptr;
     }
+
+    setState(ConnectionState::Disconnected);
 }
 
 void VirtualUCNCConnection::onNewConnection()
@@ -145,7 +148,7 @@ void VirtualUCNCConnection::onNewConnection()
 
 void VirtualUCNCConnection::onDisconnected()
 {
-    closeConnection();
+    close();
 }
 
 void VirtualUCNCConnection::onReadyRead()

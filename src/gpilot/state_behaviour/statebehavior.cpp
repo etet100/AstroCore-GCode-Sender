@@ -18,6 +18,7 @@ void StateBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
     stopTimer();
+    emit exitCompleted();
 }
 
 void StateBehavior::stopTimer()

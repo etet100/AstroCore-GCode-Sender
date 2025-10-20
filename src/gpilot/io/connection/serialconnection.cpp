@@ -57,9 +57,12 @@ void SerialConnection::sendLine(QString data)
     m_serialPort.write((data + "\n").toLatin1());
 }
 
-void SerialConnection::closeConnection()
+void SerialConnection::close()
 {
-    if (m_serialPort.isOpen()) m_serialPort.close();
+    if (m_serialPort.isOpen()) {
+        m_serialPort.close();
+        setState(ConnectionState::Disconnected);
+    }
 }
 
 void SerialConnection::setupSerialPort()

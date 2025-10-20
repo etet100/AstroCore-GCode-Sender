@@ -213,6 +213,7 @@ enum class ConnectionState
     Initialization,
     Connecting,
     Connected,
+    Disconnecting,
     Disconnected,
     InvalidConfiguration,
 };

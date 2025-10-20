@@ -1,7 +1,4 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
-
-#ifndef F8F06243_6DA3_4610_9856_7C468533AF54
-#define F8F06243_6DA3_4610_9856_7C468533AF54
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -28,5 +25,3 @@ class HomingBehavior : public StateBehavior
 
 #endif // HOMINGBEHAVIOR_H
 
-
-#endif /* F8F06243_6DA3_4610_9856_7C468533AF54 */

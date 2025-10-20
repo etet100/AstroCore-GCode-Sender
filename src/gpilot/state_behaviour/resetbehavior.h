@@ -1,8 +1,5 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
 
-#ifndef B7040668_E41E_4691_831C_8895FBBBC2FD
-#define B7040668_E41E_4691_831C_8895FBBBC2FD
-
 #ifndef RESETBEHAVIOR_H
 #define RESETBEHAVIOR_H
 
@@ -22,7 +19,7 @@ class ResetBehavior : public StateBehavior
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
         void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
     private:
-        enum ResetStage {
+        enum Stage {
             None,
             SentReset,
             SentSettingsAndOffsets,
@@ -30,12 +27,9 @@ class ResetBehavior : public StateBehavior
             ReceivedOffsets,
             Completed
         };
-        ResetStage m_stage = None;
+        Stage m_stage = None;
 
         bool dataIsReset(QString data);
 };
 
 #endif // RESETBEHAVIOR_H
-
-
-#endif /* B7040668_E41E_4691_831C_8895FBBBC2FD */

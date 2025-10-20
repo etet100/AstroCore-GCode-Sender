@@ -41,6 +41,9 @@ class StateBehavior : public QObject
             return true;
         }
 
+        // async exit means that onExit will emit exitCompleted signal when done
+        virtual bool exitAsync() { return false; };
+
         virtual void reset();
         virtual void unlock() {};
         virtual bool isJoggingAllowed() { return false; };
@@ -101,6 +104,7 @@ class StateBehavior : public QObject
         void transition(StateBehavior *state, StateBehavior *newState);
         void error(StateBehavior *state, QString message);
         void logSignal(QString message);
+        void exitCompleted();
 
     protected:
         StateBehavior *m_previous = nullptr;

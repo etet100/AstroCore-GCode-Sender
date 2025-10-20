@@ -24,7 +24,7 @@ bool RawTcpConnection::open()
 
     m_socket = new QTcpSocket(this);
     connect(m_socket, &QTcpSocket::readyRead, this, &RawTcpConnection::onReadyRead);
-    connect(m_socket, &QTcpSocket::disconnected, this, &RawTcpConnection::closeConnection);
+    connect(m_socket, &QTcpSocket::disconnected, this, &RawTcpConnection::close);
     connect(m_socket, &QTcpSocket::connected, this, [this]() {
         qDebug() << "[IP][RawTCP] Connected to " << m_host << ":" << m_port;
         setState(ConnectionState::Connected);
@@ -68,13 +68,14 @@ void RawTcpConnection::sendLine(QString line)
     flushOutgoingData();
 }
 
-void RawTcpConnection::closeConnection()
+void RawTcpConnection::close()
 {
-    if (m_socket != nullptr) {
+    if (m_socket == nullptr || m_state == ConnectionState::Disconnecting) {
         return;
     }
 
     qDebug() << "[IP][RawTCP] Closing connection";
+    setState(ConnectionState::Disconnecting);
 
     QTcpSocket* oldSocket = m_socket;
     m_socket = nullptr;

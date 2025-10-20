@@ -22,7 +22,7 @@ class SerialConnection : public Connection
         void setBaudRate(int);
         void sendByteArray(QByteArray) override;
         void sendLine(QString) override;
-        void closeConnection() override;
+        void close() override;
         ConfigurationConnection::ConnectionMode getSupportedMode() override { return ConfigurationConnection::ConnectionMode::SERIAL; };
 
     private:
