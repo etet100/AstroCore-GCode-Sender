@@ -121,7 +121,8 @@ class StateBehavior : public QObject
         QList<StateResponseCallback> m_stateResponseCallbacks;
 
         void stopTimer();
-        void log(QString message);
+        void log(QString message, QStringList context = QStringList());
+        void log(QString message, std::initializer_list<QString> context);
 
     private:
         bool m_eventsAttached = false; // used by Communicator

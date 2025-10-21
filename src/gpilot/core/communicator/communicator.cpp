@@ -497,10 +497,9 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
     QPointer<StateBehavior> psb = m_sb;
     if (sb->onEntry(this, psb) == StateBehavior::Result::WaitForAsyncResult) {
         connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
-            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
+            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async enter!!)";;
 
             m_sb = sb;
-            this->finalizeExecute(sb);
             emit stateBehaviorChanged(sb);
         }, Qt::ConnectionType::SingleShotConnection);
 
@@ -508,6 +507,7 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
     }
 
     m_sb = sb;
+    emit stateBehaviorChanged(sb);
 
     return true;
 }

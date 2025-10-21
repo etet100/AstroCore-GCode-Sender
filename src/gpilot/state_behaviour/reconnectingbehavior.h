@@ -1,4 +1,6 @@
 // This file is a part of "G-Pilot (formerly Candle)" application.
+// Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
 
 #ifndef RECONNECTINGBEHAVIOR_H
 #define RECONNECTINGBEHAVIOR_H
@@ -13,9 +15,6 @@ class ReconnectingBehavior : public StateBehavior
     public:
         explicit ReconnectingBehavior(Connection *newConnection);
         QString name() override { return "Reconnecting"; }
-        // bool isJoggingAllowed() override { return false; }
-        // bool isHomingAllowed() override { return false; }
-        void onConnectionStateChanged(ConnectionState state) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
     private:

@@ -48,7 +48,22 @@ void StateBehavior::waitForStateResponse(StateResponseCallback callback)
     m_stateResponseCallbacks.append(callback);
 }
 
-void StateBehavior::log(QString message)
+void StateBehavior::log(QString message, QStringList context)
 {
+    if (!context.isEmpty()) {
+        message = QString("[%1] %2").arg(context.join("]["), message);
+    }
+
     emit logSignal(message);
+}
+
+void StateBehavior::log(QString message, std::initializer_list<QString> context)
+{
+    QStringList contextList;
+
+    for (const auto& ctx : context) {
+        contextList << ctx;
+    }
+
+    log(message, contextList);
 }

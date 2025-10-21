@@ -27,7 +27,7 @@ JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, QObject *parent
 
 bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
 {
-    return newState->inherits("ResetBehavior") && newState->name() == "Reset";
+    return forced || (newState->inherits("ResetBehavior") && newState->name() == "Reset");
 }
 
 StateBehavior::Result JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
@@ -107,10 +107,10 @@ bool JoggingBehavior::onCommandResponse(QString command, QString response, QStri
         qDebug() << "[JoggingBehavior] Jogging command error:" << response;
         if (response == "error:15") {
             if (!m_stopping) {
-                log("Jogging stopped: next move exceeds machine limits.");
+                log("Next move exceeds machine limits.", {"Jogging"});
             }
         } else {
-            log("Jogging error: " + response);
+            log("Error: " + response, {"Jogging"});
         }
 
         // stopJogging();

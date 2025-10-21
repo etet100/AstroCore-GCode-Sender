@@ -17,6 +17,7 @@ class Communicator : public QObject
     friend class frmMain;
     friend class ResetBehavior;
     friend class ConnectingBehavior;
+    friend class ReconnectingBehavior;
     friend class IdleBehavior;
     friend class Jogger;
 
