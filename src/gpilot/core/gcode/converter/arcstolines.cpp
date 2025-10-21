@@ -24,5 +24,5 @@ GCode &ArcsToLines::convert()
         }
     }
 
-
+    return m_data;
 }

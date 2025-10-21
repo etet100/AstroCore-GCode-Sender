@@ -44,4 +44,6 @@ MinMax GLZMinMax::getMinMax(int count)
     glUnmapBuffer(GL_TRANSFORM_FEEDBACK_BUFFER);
 
     qDebug() << "Near: " << zMin << ", Far: " << zMax;
+
+    return MinMax{zMin, zMax};
 }
