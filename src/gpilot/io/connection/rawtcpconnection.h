@@ -23,7 +23,8 @@ class RawTcpConnection : public Connection
         void sendByteArray(QByteArray) override;
         void sendLine(QString) override;
         void close() override;
-        ConfigurationConnection::ConnectionMode getSupportedMode() override { return ConfigurationConnection::ConnectionMode::RAW_TCP; };
+        ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::RAW_TCP; };
+        QString name() override { return QString("Raw TCP"); }
 
     private:
         QString m_host;

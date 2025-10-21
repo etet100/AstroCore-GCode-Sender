@@ -42,7 +42,7 @@ class Communicator : public QObject
         void abort();
         // may be used to set connection for the first time, if m_connection is no null,
         // ReconnectingBehavior should be used instead!!
-        bool setConnection(Connection *);
+        bool setConnection(Connection *, bool force);
         // bool openConnection();
         Connection* connection();
         void stopUpdatingState();

@@ -14,11 +14,12 @@
 class VirtualGRBLWorkerThread : public QThread
 {
     public:
-        VirtualGRBLWorkerThread(QString serverName);
+        VirtualGRBLWorkerThread(QString serverName, QAtomicInt* stopFlag);
 
         void run() override;
     private:
         QString m_serverName;
+        QAtomicInt* m_stopFlag;
 };
 
 class VirtualGRBLConnection : public Connection
@@ -32,11 +33,13 @@ public:
     void sendByteArray(QByteArray) override;
     void sendLine(QString) override;
     void close() override;
-    ConfigurationConnection::ConnectionMode getSupportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_GRBL; }
+    ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_GRBL; }
+    QString name() override { return "Virtual GRBL"; }
 
 private:
     QLocalSocket* m_socket;
     QLocalServer* m_server;
+    QAtomicInt m_stopFlag;
     VirtualGRBLWorkerThread* m_thread;
     QString m_incoming;
     void flushOutgoingData();

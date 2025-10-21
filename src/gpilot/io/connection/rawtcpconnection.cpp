@@ -7,6 +7,7 @@ RawTcpConnection::RawTcpConnection(QObject *parent) : Connection(parent)
 
 RawTcpConnection::~RawTcpConnection()
 {
+    close();
 }
 
 bool RawTcpConnection::open()

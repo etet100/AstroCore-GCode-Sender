@@ -10,7 +10,7 @@
 Q_OS_WIN
     #include <windows.h>
     #ifndef _MSC_VER
-        #define STATIC_GRBL
+        // #define STATIC_GRBL
     #endif
 #endif
 #ifdef LINUX
@@ -19,13 +19,15 @@ Q_OS_WIN
 
 #ifdef STATIC_GRBL
 extern "C" {
-    Q_DECL_IMPORT void GRBL(QString serverName);
+    Q_DECL_IMPORT void GRBL(QString serverName, QAtomicInt* stopFlag);
 }
 #else
-typedef void (*GRBLFunction)(QString serverName);
+typedef void (*GRBLFunction)(QString serverName, QAtomicInt* stopFlag);
 #endif
 
-VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent) : Connection(parent)
+VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent)
+    : Connection(parent)
+    , m_stopFlag(0)
 {
     m_socket = nullptr;
     m_server = nullptr;
@@ -33,6 +35,7 @@ VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent) : Connection(paren
 
 VirtualGRBLConnection::~VirtualGRBLConnection()
 {
+    close();
 }
 
 void VirtualGRBLConnection::startLocalServer()
@@ -44,7 +47,7 @@ void VirtualGRBLConnection::startLocalServer()
 
 void VirtualGRBLConnection::startWorkerThread()
 {
-    m_thread = new VirtualGRBLWorkerThread(m_server->serverName());
+    m_thread = new VirtualGRBLWorkerThread(m_server->serverName(), &m_stopFlag);
     m_thread->start();
 }
 
@@ -109,12 +112,13 @@ void VirtualGRBLConnection::close()
 {
     qDebug() << "[IO][GRBL] Closing connection";
 
-    m_thread->terminate();
-    m_thread->wait();
-    delete m_thread;
-    m_thread = nullptr;
+    if (m_state == ConnectionState::Disconnected) {
+        return;
+    }
 
     setState(ConnectionState::Disconnected);
+    m_stopFlag = 2;
+
     if (m_socket != nullptr) {
         if (m_socket->isOpen()) {
             disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualGRBLConnection::onDisconnected);
@@ -129,7 +133,14 @@ void VirtualGRBLConnection::close()
         m_server = nullptr;
     }
 
-    setState(ConnectionState::Disconnected);
+    if (m_thread != nullptr) {
+        qDebug() << "[IO][GRBL] Stopping GRBL thread...";
+        if (!m_thread->wait(1500)) {
+            m_thread->terminate();
+        }
+        m_thread->deleteLater();
+        m_thread = nullptr;
+    }
 }
 
 void VirtualGRBLConnection::onNewConnection()
@@ -185,7 +196,11 @@ void VirtualGRBLConnection::processIncomingData()
     }
 }
 
-VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName) : QThread(nullptr), m_serverName(serverName) {
+VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName, QAtomicInt* stopFlag)
+    : QThread(nullptr)
+    , m_serverName(serverName)
+    , m_stopFlag(stopFlag)
+{
 }
 
 void VirtualGRBLWorkerThread::run() {
@@ -193,20 +208,22 @@ void VirtualGRBLWorkerThread::run() {
     #ifdef STATIC_GRBL
         GRBL(m_serverName.toStdString().c_str());
     #else
-        qDebug() << "GRBL dynamic mode";
-        QLibrary lib("GRBL.dll");
+        qDebug() << "[IO][GRBL] GRBL dynamic mode";
+        QLibrary lib("grblHal.dll");
         if (!lib.load()) {
-            qWarning() << "GRBL library could not be loaded!";
+            qWarning() << "[IO][GRBL] GRBL library could not be loaded!";
             return;
         }
         GRBLFunction GRBL = (GRBLFunction) lib.resolve("GRBL");
         if (GRBL != nullptr) {
             qDebug() << "Calling GRBL() function";
-            GRBL(m_serverName.toStdString().c_str()); // Wywołanie funkcji z biblioteki
+            GRBL(m_serverName.toStdString().c_str(), m_stopFlag);
         } else {
-            qInfo() << "GRBL not initialized. GRBL() not found!";
+            qInfo() << "[IO][GRBL] GRBL not initialized. GRBL() not found!";
         }
         lib.unload();
     #endif
     qInfo() << "[IO][GRBL] GRBL stopped!";
+
+    *m_stopFlag = 3;
 }

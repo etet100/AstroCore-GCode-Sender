@@ -23,7 +23,8 @@ class SerialConnection : public Connection
         void sendByteArray(QByteArray) override;
         void sendLine(QString) override;
         void close() override;
-        ConfigurationConnection::ConnectionMode getSupportedMode() override { return ConfigurationConnection::ConnectionMode::SERIAL; };
+        ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::SERIAL; };
+        QString name() override { return "Serial"; }
 
     private:
         QSerialPort m_serialPort;

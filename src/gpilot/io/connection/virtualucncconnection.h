@@ -32,7 +32,8 @@ public:
     void sendByteArray(QByteArray) override;
     void sendLine(QString) override;
     void close() override;
-    ConfigurationConnection::ConnectionMode getSupportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_UCNC; }
+    ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_UCNC; }
+    QString name() override { return "Virtual UCNC"; }
 
 private:
     QLocalSocket* m_socket;

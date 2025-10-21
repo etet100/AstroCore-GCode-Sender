@@ -296,9 +296,9 @@ void Communicator::abort()
     }
 }
 
-bool Communicator::setConnection(Connection *newConnection)
+bool Communicator::setConnection(Connection *newConnection, bool force)
 {
-    if (m_connection != nullptr) {
+    if (!force && m_connection != nullptr) {
         return false;
     }
 

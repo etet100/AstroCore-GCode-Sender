@@ -23,7 +23,8 @@ class Connection : public QObject
         virtual void sendByteArray(QByteArray) = 0;
         virtual void sendLine(QString) = 0;
         virtual void close() = 0;
-        virtual ConfigurationConnection::ConnectionMode getSupportedMode() = 0;
+        virtual ConfigurationConnection::ConnectionMode supportedMode() = 0;
+        virtual QString name() = 0;
 
         ConnectionState state() const { return m_state; }
         bool isConnected() const { return m_state == ConnectionState::Connected; }        

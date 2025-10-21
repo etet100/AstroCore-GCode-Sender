@@ -2520,7 +2520,7 @@ void frmMain::applySettings()
 
     m_selectionDrawer.setColor(visualizerConfiguration.hightlightToolpathColor());
 
-    if (!m_connection || m_connection->getSupportedMode() != m_configuration.connectionModule().connectionMode()) {
+    if (!m_connection || m_connection->supportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
 
         if (m_communicator->connection()) {
@@ -2528,7 +2528,7 @@ void frmMain::applySettings()
                 ui->console->appendSystem("Couldn't update connection. Restart application.");
             }
         } else {
-            m_communicator->setConnection(m_connection);
+            m_communicator->setConnection(m_connection, false);
         }
     }
 }
