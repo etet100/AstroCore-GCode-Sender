@@ -14,13 +14,13 @@ ConnectingBehavior::ConnectingBehavior(QObject *parent)
 
 QString ConnectingBehavior::name() { return "Connecting"; }
 
-void ConnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ConnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ConnectingBehavior] Attempting to connect...";
+    qDebug() << "[ConnectingBehavior] Entry, attempting to connect...";
     StateBehavior::onEntry(communicator, previous);
 
     if (communicator->connection()->open() && communicator->connection()->isConnected()) {
-        return;
+        return Result::Ok;
     }
 
     m_timer = new QTimer(this);
@@ -36,11 +36,15 @@ void ConnectingBehavior::onEntry(Communicator *communicator, StateBehavior *prev
         communicator->connection()->open();
     });
     m_timer->start();
+
+    return Result::Ok;
 }
 
-void ConnectingBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
 {
-    StateBehavior::onExit(next);
+    qDebug() << "[ConnectingBehavior] Exiting.";
+
+    return StateBehavior::onExit(next);
 }
 
 void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)

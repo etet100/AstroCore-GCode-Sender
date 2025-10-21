@@ -14,11 +14,13 @@ void StateBehavior::reset()
     emit transition(this, new ResetBehavior(this));
 }
 
-void StateBehavior::onExit(StateBehavior *next)
+StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
     stopTimer();
-    emit exitCompleted();
+    emit asyncCompleted();
+
+    return Result::Ok;
 }
 
 void StateBehavior::stopTimer()
@@ -30,12 +32,15 @@ void StateBehavior::stopTimer()
     }
 }
 
-void StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     if (previous) {
         m_previous = previous;
     }
+
     m_communicator = communicator;
+
+    return Result::Ok;
 }
 
 void StateBehavior::waitForStateResponse(StateResponseCallback callback)

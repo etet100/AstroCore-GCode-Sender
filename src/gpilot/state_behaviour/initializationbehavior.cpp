@@ -40,7 +40,7 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-void InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[InitializationBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -64,9 +64,11 @@ void InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *
         }
     });
     m_timer->start();
+
+    return Result::Ok;
 }
 
-void InitializationBehavior::onExit(StateBehavior *next)
+StateBehavior::Result InitializationBehavior::onExit(StateBehavior *next)
 {
-    StateBehavior::onExit(next);
+    return StateBehavior::onExit(next);
 }

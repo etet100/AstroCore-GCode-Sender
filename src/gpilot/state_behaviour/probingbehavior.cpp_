@@ -23,7 +23,7 @@ ProbingBehavior::ProbingBehavior(ProbeDirection direction,
 {
 }
 
-void ProbingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ProbingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
 
@@ -79,6 +79,8 @@ bool ProbingBehavior::onCommandResponse(QString command, QString response, QStri
             emit transition(this, new IdleBehavior(this));
         }
     }
+
+    return true;
 }
 
 void ProbingBehavior::setProbeParameters(ProbeDirection direction, double distance, double feedRate)

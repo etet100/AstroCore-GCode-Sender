@@ -22,7 +22,7 @@ void AlarmBehavior::onDeviceStateChanged(DeviceState state)
     }
 }
 
-void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -30,6 +30,8 @@ void AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     // setAlarmMessage();
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);
+
+    return Result::Ok;
 }
 
 void AlarmBehavior::setAlarmMessage()
@@ -108,6 +110,8 @@ bool AlarmBehavior::execute(const Action &action)
             unlock();
             return true;
     }
+
+    return true;
 }
 
 bool AlarmBehavior::isActionAllowed(const Action &action)

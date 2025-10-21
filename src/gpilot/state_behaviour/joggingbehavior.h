@@ -16,12 +16,12 @@ class JoggingBehavior : public StateBehavior
         explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent = nullptr);
         explicit JoggingBehavior(QVector3D vector, int feedRate,  QObject *parent = nullptr);
         QString name() override { return "Jogging"; }
-        bool isJoggingAllowed() override { return true; } // Jogging is allowed in this state
-        bool isHomingAllowed() override { return false; } // Cannot home during jogging
-        bool isNewStateAllowed(StateBehavior *newState) override;
+        // bool isJoggingAllowed() override { return true; } // Jogging is allowed in this state
+        // bool isHomingAllowed() override { return false; } // Cannot home during jogging
 
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit(StateBehavior *next = nullptr) override;
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        bool onAboutToChange(StateBehavior *newState, bool forced) override;
+        Result onExit(StateBehavior *next = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
         void onDeviceState(DeviceState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;

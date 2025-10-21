@@ -21,6 +21,12 @@ class StateBehavior : public QObject
     Q_OBJECT
 
     public:
+        enum Result {
+            Ok,
+            Error,
+            WaitForAsyncResult
+        };
+
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString name() = 0;
 
@@ -29,6 +35,7 @@ class StateBehavior : public QObject
 
         virtual bool execute(const Action &action) {
             Q_UNUSED(action);
+            return false;
         }
 
         virtual bool isActionAllowed(const Action &action) {
@@ -36,22 +43,23 @@ class StateBehavior : public QObject
             return false;
         }
 
-        virtual bool isNewStateAllowed(StateBehavior *newState) {
+        virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
+            Q_UNUSED(forced);
             return true;
         }
 
         // async exit means that onExit will emit exitCompleted signal when done
-        virtual bool exitAsync() { return false; };
+        // virtual bool exitAsync() { return false; };
 
         virtual void reset();
         virtual void unlock() {};
-        virtual bool isJoggingAllowed() { return false; };
-        virtual bool isHomingAllowed() { return false; };
+        // virtual bool isJoggingAllowed() { return false; };
+        // virtual bool isHomingAllowed() { return false; };
         StateBehavior* previous() const { return m_previous; }
-        virtual void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
 
-        virtual void onExit(StateBehavior *next = nullptr);
+        virtual Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
+        virtual Result onExit(StateBehavior *next = nullptr);
 
         virtual void onAlarm(int code) {
             qDebug() << "Alarm: " << code;
@@ -104,7 +112,7 @@ class StateBehavior : public QObject
         void transition(StateBehavior *state, StateBehavior *newState);
         void error(StateBehavior *state, QString message);
         void logSignal(QString message);
-        void exitCompleted();
+        void asyncCompleted();
 
     protected:
         StateBehavior *m_previous = nullptr;

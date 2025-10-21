@@ -12,8 +12,8 @@ class ConnectingBehavior : public StateBehavior
     public:
         explicit ConnectingBehavior(QObject *parent = nullptr);
         QString name() override;
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onExit(StateBehavior *next = nullptr) override;
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onExit(StateBehavior *next = nullptr) override;
         void onConnectionStateChanged(ConnectionState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 

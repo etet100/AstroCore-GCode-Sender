@@ -33,7 +33,7 @@ QString PauseBehavior::name()
     }
 }
 
-void PauseBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result PauseBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
 
@@ -49,11 +49,13 @@ void PauseBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
         default:
             break;
     }
+
+    return StateBehavior::Result::Ok;
 }
 
-void PauseBehavior::onExit(StateBehavior *next)
+StateBehavior::Result PauseBehavior::onExit(StateBehavior *next)
 {
-    // Clean up resources or prepare for next state
+    return StateBehavior::onExit(next);
 }
 
 void PauseBehavior::onDeviceStateChanged(DeviceState state)
@@ -85,7 +87,7 @@ void PauseBehavior::onDeviceStateChanged(DeviceState state)
 
 bool PauseBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
 {
-    // Process command responses in pause state
+    return true;
 }
 
 void PauseBehavior::resumeOperation()

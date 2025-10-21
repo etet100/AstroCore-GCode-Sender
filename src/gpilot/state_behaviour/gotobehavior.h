@@ -13,11 +13,11 @@ class GoToBehavior : public StateBehavior
     public:
         explicit GoToBehavior(QPointF target, int feedRate, QObject *parent = nullptr);
         QString name() override { return "Go to..."; }
-        bool isJoggingAllowed() override { return false; }
-        bool isHomingAllowed() override { return false; }
+        // bool isJoggingAllowed() override { return false; }
+        // bool isHomingAllowed() override { return false; }
         void onDeviceStateChanged(DeviceState state) override;
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
     private:
         QPointF m_target;

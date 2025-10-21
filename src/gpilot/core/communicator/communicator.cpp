@@ -296,23 +296,22 @@ void Communicator::abort()
     }
 }
 
-/*
-* @todo make sure we can replace connection at this point!!
-*/
-void Communicator::setConnection(Connection *newConnection)
+bool Communicator::setConnection(Connection *newConnection)
 {
-    if (m_connection != nullptr || m_connection == newConnection) return;
+    if (m_connection != nullptr) {
+        return false;
+    }
 
-    disconnect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
-    disconnect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
+    // disconnect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
+    // disconnect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
-    m_connection->disconnect();
+    // m_connection->disconnect();
     m_connection = newConnection;
 
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
-    // execute(new InitializationBehavior(this));
+    return true;
 }
 
 // bool Communicator::openConnection()
@@ -428,7 +427,7 @@ bool Communicator::isSenderState(SenderState state) const
 
 void Communicator::probe()
 {
-    execute(new ProbingBehavior());
+    // execute(new ProbingBehavior());
 
     // sendCommands(
     //     CommandSource::GeneralUI,
@@ -450,23 +449,27 @@ void Communicator::home()
 bool Communicator::execute(StateBehavior *sb, bool force)
 {
     if (m_sb != nullptr) {
-        if (!force && !m_sb->isNewStateAllowed(sb)) {
+        if (!m_sb->onAboutToChange(sb, force)) {
             qDebug() << "[Communicator][Behavior] Transition from" << m_sb->name() << "to" << sb->name() << "is not allowed";
 
             return false;
         }
 
-        if (m_sb->exitAsync()) {
-            connect(m_sb, &StateBehavior::exitCompleted, this, [this, sb]() {
+        // if (m_sb->exitAsync()) {
+        //     connect(m_sb, &StateBehavior::exitCompleted, this, [this, sb]() {
+        //         qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
+
+        //         this->finalizeExecute(sb);
+        //     }, Qt::ConnectionType::SingleShotConnection);
+        // }
+
+        if (m_sb->onExit(sb) == StateBehavior::Result::WaitForAsyncResult) {
+            connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
                 qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
 
                 this->finalizeExecute(sb);
             }, Qt::ConnectionType::SingleShotConnection);
-        }
 
-        m_sb->onExit(sb);
-
-        if (m_sb->exitAsync()) {
             return true;
         }
 
@@ -492,10 +495,19 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
     }
 
     QPointer<StateBehavior> psb = m_sb;
-    sb->onEntry(this, psb);
-    m_sb = sb;
+    if (sb->onEntry(this, psb) == StateBehavior::Result::WaitForAsyncResult) {
+        connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
+            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
 
-    emit stateBehaviorChanged(sb);
+            m_sb = sb;
+            this->finalizeExecute(sb);
+            emit stateBehaviorChanged(sb);
+        }, Qt::ConnectionType::SingleShotConnection);
+
+        return true;
+    }
+
+    m_sb = sb;
 
     return true;
 }

@@ -39,8 +39,8 @@ bool IdleBehavior::onCommandResponse(QString command, CommandAttributes commandA
     return false;
 }
 
-void IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[IdleBehavior] Entry";
-    StateBehavior::onEntry(communicator, previous);
+    return StateBehavior::onEntry(communicator, previous);
 }

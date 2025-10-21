@@ -40,8 +40,9 @@ class Communicator : public QObject
         void unlock();
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
-        // disconnect, dispose and delete old connection, connect new connection
-        void setConnection(Connection *);
+        // may be used to set connection for the first time, if m_connection is no null,
+        // ReconnectingBehavior should be used instead!!
+        bool setConnection(Connection *);
         // bool openConnection();
         Connection* connection();
         void stopUpdatingState();

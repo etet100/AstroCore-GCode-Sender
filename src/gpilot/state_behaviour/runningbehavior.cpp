@@ -5,9 +5,9 @@
 #include "core/globals.h"
 #include "runningbehavior.h"
 #include "idlebehavior.h"
-#include "pausebehavior.h"
+// #include "pausebehavior.h"
 #include "alarmbehavior.h"
-#include "toolchangebehavior.h"
+// #include "toolchangebehavior.h"
 
 RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
     : StateBehavior{parent}
@@ -23,7 +23,7 @@ void RunningBehavior::onDeviceStateChanged(DeviceState state)
         emit transition(this, new IdleBehavior());
     } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
         // Machine is in hold state - transition to pause
-        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
+        // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
     } else if (state == DeviceState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
@@ -39,7 +39,11 @@ bool RunningBehavior::onCommandResponse(QString command, QString response, QStri
         // Tool change requested
         // emit transition(this, new ToolChangeBehavior(this, command.mid(command.indexOf("T") + 1).toInt(),
         //                                           ToolChangeBehavior::ToolChangeSource::Program));
+
+        return true;
     }
+
+    return false;
 }
 
 void RunningBehavior::onAlarm(int code)
@@ -48,10 +52,10 @@ void RunningBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
-void RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[RunningBehavior] Entry";
-    StateBehavior::onEntry(communicator, previous);
+    return StateBehavior::onEntry(communicator, previous);
 }
 
 void RunningBehavior::handleFeedOverride(int percentage)

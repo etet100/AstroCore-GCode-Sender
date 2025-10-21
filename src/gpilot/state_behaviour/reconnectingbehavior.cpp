@@ -22,7 +22,7 @@ void ReconnectingBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-void ReconnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ReconnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[ReconnectingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -36,4 +36,6 @@ void ReconnectingBehavior::onEntry(Communicator *communicator, StateBehavior *pr
         qDebug() << "[ReconnectingBehavior] Closing current connection.";
         communicator->connection()->close();
     }
+
+    return Result::Ok;
 }

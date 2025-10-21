@@ -29,9 +29,11 @@ void GoToBehavior::onDeviceStateChanged(DeviceState state)
 bool GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
     qDebug() << "[GoToBehavior] Command Response:" << command << response;
+
+    return true;
 }
 
-void GoToBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result GoToBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[GoToBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -42,4 +44,6 @@ void GoToBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
         .arg(m_feedRate);
 
     communicator->sendCommand(CommandSource::System, cmd, TABLE_INDEX_UI);
+
+    return Result::Ok;
 }

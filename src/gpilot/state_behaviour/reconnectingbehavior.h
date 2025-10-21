@@ -13,10 +13,10 @@ class ReconnectingBehavior : public StateBehavior
     public:
         explicit ReconnectingBehavior(Connection *newConnection);
         QString name() override { return "Reconnecting"; }
-        bool isJoggingAllowed() override { return false; }
-        bool isHomingAllowed() override { return false; }
+        // bool isJoggingAllowed() override { return false; }
+        // bool isHomingAllowed() override { return false; }
         void onConnectionStateChanged(ConnectionState state) override;
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
     private:
         enum Stage {

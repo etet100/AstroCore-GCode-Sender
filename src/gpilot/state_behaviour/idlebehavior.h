@@ -12,11 +12,11 @@ class IdleBehavior : public StateBehavior
     public:
         explicit IdleBehavior(QObject *parent = nullptr);
         QString name() override { return "Idle"; }
-        bool isJoggingAllowed() override { return true; } // Jogging should be allowed in idle state
-        bool isHomingAllowed() override { return true; } // Homing should be allowed in idle state
+        // bool isJoggingAllowed() override { return true; } // Jogging should be allowed in idle state
+        // bool isHomingAllowed() override { return true; } // Homing should be allowed in idle state
         void onDeviceStateChanged(DeviceState state) override;
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 };
 
 #endif // IDLEBEHAVIOR_H

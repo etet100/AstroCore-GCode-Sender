@@ -6,7 +6,7 @@
 #include "joggingbehavior.h"
 #include "core/communicator/communicator.h"
 #include "idlebehavior.h"
-#include "pausebehavior.h"
+// #include "pausebehavior.h"
 #include "alarmbehavior.h"
 
 JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent)
@@ -25,22 +25,26 @@ JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, QObject *parent
 {
 }
 
-bool JoggingBehavior::isNewStateAllowed(StateBehavior *newState)
+bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
 {
     return newState->inherits("ResetBehavior") && newState->name() == "Reset";
 }
 
-void JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[JoggingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     startJogging();
+
+    return Result::Ok;
 }
 
-void JoggingBehavior::onExit(StateBehavior *next)
+StateBehavior::Result JoggingBehavior::onExit(StateBehavior *next)
 {
     stopJogging();
+
+    return StateBehavior::onExit(next);
 }
 
 void JoggingBehavior::onDeviceStateChanged(DeviceState state)
@@ -61,7 +65,7 @@ void JoggingBehavior::onDeviceStateChanged(DeviceState state)
         emit transition(this, new AlarmBehavior());
     } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
         // Machine hold - go to pause state
-        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Jogging));
+        // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Jogging));
     }
 }
 

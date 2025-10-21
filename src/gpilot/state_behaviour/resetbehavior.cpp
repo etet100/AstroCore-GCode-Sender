@@ -102,7 +102,7 @@ bool ResetBehavior::onCommandResponse(QString command, CommandAttributes command
     return false;
 }
 
-void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -122,6 +122,8 @@ void ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
     m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
 
     m_stage = SentReset;
+
+    return Result::Ok;
 }
 
 bool ResetBehavior::dataIsReset(QString data)

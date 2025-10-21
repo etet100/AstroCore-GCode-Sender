@@ -13,20 +13,24 @@ CheckModeBehavior::CheckModeBehavior(QObject *parent)
 {
 }
 
-void CheckModeBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result CheckModeBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
 
     // Enable check mode using GRBL $C command
     m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
+
+    return Result::Ok;
 }
 
-void CheckModeBehavior::onExit(StateBehavior *next)
+StateBehavior::Result CheckModeBehavior::onExit(StateBehavior *next)
 {
     // Disable check mode if it was enabled
     if (m_checkModeEnabled) {
         m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
     }
+
+    return StateBehavior::onExit(next);
 }
 
 void CheckModeBehavior::onDeviceStateChanged(DeviceState state)
@@ -51,5 +55,9 @@ bool CheckModeBehavior::onCommandResponse(QString command, QString response, QSt
                 emit transition(this, new IdleBehavior(this));
             }
         }
+
+        return true;
     }
+
+    return false;
 }

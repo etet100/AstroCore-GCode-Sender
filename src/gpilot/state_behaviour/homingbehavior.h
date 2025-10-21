@@ -12,9 +12,9 @@ class HomingBehavior : public StateBehavior
     public:
         explicit HomingBehavior(QObject *parent = nullptr);
         QString name() override { return "Homing"; }
-        bool isJoggingAllowed() override { return false; } // Cannot jog during homing
-        bool isHomingAllowed() override { return false; } // Cannot start homing when already in progress
-        void onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        // bool isJoggingAllowed() override { return false; } // Cannot jog during homing
+        // bool isHomingAllowed() override { return false; } // Cannot start homing when already in progress
+        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onDeviceStateChanged(DeviceState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 

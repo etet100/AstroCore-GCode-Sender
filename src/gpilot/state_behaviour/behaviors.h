@@ -16,10 +16,10 @@
 #include "runningbehavior.h"
 #include "joggingbehavior.h"
 #include "homingbehavior.h"
-#include "probingbehavior.h"
-#include "pausebehavior.h"
+// #include "probingbehavior.h"
+// #include "pausebehavior.h"
 #include "alarmbehavior.h"
-#include "checkmodebehavior.h"
+// #include "checkmodebehavior.h"
 #include "resetbehavior.h"
 
 #endif // BEHAVIORS_H

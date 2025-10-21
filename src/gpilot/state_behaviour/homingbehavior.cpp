@@ -15,7 +15,7 @@ HomingBehavior::HomingBehavior(QObject *parent)
 {
 }
 
-void HomingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result HomingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[HomingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -24,6 +24,8 @@ void HomingBehavior::onEntry(Communicator *communicator, StateBehavior *previous
     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", TABLE_INDEX_UI);
     m_homingStarted = true;
     m_homingCompleted = false;
+
+    return Result::Ok;
 }
 
 void HomingBehavior::onDeviceStateChanged(DeviceState state)
