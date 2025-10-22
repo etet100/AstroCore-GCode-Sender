@@ -1,41 +1,30 @@
+
 #ifndef PARTMAINSTATE_H
 #define PARTMAINSTATE_H
 
-#include "core/globals.h"
-#include "core/config/configuration.h"
-#include <QWidget>
-#include <QVector3D>
+#include "partmainstatebase.h"
 
 namespace Ui {
 class partMainState;
 }
 
-class partMainState : public QWidget
+class partMainState : public PartMainStateBase
 {
     Q_OBJECT
+public:
+    explicit partMainState(QWidget *parent);
+    void initialize(const Configuration &configuration) override;
+    ~partMainState();
+    void setState(MachineState) override;
+    void setWorkCoordinates(QVector3D) override;
+    void setMachineCoordinates(QVector3D) override;
+    void setUnits(Units units) override;
+    void setStatusText(QString, QString bgColor, QString fgColor) override;
 
-    public:
-        explicit partMainState(QWidget *parent);
-        void initialize(const Configuration &configuration);
-        ~partMainState();
-        void setState(MachineState);
-        void setWorkCoordinates(QVector3D);
-        void setMachineCoordinates(QVector3D);
-        void setUnits(Units units);
-        void setStatusText(QString, QString bgColor, QString fgColor);
-
-    private:
-        Ui::partMainState *ui;
-      //  const Configuration &m_configuration;
-        QMap<MachineState, QString> m_statusCaptions;
-        QMap<MachineState, QString> m_statusBackColors;
-        QMap<MachineState, QString> m_statusForeColors;
-
-        void initializeColorsAndCaptions();
-
-    signals:
-        void grblCommand(GRBLCommand command);
-
+private:
+    Ui::partMainState *ui;
+    void initializeColorsAndCaptions() override;
+    void up() override { setStatusText(QString(), "black", "white"); }
 };
 
 #endif // PARTMAINSTATE_H

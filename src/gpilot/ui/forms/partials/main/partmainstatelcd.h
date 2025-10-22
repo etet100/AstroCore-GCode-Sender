@@ -1,43 +1,32 @@
+
 #ifndef PARTMAINSTATELCD_H
 #define PARTMAINSTATELCD_H
 
-#include "core/globals.h"
-#include "core/config/configuration.h"
-#include <QWidget>
-#include <QVector3D>
+#include "partmainstatebase.h"
 
 namespace Ui {
 class partMainStateLcd;
 }
 
-class partMainStateLcd : public QWidget
+class partMainStateLcd : public PartMainStateBase
 {
     Q_OBJECT
+public:
+    explicit partMainStateLcd(QWidget *parent);
+    void initialize(const Configuration &configuration) override;
+    ~partMainStateLcd();
+    void setState(MachineState) override;
+    void setWorkCoordinates(QVector3D) override;
+    void setMachineCoordinates(QVector3D) override;
+    void setUnits(Units units) override;
+    void setStatusText(QString, QString bgColor, QString fgColor) override;
+    void setConName(QString name);
 
-    public:
-        explicit partMainStateLcd(QWidget *parent);
-        void initialize(const Configuration &configuration);
-        ~partMainStateLcd();
-        void setState(MachineState);
-        void setWorkCoordinates(QVector3D);
-        void setMachineCoordinates(QVector3D);
-        void setUnits(Units units);
-        void setStatusText(QString, QString bgColor, QString fgColor);
-        void setConName(QString name);
-
-    private:
-        Ui::partMainStateLcd *ui;
-      //  const Configuration &m_configuration;
-        QMap<MachineState, QString> m_statusCaptions;
-        QMap<MachineState, QString> m_statusBackColors;
-        QMap<MachineState, QString> m_statusForeColors;
-
-        void initializeColorsAndCaptions();
-        QString formatPos(float val);
-
-    signals:
-        void grblCommand(GRBLCommand command);
-
+private:
+    Ui::partMainStateLcd *ui;
+    void initializeColorsAndCaptions() override;
+    QString formatPos(float val);
+    void up() override { setStatusText(QString(), "black", "white"); }
 };
 
 #endif // PARTMAINSTATELCD_H
