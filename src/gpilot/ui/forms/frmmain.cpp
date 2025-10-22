@@ -525,7 +525,7 @@ void frmMain::dropEvent(QDropEvent *de)
         // Load dropped heightmap file
         addRecentHeightmap(fileName);
         updateRecentFilesMenu();
-        loadHeightmap(fileName);
+        // loadHeightmap(fileName);
     }
 }
 
@@ -2944,105 +2944,6 @@ bool frmMain::saveProgramToFile(QString fileName, GCode &model)
     return true;
 }
 
-void frmMain::loadHeightmap(QString fileName)
-{
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, this->windowTitle(), tr("Can't open file:\n") + fileName);
-        return;
-    }
-    QTextStream textStream(&file);
-
-    m_settingsLoading = true;
-
-    // Storing previous values
-    ui->txtHeightMapBorderX->setValue(qQNaN());
-    ui->txtHeightMapBorderY->setValue(qQNaN());
-    ui->txtHeightMapBorderWidth->setValue(qQNaN());
-    ui->txtHeightMapBorderHeight->setValue(qQNaN());
-
-    ui->txtHeightMapGridX->setValue(qQNaN());
-    ui->txtHeightMapGridY->setValue(qQNaN());
-    ui->txtHeightMapGridZBottom->setValue(qQNaN());
-    ui->txtHeightMapGridZTop->setValue(qQNaN());
-
-    QList<QString> list = textStream.readLine().split(";");
-    ui->txtHeightMapBorderX->setValue(list[0].toDouble());
-    ui->txtHeightMapBorderY->setValue(list[1].toDouble());
-    ui->txtHeightMapBorderWidth->setValue(list[2].toDouble());
-    ui->txtHeightMapBorderHeight->setValue(list[3].toDouble());
-
-    list = textStream.readLine().split(";");
-    ui->txtHeightMapGridX->setValue(list[0].toDouble());
-    ui->txtHeightMapGridY->setValue(list[1].toDouble());
-    ui->txtHeightMapGridZBottom->setValue(list[2].toDouble());
-    ui->txtHeightMapGridZTop->setValue(list[3].toDouble());
-
-    m_settingsLoading = false;
-
-    updateHeightmapBorderDrawer();
-
-    m_heightmapModel.clear();   // To avoid probe data wipe message
-    updateHeightmapGrid();
-
-    list = textStream.readLine().split(";");
-
-    for (int i = 0; i < m_heightmapModel.rowCount(); i++) {
-        QList<QString> row = textStream.readLine().split(";");
-        for (int j = 0; j < m_heightmapModel.columnCount(); j++) {
-            m_heightmapModel.setData(m_heightmapModel.index(i, j), row[j].toDouble(), Qt::UserRole);
-        }
-    }
-
-    file.close();
-
-    ui->txtHeightMap->setText(fileName.mid(fileName.lastIndexOf("/") + 1));
-    m_heightmapFileName = fileName;
-    m_heightmapChanged = false;
-
-    ui->cboHeightMapInterpolationType->setCurrentIndex(list[0].toInt());
-    ui->txtHeightMapInterpolationStepX->setValue(list[1].toDouble());
-    ui->txtHeightMapInterpolationStepY->setValue(list[2].toDouble());
-
-    updateHeightMapInterpolationDrawer();
-}
-
-bool frmMain::saveHeightmap(QString fileName)
-{
-    QFile file(fileName);
-    QDir dir;
-
-    if (file.exists()) dir.remove(file.fileName());
-    if (!file.open(QIODevice::WriteOnly)) return false;
-
-    QTextStream textStream(&file);
-    textStream << ui->txtHeightMapBorderX->text() << ";"
-               << ui->txtHeightMapBorderY->text() << ";"
-               << ui->txtHeightMapBorderWidth->text() << ";"
-               << ui->txtHeightMapBorderHeight->text() << "\r\n";
-    textStream << ui->txtHeightMapGridX->text() << ";"
-               << ui->txtHeightMapGridY->text() << ";"
-               << ui->txtHeightMapGridZBottom->text() << ";"
-               << ui->txtHeightMapGridZTop->text() << "\r\n";
-    textStream << ui->cboHeightMapInterpolationType->currentIndex() << ";"
-               << ui->txtHeightMapInterpolationStepX->text() << ";"
-                << ui->txtHeightMapInterpolationStepY->text() << "\r\n";
-
-    for (int i = 0; i < m_heightmapModel.rowCount(); i++) {
-        for (int j = 0; j < m_heightmapModel.columnCount(); j++) {
-            textStream << m_heightmapModel.data(m_heightmapModel.index(i, j), Qt::UserRole).toString() << ((j == m_heightmapModel.columnCount() - 1) ? "" : ";");
-        }
-        textStream << "\r\n";
-    }
-
-    file.close();
-
-    m_heightmapChanged = false;
-
-    return true;
-}
-
 void frmMain::clearTable()
 {
     m_programModel.clear();
@@ -3712,109 +3613,7 @@ QList<LineSegment*> frmMain::subdivideSegment(LineSegment* segment)
     return list;
 }
 
-// void frmMain::jogStep(QVector3D vector)
-// {
-//     assert(m_communicator->isMachineConfigurationReady());
 
-//     if (ui->jog->isContinuous()) {
-//         return;
-//     }
-
-//     bool unitsInches = m_communicator->machineConfiguration().unitsInches();
-//     vector *= ui->jog->stepSize();
-
-//     m_communicator->sendCommand(
-//         CommandSource::System,
-//         QString("$J=%5G91X%1Y%2Z%3F%4")
-//             .arg(vector.x(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(vector.y(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(vector.z(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(m_configuration.joggingModule().jogFeed())
-//             .arg(unitsInches ? "G20" : "G21"),
-//         -3
-//     );
-// }
-
-void frmMain::jogStart(QVector3D vector)
-{
-    bool unitsInches = m_communicator->machineConfiguration().unitsInches();
-
-    // Bounds
-    QVector3D b = m_communicator->machineConfiguration().machineBounds();
-    // Current machine coords
-    // @TODO use m_communicator storedVars
-    QVector3D m(
-        m_communicator->toMetric(m_communicator->m_storedVars.Mx()),
-        m_communicator->toMetric(m_communicator->m_storedVars.My()),
-        m_communicator->toMetric(m_communicator->m_storedVars.Mz())
-        );
-    // Distance to bounds
-    QVector3D t;
-    // Minimum distance to bounds
-    double d = 0;
-    if (m_communicator->machineConfiguration().softLimitsEnabled()) {
-        t = QVector3D(vector.x() * b.x() < 0 ? 0 - m.x() : b.x() - m.x(),
-                      vector.y() * b.y() < 0 ? 0 - m.y() : b.y() - m.y(),
-                      vector.z() * b.z() < 0 ? 0 - m.z() : b.z() - m.z());
-        for (int i = 0; i < 3; i++) if ((vector[i] && (qAbs(t[i]) < d)) || (vector[i] && !d)) d = qAbs(t[i]);
-        // Coords not aligned, add some bounds offset
-        d -= unitsInches ? m_communicator->toMetric(0.0005) : 0.005;
-    } else {
-        for (int i = 0; i < 3; i++) if (vector[i] && (qAbs(b[i]) > d)) d = qAbs(b[i]);
-    }
-
-    // Jog vector
-    QVector3D vec = vector * m_communicator->toInches(d);
-
-    if (vec.length()) {
-        m_communicator->sendCommand(CommandSource::System, QString("$J=%5G91X%1Y%2Z%3F%4")
-                                        .arg(vec.x(), 0, 'f', unitsInches ? 4 : 3)
-                                        .arg(vec.y(), 0, 'f', unitsInches ? 4 : 3)
-                                        .arg(vec.z(), 0, 'f', unitsInches ? 4 : 3)
-                                        .arg(m_configuration.joggingModule().feed())
-                                        .arg(unitsInches ? "G20" : "G21")
-                                        , -2);
-    }
-}
-
-// void frmMain::jogContinuous()
-// {
-//     static bool block = false;
-//     static QVector3D lastVector(0, 0, 0);
-
-//     if ((ui->jog->isContinuous()) && !block) {
-//         if (ui->jog->jogVector() != lastVector) {
-//             // Store jog vector before block
-//             QVector3D vector = ui->jog->jogVector();
-
-//             // Stop jogging
-//             if (lastVector.length()) {
-//                 lastVector = vector;
-//                 block = true;
-
-//                 m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
-
-//                 if (!vector.length()) {
-//                     return;
-//                 }
-
-//                 QObject *obj = new QObject(this);
-//                 connect(m_communicator, &Communicator::deviceStateChanged, obj, [this, obj, vector] (DeviceState state) {
-//                     qDebug() << "deviceStateChanged" << (int) state;
-//                     if (state != DeviceState::Jog) {
-//                         jogStart(vector);
-//                         obj->deleteLater();
-//                     }
-//                 });
-
-//                 block = false;
-//             } else {
-//                 lastVector = vector;
-//                 jogStart(vector);
-//             }
-//         }
-//     }
-// }
 
 // int frmMain::buttonSize()
 // {

@@ -90,7 +90,7 @@
         <string notr="true">border: 1px solid silver;</string>
        </property>
        <property name="text">
-        <string>No connection\</string>
+        <string>No connection</string>
        </property>
       </widget>
      </item>

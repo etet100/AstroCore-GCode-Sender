@@ -149,17 +149,11 @@ void Communicator::processOverrides(QString data)
 void Communicator::processNewToolPosition()
 {
     QVector3D toolPosition;
-//    if (!(m_deviceState == DeviceCheck && m_streamer->processedCommandIndex() < m_form->currentModel().rowCount() - 1)) {
     if (!(m_machineState == MachineState::Check && !m_streamer->isLastCommandProcessed())) {
         toolPosition = m_machinePos;
-        //m_form->toolDrawer().setToolPosition(m_form->codeDrawer().getIgnoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
         emit toolPositionReceived(toolPosition);
     }
-
-    // Toolpath shadowing
-    // Update tool position
-    // processToolpathShadowing(toolPosition);
 }
 
 void Communicator::processWorkOffset(QString data)

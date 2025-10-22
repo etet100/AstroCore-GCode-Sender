@@ -330,8 +330,8 @@ private:
     void applyLoaderGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
     bool saveProgramToFile(QString fileName, GCode &data);
-    void loadHeightmap(QString fileName);
-    bool saveHeightmap(QString fileName);
+    void loadHeightmap(QString fileName) {};
+    bool saveHeightmap(QString fileName) { return true; };
     void clearTable();
     void resetHeightmap();
     void newFile();

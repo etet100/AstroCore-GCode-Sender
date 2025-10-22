@@ -13,8 +13,6 @@ class RunningBehavior : public StateBehavior
     public:
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString name() override { return "Running"; }
-        // bool isJoggingAllowed() override { return false; } // Cannot jog while running
-        // bool isHomingAllowed() override { return false; } // Cannot home while running
         void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
