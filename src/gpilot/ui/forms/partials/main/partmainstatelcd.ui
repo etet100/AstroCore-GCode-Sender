@@ -51,15 +51,9 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QFormLayout" name="statusLayout">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-     </property>
-     <property name="rowWrapPolicy">
-      <enum>QFormLayout::RowWrapPolicy::DontWrapRows</enum>
-     </property>
+    <layout class="QGridLayout" name="gridLayout">
      <property name="horizontalSpacing">
-      <number>14</number>
+      <number>6</number>
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="labelStatus">
@@ -87,6 +81,16 @@
        </property>
        <property name="status" stdset="0">
         <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="txtConName">
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid silver;</string>
+       </property>
+       <property name="text">
+        <string>No connection\</string>
        </property>
       </widget>
      </item>

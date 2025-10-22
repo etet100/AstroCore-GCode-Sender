@@ -2,6 +2,7 @@
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
+#include "core/machine/machineconfigurationparser.h"
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>
@@ -319,26 +320,28 @@ void Communicator::processStatus(QString data)
 
 void Communicator::processDeviceConfiguration(QStringList response)
 {
-    static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
+    MachineConfigurationParser configurationParser(m_configuration->machineModule());
+    auto configuration = configurationParser.parse(response);
 
-    QMap<int, double> rawMachineConfiguration;
+    emit deviceConfigurationReceived(configuration);
 
-    for (QString line : response) {
-        QRegularExpressionMatch match = gs.match(line);
-        if (match.hasMatch()) {
-            rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
-        }
-    }
+    // static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
-    MachineConfiguration *machineConfiguration = m_machineConfiguration = new MachineConfiguration(
-        rawMachineConfiguration,
-        m_configuration->machineModule()
-    );
+    // QMap<int, double> rawMachineConfiguration;
 
-    emit deviceConfigurationReceived(
-        *machineConfiguration,
-        rawMachineConfiguration
-    );
+    // for (QString line : response) {
+    //     QRegularExpressionMatch match = gs.match(line);
+    //     if (match.hasMatch()) {
+    //         rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
+    //     }
+    // }
+
+    // MachineConfiguration *machineConfiguration = m_machineConfiguration = new MachineConfiguration(
+    //     rawMachineConfiguration,
+    //     m_configuration->machineModule()
+    // );
+
+
 
     // if (commandAttributes.callback != nullptr) {
     //     commandAttributes.callback(machineConfiguration);

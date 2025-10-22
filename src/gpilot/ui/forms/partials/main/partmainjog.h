@@ -18,11 +18,9 @@ public:
     void initialize(ConfigurationJogging &configurationJogging);
     ~partMainJog();
 
-    // constexpr static const double CONTINUOUS = -1;
-
-    int feedRate() const { return m_feedRate; };
-    double stepSize() const { return m_stepSize; };
-    bool isContinuous() const { return m_stepSize == JoggingContinuous; };
+    int feedRate() const { return m_configurationJogging->feed(); };
+    int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
+    double stepSize() const { return m_configurationJogging->step(); };
     JoggingVector jogVector() const { return m_jogVector; };
     void storeAndResetKeyboardControl();
     bool keyboardControl();
@@ -32,16 +30,14 @@ public:
 
 private:
     Ui::partMainJog *ui;
-    int m_feedRate;
     bool m_initialized = false;
-    double m_stepSize;
     bool m_storedKeyboardControl = false;
     ConfigurationJogging *m_configurationJogging;
     JoggingVector m_jogVector;
     void updateControls();
     void stopJogging();
-
     void stopJoggingIfContinuous();
+
 private slots:
     void onCmdYPlusPressed();
     void onCmdYPlusReleased();
@@ -56,8 +52,10 @@ private slots:
     void onCmdZMinusPressed();
     void onCmdZMinusReleased();
     void onCmdStopClicked();
-    void onCmdFeedRateChanged(int index);
-    void onCmdStepSizeChanged(int index);
+    void onCmdFeedChanged(int index);
+    void onCmdFeedZChanged(int index);
+    void onCmdStepChanged(int index);
+    void onChkSeparateZFeedToggled(bool);
 
 signals:
     void jog(JoggindDir dir, JoggingVector vector);

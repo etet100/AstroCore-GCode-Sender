@@ -153,6 +153,7 @@ class Communicator : public QObject
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
 
         bool finalizeExecute(StateBehavior *sb);
+
     private slots:
         void onTimerStateQuery();
         void onConnectionLineReceived(QString);
@@ -164,12 +165,13 @@ class Communicator : public QObject
     signals:
         void responseReceived(QString command, int tableIndex, QString response);
         void statusReceived(QString status);
+        void connectionChanged(Connection *connection);
         void alarm(int code);
         void welcomeMessageReceived(QString message);
         void senderStateReceived(SenderState state);
         void senderStateChanged(SenderState state);
         void deviceStateChanged(DeviceState state);
-        void deviceConfigurationReceived(MachineConfiguration configuration, QMap<int, double> rawConfiguration);
+        void deviceConfigurationReceived(MachineConfiguration configuration);
         void machinePosChanged(QVector3D pos);
         void workPosChanged(QVector3D pos);
         // emitted after status response received, if state changed, may be emitted together with deviceStateChanged!

@@ -29,8 +29,8 @@ void Jogger::jog(Axis axis, bool positiveDir)
     }
 
     bool unitsInches = m_communicator.machineConfiguration().unitsInches();
-    vector *= m_configuration.jogStep();
-    qDebug() << "[Jogger]" << (int)axis << positiveDir << m_configuration.jogStep();
+    vector *= m_configuration.step();
+    qDebug() << "[Jogger]" << (int)axis << positiveDir << m_configuration.step();
 
     m_communicator.sendCommand(
         CommandSource::System,
@@ -38,7 +38,7 @@ void Jogger::jog(Axis axis, bool positiveDir)
             .arg(vector.x(), 0, 'f', unitsInches ? 4 : 3)
             .arg(vector.y(), 0, 'f', unitsInches ? 4 : 3)
             .arg(vector.z(), 0, 'f', unitsInches ? 4 : 3)
-            .arg(m_configuration.jogFeed())
+            .arg(m_configuration.feed())
             .arg(unitsInches ? "G20" : "G21"),
         -3
     );
@@ -115,7 +115,7 @@ void Jogger::jogStart(QVector3D vector)
                                         .arg(vec.x(), 0, 'f', unitsInches ? 4 : 3)
                                         .arg(vec.y(), 0, 'f', unitsInches ? 4 : 3)
                                         .arg(vec.z(), 0, 'f', unitsInches ? 4 : 3)
-                                        .arg(m_configuration.jogFeed())
+                                        .arg(m_configuration.feed())
                                         .arg(unitsInches ? "G20" : "G21")
                                         , -2);
     }

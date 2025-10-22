@@ -145,10 +145,10 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
         if (dir != JoggindDir::None) {
             JoggingBehavior *joggingBehavior = new JoggingBehavior(
-                // jog
                 dir,
-                m_configuration.joggingModule().jogStep(),
-                m_configuration.joggingModule().jogFeed()
+                m_configuration.joggingModule().step(),
+                m_configuration.joggingModule().feed(),
+                m_configuration.joggingModule().finalFeedZ()
             );
             m_communicator->execute(joggingBehavior);
         }
@@ -252,6 +252,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
     connect(ui->glwVisualizer, &GLContainer::left, this, [this]() {
         m_cursorDrawer.setVisible(false);
+    });
+    connect(ui->glwVisualizer, &GLContainer::goToCursor, this, [this](QPointF pos) {
+        m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
     });
     connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
@@ -377,14 +380,16 @@ void frmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::toolPositionReceived, this, &frmMain::onToolPositionReceived);
     connect(m_communicator, &Communicator::transferCompleted, this, &frmMain::onTransferCompleted);
     connect(m_communicator, &Communicator::aborted, this, &frmMain::onAborted);
-    connect(m_communicator, &Communicator::deviceConfigurationReceived, this, [this](MachineConfiguration configuration, QMap<int, double> rawConfiguration) {
-        Q_UNUSED(rawConfiguration)
+    connect(m_communicator, &Communicator::deviceConfigurationReceived, this, [this](MachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
-    connect(m_communicator, &Communicator::statusReceived, this, [this]() {
-        jogContinuous();
-    });
+    // connect(m_communicator, &Communicator::statusReceived, this, [this]() {
+    //     jogContinuous();
+    // });
     connect(m_communicator, &Communicator::stateBehaviorChanged, this, &frmMain::onStateBehaviorChanged);
+    connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
+        ui->state->setConName(connection->name());
+    });
 }
 
 void frmMain::initializeVisualizer()
@@ -1716,7 +1721,7 @@ void frmMain::onCommandProcessed(int tableIndex, QString response)
     }
 }
 
-void frmMain::onConfigurationReceived(MachineConfiguration configuration, QMap<int, double>)
+void frmMain::onConfigurationReceived(MachineConfiguration configuration)
 {
     ui->state->setUnits(configuration.units());
 }
@@ -3707,28 +3712,28 @@ QList<LineSegment*> frmMain::subdivideSegment(LineSegment* segment)
     return list;
 }
 
-void frmMain::jogStep(QVector3D vector)
-{
-    assert(m_communicator->isMachineConfigurationReady());
+// void frmMain::jogStep(QVector3D vector)
+// {
+//     assert(m_communicator->isMachineConfigurationReady());
 
-    if (ui->jog->isContinuous()) {
-        return;
-    }
+//     if (ui->jog->isContinuous()) {
+//         return;
+//     }
 
-    bool unitsInches = m_communicator->machineConfiguration().unitsInches();
-    vector *= ui->jog->stepSize();
+//     bool unitsInches = m_communicator->machineConfiguration().unitsInches();
+//     vector *= ui->jog->stepSize();
 
-    m_communicator->sendCommand(
-        CommandSource::System,
-        QString("$J=%5G91X%1Y%2Z%3F%4")
-            .arg(vector.x(), 0, 'f', unitsInches ? 4 : 3)
-            .arg(vector.y(), 0, 'f', unitsInches ? 4 : 3)
-            .arg(vector.z(), 0, 'f', unitsInches ? 4 : 3)
-            .arg(m_configuration.joggingModule().jogFeed())
-            .arg(unitsInches ? "G20" : "G21"),
-        -3
-    );
-}
+//     m_communicator->sendCommand(
+//         CommandSource::System,
+//         QString("$J=%5G91X%1Y%2Z%3F%4")
+//             .arg(vector.x(), 0, 'f', unitsInches ? 4 : 3)
+//             .arg(vector.y(), 0, 'f', unitsInches ? 4 : 3)
+//             .arg(vector.z(), 0, 'f', unitsInches ? 4 : 3)
+//             .arg(m_configuration.joggingModule().jogFeed())
+//             .arg(unitsInches ? "G20" : "G21"),
+//         -3
+//     );
+// }
 
 void frmMain::jogStart(QVector3D vector)
 {
@@ -3766,50 +3771,50 @@ void frmMain::jogStart(QVector3D vector)
                                         .arg(vec.x(), 0, 'f', unitsInches ? 4 : 3)
                                         .arg(vec.y(), 0, 'f', unitsInches ? 4 : 3)
                                         .arg(vec.z(), 0, 'f', unitsInches ? 4 : 3)
-                                        .arg(m_configuration.joggingModule().jogFeed())
+                                        .arg(m_configuration.joggingModule().feed())
                                         .arg(unitsInches ? "G20" : "G21")
                                         , -2);
     }
 }
 
-void frmMain::jogContinuous()
-{
-    static bool block = false;
-    static QVector3D lastVector(0, 0, 0);
+// void frmMain::jogContinuous()
+// {
+//     static bool block = false;
+//     static QVector3D lastVector(0, 0, 0);
 
-    if ((ui->jog->isContinuous()) && !block) {
-        if (ui->jog->jogVector() != lastVector) {
-            // Store jog vector before block
-            QVector3D vector = ui->jog->jogVector();
+//     if ((ui->jog->isContinuous()) && !block) {
+//         if (ui->jog->jogVector() != lastVector) {
+//             // Store jog vector before block
+//             QVector3D vector = ui->jog->jogVector();
 
-            // Stop jogging
-            if (lastVector.length()) {
-                lastVector = vector;
-                block = true;
+//             // Stop jogging
+//             if (lastVector.length()) {
+//                 lastVector = vector;
+//                 block = true;
 
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
+//                 m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
 
-                if (!vector.length()) {
-                    return;
-                }
+//                 if (!vector.length()) {
+//                     return;
+//                 }
 
-                QObject *obj = new QObject(this);
-                connect(m_communicator, &Communicator::deviceStateChanged, obj, [this, obj, vector] (DeviceState state) {
-                    qDebug() << "deviceStateChanged" << (int) state;
-                    if (state != DeviceState::Jog) {
-                        jogStart(vector);
-                        obj->deleteLater();
-                    }
-                });
+//                 QObject *obj = new QObject(this);
+//                 connect(m_communicator, &Communicator::deviceStateChanged, obj, [this, obj, vector] (DeviceState state) {
+//                     qDebug() << "deviceStateChanged" << (int) state;
+//                     if (state != DeviceState::Jog) {
+//                         jogStart(vector);
+//                         obj->deleteLater();
+//                     }
+//                 });
 
-                block = false;
-            } else {
-                lastVector = vector;
-                jogStart(vector);
-            }
-        }
-    }
-}
+//                 block = false;
+//             } else {
+//                 lastVector = vector;
+//                 jogStart(vector);
+//             }
+//         }
+//     }
+// }
 
 // int frmMain::buttonSize()
 // {

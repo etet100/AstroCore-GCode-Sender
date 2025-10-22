@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>226</width>
-    <height>235</height>
+    <height>258</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,8 +20,8 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="sizeConstraint">
-    <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+   <property name="spacing">
+    <number>10</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -36,7 +36,7 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="gridLayout_3">
+    <layout class="QGridLayout" name="joggingLayout">
      <item row="2" column="2">
       <widget class="StyledToolButton" name="cmdXPlus">
        <property name="sizePolicy">
@@ -277,59 +277,18 @@
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_22">
-       <property name="text">
-        <string>Feed:</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QFormLayout" name="middlePartLayout">
+     <property name="horizontalSpacing">
+      <number>10</number>
+     </property>
+     <property name="verticalSpacing">
+      <number>3</number>
+     </property>
      <item row="0" column="0">
       <widget class="QLabel" name="label_20">
        <property name="text">
         <string>Step:</string>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="ComboBoxKey" name="cboJogFeed">
-       <property name="editable">
-        <bool>false</bool>
-       </property>
-       <property name="insertPolicy">
-        <enum>QComboBox::InsertPolicy::NoInsert</enum>
-       </property>
-       <item>
-        <property name="text">
-         <string>10</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>50</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>100</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>500</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>1000</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2000</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="0" column="1">
@@ -377,14 +336,82 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_22">
+       <property name="text">
+        <string>Feed:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="ComboBoxKey" name="cboJogFeed">
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <property name="insertPolicy">
+        <enum>QComboBox::InsertPolicy::NoInsert</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string>10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1000</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2000</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="ComboBoxKey" name="cboJogFeedZ"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Feed (Z only):</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
-    <widget class="QCheckBox" name="chkKeyboardControl">
-     <property name="text">
-      <string>Keyboard control</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="checkboxesLayout">
+     <item>
+      <widget class="QCheckBox" name="chkSeparateZFeed">
+       <property name="text">
+        <string>Sep. feed for Z</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkKeyboardControl">
+       <property name="text">
+        <string>Keyboard control</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -616,11 +643,27 @@
    <sender>cboJogFeed</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>partMainJog</receiver>
-   <slot>onCmdFeedRateChanged(int)</slot>
+   <slot>onCmdFeedChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>149</x>
-     <y>196</y>
+     <x>224</x>
+     <y>191</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>179</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cboJogFeedZ</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>partMainJog</receiver>
+   <slot>onCmdFeedZChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>224</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel">
      <x>179</x>
@@ -632,7 +675,7 @@
    <sender>cboJogStep</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>partMainJog</receiver>
-   <slot>onCmdStepSizeChanged(int)</slot>
+   <slot>onCmdStepChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>177</x>
@@ -641,6 +684,22 @@
     <hint type="destinationlabel">
      <x>122</x>
      <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkSeparateZFeed</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>partMainJog</receiver>
+   <slot>onChkSeparateZFeedToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>47</x>
+     <y>248</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>83</x>
+     <y>230</y>
     </hint>
    </hints>
   </connection>
@@ -658,9 +717,10 @@
   <slot>onCmdZPlusReleased()</slot>
   <slot>onCmdZMinusPressed()</slot>
   <slot>onCmdZMinusReleased()</slot>
-  <slot>onChkKeyboardControlToggled(bool)</slot>
+  <slot>onChkSeparateZFeedToggled(bool)</slot>
   <slot>onCmdStopClicked()</slot>
-  <slot>onCmdFeedRateChanged(int)</slot>
-  <slot>onCmdStepSizeChanged(int)</slot>
+  <slot>onCmdFeedChanged(int)</slot>
+  <slot>onCmdFeedZChanged(int)</slot>
+  <slot>onCmdStepChanged(int)</slot>
  </slots>
 </ui>

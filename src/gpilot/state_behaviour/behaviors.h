@@ -21,5 +21,6 @@
 #include "alarmbehavior.h"
 // #include "checkmodebehavior.h"
 #include "resetbehavior.h"
+#include "gotobehavior.h"
 
 #endif // BEHAVIORS_H

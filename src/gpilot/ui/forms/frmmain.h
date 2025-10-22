@@ -188,7 +188,7 @@ private slots:
     void onCommandSent(CommandAttributes commandAttributes);
     // @TODO signal does not make sense, it has to done in other way
     void onCommandProcessed(int tableIndex, QString response);
-    void onConfigurationReceived(MachineConfiguration, QMap<int, double>);
+    void onConfigurationReceived(MachineConfiguration);
     void onToolPositionReceived(QVector3D pos);
     void onTransferCompleted();
     void onConnectionError(QString error);
@@ -361,9 +361,9 @@ private:
     int bufferLength();
     QTime updateProgramEstimatedTime(QList<LineSegment> &lines);
     QList<LineSegment *> subdivideSegment(LineSegment *segment);
-    void jogStep(QVector3D vector);
+    // void jogStep(QVector3D vector);
     void jogStart(QVector3D vector);
-    void jogContinuous();
+    // void jogContinuous();
     // int buttonSize();
     QString getLineInitCommands(int row);
 

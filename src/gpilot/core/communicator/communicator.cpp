@@ -311,6 +311,8 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
+    emit connectionChanged(m_connection);
+
     return true;
 }
 

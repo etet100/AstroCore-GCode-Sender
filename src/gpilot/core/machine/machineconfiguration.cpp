@@ -61,6 +61,8 @@ MachineConfiguration::MachineConfiguration(QMap<int, double> settings, Configura
         m_machineBounds.setY(negativeValue(configuration.maxTravel().y(), configuration.referencePositionDirY()));
         m_machineBounds.setZ(negativeValue(configuration.maxTravel().z(), configuration.referencePositionDirZ()));
     }
+
+    m_raw = settings;
 }
 
 Units MachineConfiguration::setUnits(int setting)

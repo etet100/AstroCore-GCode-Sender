@@ -23,6 +23,7 @@ class partMainStateLcd : public QWidget
         void setMachineCoordinates(QVector3D);
         void setUnits(Units units);
         void setStatusText(QString, QString bgColor, QString fgColor);
+        void setConName(QString name);
 
     private:
         Ui::partMainStateLcd *ui;

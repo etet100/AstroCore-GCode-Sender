@@ -33,6 +33,11 @@ void partMainStateLcd::setStatusText(QString status, QString bgColor, QString fg
 
 }
 
+void partMainStateLcd::setConName(QString name)
+{
+    ui->txtConName->setText(name);
+}
+
 void partMainStateLcd::setState(DeviceState state)
 {
     Q_UNUSED(state);

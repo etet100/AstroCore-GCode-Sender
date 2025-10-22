@@ -119,6 +119,7 @@ signals:
     void resized();
     void entered();
     void left();
+    void goToCursor(QPointF);
 
 private slots:
     void onFramesTimer();
@@ -174,7 +175,7 @@ private:
     QColor m_colorBackground;
     QColor m_colorText;
 
-    QPointF getClickPositionOnXYPlane(QVector2D mouseClickPosition);
+    QPointF calcPositionOnXYPlane(QPoint mouseClickPosition);
     void drawText(QPainter &painter, QPoint &pos, QString text, int lineHeight, Qt::AlignmentFlag align = Qt::AlignLeft);
     void drawTexts(QPainter &painter, QPoint &pos, QStringList texts, int lineHeight);
 
@@ -194,6 +195,7 @@ protected:
 
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void enterEvent(QEnterEvent *event) override;
     void wheelEvent(QWheelEvent *we) override;

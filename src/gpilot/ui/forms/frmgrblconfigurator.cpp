@@ -343,9 +343,11 @@ void frmGrblConfigurator::moveEvent(QMoveEvent *me)
     }
 }
 
-void frmGrblConfigurator::onConfigurationReceived(MachineConfiguration configuration, QMap<int, double> rawConfiguration)
+void frmGrblConfigurator::onConfigurationReceived(MachineConfiguration configuration)
 {
     Q_UNUSED(configuration);
+
+    QMap<int, double> rawConfiguration = configuration.raw();
 
     disconnect(
         m_communicator,

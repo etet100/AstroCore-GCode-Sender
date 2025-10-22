@@ -7,7 +7,8 @@
 
 #include <QVector3D>
 #include <QMap>
-#include "../config/module//configurationmachine.h"
+#include "core/globals.h"
+#include "core/config/module//configurationmachine.h"
 
 class MachineConfiguration
 {
@@ -29,6 +30,7 @@ class MachineConfiguration
         QVector3D maxRate() { return m_maxRate; }
         QVector3D machineBounds() { return m_machineBounds; }
         HomingDirs homingDirs() { return m_homingDirs; }
+        QMap<int, double> raw() { return m_raw; }
 
     private:
         bool m_homingEnabled = false;
@@ -45,7 +47,9 @@ class MachineConfiguration
         QVector3D m_maxRate = QVector3D(0,0,0);
         QVector3D m_machineBounds = QVector3D(0,0,0);
         HomingDirs m_homingDirs;
-        Units setUnits(int setting);
+        QMap<int, double> m_raw;
+
+            Units setUnits(int setting);
         double negativeValue(double value, bool negative);
 };
 

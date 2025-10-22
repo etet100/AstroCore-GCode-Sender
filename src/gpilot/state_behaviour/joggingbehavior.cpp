@@ -9,18 +9,20 @@
 // #include "pausebehavior.h"
 #include "alarmbehavior.h"
 
-JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent)
+JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
     , m_currentDirection(direction)
     , m_feedRate(feedRate)
+    , m_feedRateZ(feedRateZ)
     , m_distance(distance)
 {
 }
 
-JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, QObject *parent)
+JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
     , m_currentDirection(JoggindDir::None)
     , m_feedRate(feedRate)
+    , m_feedRateZ(feedRateZ)
     , m_vector(vector)
 {
 }
@@ -177,6 +179,8 @@ void JoggingBehavior::startJogging()
         }
     }
 
+    int feedRate = m_feedRate;
+
     m_jogCommand = "$J=";
     switch (m_currentDirection) {
         case JoggindDir::XPlus:
@@ -193,15 +197,17 @@ void JoggingBehavior::startJogging()
             break;
         case JoggindDir::ZPlus:
             m_jogCommand += "G91 G21 Z" + QString::number(distance > 0 ? distance : 100);
+            feedRate = m_feedRateZ;
             break;
         case JoggindDir::ZMinus:
             m_jogCommand += "G91 G21 Z-" + QString::number(distance > 0 ? distance : 100);
+            feedRate = m_feedRateZ;
             break;
         default:
             return; // Nieznany kierunek
     }
 
-    m_jogCommand += " F" + QString::number(m_feedRate);
+    m_jogCommand += " F" + QString::number(feedRate);
 
     m_isJogging = true;
     continueJogging();

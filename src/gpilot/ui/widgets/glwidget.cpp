@@ -37,7 +37,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     m_animateView = false;
     m_updatesEnabled = false;
 
-    m_xRot = m_xRotTarget = 0;//35.264;
+    m_xRot = m_xRotTarget = 35.264;
     m_yRot = m_yRotTarget = 0;// m_yRot > 180 ? 405 : 45;
 
     m_zoomDistance = DEFAULT_ZOOM;
@@ -770,21 +770,26 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     m_yLastRot = m_yRot;
 }
 
-QPointF GLWidget::getClickPositionOnXYPlane(QVector2D mouseClickPosition)
+QPointF GLWidget::calcPositionOnXYPlane(QPoint mouseClickPosition)
 {
+    QVector2D normalizedPos(
+        mouseClickPosition.x() / (width()  * 0.5f) - 1.0f,
+        -(mouseClickPosition.y() / (height() * 0.5f) - 1.0f)
+        );
+
     // Invert the matrices
     QMatrix4x4 invertedProjection = m_projectionMatrix.inverted();
     QMatrix4x4 invertedView = m_viewMatrix.inverted();
 
     // Convert 2D mouse position to 3D position with Z = -1 (near plane)
-    QVector3D nearPlanePosition(mouseClickPosition, -1.0f);
+    QVector3D nearPlanePosition(normalizedPos, -1.0f);
 
     // Unproject the 3D position on the near plane to the world space
     QVector3D nearPlaneWorldPosition = invertedProjection.map(nearPlanePosition);
     nearPlaneWorldPosition = invertedView.map(nearPlaneWorldPosition);
 
     // Convert 2D mouse position to 3D position with Z = 1 (far plane)
-    QVector3D farPlanePosition(mouseClickPosition, 1.0f);
+    QVector3D farPlanePosition(normalizedPos, 1.0f);
 
     // Unproject the 3D position on the far plane to the world space
     QVector3D farPlaneWorldPosition = invertedProjection.map(farPlanePosition);
@@ -817,12 +822,8 @@ QPointF GLWidget::getClickPositionOnXYPlane(QVector2D mouseClickPosition)
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
-    QVector2D normalizedPos(
-        pos.x() / (width()  * 0.5f) - 1.0f,
-        -(pos.y() / (height() * 0.5f) - 1.0f)
-    );
 
-    m_bottomSurfaceCursorPos = getClickPositionOnXYPlane(normalizedPos);
+    m_bottomSurfaceCursorPos = calcPositionOnXYPlane(pos);
     if (!qIsNaN(m_bottomSurfaceCursorPos.x())) {
         emit cursorPosChanged(m_bottomSurfaceCursorPos);
     }
@@ -892,6 +893,16 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
             setCursor(Qt::PointingHandCursor);
         } else {
             setCursor(Qt::ArrowCursor);
+        }
+    }
+}
+
+void GLWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QPointF cursorPos = calcPositionOnXYPlane(event->pos());
+        if (!qIsNaN(cursorPos.x()) && !qIsNaN(cursorPos.y())) {
+            emit goToCursor(cursorPos);
         }
     }
 }

@@ -12,8 +12,6 @@ class ResetBehavior : public StateBehavior
     public:
         explicit ResetBehavior(QObject *parent = nullptr);
         QString name() override { return "Reset"; }
-        // bool isJoggingAllowed() override { return true; }
-        // bool isHomingAllowed() override { return true; }
         void onDeviceState(DeviceState state) override;
         bool onRawResponse(QString response) override;
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;

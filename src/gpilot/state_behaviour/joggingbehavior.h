@@ -13,11 +13,9 @@ class JoggingBehavior : public StateBehavior
     Q_OBJECT
 
     public:
-        explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, QObject *parent = nullptr);
-        explicit JoggingBehavior(QVector3D vector, int feedRate,  QObject *parent = nullptr);
+        explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, int feedRateZ, QObject *parent = nullptr);
+        explicit JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString name() override { return "Jogging"; }
-        // bool isJoggingAllowed() override { return true; } // Jogging is allowed in this state
-        // bool isHomingAllowed() override { return false; } // Cannot home during jogging
 
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
@@ -34,6 +32,7 @@ class JoggingBehavior : public StateBehavior
     private:
         JoggindDir m_currentDirection;
         int m_feedRate;
+        int m_feedRateZ;
         double m_distance; // 0 means continuous jogging
         bool m_isJogging = false;
         bool m_isJoggingState = false;

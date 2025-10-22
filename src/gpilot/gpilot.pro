@@ -111,6 +111,7 @@ SOURCES += main.cpp\
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/loader/heightmaploader.cpp \
     core/jogger/jogger.cpp \
+    core/machine/machineconfigurationparser.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
@@ -243,6 +244,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/loader/heightmaploader.h \
     core/jogger/jogger.h \
+    core/machine/machineconfigurationparser.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
