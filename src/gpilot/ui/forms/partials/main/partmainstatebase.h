@@ -13,7 +13,9 @@ public:
     explicit PartMainStateBase(QWidget *parent = nullptr) : QWidget(parent) {}
     virtual ~PartMainStateBase() {}
 
-    virtual void initialize(const Configuration &configuration) = 0;
+    virtual void initialize(const Configuration &configuration) {
+        Q_UNUSED(configuration);
+    };
     virtual void setState(MachineState state) = 0;
     virtual void setWorkCoordinates(QVector3D pos) = 0;
     virtual void setMachineCoordinates(QVector3D pos) = 0;

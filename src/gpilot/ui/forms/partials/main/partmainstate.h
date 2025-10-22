@@ -13,7 +13,6 @@ class partMainState : public PartMainStateBase
     Q_OBJECT
 public:
     explicit partMainState(QWidget *parent);
-    void initialize(const Configuration &configuration) override;
     ~partMainState();
     void setState(MachineState) override;
     void setWorkCoordinates(QVector3D) override;
@@ -23,7 +22,6 @@ public:
 
 private:
     Ui::partMainState *ui;
-    void initializeColorsAndCaptions() override;
     void up() override { setStatusText(QString(), "black", "white"); }
 };
 

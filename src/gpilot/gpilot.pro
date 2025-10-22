@@ -136,6 +136,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmainoverride.cpp \
     ui/forms/partials/main/partmainspindle.cpp \
     ui/forms/partials/main/partmainstate.cpp \
+    ui/forms/partials/main/partmainstatebase.cpp \
     ui/forms/partials/main/partmainstatelcd.cpp \
     ui/forms/partials/main/partmainvirtualsettings.cpp \
     ui/forms/partials/settings/partsettingscolors.cpp \
@@ -270,6 +271,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmainoverride.h \
     ui/forms/partials/main/partmainspindle.h \
     ui/forms/partials/main/partmainstate.h \
+    ui/forms/partials/main/partmainstatebase.h \
     ui/forms/partials/main/partmainstatelcd.h \
     ui/forms/partials/main/partmainvirtualsettings.h \
     ui/forms/partials/settings/partsettingscolors.h \

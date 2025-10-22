@@ -11,7 +11,11 @@ partMainStateLcd::partMainStateLcd(QWidget *parent)
     initializeColorsAndCaptions();
     setWorkCoordinates(QVector3D(0, 0, 0));
     setMachineCoordinates(QVector3D(0, 0, 0));
-    QFontDatabase::addApplicationFont(":/fonts/Patopian1986.ttf");
+
+    int fontId = QFontDatabase::addApplicationFont(":/fonts/Patopian1986.ttf");
+    if (fontId != -1) {
+        QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+    }
 }
 
 partMainStateLcd::~partMainStateLcd()
@@ -30,6 +34,31 @@ void partMainStateLcd::setConName(QString name)
     ui->txtConName->setText(name);
 }
 
+void partMainStateLcd::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event);
+
+    // Calculating appropriate font size based on the width of the LCD displays
+
+    int lcdWidth = ui->txtWX->width();
+
+    const QString sampleText = "-000.000";
+    const int charCount = sampleText.length();
+
+    int fontSize = qMax(12, qMin(31, static_cast<int>(lcdWidth / charCount * 1.9)));
+
+    //
+
+    QString styleSheet = QString("font: %1pt \"Patopian 1986\";").arg(fontSize);
+
+    ui->txtWX->setStyleSheet(styleSheet);
+    ui->txtWY->setStyleSheet(styleSheet);
+    ui->txtWZ->setStyleSheet(styleSheet);
+    ui->txtMX->setStyleSheet(styleSheet);
+    ui->txtMY->setStyleSheet(styleSheet);
+    ui->txtMZ->setStyleSheet(styleSheet);
+}
+
 void partMainStateLcd::setState(MachineState state)
 {
     Q_UNUSED(state);
@@ -37,7 +66,7 @@ void partMainStateLcd::setState(MachineState state)
 
 QString partMainStateLcd::formatPos(float val)
 {
-    return QString("%1").arg(val, 0, 'f', 3).rightJustified(7, ' ');
+    return QString("%1").arg(val, 0, 'f', 3).rightJustified(6, ' ');
 }
 
 void partMainStateLcd::setWorkCoordinates(QVector3D pos)
@@ -56,8 +85,7 @@ void partMainStateLcd::setMachineCoordinates(QVector3D pos)
 
 void partMainStateLcd::setUnits(Units units)
 {
-    int prec = units == Units::Millimeters ? 3 : 4;
-    // Wersja LCD nie ustawia precyzji przez setDecimals
-    Q_UNUSED(prec);
+    // int prec = units == Units::Millimeters ? 3 : 4;
+    // Q_UNUSED(prec);
 }
 
