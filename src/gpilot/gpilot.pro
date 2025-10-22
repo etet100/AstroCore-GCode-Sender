@@ -107,7 +107,7 @@ SOURCES += main.cpp\
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/converter.cpp \
-    core/gcode/pipeline.cpp \
+    core/gcode/converter/pipeline.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/loader/heightmaploader.cpp \
     core/jogger/jogger.cpp \
@@ -240,7 +240,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/applyheightmap.h \
     core/gcode/converter/arcstolines.h \
     core/gcode/converter/converter.h \
-    core/gcode/pipeline.h \
+    core/gcode/converter/pipeline.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/loader/heightmaploader.h \
     core/jogger/jogger.h \
