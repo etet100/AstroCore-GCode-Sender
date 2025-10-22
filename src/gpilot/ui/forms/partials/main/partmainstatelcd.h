@@ -18,7 +18,7 @@ class partMainStateLcd : public QWidget
         explicit partMainStateLcd(QWidget *parent);
         void initialize(const Configuration &configuration);
         ~partMainStateLcd();
-        void setState(DeviceState);
+        void setState(MachineState);
         void setWorkCoordinates(QVector3D);
         void setMachineCoordinates(QVector3D);
         void setUnits(Units units);
@@ -28,9 +28,9 @@ class partMainStateLcd : public QWidget
     private:
         Ui::partMainStateLcd *ui;
       //  const Configuration &m_configuration;
-        QMap<DeviceState, QString> m_statusCaptions;
-        QMap<DeviceState, QString> m_statusBackColors;
-        QMap<DeviceState, QString> m_statusForeColors;
+        QMap<MachineState, QString> m_statusCaptions;
+        QMap<MachineState, QString> m_statusBackColors;
+        QMap<MachineState, QString> m_statusForeColors;
 
         void initializeColorsAndCaptions();
         QString formatPos(float val);

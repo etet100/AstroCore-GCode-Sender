@@ -16,15 +16,15 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
     , m_program(program)
 {}
 
-void RunningBehavior::onDeviceStateChanged(DeviceState state)
+void RunningBehavior::onMachineStateChanged(MachineState state)
 {
-    if (state == DeviceState::Idle) {
+    if (state == MachineState::Idle) {
         // Program finished or was stopped
         emit transition(this, new IdleBehavior());
-    } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
+    } else if (state == MachineState::Hold0 || state == MachineState::Hold1) {
         // Machine is in hold state - transition to pause
         // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
-    } else if (state == DeviceState::Alarm) {
+    } else if (state == MachineState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }

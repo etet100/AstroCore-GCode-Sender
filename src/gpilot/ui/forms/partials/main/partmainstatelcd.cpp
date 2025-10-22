@@ -38,7 +38,7 @@ void partMainStateLcd::setConName(QString name)
     ui->txtConName->setText(name);
 }
 
-void partMainStateLcd::setState(DeviceState state)
+void partMainStateLcd::setState(MachineState state)
 {
     Q_UNUSED(state);
     // setStatusText(m_statusCaptions[state], m_statusBackColors[state], m_statusForeColors[state]);
@@ -93,51 +93,51 @@ void partMainStateLcd::setUnits(Units units)
 
 void partMainStateLcd::initializeColorsAndCaptions()
 {
-    m_statusCaptions[DeviceState::Unknown] = tr("Unknown");
-    m_statusCaptions[DeviceState::Idle] = tr("Idle");
-    m_statusCaptions[DeviceState::Alarm] = tr("Alarm");
-    m_statusCaptions[DeviceState::Run] = tr("Run");
-    m_statusCaptions[DeviceState::Home] = tr("Home");
-    m_statusCaptions[DeviceState::Hold0] = tr("Hold") + " (0)";
-    m_statusCaptions[DeviceState::Hold1] = tr("Hold") + " (1)";
-    m_statusCaptions[DeviceState::Queue] = tr("Queue");
-    m_statusCaptions[DeviceState::Check] = tr("Check");
-    m_statusCaptions[DeviceState::Door0] = tr("Door") + " (0)";
-    m_statusCaptions[DeviceState::Door1] = tr("Door") + " (1)";
-    m_statusCaptions[DeviceState::Door2] = tr("Door") + " (2)";
-    m_statusCaptions[DeviceState::Door3] = tr("Door") + " (3)";
-    m_statusCaptions[DeviceState::Jog] = tr("Jog");
-    m_statusCaptions[DeviceState::Sleep] = tr("Sleep");
+    m_statusCaptions[MachineState::Unknown] = tr("Unknown");
+    m_statusCaptions[MachineState::Idle] = tr("Idle");
+    m_statusCaptions[MachineState::Alarm] = tr("Alarm");
+    m_statusCaptions[MachineState::Run] = tr("Run");
+    m_statusCaptions[MachineState::Home] = tr("Home");
+    m_statusCaptions[MachineState::Hold0] = tr("Hold") + " (0)";
+    m_statusCaptions[MachineState::Hold1] = tr("Hold") + " (1)";
+    m_statusCaptions[MachineState::Queue] = tr("Queue");
+    m_statusCaptions[MachineState::Check] = tr("Check");
+    m_statusCaptions[MachineState::Door0] = tr("Door") + " (0)";
+    m_statusCaptions[MachineState::Door1] = tr("Door") + " (1)";
+    m_statusCaptions[MachineState::Door2] = tr("Door") + " (2)";
+    m_statusCaptions[MachineState::Door3] = tr("Door") + " (3)";
+    m_statusCaptions[MachineState::Jog] = tr("Jog");
+    m_statusCaptions[MachineState::Sleep] = tr("Sleep");
 
-    m_statusBackColors[DeviceState::Unknown] = "red";
-    m_statusBackColors[DeviceState::Idle] = "palette(button)";
-    m_statusBackColors[DeviceState::Alarm] = "red";
-    m_statusBackColors[DeviceState::Run] = "lime";
-    m_statusBackColors[DeviceState::Home] = "lime";
-    m_statusBackColors[DeviceState::Hold0] = "yellow";
-    m_statusBackColors[DeviceState::Hold1] = "yellow";
-    m_statusBackColors[DeviceState::Queue] = "yellow";
-    m_statusBackColors[DeviceState::Check] = "palette(button)";
-    m_statusBackColors[DeviceState::Door0] = "red";
-    m_statusBackColors[DeviceState::Door1] = "red";
-    m_statusBackColors[DeviceState::Door2] = "red";
-    m_statusBackColors[DeviceState::Door3] = "red";
-    m_statusBackColors[DeviceState::Jog] = "lime";
-    m_statusBackColors[DeviceState::Sleep] = "blue";
+    m_statusBackColors[MachineState::Unknown] = "red";
+    m_statusBackColors[MachineState::Idle] = "palette(button)";
+    m_statusBackColors[MachineState::Alarm] = "red";
+    m_statusBackColors[MachineState::Run] = "lime";
+    m_statusBackColors[MachineState::Home] = "lime";
+    m_statusBackColors[MachineState::Hold0] = "yellow";
+    m_statusBackColors[MachineState::Hold1] = "yellow";
+    m_statusBackColors[MachineState::Queue] = "yellow";
+    m_statusBackColors[MachineState::Check] = "palette(button)";
+    m_statusBackColors[MachineState::Door0] = "red";
+    m_statusBackColors[MachineState::Door1] = "red";
+    m_statusBackColors[MachineState::Door2] = "red";
+    m_statusBackColors[MachineState::Door3] = "red";
+    m_statusBackColors[MachineState::Jog] = "lime";
+    m_statusBackColors[MachineState::Sleep] = "blue";
 
-    m_statusForeColors[DeviceState::Unknown] = "white";
-    m_statusForeColors[DeviceState::Idle] = "palette(text)";
-    m_statusForeColors[DeviceState::Alarm] = "white";
-    m_statusForeColors[DeviceState::Run] = "black";
-    m_statusForeColors[DeviceState::Home] = "black";
-    m_statusForeColors[DeviceState::Hold0] = "black";
-    m_statusForeColors[DeviceState::Hold1] = "black";
-    m_statusForeColors[DeviceState::Queue] = "black";
-    m_statusForeColors[DeviceState::Check] = "palette(text)";
-    m_statusForeColors[DeviceState::Door0] = "white";
-    m_statusForeColors[DeviceState::Door1] = "white";
-    m_statusForeColors[DeviceState::Door2] = "white";
-    m_statusForeColors[DeviceState::Door3] = "white";
-    m_statusForeColors[DeviceState::Jog] = "black";
-    m_statusForeColors[DeviceState::Sleep] = "white";
+    m_statusForeColors[MachineState::Unknown] = "white";
+    m_statusForeColors[MachineState::Idle] = "palette(text)";
+    m_statusForeColors[MachineState::Alarm] = "white";
+    m_statusForeColors[MachineState::Run] = "black";
+    m_statusForeColors[MachineState::Home] = "black";
+    m_statusForeColors[MachineState::Hold0] = "black";
+    m_statusForeColors[MachineState::Hold1] = "black";
+    m_statusForeColors[MachineState::Queue] = "black";
+    m_statusForeColors[MachineState::Check] = "palette(text)";
+    m_statusForeColors[MachineState::Door0] = "white";
+    m_statusForeColors[MachineState::Door1] = "white";
+    m_statusForeColors[MachineState::Door2] = "white";
+    m_statusForeColors[MachineState::Door3] = "white";
+    m_statusForeColors[MachineState::Jog] = "black";
+    m_statusForeColors[MachineState::Sleep] = "white";
 }

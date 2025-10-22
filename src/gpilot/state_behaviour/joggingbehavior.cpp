@@ -49,31 +49,31 @@ StateBehavior::Result JoggingBehavior::onExit(StateBehavior *next)
     return StateBehavior::onExit(next);
 }
 
-void JoggingBehavior::onDeviceStateChanged(DeviceState state)
+void JoggingBehavior::onMachineStateChanged(MachineState state)
 {
     qDebug() << "[JoggingBehavior] Device State Changed:" << static_cast<int>(state);
 
-    if (state == DeviceState::Jog) {
+    if (state == MachineState::Jog) {
         qDebug() << "[JoggingBehavior] Device is jogging";
         m_isJoggingState = true;
     } else
-    if (state == DeviceState::Idle) {
+    if (state == MachineState::Idle) {
         qDebug() << "[JoggingBehavior] Device is not jogging anymore";
         stopJogging();
         emit transition(this, new IdleBehavior());
-    } else if (state == DeviceState::Alarm) {
+    } else if (state == MachineState::Alarm) {
         // Stop jogging and handle alarm
         stopJogging();
         emit transition(this, new AlarmBehavior());
-    } else if (state == DeviceState::Hold0 || state == DeviceState::Hold1) {
+    } else if (state == MachineState::Hold0 || state == MachineState::Hold1) {
         // Machine hold - go to pause state
         // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Jogging));
     }
 }
 
-void JoggingBehavior::onDeviceState(DeviceState state)
+void JoggingBehavior::onMachineState(MachineState state)
 {
-    if (m_stopping && state == DeviceState::Idle) {
+    if (m_stopping && state == MachineState::Idle) {
         qDebug() << "[JoggingBehavior] Device is not jogging anymore";
         emit transition(this, new IdleBehavior());
     }

@@ -20,8 +20,8 @@ class JoggingBehavior : public StateBehavior
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
         Result onExit(StateBehavior *next = nullptr) override;
-        void onDeviceStateChanged(DeviceState state) override;
-        void onDeviceState(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
+        void onMachineState(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Jogging-specific methods

@@ -18,7 +18,7 @@ PartMainVirtualSettings::~PartMainVirtualSettings()
     delete ui;
 }
 
-void PartMainVirtualSettings::deviceConfigurationReceived(MachineConfiguration &machineConfiguration)
+void PartMainVirtualSettings::deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration)
 {
     m_homingDirs = machineConfiguration.homingDirs();
 

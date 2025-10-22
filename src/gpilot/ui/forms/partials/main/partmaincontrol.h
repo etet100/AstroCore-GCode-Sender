@@ -22,7 +22,7 @@ public:
     void enable();
     void disable();
     void updateControlsState(bool portOpened, bool process);
-    void updateControlsState(SenderState senderState, DeviceState deviceState);
+    void updateControlsState(SenderState senderState, MachineState machineState);
     bool hold();
     void setFlood(bool);
     void initialize();

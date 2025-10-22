@@ -12,7 +12,7 @@ class ResetBehavior : public StateBehavior
     public:
         explicit ResetBehavior(QObject *parent = nullptr);
         QString name() override { return "Reset"; }
-        void onDeviceState(DeviceState state) override;
+        void onMachineState(MachineState state) override;
         bool onRawResponse(QString response) override;
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;

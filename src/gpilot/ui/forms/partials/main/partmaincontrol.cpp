@@ -34,14 +34,14 @@ void partMainControl::updateControlsState(bool portOpened, bool process)
     // ui->cmdSleep->setEnabled(!process);
 }
 
-void partMainControl::updateControlsState(SenderState senderState, DeviceState deviceState)
+void partMainControl::updateControlsState(SenderState senderState, MachineState machineState)
 {
-    ui->cmdCheck->setEnabled(deviceState != DeviceState::Run && (senderState == SenderState::Stopped));
-    ui->cmdCheck->setChecked(deviceState == DeviceState::Check);
-    ui->cmdHold->setChecked(deviceState == DeviceState::Hold0 || deviceState == DeviceState::Hold1 || deviceState == DeviceState::Queue);
-    ui->cmdProbe->setEnabled(deviceState == DeviceState::Idle && senderState == SenderState::Stopped);
-    ui->cmdZeroZ->setEnabled(deviceState == DeviceState::Idle && senderState == SenderState::Stopped);
-    ui->cmdZeroXY->setEnabled(deviceState == DeviceState::Idle && senderState == SenderState::Stopped);
+    ui->cmdCheck->setEnabled(machineState != MachineState::Run && (senderState == SenderState::Stopped));
+    ui->cmdCheck->setChecked(machineState == MachineState::Check);
+    ui->cmdHold->setChecked(machineState == MachineState::Hold0 || machineState == MachineState::Hold1 || machineState == MachineState::Queue);
+    ui->cmdProbe->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
+    ui->cmdZeroZ->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
+    ui->cmdZeroXY->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
 }
 
 bool partMainControl::hold()

@@ -65,13 +65,13 @@ class StateBehavior : public QObject
             qDebug() << "Alarm: " << code;
         }
 
-        virtual void onDeviceStateChanged(DeviceState state) {
+        virtual void onMachineStateChanged(MachineState state) {
             Q_UNUSED(state);
         }
 
-        using StateResponseCallback = std::function<void(DeviceState)>;
+        using StateResponseCallback = std::function<void(MachineState)>;
 
-        virtual void onDeviceState(DeviceState state) {
+        virtual void onMachineState(MachineState state) {
             for (auto cbk : m_stateResponseCallbacks) {
                 cbk(state);
             }

@@ -2,7 +2,7 @@
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
-#include "core/machine/machineconfigurationparser.h"
+#include "core/machine/physicalmachineconfigurationparser.h"
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>
@@ -150,7 +150,7 @@ void Communicator::processNewToolPosition()
 {
     QVector3D toolPosition;
 //    if (!(m_deviceState == DeviceCheck && m_streamer->processedCommandIndex() < m_form->currentModel().rowCount() - 1)) {
-    if (!(m_deviceState == DeviceState::Check && !m_streamer->isLastCommandProcessed())) {
+    if (!(m_machineState == MachineState::Check && !m_streamer->isLastCommandProcessed())) {
         toolPosition = m_machinePos;
         //m_form->toolDrawer().setToolPosition(m_form->codeDrawer().getIgnoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
@@ -195,7 +195,7 @@ void Communicator::processWorkOffset(QString data)
 
 void Communicator::processStatus(QString data)
 {
-    DeviceState state = DeviceState::Unknown;
+    MachineState state = MachineState::Unknown;
 
     m_statusReceived = true;
 
@@ -221,16 +221,16 @@ void Communicator::processStatus(QString data)
 
     match = stx.match(data);
     if (match.hasMatch()) {
-        state = m_deviceStatesDictionary.key(match.captured(1), DeviceState::Unknown);
+        state = m_machineStateDictionary.key(match.captured(1), MachineState::Unknown);
 
         // Update status
-        if (state != m_deviceState) {
+        if (state != m_machineState) {
             // emit deviceStateChanged(state);
-            m_sb->onDeviceStateChanged(state);
+            m_sb->onMachineStateChanged(state);
         }
-        m_sb->onDeviceState(state);
+        m_sb->onMachineState(state);
 
-        emit deviceStateReceived(state);
+        emit machineStateReceived(state);
 
         // Update controls
         // moved to deviceStateReceived handler
@@ -250,7 +250,7 @@ void Communicator::processStatus(QString data)
 
         // Test for job complete
         if ((m_senderState == SenderState::Stopping) &&
-            ((state == DeviceState::Idle && m_deviceState == DeviceState::Run) || state == DeviceState::Check))
+            ((state == MachineState::Idle && m_machineState == MachineState::Run) || state == MachineState::Check))
         {
             completeTransfer();
         }
@@ -262,7 +262,7 @@ void Communicator::processStatus(QString data)
 
         if (m_aborting) {
             switch (state) {
-                case DeviceState::Idle: // Idle
+                case MachineState::Idle: // Idle
                     if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
                         m_aborting = false;
                         restoreParserState();
@@ -270,9 +270,9 @@ void Communicator::processStatus(QString data)
                         return;
                     }
                     break;
-                case DeviceState::Hold0: // Hold
-                case DeviceState::Hold1:
-                case DeviceState::Queue:
+                case MachineState::Hold0: // Hold
+                case MachineState::Hold1:
+                case MachineState::Queue:
                     if (!m_reseting && compareCoordinates(x, y, z)) {
                         x = sNan;
                         y = sNan;
@@ -285,17 +285,17 @@ void Communicator::processStatus(QString data)
                         z = pos.z();
                     }
                     break;
-                case DeviceState::Unknown:
-                case DeviceState::Alarm:
-                case DeviceState::Run:
-                case DeviceState::Home:
-                case DeviceState::Check:
-                case DeviceState::Door0:
-                case DeviceState::Door1:
-                case DeviceState::Door2:
-                case DeviceState::Door3:
-                case DeviceState::Jog:
-                case DeviceState::Sleep:
+                case MachineState::Unknown:
+                case MachineState::Alarm:
+                case MachineState::Run:
+                case MachineState::Home:
+                case MachineState::Check:
+                case MachineState::Door0:
+                case MachineState::Door1:
+                case MachineState::Door2:
+                case MachineState::Door3:
+                case MachineState::Jog:
+                case MachineState::Sleep:
                     break;
             }
         }
@@ -306,7 +306,7 @@ void Communicator::processStatus(QString data)
     processFeedSpindleSpeed(data);
 
     // Store device state
-    setDeviceStateAndEmitSignal(state);
+    setMachineStateAndEmitSignal(state);
 
     processNewToolPosition();
 
@@ -320,10 +320,10 @@ void Communicator::processStatus(QString data)
 
 void Communicator::processDeviceConfiguration(QStringList response)
 {
-    MachineConfigurationParser configurationParser(m_configuration->machineModule());
+    PhysicalMachineConfigurationParser configurationParser(m_configuration->machineModule());
     auto configuration = configurationParser.parse(response);
 
-    emit deviceConfigurationReceived(configuration);
+    emit machineConfigurationReceived(configuration);
 
     // static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
@@ -754,7 +754,7 @@ void Communicator::processWelcomeMessageDetected(QString message)
     emit welcomeMessageReceived(message);
 
     setSenderStateAndEmitSignal(SenderState::Stopped);
-    setDeviceStateAndEmitSignal(DeviceState::Unknown);
+    setMachineStateAndEmitSignal(MachineState::Unknown);
 
     // m_streamer->reset();
     //m_form->fileCommandIndex() = 0;

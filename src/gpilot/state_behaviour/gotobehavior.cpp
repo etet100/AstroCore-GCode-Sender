@@ -11,9 +11,9 @@ GoToBehavior::GoToBehavior(QPointF target, int feedRate, QObject *parent)
     , m_feedRate(feedRate)
 {}
 
-void GoToBehavior::onDeviceState(DeviceState state)
+void GoToBehavior::onMachineState(MachineState state)
 {
-    if (m_stage == CommandSent && state == DeviceState::Run) {
+    if (m_stage == CommandSent && state == MachineState::Run) {
         m_stage = WaitingForMovementEnd;
         // // Movement completed, return to previous state or idle
         // if (m_previous) {
@@ -21,7 +21,7 @@ void GoToBehavior::onDeviceState(DeviceState state)
         // } else {
         //     emit transition(this, new IdleBehavior(this));
         // }
-    } else if (state == DeviceState::Idle && m_stage == WaitingForMovementEnd) {
+    } else if (state == MachineState::Idle && m_stage == WaitingForMovementEnd) {
         m_stage = Completed;
 
         emit transition(this, new IdleBehavior(this));

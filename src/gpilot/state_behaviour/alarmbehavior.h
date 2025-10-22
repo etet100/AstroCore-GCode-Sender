@@ -15,7 +15,7 @@ class AlarmBehavior : public StateBehavior
         explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
         QString name() override { return "Alarm"; }
 
-        void onDeviceStateChanged(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         // void onConnectionStateChanged(ConnectionState state) override;

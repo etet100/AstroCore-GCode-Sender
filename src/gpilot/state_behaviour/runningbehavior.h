@@ -15,7 +15,7 @@ class RunningBehavior : public StateBehavior
         QString name() override { return "Running"; }
         // bool isJoggingAllowed() override { return false; } // Cannot jog while running
         // bool isHomingAllowed() override { return false; } // Cannot home while running
-        void onDeviceStateChanged(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;

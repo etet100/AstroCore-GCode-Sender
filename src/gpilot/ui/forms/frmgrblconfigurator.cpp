@@ -343,7 +343,7 @@ void frmGrblConfigurator::moveEvent(QMoveEvent *me)
     }
 }
 
-void frmGrblConfigurator::onConfigurationReceived(MachineConfiguration configuration)
+void frmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration configuration)
 {
     Q_UNUSED(configuration);
 
@@ -351,7 +351,7 @@ void frmGrblConfigurator::onConfigurationReceived(MachineConfiguration configura
 
     disconnect(
         m_communicator,
-        &Communicator::deviceConfigurationReceived,
+        &Communicator::machineConfigurationReceived,
         this,
         &frmGrblConfigurator::onConfigurationReceived
     );
@@ -446,7 +446,7 @@ void frmGrblConfigurator::update()
 
     connect(
         m_communicator,
-        &Communicator::deviceConfigurationReceived,
+        &Communicator::machineConfigurationReceived,
         this,
         &frmGrblConfigurator::onConfigurationReceived
     );

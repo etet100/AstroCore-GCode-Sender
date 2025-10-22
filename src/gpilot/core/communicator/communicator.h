@@ -6,7 +6,7 @@
 #include "core/config/configuration.h"
 #include "io/connection/connection.h"
 #include "scripting/scriptvars.h"
-#include "core/machine/machineconfiguration.h"
+#include "core/machine/physicalmachineconfiguration.h"
 #include "core/jogger/jogger.h"
 #include "state_behaviour/behaviors.h"
 #include <QTimer>
@@ -49,8 +49,8 @@ class Communicator : public QObject
         void stopUpdatingState();
         void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
-        const DeviceState& deviceState() const { return m_deviceState; }
-        MachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
+        const MachineState& machineState() const { return m_machineState; }
+        PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
         QVector3D machinePos() const { return m_machinePos; }
         void processWorkOffset(QString data);
         void sendStreamerCommandsUntilBufferIsFull();
@@ -77,7 +77,7 @@ class Communicator : public QObject
         Connection *m_connection = nullptr;;
         Configuration *m_configuration;
         GCode *m_streamer = nullptr;
-        MachineConfiguration *m_machineConfiguration = nullptr;
+        PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
         Jogger m_jogger;
 
         // Queues
@@ -86,7 +86,7 @@ class Communicator : public QObject
 
         // States
         SenderState m_senderState;
-        DeviceState m_deviceState;
+        MachineState m_machineState;
         QPointer<StateBehavior> m_sb = nullptr;
         QPointer<StateBehavior> m_nsb = nullptr; // next state behavior to be set
 
@@ -120,10 +120,10 @@ class Communicator : public QObject
         QTimer m_timerStateQuery;
 
         // Dictionary
-        QMap<DeviceState, QString> m_deviceStatesDictionary;
+        QMap<MachineState, QString> m_machineStateDictionary;
 
         void setSenderStateAndEmitSignal(SenderState);
-        void setDeviceStateAndEmitSignal(DeviceState);
+        void setMachineStateAndEmitSignal(MachineState);
         void restoreOffsets();
         int bufferLength();
         void processOffsetsVars(QString response);
@@ -133,7 +133,6 @@ class Communicator : public QObject
         bool compareCoordinates(double x, double y, double z);
         double toMetric(double value);
         double toInches(double value);
-
         void processStatus(QString data);
         bool processCommandResponse(QString data);
         void processUnhandledResponse(QString data);
@@ -146,12 +145,9 @@ class Communicator : public QObject
         void storeParserState();
         void restoreParserState();
         void completeTransfer();
-
         void resetStateVariables();
         void processDeviceConfiguration(QStringList response);
-
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
-
         bool finalizeExecute(StateBehavior *sb);
 
     private slots:
@@ -170,12 +166,11 @@ class Communicator : public QObject
         void welcomeMessageReceived(QString message);
         void senderStateReceived(SenderState state);
         void senderStateChanged(SenderState state);
-        void deviceStateChanged(DeviceState state);
-        void deviceConfigurationReceived(MachineConfiguration configuration);
+        void machineStateChanged(MachineState state);
+        void machineConfigurationReceived(PhysicalMachineConfiguration configuration);
         void machinePosChanged(QVector3D pos);
         void workPosChanged(QVector3D pos);
-        // emitted after status response received, if state changed, may be emitted together with deviceStateChanged!
-        void deviceStateReceived(DeviceState state);
+        void machineStateReceived(MachineState state);
         void spindleStateReceived(bool state);
         void pinStateReceived(QString state);
         void parserStateReceived(QString state);

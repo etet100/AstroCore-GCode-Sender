@@ -358,8 +358,8 @@ void frmMain::initializeCommunicator()
 
     connect(m_communicator, &Communicator::machinePosChanged, this, &frmMain::onMachinePosChanged);
     connect(m_communicator, &Communicator::workPosChanged, this, &frmMain::onWorkPosChanged);
-    connect(m_communicator, &Communicator::deviceStateReceived, this, &frmMain::onDeviceStateReceived);
-    connect(m_communicator, &Communicator::deviceStateChanged, this, &frmMain::onDeviceStateChanged);
+    connect(m_communicator, &Communicator::machineStateReceived, this, &frmMain::onMachineStateReceived);
+    connect(m_communicator, &Communicator::machineStateChanged, this, &frmMain::onMachineStateChanged);
     connect(m_communicator, &Communicator::senderStateReceived, this, &frmMain::onSenderStateReceived);
     connect(m_communicator, SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
     connect(m_communicator, &Communicator::floodStateReceived, this, &frmMain::onFloodStateReceived);
@@ -380,7 +380,7 @@ void frmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::toolPositionReceived, this, &frmMain::onToolPositionReceived);
     connect(m_communicator, &Communicator::transferCompleted, this, &frmMain::onTransferCompleted);
     connect(m_communicator, &Communicator::aborted, this, &frmMain::onAborted);
-    connect(m_communicator, &Communicator::deviceConfigurationReceived, this, [this](MachineConfiguration configuration) {
+    connect(m_communicator, &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
     // connect(m_communicator, &Communicator::statusReceived, this, [this]() {
@@ -1580,7 +1580,7 @@ void frmMain::onWorkPosChanged(QVector3D pos)
     ui->state->setWorkCoordinates(pos);
 }
 
-void frmMain::onDeviceStateChanged(DeviceState state)
+void frmMain::onMachineStateChanged(MachineState state)
 {
     ui->state->setState(state);
 
@@ -1590,7 +1590,7 @@ void frmMain::onDeviceStateChanged(DeviceState state)
     // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&                                                        (m_communicator->senderState() != SenderStopping)));
 }
 
-void frmMain::onDeviceStateReceived(DeviceState state)
+void frmMain::onMachineStateReceived(MachineState state)
 {
     // Update controls state
     // ui->control->updateControlsState(state == DeviceState::Idle, m_communicator->deviceState());
@@ -1721,7 +1721,7 @@ void frmMain::onCommandProcessed(int tableIndex, QString response)
     }
 }
 
-void frmMain::onConfigurationReceived(MachineConfiguration configuration)
+void frmMain::onConfigurationReceived(PhysicalMachineConfiguration configuration)
 {
     ui->state->setUnits(configuration.units());
 }
@@ -3179,7 +3179,7 @@ void frmMain::updateControlsState()
 
     if (!portOpened) {
         ui->state->setStatusText(tr("Not connected"), "palette(button)", "palette(text)");
-        emit deviceStateChanged(-1);
+        emit machineStateChanged(-1);
     }
 
     this->setWindowTitle(m_programFileName.isEmpty() ? qApp->applicationDisplayName()
@@ -3564,9 +3564,9 @@ void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
     m_toolDrawer.setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
     SenderState senderState = m_communicator->senderState();
-    DeviceState deviceState = m_communicator->deviceState();
+    MachineState deviceState = m_communicator->machineState();
     if (((senderState == SenderState::Transferring) || (senderState == SenderState::Stopping)
-         || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused)) && deviceState != DeviceState::Check) {
+         || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused)) && deviceState != MachineState::Check) {
         GCodeViewParser *parser = m_currentDrawer->viewParser();
 
         bool toolOntoolpath = false;

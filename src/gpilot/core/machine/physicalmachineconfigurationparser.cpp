@@ -1,12 +1,12 @@
-#include "machineconfigurationparser.h"
+#include "physicalmachineconfigurationparser.h"
 #include <QRegularExpression>
 
-MachineConfigurationParser::MachineConfigurationParser(ConfigurationMachine &configuration)
+PhysicalMachineConfigurationParser::PhysicalMachineConfigurationParser(ConfigurationMachine &configuration)
     : m_configuration(configuration)
 {
 }
 
-const MachineConfiguration MachineConfigurationParser::parse(QStringList rawData)
+const PhysicalMachineConfiguration PhysicalMachineConfigurationParser::parse(QStringList rawData)
 {
     static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
@@ -19,7 +19,7 @@ const MachineConfiguration MachineConfigurationParser::parse(QStringList rawData
         }
     }
 
-    MachineConfiguration machineConfiguration(
+    PhysicalMachineConfiguration machineConfiguration(
         rawMachineConfiguration,
         m_configuration
     );

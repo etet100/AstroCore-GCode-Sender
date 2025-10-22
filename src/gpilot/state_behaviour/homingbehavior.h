@@ -13,7 +13,7 @@ class HomingBehavior : public StateBehavior
         explicit HomingBehavior(QObject *parent = nullptr);
         QString name() override { return "Homing"; }
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        void onDeviceStateChanged(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
     private:

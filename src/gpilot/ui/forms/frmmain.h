@@ -99,7 +99,7 @@ signals:
     void responseReceived(QString command, int tableIndex, QString response);
     void statusReceived(QString status);
     void senderStateChanged(int state);
-    void deviceStateChanged(int state);
+    void machineStateChanged(int state);
     void settingsAboutToLoad();
     void settingsLoaded();
     void settingsAboutToSave();
@@ -172,8 +172,8 @@ private slots:
 
     void onMachinePosChanged(QVector3D pos);
     void onWorkPosChanged(QVector3D pos);
-    void onDeviceStateChanged(DeviceState state);
-    void onDeviceStateReceived(DeviceState state);
+    void onMachineStateChanged(MachineState state);
+    void onMachineStateReceived(MachineState state);
     void onSenderStateReceived(SenderState state);
     void onSpindleStateReceived(bool state);
     void onFloodStateReceived(bool state);
@@ -188,7 +188,7 @@ private slots:
     void onCommandSent(CommandAttributes commandAttributes);
     // @TODO signal does not make sense, it has to done in other way
     void onCommandProcessed(int tableIndex, QString response);
-    void onConfigurationReceived(MachineConfiguration);
+    void onConfigurationReceived(PhysicalMachineConfiguration);
     void onToolPositionReceived(QVector3D pos);
     void onTransferCompleted();
     void onConnectionError(QString error);

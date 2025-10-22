@@ -3,9 +3,9 @@
 // Copyright 2024 BTS
 
 #include "core/globals.h"
-#include "machineconfiguration.h"
+#include "physicalmachineconfiguration.h"
 
-MachineConfiguration::MachineConfiguration(QMap<int, double> settings, ConfigurationMachine &configuration)
+PhysicalMachineConfiguration::PhysicalMachineConfiguration(QMap<int, double> settings, ConfigurationMachine &configuration)
 {
     if (settings.contains(13)) m_units = setUnits(settings[13]);
     if (settings.contains(20)) m_softLimitsEnabled = (bool)settings[20];
@@ -65,14 +65,14 @@ MachineConfiguration::MachineConfiguration(QMap<int, double> settings, Configura
     m_raw = settings;
 }
 
-Units MachineConfiguration::setUnits(int setting)
+Units PhysicalMachineConfiguration::setUnits(int setting)
 {
     if (setting == 1) return Units::Inches;
 
     return Units::Millimeters;
 }
 
-double MachineConfiguration::negativeValue(double value, bool negative)
+double PhysicalMachineConfiguration::negativeValue(double value, bool negative)
 {
     return negative ? -value : value;
 }

@@ -12,13 +12,13 @@ IdleBehavior::IdleBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-void IdleBehavior::onDeviceStateChanged(DeviceState state)
+void IdleBehavior::onMachineStateChanged(MachineState state)
 {
     // Handle device state changes
-    if (state == DeviceState::Run) {
+    if (state == MachineState::Run) {
         // Machine started running - transition to running behavior
         // emit transition(this, new RunningBehavior(this));
-    } else if (state == DeviceState::Alarm) {
+    } else if (state == MachineState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }

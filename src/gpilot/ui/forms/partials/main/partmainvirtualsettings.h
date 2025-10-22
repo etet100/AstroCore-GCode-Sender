@@ -6,7 +6,7 @@
 #define PARTMAINVIRTUALSETTINGS_H
 
 #include "core/globals.h"
-#include "core/machine/machineconfiguration.h"
+#include "core/machine/physicalmachineconfiguration.h"
 #include <QWidget>
 
 namespace Ui {
@@ -23,7 +23,7 @@ class PartMainVirtualSettings : public QWidget
 
         void extracted();
         void
-        deviceConfigurationReceived(MachineConfiguration &machineConfiguration);
+        deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
 
     private:
         Ui::PartMainVirtualSettings *ui;

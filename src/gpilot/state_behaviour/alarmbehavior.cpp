@@ -13,11 +13,11 @@ AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
 {
 }
 
-void AlarmBehavior::onDeviceStateChanged(DeviceState state)
+void AlarmBehavior::onMachineStateChanged(MachineState state)
 {
     qDebug() << "[AlarmBehavior] Device State Changed:" << static_cast<int>(state);
     // Handle device state changes
-    if (state == DeviceState::Idle) {
+    if (state == MachineState::Idle) {
         emit transition(this, new IdleBehavior());
     }
 }

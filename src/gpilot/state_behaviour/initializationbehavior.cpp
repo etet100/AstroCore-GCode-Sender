@@ -14,13 +14,13 @@ InitializationBehavior::InitializationBehavior(QObject *parent) : StateBehavior{
 
 }
 
-void InitializationBehavior::onDeviceStateChanged(DeviceState state)
+void InitializationBehavior::onMachineStateChanged(MachineState state)
 {
     // Handle device state changes
-    if (state == DeviceState::Run) {
+    if (state == MachineState::Run) {
         // Machine started running - transition to running behavior
         // emit transition(this, new RunningBehavior(this));
-    } else if (state == DeviceState::Alarm) {
+    } else if (state == MachineState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }

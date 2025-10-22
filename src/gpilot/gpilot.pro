@@ -111,7 +111,8 @@ SOURCES += main.cpp\
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/loader/heightmaploader.cpp \
     core/jogger/jogger.cpp \
-    core/machine/machineconfigurationparser.cpp \
+    core/machine/physicalmachineconfiguration.cpp \
+    core/machine/physicalmachineconfigurationparser.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
@@ -160,7 +161,6 @@ SOURCES += main.cpp\
     core/gcode/loader/gcodeloader.cpp \
     core/gcode/loader/gcodethreadedloader.cpp \
     core/heightmap/heightmap.cpp \
-    core/machine/machineconfiguration.cpp \
     modules/camera/camera.cpp \
     # module/camera/qvideoframeconversionhelper.cpp \
     # module/camera/videosurface.cpp \
@@ -244,7 +244,8 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/loader/heightmaploader.h \
     core/jogger/jogger.h \
-    core/machine/machineconfigurationparser.h \
+    core/machine/physicalmachineconfiguration.h \
+    core/machine/physicalmachineconfigurationparser.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
@@ -294,7 +295,6 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/loader/gcodethreadedloader.h \
     core/globals.h \
     core/heightmap/heightmap.h \
-    core/machine/machineconfiguration.h \
     modules/camera/camera.h \
     # module/camera/qvideoframeconversionhelper.h \
     # module/camera/videosurface.h \

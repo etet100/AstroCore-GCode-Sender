@@ -2,18 +2,18 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#ifndef MACHINECONFIGURATION_H
-#define MACHINECONFIGURATION_H
+#ifndef PHYSICALMACHINECONFIGURATION_H
+#define PHYSICALMACHINECONFIGURATION_H
 
 #include <QVector3D>
 #include <QMap>
 #include "core/globals.h"
 #include "core/config/module//configurationmachine.h"
 
-class MachineConfiguration
+class PhysicalMachineConfiguration
 {
     public:
-        MachineConfiguration(QMap<int, double> settings, ConfigurationMachine &configuration);
+        PhysicalMachineConfiguration(QMap<int, double> settings, ConfigurationMachine &configuration);
         bool homingEnabled() { return m_homingEnabled; }
         int axisCount() { return m_axisCount; }
         Units units() { return m_units; }
@@ -49,8 +49,8 @@ class MachineConfiguration
         HomingDirs m_homingDirs;
         QMap<int, double> m_raw;
 
-            Units setUnits(int setting);
+        Units setUnits(int setting);
         double negativeValue(double value, bool negative);
 };
 
-#endif // MACHINECONFIGURATION_H
+#endif // PHYSICALMACHINECONFIGURATION_H

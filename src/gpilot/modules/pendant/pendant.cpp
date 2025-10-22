@@ -144,7 +144,7 @@ void Pendant::sendState()
     message.x = pos.x();
     message.y = pos.y();
     message.z = pos.z();
-    message.machineState = (uint8_t) m_communicator.deviceState();
+    message.machineState = (uint8_t) m_communicator.machineState();
 
     message.footer.crc = calcCRC8((uint8_t*)&message, sizeof(StateMessage) - sizeof(Footer));
     m_socket->write((char*)&message, sizeof(StateMessage));

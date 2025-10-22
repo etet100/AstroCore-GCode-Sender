@@ -28,7 +28,7 @@ StateBehavior::Result HomingBehavior::onEntry(Communicator *communicator, StateB
     return Result::Ok;
 }
 
-void HomingBehavior::onDeviceStateChanged(DeviceState state)
+void HomingBehavior::onMachineStateChanged(MachineState state)
 {
     // Handle device state changes during homing process
     // if (state == DeviceState::Idle && m_homingStarted) {
@@ -69,7 +69,7 @@ bool HomingBehavior::onCommandResponse(QString command, QString response, QStrin
             // Got a response but it's not an error
             // Homing might be in progress or just finished
             // Some controllers don't give direct response about homing completion
-            // So we check device state in onDeviceStateChanged
+            // So we check machine state in onMachineStateChanged
 
             qDebug() << "Test";
             qDebug() << "Test" << response;

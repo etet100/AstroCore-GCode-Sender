@@ -13,7 +13,7 @@ ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-void ResetBehavior::onDeviceState(DeviceState state)
+void ResetBehavior::onMachineState(MachineState state)
 {
     if (m_stage != Completed) {
         return;
@@ -21,11 +21,11 @@ void ResetBehavior::onDeviceState(DeviceState state)
 
     qDebug() << "[ResetBehavior] Device State:" << static_cast<int>(state);
     // // Handle device state changes
-    if (state == DeviceState::Idle) {
+    if (state == MachineState::Idle) {
         emit transition(this, new IdleBehavior());
 
         return;
-    } else if (state == DeviceState::Alarm) {
+    } else if (state == MachineState::Alarm) {
         emit transition(this, new AlarmBehavior());
 
         return;

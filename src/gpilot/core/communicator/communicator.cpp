@@ -16,22 +16,22 @@ Communicator::Communicator(
     m_configuration(configuration),
     m_jogger(*this, configuration->joggingModule()),
     m_timerStateQuery(this),
-    m_deviceStatesDictionary({
-        {DeviceState::Unknown, "Unknown"},
-        {DeviceState::Idle, "Idle"},
-        {DeviceState::Alarm, "Alarm"},
-        {DeviceState::Run, "Run"},
-        {DeviceState::Home, "Home"},
-        {DeviceState::Hold0, "Hold:0"},
-        {DeviceState::Hold1, "Hold:1"},
-        {DeviceState::Queue, "Queue"},
-        {DeviceState::Check, "Check"},
-        {DeviceState::Door0, "Door:0"},
-        {DeviceState::Door1, "Door:1"},
-        {DeviceState::Door2, "Door:2"},
-        {DeviceState::Door3, "Door:3"},
-        {DeviceState::Jog, "Jog"},
-        {DeviceState::Sleep, "Sleep"}
+    m_machineStateDictionary({
+        {MachineState::Unknown, "Unknown"},
+        {MachineState::Idle, "Idle"},
+        {MachineState::Alarm, "Alarm"},
+        {MachineState::Run, "Run"},
+        {MachineState::Home, "Home"},
+        {MachineState::Hold0, "Hold:0"},
+        {MachineState::Hold1, "Hold:1"},
+        {MachineState::Queue, "Queue"},
+        {MachineState::Check, "Check"},
+        {MachineState::Door0, "Door:0"},
+        {MachineState::Door1, "Door:1"},
+        {MachineState::Door2, "Door:2"},
+        {MachineState::Door3, "Door:3"},
+        {MachineState::Jog, "Jog"},
+        {MachineState::Sleep, "Sleep"}
     })
 {
     m_reseting = false;
@@ -58,7 +58,7 @@ Communicator::Communicator(
 
 void Communicator::resetStateVariables()
 {
-    m_deviceState = DeviceState::Unknown;
+    m_machineState = MachineState::Unknown;
     m_senderState = SenderState::Unknown;
     m_machinePos = QVector3D(0, 0, 0);
     m_workPos = QVector3D(0, 0, 0);
@@ -372,11 +372,11 @@ void Communicator::setSenderStateAndEmitSignal(SenderState state)
     emit senderStateReceived(state);
 }
 
-void Communicator::setDeviceStateAndEmitSignal(DeviceState state)
+void Communicator::setMachineStateAndEmitSignal(MachineState state)
 {
-    if (m_deviceState != state) {
-        m_deviceState = state;
-        emit deviceStateChanged(state);
+    if (m_machineState != state) {
+        m_machineState = state;
+        emit machineStateChanged(state);
     }
 }
 

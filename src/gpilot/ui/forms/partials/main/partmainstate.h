@@ -18,7 +18,7 @@ class partMainState : public QWidget
         explicit partMainState(QWidget *parent);
         void initialize(const Configuration &configuration);
         ~partMainState();
-        void setState(DeviceState);
+        void setState(MachineState);
         void setWorkCoordinates(QVector3D);
         void setMachineCoordinates(QVector3D);
         void setUnits(Units units);
@@ -27,9 +27,9 @@ class partMainState : public QWidget
     private:
         Ui::partMainState *ui;
       //  const Configuration &m_configuration;
-        QMap<DeviceState, QString> m_statusCaptions;
-        QMap<DeviceState, QString> m_statusBackColors;
-        QMap<DeviceState, QString> m_statusForeColors;
+        QMap<MachineState, QString> m_statusCaptions;
+        QMap<MachineState, QString> m_statusBackColors;
+        QMap<MachineState, QString> m_statusForeColors;
 
         void initializeColorsAndCaptions();
 

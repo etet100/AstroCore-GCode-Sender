@@ -12,7 +12,7 @@ class IdleBehavior : public StateBehavior
     public:
         explicit IdleBehavior(QObject *parent = nullptr);
         QString name() override { return "Idle"; }
-        void onDeviceStateChanged(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 };

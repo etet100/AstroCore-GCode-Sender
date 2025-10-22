@@ -122,7 +122,7 @@ enum class SenderState {
     Pausing2 = 6
 };
 
-enum class DeviceState : int {
+enum class MachineState : int {
     Unknown = 0,
     Idle = 1,
     Alarm = 2,
