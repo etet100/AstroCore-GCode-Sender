@@ -316,8 +316,10 @@ void Communicator::processDeviceConfiguration(QStringList response)
 {
     PhysicalMachineConfigurationParser configurationParser(m_configuration->machineModule());
     auto configuration = configurationParser.parse(response);
+    m_machineConfiguration = &configuration;
 
     emit machineConfigurationReceived(configuration);
+
 
     // static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
