@@ -11,18 +11,18 @@ ArcsToLines::ArcsToLines(GCode &data) : Converter(data)
 
 GCode &ArcsToLines::convert()
 {
-    for (auto &cmd : m_data) {
-        if (cmd.isArc()) {
-            // QList<GCodeCommand> lineCommands = cmd.toLines();
-            // if (!lineCommands.isEmpty()) {
-            //     cmd = lineCommands.takeFirst();
-            //     for (const auto &lineCmd : lineCommands) {
-            //         // m_data.insertCommandAfter(cmd, lineCmd);
-            //         cmd = lineCmd;
-            //     }
-            // }
-        }
-    }
+    // for (auto &cmd : m_data) {
+    //     if (cmd.isArc()) {
+    //         // QList<GCodeCommand> lineCommands = cmd.toLines();
+    //         // if (!lineCommands.isEmpty()) {
+    //         //     cmd = lineCommands.takeFirst();
+    //         //     for (const auto &lineCmd : lineCommands) {
+    //         //         // m_data.insertCommandAfter(cmd, lineCmd);
+    //         //         cmd = lineCmd;
+    //         //     }
+    //         // }
+    //     }
+    // }
 
     return m_data;
 }

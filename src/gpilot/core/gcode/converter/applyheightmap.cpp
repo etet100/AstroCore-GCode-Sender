@@ -43,6 +43,6 @@ ApplyHeightmap::ApplyHeightmap(GCode &data, const Heightmap &heightmap)
 {
     State state;
 
-    for (GCodeItem &cmd : m_data) {
-    }
+    // for (GCodeItem &cmd : m_data) {
+    // }
 }

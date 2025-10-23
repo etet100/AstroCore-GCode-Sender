@@ -52,12 +52,12 @@ struct GCodeItem
     }
 };
 
-class GCode : public QObject , public QList<GCodeItem>
+class GCode : public QObject
 {
     Q_OBJECT
 
     public:
-        explicit GCode( QObject *parent = nullptr);
+        explicit GCode(QObject *parent = nullptr);
         //void setData(QList<GCodeItem> data);
         void reset(int commandIndex = 0);
         void resetProcessed(int commandIndex = 0);
@@ -74,11 +74,40 @@ class GCode : public QObject , public QList<GCodeItem>
         int lastCommandIndex();
         bool isLastCommandProcessed();
         void commandSent();
+        void commandSkipped();
+        GCodeItem& operator [] (int index) { return m_data[index]; }
+        int count() { return m_data.count(); }
+        bool empty() { return m_data.isEmpty(); }
+        void clear() { m_data.clear(); }
+        GCode& operator << (const GCodeItem& item) {
+            m_data.append(item);
+
+            return *this;
+        }
+        GCode& operator << (const GCode& source) {
+            for (const GCodeItem& item : source.m_data) {
+                m_data.append(item);
+            }
+            return *this;
+        }
+        void reserve(int size) { m_data.reserve(size); }
+        void insert(int index, const GCodeItem& item) {
+            m_data.insert(index, item);
+        }
+        void removeAt(int index) {
+            m_data.removeAt(index);
+        }
+        void erase(int begin, int end) {
+            m_data.erase(m_data.begin() + begin, m_data.begin() + end);
+        }
+        QList<GCodeItem>::iterator begin() { return m_data.begin(); }
+        QList<GCodeItem>::iterator end() { return m_data.end(); }
 
     private:
         int m_commandIndex;
         int m_processedCommandIndex;
         GcodeParser m_parser;
+        QList<GCodeItem> m_data;
 
     signals:
         void progressChanged(int progress);

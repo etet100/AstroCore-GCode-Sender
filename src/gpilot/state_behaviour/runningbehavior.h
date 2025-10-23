@@ -21,11 +21,12 @@ class RunningBehavior : public StateBehavior
         // Running-specific methods
         void handleFeedOverride(int percentage);
         void handleSpindleOverride(int percentage);
-
     private:
         int m_feedOverride;
         int m_spindleOverride;
         GCode &m_program;
+
+        void sendStreamerCommandsUntilBufferIsFull();
 };
 
 #endif // RUNNINGBEHAVIOR_H

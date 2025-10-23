@@ -21,7 +21,7 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
     if (m_filtered) {
         rowNumber = m_filteredRows[index.row()];
     }
-    GCodeItem item = m_data.at(rowNumber);
+    GCodeItem item = m_data[rowNumber];
 
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         switch ((GCodeTableColumn)index.column())
@@ -104,7 +104,7 @@ bool GCodeTableModel::removeRow(int row, const QModelIndex &parent)
 bool GCodeTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     beginRemoveRows(parent, row, row + count - 1);
-    m_data.erase(m_data.begin() + row, m_data.begin() + row + count);
+    m_data.erase(row, row + count);
     endRemoveRows();
 
     return true;
@@ -121,7 +121,7 @@ int GCodeTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
 
-    return m_filtered ? m_filteredRows.size() : m_data.size();
+    return m_filtered ? m_filteredRows.size() : m_data.count();
 }
 
 int GCodeTableModel::columnCount(const QModelIndex &parent) const

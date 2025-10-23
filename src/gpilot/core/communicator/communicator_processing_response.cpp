@@ -13,7 +13,9 @@ void Communicator::onConnectionLineReceived(QString data)
     // qDebug() << "[Communicator][Resp] " + data;
 
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
-    assert(data.length() < 100);
+    //The longest line i have seen is 94 characters:
+    //"<Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>"
+    assert(data.length() < 150);
 
     if (data.startsWith("[MSG:")) {
         processMessage(data);

@@ -781,39 +781,44 @@ void frmMain::on_cmdFileOpen_clicked()
 
 void frmMain::on_cmdFileSend_clicked()
 {
-    if (m_currentModel->rowCount() == 1) return;
+    m_program.reset();
+    m_communicator->execute(new RunningBehavior(
+        m_program
+    ));
 
-    on_cmdFileReset_clicked();
+//     if (m_currentModel->rowCount() == 1) return;
 
-    m_startTime = QDateTime::currentSecsSinceEpoch();
+//     on_cmdFileReset_clicked();
 
-    m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
+//     m_startTime = QDateTime::currentSecsSinceEpoch();
 
-    ui->jog->storeAndResetKeyboardControl();
-    // m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
-    // ui->chkKeyboardControl->setChecked(false);
+//     m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
 
-    m_communicator->storeParserState();
+//     ui->jog->storeAndResetKeyboardControl();
+//     // m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
+//     // ui->chkKeyboardControl->setChecked(false);
 
-#ifdef WINDOWS
-    // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-    //     if (m_taskBarProgress) {
-    //         m_taskBarProgress->setMaximum(m_currentModel->rowCount() - 2);
-    //         m_taskBarProgress->setValue(0);
-    //         m_taskBarProgress->show();
-    //     }
-    // }
-#endif
+//     m_communicator->storeParserState();
 
-    updateControlsState();
-    ui->cmdFilePause->setFocus();
+// #ifdef WINDOWS
+//     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+//     //     if (m_taskBarProgress) {
+//     //         m_taskBarProgress->setMaximum(m_currentModel->rowCount() - 2);
+//     //         m_taskBarProgress->setValue(0);
+//     //         m_taskBarProgress->show();
+//     //     }
+//     // }
+// #endif
 
-    if (m_configuration.senderModule().useProgramStartCommands())
-        m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().programStartCommands());
+//     updateControlsState();
+//     ui->cmdFilePause->setFocus();
 
-    // rather temporary solution
-    // m_program->setModel(&m_programModel);
-    m_communicator->sendStreamerCommandsUntilBufferIsFull();
+//     if (m_configuration.senderModule().useProgramStartCommands())
+//         m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().programStartCommands());
+
+//     // rather temporary solution
+//     // m_program->setModel(&m_programModel);
+//     m_communicator->sendStreamerCommandsUntilBufferIsFull();
 }
 
 void frmMain::on_cmdFilePause_clicked(bool checked)
@@ -1988,7 +1993,7 @@ void frmMain::onActSendFromLineTriggered()
     ui->cmdFilePause->setFocus();
 
     m_program.reset(commandIndex);
-    m_communicator->sendStreamerCommandsUntilBufferIsFull();
+    // m_communicator->sendStreamerCommandsUntilBufferIsFull();
 }
 
 void frmMain::onSlbSpindleValueUserChanged()
@@ -2753,7 +2758,7 @@ void frmMain::applyLoaderGCode(GCodeLoaderData *data)
     // Prepare model
     m_program.clear();
     m_program.reset();
-    m_program.append(*data->gcode);
+    m_program << *data->gcode;
 
     m_programModel.insertRow(m_programModel.rowCount());
 
@@ -2862,7 +2867,7 @@ void frmMain::loadLines(QList<std::string> data)
             item.lineNumber = parser.getCommandNumber();
             item.args = args;
 
-            m_program.append(item);
+            m_program << item;
         }
 
         remaining--;

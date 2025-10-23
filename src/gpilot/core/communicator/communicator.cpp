@@ -391,31 +391,36 @@ int Communicator::bufferLength()
     return length;
 }
 
-// send commands until buffer is full
-void Communicator::sendStreamerCommandsUntilBufferIsFull()
+bool Communicator::willOverflowBuffer(QString command)
 {
-    if (m_queue.length() > 0) return;
-
-    QString command = m_streamer->command();
-    static QRegularExpression M230("(M0*2|M30|M0*6)(?!\\d)");
-
-    qDebug() <<
-        "bufferLength: " << bufferLength() <<
-        "command.length: " << command.length() <<
-        "commandIndex: " << m_streamer->commandIndex() <<
-        "hasMoreCommands: " << m_streamer->hasMoreCommands() <<
-        "m_commands.isEmpty: " << (!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230));
-
-    while ((bufferLength() + command.length() + 1) <= BUFFERLENGTH
-           && m_streamer->hasMoreCommands() /* commandIndex() < m_form->currentModel().rowCount() - 1 */
-           && !(!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230))
-    ) {
-        m_streamer->commandSent();
-        sendCommand(CommandSource::Program, command, m_streamer->commandIndex());
-        m_streamer->advanceCommandIndex();
-        command = m_streamer->command();
-    }
+    return (bufferLength() + command.length() + 1) > BUFFERLENGTH;
 }
+
+// send commands until buffer is full
+// void Communicator::sendStreamerCommandsUntilBufferIsFull()
+// {
+//     if (m_queue.length() > 0) return;
+
+//     QString command = m_streamer->command();
+//     static QRegularExpression M230("(M0*2|M30|M0*6)(?!\\d)");
+
+//     qDebug() <<
+//         "bufferLength: " << bufferLength() <<
+//         "command.length: " << command.length() <<
+//         "commandIndex: " << m_streamer->commandIndex() <<
+//         "hasMoreCommands: " << m_streamer->hasMoreCommands() <<
+//         "m_commands.isEmpty: " << (!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230));
+
+//     while ((bufferLength() + command.length() + 1) <= BUFFERLENGTH
+//            && m_streamer->hasMoreCommands() /* commandIndex() < m_form->currentModel().rowCount() - 1 */
+//            && !(!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230))
+//     ) {
+//         m_streamer->commandSent();
+//         sendCommand(CommandSource::Program, command, m_streamer->commandIndex());
+//         m_streamer->advanceCommandIndex();
+//         command = m_streamer->command();
+//     }
+// }
 
 bool Communicator::isMachineConfigurationReady() const
 {
@@ -583,8 +588,9 @@ void Communicator::onTimerStateQuery()
     }
 
     // qDebug() << m_connection->isConnected() << m_resetCompleted << m_statusReceived;
-    if (m_connection->isConnected() && m_resetCompleted && m_statusReceived) {
-        m_connection->sendByteArray(QByteArray(1, '?'));
+    if (m_connection->isConnected() && m_resetCompleted) {// && m_statusReceived) {
+        this->requestStatusUpdate();
+        // m_connection->sendByteArray(QByteArray(1, '?'));
         m_statusReceived = false;
     }
 

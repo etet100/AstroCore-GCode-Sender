@@ -27,7 +27,7 @@ void GCode::resetProcessed(int commandIndex)
 
 QString GCode::command()
 {
-    return this[m_commandIndex].command();
+    return m_data[m_commandIndex].command;
 }
 
 void GCode::advanceCommandIndex()
@@ -37,32 +37,37 @@ void GCode::advanceCommandIndex()
 
 bool GCode::isLastCommand()
 {
-    return m_commandIndex == count() - 1;
+    return m_commandIndex == m_data.count() - 1;
 }
 
 bool GCode::noMoreCommands()
 {
-    return m_commandIndex > count() - 1;
+    return m_commandIndex > m_data.count() - 1;
 }
 
 bool GCode::hasMoreCommands()
 {
-    return m_commandIndex <= count() - 1;
+    return m_commandIndex <= m_data.count() - 1;
 }
 
 int GCode::lastCommandIndex()
 {
-    return count() - 1;
+    return m_data.count() - 1;
 }
 
 bool GCode::isLastCommandProcessed()
 {
-    return m_processedCommandIndex == count() - 1;
+    return m_processedCommandIndex == m_data.count() - 1;
 }
 
 void GCode::commandSent()
 {
-    data()[m_commandIndex].state = GCodeItem::Sent;
-    // m_currentModel->setData(m_currentModel->index(m_commandIndex, 2), GCodeItem::Sent);
-    //        m_form->currentModel().setData(m_form->currentModel().index(m_streamer->commandIndex(), 2), GCodeItem::Sent);
+    GCodeItem& item = m_data[m_commandIndex];
+    item.state = GCodeItem::Sent;
+}
+
+void GCode::commandSkipped()
+{
+    GCodeItem& item = m_data[m_commandIndex];
+    item.state = GCodeItem::Skipped;
 }

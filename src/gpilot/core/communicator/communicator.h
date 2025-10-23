@@ -18,6 +18,7 @@ class Communicator : public QObject
     friend class ResetBehavior;
     friend class ConnectingBehavior;
     friend class ReconnectingBehavior;
+    friend class RunningBehavior;
     friend class IdleBehavior;
     friend class Jogger;
 
@@ -53,7 +54,7 @@ class Communicator : public QObject
         PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
         QVector3D machinePos() const { return m_machinePos; }
         void processWorkOffset(QString data);
-        void sendStreamerCommandsUntilBufferIsFull();
+        // void sendStreamerCommandsUntilBufferIsFull();
         bool isMachineConfigurationReady() const;
         bool isSenderState(SenderState state) const;
         template<typename... Args>
@@ -149,6 +150,7 @@ class Communicator : public QObject
         void processDeviceConfiguration(QStringList response);
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
         bool finalizeExecute(StateBehavior *sb);
+        bool willOverflowBuffer(QString command);
 
     private slots:
         void onTimerStateQuery();
