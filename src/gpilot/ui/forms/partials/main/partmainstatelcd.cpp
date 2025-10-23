@@ -45,7 +45,7 @@ void partMainStateLcd::resizeEvent(QResizeEvent *event)
     const QString sampleText = "-000.000";
     const int charCount = sampleText.length();
 
-    int fontSize = qMax(12, qMin(31, static_cast<int>(lcdWidth / charCount * 1.9)));
+    int fontSize = qMax(12, qMin(31, static_cast<int>(lcdWidth / charCount * 2.1)));
 
     //
 

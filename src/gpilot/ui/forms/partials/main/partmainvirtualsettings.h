@@ -22,8 +22,7 @@ class PartMainVirtualSettings : public QWidget
         ~PartMainVirtualSettings();
 
         void extracted();
-        void
-        deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
+        void deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
 
     private:
         Ui::PartMainVirtualSettings *ui;

@@ -162,7 +162,7 @@
   <customwidget>
    <class>StyledToolButton</class>
    <extends>QToolButton</extends>
-   <header location="global">styledtoolbutton.h</header>
+   <header>styledtoolbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
