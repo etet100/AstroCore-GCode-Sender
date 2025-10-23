@@ -180,7 +180,7 @@ SOURCES += main.cpp\
     state_behaviour/idlebehavior.cpp \
     state_behaviour/initializationbehavior.cpp \
     state_behaviour/joggingbehavior.cpp \
-    # state_behaviour/pausebehavior.cpp \
+    state_behaviour/pausebehavior.cpp \
     # state_behaviour/probingbehavior.cpp \
     state_behaviour/runningbehavior.cpp \
     # state_behaviour/state.cpp \
@@ -316,7 +316,7 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/idlebehavior.h \
     state_behaviour/initializationbehavior.h \
     state_behaviour/joggingbehavior.h \
-    # state_behaviour/pausebehavior.h \
+    state_behaviour/pausebehavior.h \
     # state_behaviour/probingbehavior.h \
     state_behaviour/runningbehavior.h \
     # state_behaviour/state.h \
