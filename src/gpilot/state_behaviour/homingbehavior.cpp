@@ -83,3 +83,10 @@ bool HomingBehavior::onCommandResponse(QString command, QString response, QStrin
 
     return false;
 }
+
+void HomingBehavior::onAlarm(int code)
+{
+    qDebug() << "[HomingBehavior] Alarm during homing:" << code;
+
+    emit transition(this, new AlarmBehavior(code));
+}

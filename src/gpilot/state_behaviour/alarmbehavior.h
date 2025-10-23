@@ -13,12 +13,11 @@ class AlarmBehavior : public StateBehavior
 
     public:
         explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
-        QString name() override { return "Alarm"; }
+        QString name() override { return "Alarm: " + m_alarmMessage; }
 
         void onMachineStateChanged(MachineState state) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
-        // void onConnectionStateChanged(ConnectionState state) override;
         void unlock() override;
         bool execute(const Action &action) override;
         bool isActionAllowed(const Action &action) override;
@@ -27,8 +26,6 @@ class AlarmBehavior : public StateBehavior
         int m_alarmCode;
         QString m_alarmMessage;
         void setAlarmMessage();
-
-        // StateBehavior interface
 };
 
 #endif // ALARMBEHAVIOR_H

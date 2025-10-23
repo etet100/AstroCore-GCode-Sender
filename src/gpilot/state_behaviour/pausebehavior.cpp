@@ -37,6 +37,8 @@ StateBehavior::Result PauseBehavior::onEntry(Communicator *communicator, StateBe
 {
     StateBehavior::onEntry(communicator, previous);
 
+    // if previous = RunningBehavio
+
     // Perform different actions based on pause source
     switch (m_source) {
         case PauseSource::Program:
@@ -58,9 +60,9 @@ StateBehavior::Result PauseBehavior::onExit(StateBehavior *next)
     return StateBehavior::onExit(next);
 }
 
-void PauseBehavior::onDeviceStateChanged(DeviceState state)
+void PauseBehavior::onMachineStateChanged(MachineState state)
 {
-    if (state == DeviceState::Run) {
+    if (state == MachineState::Run) {
         // Based on pause source, return to appropriate state
         switch (m_source) {
             case PauseSource::Program:

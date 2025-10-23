@@ -15,6 +15,7 @@ class HomingBehavior : public StateBehavior
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        void onAlarm(int code) override;
 
     private:
         bool m_homingStarted;

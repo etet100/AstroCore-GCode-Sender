@@ -11,6 +11,7 @@ AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
     : StateBehavior{parent}
     , m_alarmCode(alarmCode)
 {
+    setAlarmMessage();
 }
 
 void AlarmBehavior::onMachineStateChanged(MachineState state)
@@ -27,7 +28,6 @@ StateBehavior::Result AlarmBehavior::onEntry(Communicator *communicator, StateBe
     qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    // setAlarmMessage();
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);
 
@@ -39,34 +39,34 @@ void AlarmBehavior::setAlarmMessage()
     // Map alarm codes to meaningful user messages
     switch(m_alarmCode) {
         case 1:
-            m_alarmMessage = "Hard limit triggered";
+            m_alarmMessage = "Hard limits";
             break;
         case 2:
-            m_alarmMessage = "G-code motion target exceeds machine travel";
+            m_alarmMessage = "Soft limits";
             break;
         case 3:
-            m_alarmMessage = "Reset while in motion";
+            m_alarmMessage = "Reset";
             break;
         case 4:
             m_alarmMessage = "Probe fail";
             break;
         case 5:
-            m_alarmMessage = "Probe fail: Initial probe not triggered";
+            m_alarmMessage = "Probe fail";
             break;
         case 6:
-            m_alarmMessage = "Homing fail: Could not find limit switch";
+            m_alarmMessage = "Homing fail";
             break;
         case 7:
-            m_alarmMessage = "Homing fail: Door open";
+            m_alarmMessage = "Homing fail";
             break;
         case 8:
-            m_alarmMessage = "Homing fail: Pull off travel failed";
+            m_alarmMessage = "Homing fail";
             break;
         case 9:
-            m_alarmMessage = "Homing fail: Could not find pull-off motion";
+            m_alarmMessage = "Homing fail";
             break;
         default:
-            m_alarmMessage = "Unknown alarm: " + QString::number(m_alarmCode);
+            m_alarmMessage = QString("Unknown (%1)").arg(m_alarmCode);
     }
 }
 

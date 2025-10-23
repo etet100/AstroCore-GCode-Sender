@@ -788,10 +788,11 @@ void Communicator::processMessage(QString data)
 
 void Communicator::processAlarm(QString data)
 {
-    static QRegularExpression re("\\[ALARM:(\\d+)\\]");
+    static QRegularExpression re("^(\\[)?ALARM:(\\d+)(\\])?$");
     QRegularExpressionMatch match = re.match(data);
     if (match.hasMatch()) {
-        int code = match.captured(1).toInt();
+        qDebug() << match;
+        int code = match.captured(2).toInt();
 
         emit alarm(code);
 

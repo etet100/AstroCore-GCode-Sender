@@ -24,7 +24,7 @@ class PauseBehavior : public StateBehavior
         // bool isHomingAllowed() override { return false; } // Homing is not allowed during pause
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
-        void onDeviceStateChanged(DeviceState state) override;
+        void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
 
         // Pause-specific methods

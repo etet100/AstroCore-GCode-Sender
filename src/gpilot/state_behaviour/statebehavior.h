@@ -80,11 +80,7 @@ class StateBehavior : public QObject
 
         // returns true if the response was handled and should not be processed further, for example
         // passed to onCommandResponse.
-        virtual bool onRawResponse(QString response) {
-            Q_UNUSED(response);
-
-            return false;
-        }
+        virtual bool onRawResponse(QString response);
 
         // returns true if the response was handled and should not be processed further.
         virtual bool onCommandResponse(QString command, QString response, QStringList fullResponse) {
@@ -123,6 +119,8 @@ class StateBehavior : public QObject
         void stopTimer();
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
+        // This is something we will need in almost every behavior
+        bool dataIsReset(QString data);
 
     private:
         bool m_eventsAttached = false; // used by Communicator

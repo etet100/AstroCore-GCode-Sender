@@ -4,6 +4,7 @@
 
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
+#include <QRegularExpression>
 
 StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 {
@@ -12,6 +13,21 @@ StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 void StateBehavior::reset()
 {
     emit transition(this, new ResetBehavior(this));
+}
+
+bool StateBehavior::onRawResponse(QString response) {
+    Q_UNUSED(response);
+    // if (dataIsReset(response)) {
+    //     qDebug() << "[StateBehavior] Unexpected reset?";
+
+    //     // Dangerous situation, reset detected unexpectedly
+    //     // What to do? For now, just transition to ResetBehavior
+    //     emit transition(this, new ResetBehavior());
+
+    //     return true;
+    // }
+
+    return false;
 }
 
 StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
@@ -66,4 +82,18 @@ void StateBehavior::log(QString message, std::initializer_list<QString> context)
     }
 
     log(message, contextList);
+}
+
+bool StateBehavior::dataIsReset(QString data)
+{
+    // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
+    // followed by a version number in the format x.y.
+    // This matches e.g.
+    // Grbl 1.1h ['$' for help]
+    // GrblHAL 1.1f ['$' or '' for help]
+    // Grbl 1.8 [uCNC v1.8.8 '$' for help]
+    // Gcarvin ?? https://github.com/inventables/gCarvin
+    static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+
+    return data.contains(re);
 }
