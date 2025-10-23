@@ -384,9 +384,10 @@ private:
     void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyUIConfiguration(ConfigurationUI &uiConfiguration);
     void applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration);
-    void appendPanel(DropWidget *dockPanel, const QString title, QWidget *panel);
+    void appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel);
     void appendSpacer(DropWidget *dockPanel);
     void addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
+    void restoreDockableLayoutState();
 };
 
 typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;

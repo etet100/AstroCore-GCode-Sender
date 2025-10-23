@@ -316,6 +316,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     m_partMainVirtualSettings->setEnabled(false);
     appendPanel(
         ui->scrollContentsDevice,
+        "VirtualSettings",
         "Virtual uCNC settings",
         m_partMainVirtualSettings
     );
@@ -334,7 +335,8 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         Qt::Horizontal
     );
 
-    updateLayouts();
+    // After everything is set up, restore layout
+    restoreDockableLayoutState();
 }
 
 frmMain::~frmMain()
@@ -743,6 +745,8 @@ void frmMain::on_actViewLockWindows_toggled(bool checked)
 void frmMain::on_cmdFileOpen_clicked()
 {
     if (!m_communicator->isMachineConfigurationReady()) {
+        qWarning() << "[UI] Machine configuration is not ready";
+
         return;
     }
 
@@ -2178,10 +2182,38 @@ void frmMain::loadSettings()
     //     pick->setColor(QColor(set.value(pick->objectName().mid(3), "black").toString()));
     // }
 
-    ui->tblProgram->horizontalHeader()->restoreState(set.value("header", QByteArray()).toByteArray());
 
     // Apply settings
     applySettings();
+
+    // Shortcuts
+    ShortcutsMap m;
+    QByteArray ba = set.value("shortcuts").toByteArray();
+    QDataStream s(&ba, QIODevice::ReadOnly);
+
+    s >> m;
+    for (int i = 0; i < m.count(); i++) {
+        QAction *a = findChild<QAction*>(m.keys().at(i));
+        if (a) a->setShortcuts(m.values().at(i));
+    }
+
+    // Menu
+    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
+    ui->actViewLockWindows->setChecked(uiConfiguration.lockWindows());
+    ui->actViewLockPanels->setChecked(uiConfiguration.lockPanels());
+    // @TODO move to configuration form
+    //m_settings->restoreGeometry(set.value("formSettingsGeometry", m_settings->saveGeometry()).toByteArray());
+
+    m_settingsLoading = false;
+
+    emit settingsLoaded();
+}
+
+void frmMain::restoreDockableLayoutState()
+{
+    QSettings set(m_settingsFileName, QSettings::IniFormat);
+
+    ui->tblProgram->horizontalHeader()->restoreState(set.value("header", QByteArray()).toByteArray());
 
     // Restore last commands list
     // ui->cboCommand->addItems(set.value("recentCommands", QStringList()).toStringList());
@@ -2207,14 +2239,14 @@ void frmMain::loadSettings()
     //     }").arg(b).arg(c));
     // ensurePolished();
 
-    foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
-        w->setStyleSheet("");
-    }
+    // foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
+    //     w->setStyleSheet("");
+    // }
 
     // Restore docks
     // Signals/slots
     foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
-        connect(w, &QDockWidget::topLevelChanged, this, &frmMain::onDockTopLevelChanged);
+        // connect(w, &QDockWidget::topLevelChanged, this, &frmMain::onDockTopLevelChanged);
     }
 
     // Panels
@@ -2249,28 +2281,6 @@ void frmMain::loadSettings()
     // Settings form geometry
     // m_settings->restoreGeometry(set.value("formSettingsGeometry").toByteArray());
     // m_settings->ui->splitMain->restoreState(set.value("settingsSplitMain").toByteArray());
-
-    // Shortcuts
-    ShortcutsMap m;
-    QByteArray ba = set.value("shortcuts").toByteArray();
-    QDataStream s(&ba, QIODevice::ReadOnly);
-
-    s >> m;
-    for (int i = 0; i < m.count(); i++) {
-        QAction *a = findChild<QAction*>(m.keys().at(i));
-        if (a) a->setShortcuts(m.values().at(i));
-    }
-
-    // Menu
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
-    ui->actViewLockWindows->setChecked(uiConfiguration.lockWindows());
-    ui->actViewLockPanels->setChecked(uiConfiguration.lockPanels());
-    // @TODO move to configuration form
-    //m_settings->restoreGeometry(set.value("formSettingsGeometry", m_settings->saveGeometry()).toByteArray());
-
-    m_settingsLoading = false;
-
-    emit settingsLoaded();
 }
 
 void frmMain::saveSettings()
@@ -2304,6 +2314,7 @@ void frmMain::saveSettings()
 
     // Docks
     set.setValue("formMainState", saveState());
+    set.setValue("formMainGeometry", saveGeometry());
 
     // Shortcuts
     ShortcutsMap m;
@@ -2460,10 +2471,11 @@ void frmMain::applyJoggingConfiguration(ConfigurationJogging &joggingConfigurati
     ui->jog->configurationUpdated();
 }
 
-void frmMain::appendPanel(DropWidget *dockPanel, const QString title, QWidget *panel)
+void frmMain::appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel)
 {
     QGroupBox *grp = new QGroupBox(tr(title.toStdString().c_str()));
     grp->setCheckable(true);
+    grp->setObjectName("grp" + name);
     connect(grp, &QGroupBox::toggled, dockPanel, [panel](bool checked) {
         panel->setVisible(checked);
     });
