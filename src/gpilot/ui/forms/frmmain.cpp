@@ -35,18 +35,20 @@
 #include "io/connection/connectionmanager.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
+#include "state_behaviour/action.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
 frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
-    m_heightmapModel(m_heightmap),
+    m_connectionManager(this, configuration.connectionModule()),
+    m_connection(nullptr),
+    m_program(),
     m_programModel(m_program),
     m_probeModel(m_program),
     m_programHeightmapModel(m_program),
-    m_connectionManager(this, configuration.connectionModule()),
-    m_connection(nullptr),
+    m_heightmapModel(m_heightmap),
     m_configuration(configuration)
 {
     // Loading settings
@@ -86,6 +88,18 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->console, &partMainConsole::newCommand, this, &frmMain::onConsoleNewCommand);
     ui->console->append(QString("G-Candle %1 started").arg( qApp->applicationVersion()));
     ui->console->append("---");
+
+    connect(&m_program, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+        Q_UNUSED(fromLine);
+        Q_UNUSED(toLine);
+
+        if (!ui->chkAutoScrollGCode->isChecked()) {
+            return;
+        }
+
+        int tableIndex = m_currentModel->toFilteredIndex(m_program.commandIndex());
+        ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex, 1));
+    });
 
     connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
         m_programModel.setCommentsVisible(state != Qt::Checked);
@@ -260,6 +274,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
     connect(&m_heightmapModel, SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
+    // connect(&m_program, &GCode::linesUpdated, this, &frmMain::onProgramLinesUpdated);
 
     ui->tblProgram->setModel(&m_programModel);
     ui->tblProgram->setItemDelegate(&m_programItemDelegate);
@@ -376,7 +391,7 @@ void frmMain::initializeCommunicator()
     });
     connect(m_communicator, &Communicator::pinStateReceived, this, &frmMain::onPinStateReceived);
     connect(m_communicator, &Communicator::spindleSpeedReceived, this, &frmMain::onSpindleSpeedReceived);
-    connect(m_communicator, &Communicator::commandProcessed, this, &frmMain::onCommandProcessed);
+    // connect(m_communicator, &Communicator::commandProcessed, this, &frmMain::onCommandProcessed);
     connect(m_communicator, SIGNAL(feedSpindleSpeedReceived(int,int)), this, SLOT(onFeedSpindleSpeedReceived(int,int)));
     connect(m_communicator, &Communicator::overridesReceived, this, &frmMain::onOverridesReceived);
     connect(m_communicator, &Communicator::toolPositionReceived, this, &frmMain::onToolPositionReceived);
@@ -825,26 +840,40 @@ void frmMain::on_cmdFilePause_clicked(bool checked)
 {
     static SenderState s;
 
+    // if (checked) {
+    //     //PAUSE
+    //     s = m_communicator->senderState();
+    //     // setSenderState(SenderPaused);
+    //     m_communicator->setSenderStateAndEmitSignal(SenderState::Pausing);
+    //     ui->cmdFilePause->setText(tr("Pausing..."));
+    //     ui->cmdFilePause->setEnabled(false);
+    // } else {
+    //     //RESUME
+    //     if (m_communicator->senderState() == SenderState::ChangingTool) {
+    //         m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
+    //     } else {
+    //         if (m_configuration.senderModule().usePauseCommands()) {
+    //             m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().afterPauseCommands());
+    //         }
+    //         m_communicator->setSenderStateAndEmitSignal(s);
+    //     }
+    //     updateControlsState();
+    // }
+
     if (checked) {
-        //PAUSE
-        s = m_communicator->senderState();
-        // setSenderState(SenderPaused);
-        m_communicator->setSenderStateAndEmitSignal(SenderState::Pausing);
-        ui->cmdFilePause->setText(tr("Pausing..."));
-        ui->cmdFilePause->setEnabled(false);
-    } else {
-        //RESUME
-        if (m_communicator->senderState() == SenderState::ChangingTool) {
-            m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
-        } else {
-            if (m_configuration.senderModule().usePauseCommands()) {
-                m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().afterPauseCommands());
-            }
-            m_communicator->setSenderStateAndEmitSignal(s);
+        Action action(Action::Pause);
+        if (m_communicator->stateBehavior()->action(action)) {
+            ui->cmdFilePause->setText(tr("Resume"));
         }
-        updateControlsState();
+    } else {
+        Action action(Action::Resume);
+        if (m_communicator->stateBehavior()->action(action)) {
+            ui->cmdFilePause->setText(tr("Pause"));
+        }
     }
 }
+
+
 
 void frmMain::on_cmdFileAbort_clicked()
 {
@@ -1716,19 +1745,19 @@ void frmMain::onCommandSent(CommandAttributes commandAttributes)
     ui->console->appendFiltered(commandAttributes);
 }
 
-void frmMain::onCommandProcessed(int tableIndex, QString response)
-{
-    if (ui->chkAutoScrollGCode->isChecked()) {
-        // scroll to NEXT command (+1)
-        ui->tblProgram->scrollTo(m_currentModel->index(tableIndex + 1, 0));      // TODO: Update by timer
-        ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex + 1, 1));
-    }
+// void frmMain::onCommandProcessed(int tableIndex, QString response)
+// {
+//     if (ui->chkAutoScrollGCode->isChecked()) {
+//         // scroll to NEXT command (+1)
+//         ui->tblProgram->scrollTo(m_currentModel->index(tableIndex + 1, 0));      // TODO: Update by timer
+//         ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex + 1, 1));
+//     }
 
-    if (tableIndex > -1) {
-        m_currentModel->setData(m_currentModel->index(tableIndex, 2), GCodeItem::Processed);
-        m_currentModel->setData(m_currentModel->index(tableIndex, 3), response);
-    }
-}
+//     if (tableIndex > -1) {
+//         m_currentModel->setData(m_currentModel->index(tableIndex, 2), GCodeItem::Processed);
+//         m_currentModel->setData(m_currentModel->index(tableIndex, 3), response);
+//     }
+// }
 
 void frmMain::onConfigurationReceived(PhysicalMachineConfiguration configuration)
 {
@@ -2034,6 +2063,11 @@ void frmMain::onVisualizerCursorPosChanged(QPointF pos)
 {
     m_cursorDrawer.setPosition(pos);
 }
+
+// void frmMain::onProgramLinesUpdated(int from, int to)
+// {
+//     qDebug() << "frmMain::onProgramLinesUpdated from" << from << "to" << to;
+// }
 
 void frmMain::updateHeightMapInterpolationDrawer(bool reset)
 {
@@ -3068,21 +3102,21 @@ void frmMain::updateControlsState()
     ui->cmdFileOpen->setEnabled(senderState == SenderState::Stopped);
     ui->cmdFileReset->setEnabled((senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
     ui->cmdFileSend->setEnabled(portOpened && (senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
-    switch (senderState) {
-        case SenderState::Pausing:
-        case SenderState::Pausing2:
-            ui->cmdFilePause->setText(tr("Pausing..."));
-            break;
-        case SenderState::Paused:
-        case SenderState::ChangingTool:
-            ui->cmdFilePause->setText(tr("Resume"));
-            break;
-        default:
-            ui->cmdFilePause->setText(tr("Pause"));
-            break;
-    }
-    ui->cmdFilePause->setEnabled(portOpened && (process || paused) && (senderState != SenderState::Pausing) && (senderState != SenderState::Pausing2));
-    ui->cmdFilePause->setChecked(paused);
+    // switch (senderState) {
+    //     case SenderState::Pausing:
+    //     case SenderState::Pausing2:
+    //         ui->cmdFilePause->setText(tr("Pausing..."));
+    //         break;
+    //     case SenderState::Paused:
+    //     case SenderState::ChangingTool:
+    //         ui->cmdFilePause->setText(tr("Resume"));
+    //         break;
+    //     default:
+    //         ui->cmdFilePause->setText(tr("Pause"));
+    //         break;
+    // }
+    // ui->cmdFilePause->setEnabled(true);//portOpened && (process || paused) && (senderState != SenderState::Pausing) && (senderState != SenderState::Pausing2));
+    // ui->cmdFilePause->setChecked(paused);
     ui->cmdFileAbort->setEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
     ui->menuRecent->setEnabled(
         (senderState == SenderState::Stopped) &&

@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include "core/gcode/parser/gcodeparser.h"
+#include <QTimer>
 
 enum class StreamerStartResult
 {
@@ -58,7 +59,6 @@ class GCode : public QObject
 
     public:
         explicit GCode(QObject *parent = nullptr);
-        //void setData(QList<GCodeItem> data);
         void reset(int commandIndex = 0);
         void resetProcessed(int commandIndex = 0);
         int commandIndex() { return m_commandIndex; }
@@ -73,8 +73,9 @@ class GCode : public QObject
         bool hasMoreCommands();
         int lastCommandIndex();
         bool isLastCommandProcessed();
-        void commandSent();
-        void commandSkipped();
+        void setCommandSent();
+        void setCommandResponse(int commandIndex, QString response);
+        void setCommandSkipped();
         GCodeItem& operator [] (int index) { return m_data[index]; }
         int count() { return m_data.count(); }
         bool empty() { return m_data.isEmpty(); }
@@ -108,12 +109,21 @@ class GCode : public QObject
         int m_processedCommandIndex;
         GcodeParser m_parser;
         QList<GCodeItem> m_data;
+        int m_linesUpdatedFrom = INT_MAX;
+        int m_linesUpdatedTo = INT_MIN;
+        QTimer m_linesUpdatedTimer;
+
+        void addUpdatedRange(int commandIndex);
 
     signals:
-        void progressChanged(int progress);
+        void progressChanged(int progress);        
+        void linesUpdated(int fromLine, int toLine);
         void finished();
         void paused();
         void error();
+
+    private slots:
+        void onLinesUpdatedTimer();
 };
 
 #endif // GCODE_H

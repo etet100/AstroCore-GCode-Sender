@@ -33,7 +33,7 @@ class StateBehavior : public QObject
         bool eventsAttached() const { return m_eventsAttached; }
         void markEventsAttached() { m_eventsAttached = true; }
 
-        virtual bool execute(const Action &action) {
+        virtual bool action(const Action &action) {
             Q_UNUSED(action);
             return false;
         }

@@ -5,7 +5,7 @@
 #include "core/globals.h"
 #include "runningbehavior.h"
 #include "idlebehavior.h"
-// #include "pausebehavior.h"
+#include "pausebehavior.h"
 #include "alarmbehavior.h"
 // #include "toolchangebehavior.h"
 #include "core/communicator/communicator.h"
@@ -22,19 +22,23 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
         // Program finished or was stopped
-        emit transition(this, new IdleBehavior());
-    } else if (state == MachineState::Hold0 || state == MachineState::Hold1) {
+        // emit transition(this, new IdleBehavior());
+    } else if (m_pause && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
         // Machine is in hold state - transition to pause
-        // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
+        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
     } else if (state == MachineState::Alarm) {
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }
 }
 
-bool RunningBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+bool RunningBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
 {
+    Q_UNUSED(fullResponse);
+
     qDebug() << "[RunningBehavior] onCommandResponse:" << command << "->" << response;
+
+    m_program.setCommandResponse(commandAttributes.tableIndex, response);
 
     // Process command responses during running state
     // For example, handle M6 commands for tool change
@@ -46,7 +50,9 @@ bool RunningBehavior::onCommandResponse(QString command, QString response, QStri
     //     return true;
     // }
 
-    sendStreamerCommandsUntilBufferIsFull();
+    if (!m_pause) {
+        sendStreamerCommandsUntilBufferIsFull();
+    }
 
     return true;
 }
@@ -57,10 +63,36 @@ void RunningBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
+bool RunningBehavior::action(const Action &action)
+{
+    if (action.type() == Action::Type::Pause && !m_pause) {
+        pause();
+        // Handle pause action
+        // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::UserRequest));
+        return true;
+    } else if (action.type() == Action::Type::Stop) {
+        // Handle stop action
+        // Send stop command to controller
+        if (m_communicator) {
+            // m_communicator->sendCommand(CommandSource::User, "M0");
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 StateBehavior::Result RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
 {
     qDebug() << "[RunningBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
+
+    // If coming from PauseBehavior, resume the program
+    PauseBehavior* pausePrevious  = dynamic_cast<PauseBehavior*>(previous);
+    if (pausePrevious) {
+        resume();
+    }
 
     sendStreamerCommandsUntilBufferIsFull();
 
@@ -119,12 +151,26 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         && !(!m_communicator->m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_communicator->m_commands.last().commandLine).contains(M230))
     )) {
         if (command.isEmpty()) {
-            m_program.commandSkipped();
+            m_program.setCommandSkipped();
         } else {
-            m_program.commandSent();
+            m_program.setCommandSent();
             m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
         }
         m_program.advanceCommandIndex();
         command = m_program.command();
     }
+}
+
+void RunningBehavior::pause()
+{
+    qDebug() << "[RunningBehavior] Pausing";
+    m_pause = true;
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
+}
+
+void RunningBehavior::resume()
+{
+    qDebug() << "[RunningBehavior] Resuming";
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+    m_pause = false;
 }

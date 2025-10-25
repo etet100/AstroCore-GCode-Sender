@@ -103,7 +103,7 @@ void AlarmBehavior::unlock()
     m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
 }
 
-bool AlarmBehavior::execute(const Action &action)
+bool AlarmBehavior::action(const Action &action)
 {
     switch (action.type()) {
         case Action::Type::Unlock:

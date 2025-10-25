@@ -6,13 +6,11 @@
 
 GCode::GCode(QObject *parent) : QObject(parent) {
     reset();
-}
 
-// void GCode::setData(QList<GCodeItem> data)
-// {
-//     reset();
-//     append(data);
-// }
+    m_linesUpdatedTimer.setInterval(100);
+    m_linesUpdatedTimer.start();
+    connect(&m_linesUpdatedTimer, &QTimer::timeout, this, &GCode::onLinesUpdatedTimer);
+}
 
 void GCode::reset(int commandIndex)
 {
@@ -60,14 +58,43 @@ bool GCode::isLastCommandProcessed()
     return m_processedCommandIndex == m_data.count() - 1;
 }
 
-void GCode::commandSent()
+void GCode::addUpdatedRange(int commandIndex)
+{
+    m_linesUpdatedFrom = qMin(m_linesUpdatedFrom, commandIndex);
+    m_linesUpdatedTo = qMax(m_linesUpdatedTo, commandIndex);
+}
+
+void GCode::setCommandSent()
 {
     GCodeItem& item = m_data[m_commandIndex];
     item.state = GCodeItem::Sent;
+    addUpdatedRange(m_commandIndex);
 }
 
-void GCode::commandSkipped()
+void GCode::setCommandResponse(int commandIndex, QString response)
+{
+    GCodeItem& item = m_data[commandIndex];
+    item.state = GCodeItem::Processed;
+    item.response = response;
+    m_processedCommandIndex = commandIndex;
+    addUpdatedRange(commandIndex);
+}
+
+void GCode::setCommandSkipped()
 {
     GCodeItem& item = m_data[m_commandIndex];
     item.state = GCodeItem::Skipped;
+    addUpdatedRange(m_commandIndex);
+}
+
+void GCode::onLinesUpdatedTimer()
+{
+    if (m_linesUpdatedTo == INT_MIN) {
+        return;
+    }
+
+    emit linesUpdated(m_linesUpdatedFrom, m_linesUpdatedTo);
+
+    m_linesUpdatedFrom = INT_MAX;
+    m_linesUpdatedTo = INT_MIN;
 }

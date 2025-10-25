@@ -8,7 +8,7 @@
 class Action
 {
     public:
-        enum class Type {
+        enum Type {
             None,
             Reset,
             Start,
@@ -22,7 +22,7 @@ class Action
             Unlock,
         };
 
-        Action();
+        Action(Type type);
         Type type() const { return m_type; }
 
     private:

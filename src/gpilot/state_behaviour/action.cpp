@@ -4,4 +4,6 @@
 
 #include "action.h"
 
-Action::Action() {}
+Action::Action(Type type) : m_type(type)
+{
+}

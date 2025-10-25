@@ -19,7 +19,7 @@ class AlarmBehavior : public StateBehavior
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void unlock() override;
-        bool execute(const Action &action) override;
+        bool action(const Action &action) override;
         bool isActionAllowed(const Action &action) override;
 
     private:

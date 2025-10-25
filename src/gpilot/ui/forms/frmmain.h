@@ -187,7 +187,7 @@ private slots:
     void onCommandResponseReceived(CommandAttributes commandAttributes);
     void onCommandSent(CommandAttributes commandAttributes);
     // @TODO signal does not make sense, it has to done in other way
-    void onCommandProcessed(int tableIndex, QString response);
+    // void onCommandProcessed(int tableIndex, QString response);
     void onConfigurationReceived(PhysicalMachineConfiguration);
     void onToolPositionReceived(QVector3D pos);
     void onTransferCompleted();
@@ -210,6 +210,7 @@ private slots:
     void onDockTopLevelChanged(bool topLevel);
     void onScroolBarAction(int action);
     void onVisualizerCursorPosChanged(QPointF);
+    // void onProgramLinesUpdated(int from, int to);
     void updateHeightMapInterpolationDrawer(bool reset = false);
     void placeVisualizerButtons();
 
@@ -260,6 +261,13 @@ private:
 
     bool m_firstShow = true;
 
+    // @TODO to be moved to separate core class
+    ConnectionManager m_connectionManager;
+    Connection *m_connection;
+    Communicator *m_communicator;
+    GCode m_program;
+    GCode *m_currentProgram = &m_program;
+
     // Table models
     GCodeTableModel m_programModel;
     GCodeTableModel m_probeModel;
@@ -267,13 +275,6 @@ private:
     GCodeTableModel *m_currentModel;
     HeightmapTableModel m_heightmapModel;
     GCodeItemDelegate m_programItemDelegate;
-
-    // @TODO to be moved to separate core class
-    ConnectionManager m_connectionManager;
-    Connection *m_connection;
-    Communicator *m_communicator;
-    GCode m_program;
-    GCode *m_currentProgram = &m_program;
 
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;

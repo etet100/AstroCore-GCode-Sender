@@ -1614,7 +1614,7 @@ border-top: 0;</string>
            </size>
           </property>
           <property name="toolTip">
-           <string>Left view</string>
+           <string>Rotation cube</string>
           </property>
           <property name="text">
            <string/>

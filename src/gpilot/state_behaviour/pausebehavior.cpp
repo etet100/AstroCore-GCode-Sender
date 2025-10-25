@@ -14,6 +14,16 @@ PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
 {
 }
 
+bool PauseBehavior::action(const Action &action)
+{
+    if (action.type() == Action::Type::Resume) {
+        resume();
+        return true;
+    }
+
+    return false;
+}
+
 QString PauseBehavior::name()
 {
     QString baseName = "Paused";
@@ -92,10 +102,11 @@ bool PauseBehavior::onCommandResponse(QString command, QString response, QString
     return true;
 }
 
-void PauseBehavior::resumeOperation()
+void PauseBehavior::resume()
 {
-    // Send resume (cycle start) command to the controller
-    if (m_communicator) {
-        m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
-    }
+    emit transition(this, this->previous());
+//     // Send resume (cycle start) command to the controller
+//     if (m_communicator) {
+//         m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+//     }
 }

@@ -21,6 +21,7 @@ enum class GCodeTableColumn {
 class GCodeTableModel : public QAbstractTableModel
 {
     Q_OBJECT
+
 public:
     explicit GCodeTableModel(GCode &data, QObject *parent = 0);
 
@@ -38,12 +39,14 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     void setCommentsVisible(bool visible);
+    int toFilteredIndex(int index) const;
 
 private:
     GCode &m_data;
     QStringList m_headers;
     bool m_filtered = false;
-    QList<int> m_filteredRows; // rows without comments
+    QList<int> m_filteredRows; // index of rows that are not comments
+    QList<int> m_allRowsToFiltered; // mapping from all rows to filtered rows
 
     void prepareNoCommentFilter();
 };

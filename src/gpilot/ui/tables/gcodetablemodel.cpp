@@ -9,6 +9,12 @@ GCodeTableModel::GCodeTableModel(GCode &data, QObject *parent) :
     m_data(data)
 {
     m_headers << tr("#") << tr("Command") << tr("State") << tr("Response") << tr("Line") << tr("Args");
+
+    connect(&data, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+        emit dataChanged(
+            index(toFilteredIndex(fromLine), 0),
+            index(toFilteredIndex(toLine), columnCount() - 1));
+    });
 }
 
 QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
@@ -74,8 +80,10 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
             case GCodeTableColumn::Args: m_data[index.row()].args = value.toStringList(); break;
         }
         emit dataChanged(index, index);
+
         return true;
     }
+
     return false;
 }
 
@@ -157,16 +165,34 @@ void GCodeTableModel::setCommentsVisible(bool visible)
     endResetModel();
 }
 
+int GCodeTableModel::toFilteredIndex(int index) const
+{
+    if (m_filtered) {
+        return m_allRowsToFiltered[index];
+    } else {
+        return index;
+    }
+}
+
 void GCodeTableModel::prepareNoCommentFilter()
 {
     m_filteredRows.clear();
+    m_allRowsToFiltered.clear();
     int i = 0;
-    for (auto row : m_data) {
+    int k = 0;
+    for (auto& row : m_data) {
         if (row.group != GCodeItemGroup::Comment) {
+            k = m_filteredRows.size();
             m_filteredRows.append(i);
         }
         i++;
+        m_allRowsToFiltered.append(k);
     }
+
+    qDebug() << m_filteredRows;
+    qDebug() << m_allRowsToFiltered;
+
+    assert(m_data.count() == m_allRowsToFiltered.count());
 
     m_filtered = true;
 }

@@ -19,19 +19,15 @@ class PauseBehavior : public StateBehavior
         };
 
         explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
+        bool action(const Action &action) override;
         QString name() override;
-        // bool isJoggingAllowed() override { return true; } // Jogging is allowed during pause
-        // bool isHomingAllowed() override { return false; } // Homing is not allowed during pause
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
-
-        // Pause-specific methods
-        void resumeOperation(); // Resume paused operation
-
     private:
-        PauseSource m_source; // Źródło pauzy
+        PauseSource m_source;
+        void resume();
 };
 
 #endif // PAUSEBEHAVIOR_H
