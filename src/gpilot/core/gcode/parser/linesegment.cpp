@@ -164,6 +164,7 @@ void LineSegment::setDrawn(bool drawn)
 {
     m_drawn = drawn;
 }
+
 bool LineSegment::isMetric() const
 {
     return m_isMetric;
@@ -173,6 +174,7 @@ void LineSegment::setIsMetric(bool isMetric)
 {
     m_isMetric = isMetric;
 }
+
 bool LineSegment::isAbsolute() const
 {
     return m_isAbsolute;

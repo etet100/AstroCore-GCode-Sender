@@ -7,13 +7,14 @@
 
 #include <QDebug>
 #include "gcodeviewparser.h"
+#include "core/gcode/gcode.h"
 
 GCodeViewParser::GCodeViewParser()
 {
     absoluteMode = true;
     absoluteIJK = false;
-    currentLine = 0;
-    debug = true;
+    // m_currentLine = 0;
+    m_debug = true;
 
     m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
@@ -79,7 +80,7 @@ void GCodeViewParser::reset()
     //foreach (LineSegment &ls, m_lines) delete ls;
     m_lines.clear();
     m_lineIndexes.clear();
-    currentLine = 0;
+    // m_currentLine = 0;
     m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_minLength = qQNaN();

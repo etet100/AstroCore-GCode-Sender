@@ -15,6 +15,8 @@
 #include "gcodeparser.h"
 #include "utils/utils.h"
 
+class GCode;
+
 class GCodeViewParser
 {
     public:
@@ -28,6 +30,7 @@ class GCodeViewParser
         QList<LineSegment>& toObjRedux(QList<QString> gcode, double arcPrecision, bool arcDegreeMode);
         QList<LineSegment>& getLineSegmentList();
         QList<LineSegment>& getLinesFromParser(GcodeParser *gp, double arcPrecision, bool arcDegreeMode);
+        QList<LineSegment>& getLinesFromGCode(GCode &gcode, double arcPrecision, bool arcDegreeMode);
 
         QList<LineSegment>& getLines();
         QVector<QList<int>>& getLinesIndexes();
@@ -45,11 +48,11 @@ class GCodeViewParser
         QVector<QList<int>> m_lineIndexes;
 
         // Parsing state.
-        QVector3D lastPoint;
-        int currentLine; // for assigning line numbers to segments.
+        // QVector3D m_lastPoint;
+        // int m_currentLine; // for assigning line numbers to segments.
 
         // Debug
-        bool debug;
+        bool m_debug;
         void testExtremes(QVector3D p3d);
         void testExtremes(double x, double y, double z);
         void testLength(const QVector3D& start, const QVector3D& end);

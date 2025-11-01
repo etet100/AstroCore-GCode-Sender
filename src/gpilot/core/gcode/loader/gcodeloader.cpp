@@ -78,6 +78,7 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
     int remaining = size;
     GcodeParser parser;
     GCode* gcode = new GCode();
+    PointSegment* ps = nullptr;
 
     while (!io.atEnd()) {
         command = io.readLine().toStdString();
@@ -93,8 +94,6 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
                 break;
             }
 
-            parser.addCommand(args);
-
             GCodeItem item;
             item.command = QString::fromStdString(stripped);
             item.comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command));
@@ -106,6 +105,7 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
                 item.state = GCodeItem::Comment;
                 item.group = GCodeItemGroup::Comment;
             }
+            item.ps = parser.addCommand(item);
 
             *gcode << item;
         }
@@ -120,7 +120,9 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         }
 
         if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
+            delete gcode;
             emit cancelled();
+
             return;
         }
     }
@@ -131,8 +133,14 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         configuration.arcApproximationValue(),
         configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
     );
+    // viewParser->getLinesFromGCode(
+    //     *gcode,
+    //     configuration.arcApproximationValue(),
+    //     configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+    // );
 
     if (m_cancel) {
+        delete gcode;
         emit cancelled();
     } else {
         emit progress(100);

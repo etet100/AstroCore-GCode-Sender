@@ -99,6 +99,32 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
         int tableIndex = m_currentModel->toFilteredIndex(m_program.commandIndex());
         ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex, 1));
+
+        GCodeViewParser *parser = m_codeDrawer->viewParser();
+        QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+        QList<LineSegment>& list = parser->getLineSegmentList();
+        QList<int> indexes;
+
+        for (int i = fromLine; i <= toLine; i++) {
+            GCodeItem &item = m_program[i];
+            int j = item.lineNumber;
+            if (j != -1)
+            foreach (int l, lineIndexes.at(j)) {
+                if (item.state == GCodeItem::Sent) {
+                    list[l].setIsHightlight(true);
+                    list[l].setDrawn(false);
+                    indexes.append(l);
+                } else if (item.state == GCodeItem::Processed) {
+                    list[l].setIsHightlight(false);
+                    list[l].setDrawn(true);
+                    indexes.append(l);
+                }
+            }
+        }
+
+        if (!indexes.isEmpty()) {
+            m_codeDrawer->update(indexes);
+        }
     });
 
     connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {

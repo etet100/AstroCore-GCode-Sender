@@ -47,6 +47,7 @@ struct GCodeItem
     States state = InQueue;
     QStringList args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
+    PointSegment* ps = nullptr;
 
     bool isArc() const {
         return command.startsWith('G') && (command == "G2" || command == "G3");

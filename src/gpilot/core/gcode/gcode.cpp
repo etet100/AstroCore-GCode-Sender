@@ -45,7 +45,7 @@ bool GCode::noMoreCommands()
 
 bool GCode::hasMoreCommands()
 {
-    return m_commandIndex <= m_data.count() - 1;
+    return !m_data.empty() && m_commandIndex <= m_data.count() - 1;
 }
 
 int GCode::lastCommandIndex()

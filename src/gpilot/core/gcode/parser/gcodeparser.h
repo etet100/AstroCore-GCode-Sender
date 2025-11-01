@@ -14,6 +14,8 @@
 #include "pointsegment.h"
 #include "gcodepreprocessorutils.h"
 
+struct GCodeItem;
+
 class GcodeParser : public QObject
 {
     Q_OBJECT
@@ -36,22 +38,18 @@ public:
     void reset(const QVector3D &initialPoint = QVector3D(qQNaN(), qQNaN(), qQNaN()));
     PointSegment *addCommand(QString command);
     PointSegment *addCommand(const QStringList &args);
+    PointSegment *addCommand(const GCodeItem &gcodeItem);
     QVector3D* getCurrentPoint();
     QList<PointSegment *> expandArc();
-    QStringList preprocessCommands(QStringList commands);
-    QStringList preprocessCommand(QString command);
-    QStringList convertArcsToLines(QString command);
+    // QStringList preprocessCommands(QStringList commands);
+    // QStringList preprocessCommand(QString command);
+    // QStringList convertArcsToLines(QString command);
     QList<PointSegment *> getPointSegmentList();
     double getTraverseSpeed() const;
     void setTraverseSpeed(double traverseSpeed);
     int getCommandNumber() const;
 
-signals:
-
-public slots:
-
 private:
-
     // Current state
     bool m_isMetric;
     bool m_inAbsoluteMode;
