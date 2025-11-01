@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
         break;
     }
 #endif
+    // It is necessary to share OpenGL contexts between widgets. This way,
+    // opengl resources don't need to be recreated when docking/undocking
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
     QApplication app(argc, argv);
     app.setApplicationDisplayName("G-Pilot");
