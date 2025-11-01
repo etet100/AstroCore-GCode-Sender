@@ -79,7 +79,7 @@ void loadStyleSheets(QApplication &app, bool dark)
 void setTheme(QApplication &app, bool dark)
 {
     app.styleHints()->setColorScheme(dark ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
-    // app.setStyle(new PhantomStyle());
+    app.setStyle(new PhantomStyle());
 
     QPalette palette;
     palette.setColor(QPalette::Highlight, QColor(204, 204, 254));
