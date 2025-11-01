@@ -48,7 +48,7 @@ class GLPalette
         QOpenGLTexture *m_texture;
         QList<GLColor> m_colors;
         QMap<QString, int> m_indexes;
-        bool m_updated = false;;
+        bool m_updated = false;
         void generateTexture();
 
     Q_DISABLE_COPY(GLPalette)

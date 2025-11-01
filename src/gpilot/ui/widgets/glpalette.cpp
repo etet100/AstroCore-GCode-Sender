@@ -10,6 +10,7 @@ GLPalette::GLPalette() : m_colors(), m_indexes() {
 
 void GLPalette::initialize()
 {
+    m_texture = nullptr;
     generateTexture();
 }
 
