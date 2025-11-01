@@ -196,8 +196,10 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+#ifndef USE_GLWINDOW
     void leaveEvent(QEvent *event) override;
     void enterEvent(QEnterEvent *event) override;
+#endif
     void wheelEvent(QWheelEvent *we) override;
 
     void timerEvent(QTimerEvent *) override;

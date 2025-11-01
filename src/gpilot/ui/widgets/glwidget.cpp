@@ -8,7 +8,6 @@
 #include <QPainter>
 #include <QEasingCurve>
 #include <QOpenGLDebugLogger>
-//#include "glframebuffer.h"
 
 #ifdef GLES
 //#include <GLES/gl.h>
@@ -30,7 +29,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent), m_defaultShaderProg
 #else
 GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
 #endif
-{   
+{
     m_frames = 0;
     m_fps = 0;
 
@@ -109,7 +108,7 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
 
     m_zoomDistance = DEFAULT_ZOOM;
 
-    if (drawable != NULL) {
+    if (drawable != nullptr) {
         updateExtremes(drawable);
 
         double largestSize = qMax(qMax(m_xSize, m_ySize), m_zSize);
@@ -508,7 +507,7 @@ void GLWidget::updateProjection()
     // Reset projection
     m_projectionMatrix.setToIdentity();
 
-    double aspectRatio = (double)width() / height();    
+    double aspectRatio = (double)width() / height();
 
     // perspective / orthographic projection
     if (m_perspective) {
@@ -586,7 +585,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     // Update settings
     if (m_antialiasing) {
-        if (m_msaa) glEnable(GL_MULTISAMPLE); else {
+        if (m_msaa) {
+            glEnable(GL_MULTISAMPLE);
+        } else {
             glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
             glEnable(GL_POINT_SMOOTH);
         }
@@ -698,6 +699,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     QPen pen(m_colorText);
     painter.setPen(pen);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
     // left side
     pos = QPoint(10, this->height() - 80);
@@ -828,7 +832,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         emit cursorPosChanged(m_bottomSurfaceCursorPos);
     }
 
-    if ((event->buttons() & Qt::MiddleButton && !(event->modifiers() & Qt::ShiftModifier)) 
+    if ((event->buttons() & Qt::MiddleButton && !(event->modifiers() & Qt::ShiftModifier))
         || (event->buttons() & Qt::LeftButton && !(event->modifiers() & Qt::ShiftModifier))) {
 
         stopAnimation();
@@ -843,7 +847,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         emit rotationChanged();
     }
 
-    if ((event->buttons() & Qt::MiddleButton && event->modifiers() & Qt::ShiftModifier) 
+    if ((event->buttons() & Qt::MiddleButton && event->modifiers() & Qt::ShiftModifier)
         || event->buttons() & Qt::RightButton
         || (event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier)))
     {
@@ -888,7 +892,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     }
 
     if (pos.x() < 200 && pos.y() < 200) {
-        CubeClickableFace face = m_cubeDrawer.mouseMoveEvent(event);        
+        CubeClickableFace face = m_cubeDrawer.mouseMoveEvent(event);
         if (face != CubeClickableFace::None) {
             setCursor(Qt::PointingHandCursor);
         } else {
@@ -907,12 +911,14 @@ void GLWidget::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
+#ifndef USE_GLWINDOW
 void GLWidget::leaveEvent(QEvent *event)
 {
     QOpenGLWidget::leaveEvent(event);
     m_cubeDrawer.leaveEvent(event);
     emit left();
 }
+#endif
 
 void GLWidget::wheelEvent(QWheelEvent *we)
 {
@@ -960,9 +966,10 @@ double GLWidget::normalizeAngle(double angle)
     return angle;
 }
 
+#ifndef USE_GLWINDOW
 void GLWidget::enterEvent(QEnterEvent *event)
 {
     QOpenGLWidget::enterEvent(event);
     emit entered();
 }
-
+#endif
