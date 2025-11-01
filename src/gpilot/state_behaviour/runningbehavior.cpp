@@ -155,9 +155,15 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         } else {
             m_program.setCommandSent();
             m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
+            qDebug() << "[RunningBehavior] Sent command:" << command;
         }
-        m_program.advanceCommandIndex();
-        command = m_program.command();
+        if (!m_program.isLastCommand()) {
+            m_program.advanceCommandIndex();
+
+            command = m_program.command();
+        } else {
+            break;
+        }
     }
 }
 
