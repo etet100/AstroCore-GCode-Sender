@@ -1542,8 +1542,8 @@ border-top: 0;</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>:/images/cube.png</normaloff>:/images/cube.png</iconset>
+           <iconset resource="../resources/images.qrc">
+            <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
           </property>
           <property name="iconSize">
            <size>

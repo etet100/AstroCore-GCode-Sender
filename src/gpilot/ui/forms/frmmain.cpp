@@ -2418,7 +2418,7 @@ void frmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerCo
     ui->glwVisualizer->setColorText(visualizerConfiguration.textColor());
 
     // Adapt visualizer buttons colors
-    const int LIGHTBOUND = 127;
+    const int LIGHTBOUND = 140;
     const int NORMALSHIFT = 40;
     const int HIGHLIGHTSHIFT = 80;
 
@@ -2427,7 +2427,7 @@ void frmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerCo
 
     ui->cmdToggleProjection->setIcon(QIcon(":/images/toggle.png"));
     ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
-    ui->cmdIsometric->setIcon(QIcon(":/images/cube.png"));
+    ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
     ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
     ui->cmdLeft->setIcon(QIcon(":/images/visualizer_left.png"));
     ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
