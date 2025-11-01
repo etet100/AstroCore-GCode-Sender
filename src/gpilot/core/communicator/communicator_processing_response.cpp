@@ -460,12 +460,12 @@ bool Communicator::processCommandResponse(QString data)
 
         IdleBehavior *idleBehavior = qobject_cast<IdleBehavior *>(m_sb.data());
         if (!idleBehavior) {
-            qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-            qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+            // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+            // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
             result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
         } else {
-            qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-            qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+            // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+            // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
             result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
         }
     }
