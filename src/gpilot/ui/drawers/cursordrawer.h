@@ -29,7 +29,7 @@ class CursorDrawer : public QObject, public ShaderDrawable
         QColor m_color;
         float m_animation;
 
-        QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, int color);
+        QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, GLuint color);
 
     private:
         QPropertyAnimation *m_animator;

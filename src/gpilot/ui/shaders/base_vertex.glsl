@@ -9,7 +9,7 @@ uniform mat4 u_mv_matrix;
 uniform sampler2D u_palette;
 
 attribute vec3 a_position;
-attribute float a_color;
+attribute uint a_color;
 attribute vec3 a_start;
 attribute float a_alpha;
 

@@ -82,6 +82,8 @@ void GLPalette::generateTexture()
         m_texture->allocateStorage();
     }
 
+    assert(m_colors.size() <= MAX_COLORS);
+
     GLfloat colorPalette[MAX_COLORS][4];
 
     for (int i = 0; i < m_colors.count(); i++) {

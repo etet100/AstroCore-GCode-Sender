@@ -85,7 +85,7 @@ bool CursorDrawer::updateData(GLPalette &palette)
     return true;
 }
 
-QVector<VertexData> CursorDrawer::createCircle(QVector3D center, double radius, int arcs, int color)
+QVector<VertexData> CursorDrawer::createCircle(QVector3D center, double radius, int arcs, GLuint color)
 {
     // Vertices
     QVector<VertexData> circle;
