@@ -90,6 +90,17 @@ void Communicator::processFeedSpindleSpeed(QString data)
     }
 }
 
+void Communicator::processBuffersStatus(QString data)
+{
+    //Bf:15,128
+    static QRegularExpression fs(R"(Bf:(\d*),(\d*))");
+
+    QRegularExpressionMatch match = fs.match(data);
+    if (match.hasMatch()) {
+        emit buffersStatusReceived(match.captured(1).toInt(), match.captured(2).toInt());
+    }
+}
+
 void Communicator::processOverrides(QString data)
 {
     static QRegularExpression ov("Ov:([^,]*),([^,]*),([^,^>^|]*)");
@@ -300,6 +311,7 @@ void Communicator::processStatus(QString data)
     processWorkOffset(data);
     processOverrides(data);
     processFeedSpindleSpeed(data);
+    processBuffersStatus(data);
 
     // Store device state
     setMachineStateAndEmitSignal(state);

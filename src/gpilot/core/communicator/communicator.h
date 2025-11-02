@@ -140,6 +140,7 @@ class Communicator : public QObject
         void processMessage(QString data);
         void processAlarm(QString data);
         void processFeedSpindleSpeed(QString data);
+        void processBuffersStatus(QString data);
         void processOverrides(QString data);
         void processNewToolPosition();
         void processWelcomeMessageDetected(QString message);
@@ -178,6 +179,7 @@ class Communicator : public QObject
         void parserStateReceived(QString state);
         void toolPositionReceived(QVector3D pos);
         void floodStateReceived(bool state);
+        void buffersStatusReceived(int planerBufferBlocks, int serialBufferBytes);
         void commandResponseReceived(CommandAttributes commandAttributes);
         void commandSent(CommandAttributes commandAttributes);
         // @TODO what is the difference between spindleSpeedReceived and feedSpindleSpeedReceived??
