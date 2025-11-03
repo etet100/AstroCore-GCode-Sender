@@ -30,6 +30,7 @@ class ConfigurationVisualizer : public ConfigurationModule
     Q_PROPERTY(double farPlane MEMBER m_farPlane NOTIFY changed)
     Q_PROPERTY(QColor backgroundColor MEMBER m_backgroundColor NOTIFY changed)
     Q_PROPERTY(QColor toolColor MEMBER m_toolColor NOTIFY changed)
+    Q_PROPERTY(QColor cursorColor MEMBER m_cursorColor NOTIFY changed)
     Q_PROPERTY(QColor textColor MEMBER m_textColor NOTIFY changed)
     Q_PROPERTY(QColor normalToolpathColor MEMBER m_normalToolpathColor NOTIFY changed)
     Q_PROPERTY(QColor drawnToolpathColor MEMBER m_drawnToolpathColor NOTIFY changed)
@@ -74,6 +75,7 @@ class ConfigurationVisualizer : public ConfigurationModule
         // colors
         QColor backgroundColor() const { return m_backgroundColor; }
         QColor toolColor() const { return m_toolColor; }
+        QColor cursorColor() const { return m_cursorColor; }
         QColor textColor() const { return m_textColor; }
         QColor normalToolpathColor() const { return m_normalToolpathColor; }
         QColor drawnToolpathColor() const { return m_drawnToolpathColor; }
@@ -109,6 +111,7 @@ class ConfigurationVisualizer : public ConfigurationModule
         // colors
         QColor m_backgroundColor;
         QColor m_toolColor;
+        QColor m_cursorColor;
         QColor m_textColor;
         QColor m_normalToolpathColor;
         QColor m_drawnToolpathColor;

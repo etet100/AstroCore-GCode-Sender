@@ -44,8 +44,24 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="3">
+      <widget class="ColorPicker" name="clpVisualizerTextColor" native="true"/>
+     </item>
      <item row="0" column="1">
       <widget class="ColorPicker" name="clpVisualizerBackgroundColor" native="true"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="ColorPicker" name="clpVisualizerToolColor" native="true"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>Tool:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="ColorPicker" name="clpVisualizerTableGridColor" native="true"/>
      </item>
      <item row="0" column="2">
       <widget class="QLabel" name="label_28">
@@ -54,9 +70,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="ColorPicker" name="clpVisualizerTableGridColor" native="true"/>
-     </item>
      <item row="1" column="2">
       <widget class="QLabel" name="label_33">
        <property name="text">
@@ -64,18 +77,15 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="ColorPicker" name="clpVisualizerToolColor" native="true"/>
-     </item>
-     <item row="0" column="3">
-      <widget class="ColorPicker" name="clpVisualizerTextColor" native="true"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_19">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Tool:</string>
+        <string>Cursor:</string>
        </property>
       </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="ColorPicker" name="clpVisualizerCursorColor" native="true"/>
      </item>
     </layout>
    </item>

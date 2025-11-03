@@ -18,6 +18,7 @@ class CursorDrawer : public QObject, public ShaderDrawable
 
         void setPosition(QPointF position);
         void setVisible(bool visible);
+        void setColor(const QColor &color);
 
     protected:
         bool updateData(GLPalette &palette) override;

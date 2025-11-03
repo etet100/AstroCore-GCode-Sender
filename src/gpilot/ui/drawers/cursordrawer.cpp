@@ -19,6 +19,11 @@ CursorDrawer::CursorDrawer() : ShaderDrawable()
     startAnimator();
 }
 
+void CursorDrawer::setColor(const QColor &color)
+{
+    m_color = color;
+}
+
 bool CursorDrawer::updateData(GLPalette &palette)
 {
     const int arcs = 5;

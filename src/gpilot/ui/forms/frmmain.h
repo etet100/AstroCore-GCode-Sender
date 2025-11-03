@@ -381,6 +381,7 @@ private:
     void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+    void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyUIConfiguration(ConfigurationUI &uiConfiguration);

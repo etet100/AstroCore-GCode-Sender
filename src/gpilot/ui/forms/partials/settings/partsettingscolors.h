@@ -28,6 +28,7 @@ class partSettingsColors : public QWidget
         void setVisualizerBackgroundColor(const QColor &color);
         void setVisualizerTextColor(const QColor &color);
         void setVisualizerToolColor(const QColor &color);
+        void setVisualizerCursorColor(const QColor &color);
         void setVisualizerTableGridColor(const QColor &color);
         QColor toolpathHighlightColor() const;
         QColor toolpathZMovementColor() const;
@@ -39,6 +40,7 @@ class partSettingsColors : public QWidget
         QColor visualizerBackgroundColor() const;
         QColor visualizerTextColor() const;
         QColor visualizerToolColor() const;
+        QColor visualizerCursorColor() const;
         QColor visualizerTableGridColor() const;
 
     private:

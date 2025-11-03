@@ -21,6 +21,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"farPlane", 10000.0},
     {"backgroundColor", QColor("#f3eedb")},
     {"toolColor", QColor("#299cb6")},
+    {"cursorColor", QColor("#000000")},
     {"textColor", QColor("#000000")},
     {"normalToolpathColor", QColor("#900007")},
     {"drawnToolpathColor", QColor("#e1afaf")},

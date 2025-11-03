@@ -129,6 +129,7 @@ void frmSettings::initializeWidgets()
     ui->chkShow3dCursor->setChecked(visualizer.show3dCursor());
     // colors
     ui->colors->setVisualizerToolColor(visualizer.toolColor());
+    ui->colors->setVisualizerCursorColor(visualizer.cursorColor());
     ui->colors->setVisualizerBackgroundColor(visualizer.backgroundColor());
     ui->colors->setVisualizerTextColor(visualizer.textColor());
     ui->colors->setToolpathNormalColor(visualizer.normalToolpathColor());
@@ -225,6 +226,7 @@ void frmSettings::applySettings()
     visualizer.m_show3dCursor = ui->chkShow3dCursor->isChecked();
     // colors
     visualizer.m_toolColor = ui->colors->visualizerToolColor();
+    visualizer.m_cursorColor = ui->colors->visualizerCursorColor();
     visualizer.m_backgroundColor = ui->colors->visualizerBackgroundColor();
     visualizer.m_textColor = ui->colors->visualizerTextColor();
     visualizer.m_normalToolpathColor = ui->colors->toolpathNormalColor();

@@ -67,6 +67,11 @@ void partSettingsColors::setVisualizerToolColor(const QColor &color)
     ui->clpVisualizerToolColor->setColor(color);
 }
 
+void partSettingsColors::setVisualizerCursorColor(const QColor &color)
+{
+    ui->clpVisualizerCursorColor->setColor(color);
+}
+
 void partSettingsColors::setVisualizerTableGridColor(const QColor &color)
 {
     ui->clpVisualizerTableGridColor->setColor(color);
@@ -120,6 +125,11 @@ QColor partSettingsColors::visualizerTextColor() const
 QColor partSettingsColors::visualizerToolColor() const
 {
     return ui->clpVisualizerToolColor->color();
+}
+
+QColor partSettingsColors::visualizerCursorColor() const
+{
+    return ui->clpVisualizerCursorColor->color();
 }
 
 QColor partSettingsColors::visualizerTableGridColor() const

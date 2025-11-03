@@ -2510,6 +2510,13 @@ void frmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerCo
     m_toolDrawer.update();
 }
 
+void frmMain::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+{
+    m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
+    m_cursorDrawer.setColor(visualizerConfiguration.cursorColor());
+    m_cursorDrawer.update();
+}
+
 void frmMain::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_tableSurfaceDrawer.setGridColor(visualizerConfiguration.tableSurfaceGridColor());
@@ -2589,6 +2596,7 @@ void frmMain::applySettings()
     m_communicator->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
 
     applyToolDrawerConfiguration(visualizerConfiguration);
+    applyCursorDrawerConfiguration(visualizerConfiguration);
     applyCodeDrawerConfiguration(visualizerConfiguration);
     applyVisualizerConfiguration(visualizerConfiguration);
     applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
