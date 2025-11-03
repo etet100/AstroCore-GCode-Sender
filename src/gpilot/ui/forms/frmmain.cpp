@@ -42,6 +42,9 @@
 frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
+    m_heightmap(),
+    m_heightmapBorderDrawer(m_heightmap),
+    m_heightmapGridDrawer(m_heightmap),
     m_connectionManager(this, configuration.connectionModule()),
     m_connection(nullptr),
     m_program(),
@@ -272,11 +275,12 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     m_originDrawer = new OriginDrawer();
     m_codeDrawer = new GcodeDrawer();
+    // connect(&m_program, &GCode::linesUpdated, m_codeDrawer, &GcodeDrawer::onLinesUpdated);
     m_codeDrawer->setViewParser(&m_viewParser);
     m_probeDrawer = new GcodeDrawer();
     m_probeDrawer->setViewParser(&m_probeParser);
     m_probeDrawer->setVisible(false);
-    m_heightmapGridDrawer.setModel(&m_heightmapModel);
+    // m_heightmapGridDrawer.setModel(&m_heightmapModel);
     m_currentDrawer = m_codeDrawer;
 
     m_tableMenu = new QMenu(this);
@@ -942,7 +946,7 @@ void frmMain::on_cmdFileReset_clicked()
         ui->txtHeightMapGridZBottom->setEnabled(true);
         ui->txtHeightMapGridZTop->setEnabled(true);
 
-        delete m_heightmapInterpolationDrawer.data();
+        // delete m_heightmapInterpolationDrawer.data();
         m_heightmapInterpolationDrawer.setData(NULL);
 
         m_heightmapModel.clear();
@@ -2122,9 +2126,9 @@ void frmMain::updateHeightMapInterpolationDrawer(bool reset)
         interpolationData->append(row);
     }
 
-    if (m_heightmapInterpolationDrawer.data() != NULL) {
-        delete m_heightmapInterpolationDrawer.data();
-    }
+    // if (m_heightmapInterpolationDrawer.data() != NULL) {
+    //     delete m_heightmapInterpolationDrawer.data();
+    // }
     m_heightmapInterpolationDrawer.setData(interpolationData);
 
     // Update grid drawer
@@ -3037,8 +3041,8 @@ void frmMain::clearTable()
 
 void frmMain::resetHeightmap()
 {
-    delete m_heightmapInterpolationDrawer.data();
-    m_heightmapInterpolationDrawer.setData(NULL);
+    // delete m_heightmapInterpolationDrawer.data();
+    m_heightmapInterpolationDrawer.setData(nullptr);
 
     ui->tblHeightMap->setModel(NULL);
     m_heightmapModel.resize(1, 1);
@@ -3193,7 +3197,7 @@ void frmMain::updateControlsState()
 
     // Heightmap
     m_heightmapBorderDrawer.setVisible(ui->chkHeightMapBorderShow->isChecked() && m_heightmapMode);
-    m_heightmapGridDrawer.setVisible(ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
+    m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
     m_heightmapInterpolationDrawer.setVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
 
     ui->grpProgram->setText(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
@@ -3347,8 +3351,8 @@ bool frmMain::updateHeightmapGrid()
 
     // Update grid drawer
     QRectF borderRect = borderRectFromTextboxes();
-    m_heightmapGridDrawer.setBorderRect(borderRect);
-    m_heightmapGridDrawer.setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
+    // m_heightmapGridDrawer.setBorderRect(borderRect);
+    // m_heightmapGridDrawer.setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
     m_heightmapGridDrawer.setZBottom(ui->txtHeightMapGridZBottom->value());
     m_heightmapGridDrawer.setZTop(ui->txtHeightMapGridZTop->value());
 

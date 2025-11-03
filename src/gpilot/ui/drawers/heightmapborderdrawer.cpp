@@ -3,7 +3,7 @@
 
 #include "heightmapborderdrawer.h"
 
-HeightMapBorderDrawer::HeightMapBorderDrawer()
+HeightMapBorderDrawer::HeightMapBorderDrawer(Heightmap &model) : m_model(model)
 {
 }
 

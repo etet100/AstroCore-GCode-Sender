@@ -16,10 +16,10 @@ class HeightMapInterpolationDrawer : public ShaderDrawable
 public:
     explicit HeightMapInterpolationDrawer();
 
-    QVector<QVector<double> > *data() const;
+    // QVector<QVector<double> > *data() const;
     void setData(QVector<QVector<double> > *data);
 
-    QRectF borderRect() const;
+    // QRectF borderRect() const;
     void setBorderRect(const QRectF &borderRect);
 
 protected:

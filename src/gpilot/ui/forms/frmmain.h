@@ -244,6 +244,10 @@ private:
     GCodeViewParser m_viewParser;
     GCodeViewParser m_probeParser;
 
+    // Heightmap
+    bool m_heightmapMode;
+    Heightmap m_heightmap;
+
     // Visualizer drawers
     // TODO: Add machine table visualizer
     TableSurfaceDrawer m_tableSurfaceDrawer;
@@ -298,9 +302,6 @@ private:
     // bool m_updateSpindleSpeed;
     // bool m_updateParserStatus;
 
-    // Heightmap
-    bool m_heightmapMode;
-    Heightmap m_heightmap;
 
     // Current values
     int m_lastDrawnLineIndex;

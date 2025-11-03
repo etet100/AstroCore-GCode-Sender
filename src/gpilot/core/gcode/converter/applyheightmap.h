@@ -12,10 +12,10 @@
 class ApplyHeightmap : public Converter
 {
     public:
-        ApplyHeightmap(GCode &data, const Heightmap &heightmap);
+        ApplyHeightmap(GCode &data, Heightmap &heightmap);
 
     private:
-        Heightmap m_heightmap;
+        Heightmap &m_heightmap;
         HeightmapInterpolator m_interpolator;
 };
 

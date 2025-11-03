@@ -36,7 +36,7 @@ struct State {
 // G92 Set offset of current position - Creates an additional offset that is added to each coordinate.
 //     The offset remains active until the end of the program or until another G92 command is encountered.
 
-ApplyHeightmap::ApplyHeightmap(GCode &data, const Heightmap &heightmap)
+ApplyHeightmap::ApplyHeightmap(GCode &data, Heightmap &heightmap)
     : Converter(data)
     , m_heightmap(heightmap)
     , m_interpolator(heightmap)

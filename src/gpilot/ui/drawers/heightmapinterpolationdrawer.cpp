@@ -82,20 +82,24 @@ bool HeightMapInterpolationDrawer::updateData(GLPalette &palette)
     return true;
 }
 
-QVector<QVector<double> > *HeightMapInterpolationDrawer::data() const
-{
-    return m_data;
-}
+// QVector<QVector<double> > *HeightMapInterpolationDrawer::data() const
+// {
+//     return m_data;
+// }
 
 void HeightMapInterpolationDrawer::setData(QVector<QVector<double> > *data)
 {
+    if (m_data) {
+        delete m_data;
+    }
     m_data = data;
     update();
 }
-QRectF HeightMapInterpolationDrawer::borderRect() const
-{
-    return m_borderRect;
-}
+
+// QRectF HeightMapInterpolationDrawer::borderRect() const
+// {
+//     return m_borderRect;
+// }
 
 void HeightMapInterpolationDrawer::setBorderRect(const QRectF &borderRect)
 {

@@ -5,38 +5,39 @@
 #define HEIGHTMAPGRIDDRAWER_H
 
 #include <QObject>
-#include <QAbstractTableModel>
 #include "shaderdrawable.h"
+#include "core/heightmap/heightmap.h"
 
 class HeightMapGridDrawer : public ShaderDrawable
 {
 public:
-    HeightMapGridDrawer();
+    HeightMapGridDrawer(Heightmap &model);
 
-    QPointF gridSize() const;
-    void setGridSize(const QPointF &gridSize);
+    // QPointF gridSize() const;
+    // void setGridSize(const QPointF &gridSize);
 
-    QRectF borderRect() const;
-    void setBorderRect(const QRectF &borderRect);
+    // QRectF borderRect() const;
+    // void setBorderRect(const QRectF &borderRect);
 
-    double zTop() const;
+    // double zTop() const;
     void setZTop(double zTop);
 
-    double zBottom() const;
+    // double zBottom() const;
     void setZBottom(double zBottom);
 
-    QAbstractTableModel *model() const;
-    void setModel(QAbstractTableModel *model);
+    // QAbstractTableModel *model() const;
+    // void setModel(QAbstractTableModel *model);
 
 protected:
     bool updateData(GLPalette &palette) override;
 
 private:
-    QPointF m_gridSize;
-    QRectF m_borderRect;
+    // QPointF m_gridSize;
+    // QRectF m_borderRect;
     double m_zTop;
     double m_zBottom;
-    QAbstractTableModel *m_model;
+    // QAbstractTableModel *m_model;
+    Heightmap &m_model;
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H
