@@ -149,22 +149,18 @@ void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     // setAttributeBuffer must used every time, because it is not stored in VAO??
     //shaderProgram->setAttributeValue("a_alpha", m_globalAlpha);
 
-    // if (!m_triangles.isEmpty()) {
-    //     // if (m_texture) {
-    //     //     m_texture->bind();
-    //     //     shaderProgram->setUniformValue("texture", 0);
-    //     // }
-    //     glDrawArrays(GL_TRIANGLES, 0, m_triangles.count());
-    // }
+    if (!m_triangles.isEmpty()) {
+        glDrawArrays(GL_TRIANGLES, 0, m_triangles.count());
+    }
 
     if (!m_lines.isEmpty()) {
         glLineWidth(m_lineWidth);
         glDrawArrays(GL_LINES, m_triangles.count(), m_lines.count());
     }
 
-    // if (!m_points.isEmpty()) {
-    //     glDrawArrays(GL_POINTS, m_triangles.count() + m_lines.count(), m_points.count());
-    // }
+    if (!m_points.isEmpty()) {
+        glDrawArrays(GL_POINTS, m_triangles.count() + m_lines.count(), m_points.count());
+    }
 
     //if (m_vao.isCreated()) m_vao.release(); else
     m_vbo.release();

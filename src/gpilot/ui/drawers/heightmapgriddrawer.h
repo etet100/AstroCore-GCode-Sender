@@ -38,6 +38,8 @@ private:
     double m_zBottom;
     // QAbstractTableModel *m_model;
     Heightmap &m_model;
+    void generateLines(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
+    void generateTriangles(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H
