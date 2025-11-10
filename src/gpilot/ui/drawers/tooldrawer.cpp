@@ -72,11 +72,6 @@ bool ToolDrawer::updateData(GLPalette &palette)
     return true;
 }
 
-QColor ToolDrawer::color() const
-{
-    return m_color;
-}
-
 void ToolDrawer::setColor(const QColor &color)
 {
     m_color = color;
@@ -110,21 +105,12 @@ QVector<VertexData> ToolDrawer::createCircle(QVector3D center, double radius, in
     return circle;
 }
 
-double ToolDrawer::toolDiameter() const
-{
-    return m_toolDiameter;
-}
-
 void ToolDrawer::setToolDiameter(double toolDiameter)
 {
     if (m_toolDiameter != toolDiameter) {
         m_toolDiameter = toolDiameter;
         update();
     }
-}
-double ToolDrawer::toolLength() const
-{
-    return m_toolLength;
 }
 
 void ToolDrawer::setToolLength(double toolLength)
@@ -134,10 +120,6 @@ void ToolDrawer::setToolLength(double toolLength)
         update();
     }
 }
-QVector3D ToolDrawer::toolPosition() const
-{
-    return m_toolPosition;
-}
 
 void ToolDrawer::setToolPosition(const QVector3D &toolPosition)
 {
@@ -145,10 +127,6 @@ void ToolDrawer::setToolPosition(const QVector3D &toolPosition)
         m_toolPosition = toolPosition;
         update();
     }
-}
-double ToolDrawer::rotationAngle() const
-{
-    return m_rotationAngle;
 }
 
 void ToolDrawer::setRotationAngle(double rotationAngle)
@@ -162,11 +140,6 @@ void ToolDrawer::setRotationAngle(double rotationAngle)
 void ToolDrawer::rotate(double angle)
 {
     setRotationAngle(normalizeAngle(m_rotationAngle + angle));
-}
-
-double ToolDrawer::toolAngle() const
-{
-    return m_toolAngle;
 }
 
 void ToolDrawer::setToolAngle(double toolAngle)

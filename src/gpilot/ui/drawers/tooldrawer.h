@@ -15,28 +15,13 @@ class ToolDrawer : public ShaderDrawable
 public:
     explicit ToolDrawer();
 
-    double toolDiameter() const;
     void setToolDiameter(double toolDiameter);
-
-    double toolLength() const;
     void setToolLength(double toolLength);
-
-    QVector3D toolPosition() const;
     void setToolPosition(const QVector3D &toolPosition);
-
-    double rotationAngle() const;
     void setRotationAngle(double rotationAngle);
     void rotate(double angle);
-
-    double toolAngle() const;
     void setToolAngle(double toolAngle);
-
-    QColor color() const;
     void setColor(const QColor &color);
-
-signals:
-
-public slots:
 
 protected:
     bool updateData(GLPalette &palette) override;
