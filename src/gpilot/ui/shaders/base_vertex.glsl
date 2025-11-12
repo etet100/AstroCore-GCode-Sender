@@ -47,5 +47,5 @@ void main()
     // Calculate vertex position in screen space
     gl_Position = u_mvp_matrix * vec4(a_position, 1.0);
 
-    v_color = texture2D(u_palette, vec2(a_color * (1.0 / 25.0) + (1.0 / 50.0), 0.0));
+    v_color = texture2D(u_palette, vec2(a_color * (1.0 / 50.0) + (1.0 / 100.0), 0.0));
 }
