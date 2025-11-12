@@ -13,9 +13,17 @@
 //#include <GLES/gl.h>
 #endif
 
+//1 = old/classic, 2 = new
+#define NAV_MODE 2
 #define ZOOMSTEP 1.1
 #define DEFAULT_ZOOM 200
-#define MIN_ZOOM  0.2
+#if NAV_MODE == 1
+    #define MIN_ZOOM  0.2
+#endif
+#if NAV_MODE == 2
+    #define MIN_ZOOM  10.0
+    #define MAX_ZOOM  10000.0
+#endif
 #define ONE_DEG_IN_RAD 0.0174533
 // what is this value? oryginally was 1.25
 #define MAGIC_ZOOM_MULTIPLIER 1.9
@@ -525,19 +533,38 @@ void GLWidget::updateView()
     double angY = M_PI / 180 * m_yRot;
     double angX = M_PI / 180 * m_xRot;
 
+#if NAV_MODE == 1
     m_eye = QVector3D(cos(angX) * sin(angY), sin(angX), cos(angX) * cos(angY)).normalized();
+#endif
+#if NAV_MODE == 2
+    // Calculate direction from rotation angles
+    QVector3D direction(
+        cos(angX) * sin(angY),
+        sin(angX),
+        cos(angX) * cos(angY)
+    );
+    direction.normalize();
+
+    m_eye = m_lookAt + direction * m_zoomDistance;
+#endif
 
     QVector3D up(fabs(m_xRot) == 90 ? -sin(angY + (m_xRot < 0 ? M_PI : 0)) : 0, cos(angX), fabs(m_xRot) == 90 ? -cos(angY + (m_xRot < 0 ? M_PI : 0)) : 0);
     up.normalize();
 
     m_cubeDrawer.updateEyePosition(m_eye, up);
 
+#if NAV_MODE == 1
     if (m_perspective) {
         m_eye *= m_zoomDistance;
     }
     m_viewMatrix.lookAt(m_eye, QVector3D(0,0,0), up);
     m_viewMatrix.rotate(-90, 1.0, 0.0, 0.0);
     m_viewMatrix.translate(-m_lookAt);
+#endif
+#if NAV_MODE == 2
+    m_viewMatrix.lookAt(m_eye, m_lookAt, up);
+    m_viewMatrix.rotate(-90, 1.0, 0.0, 0.0);
+#endif
 }
 
 void GLWidget::drawText(QPainter &painter, QPoint &pos, QString text, int lineHeight, Qt::AlignmentFlag align)
@@ -883,8 +910,29 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         // Get difference
         QVector4D difference = currentMouseInWorld - lastMouseInWorld;
 
+    #if NAV_MODE == 1
         // Subtract difference from center point
         m_lookAt -= QVector3D(difference.x(), difference.y(), difference.z());
+    #endif
+    #if NAV_MODE == 2
+        // Move in camera local space ( screen space )
+        // Calculate "right" and "up" vectors relative to the camera
+        QVector3D direction = (m_lookAt - m_eye).normalized();
+        QVector3D up(0, 1, 0);
+        QVector3D right = QVector3D::crossProduct(direction, up).normalized();
+        up = QVector3D::crossProduct(right, direction).normalized();
+
+        // Mouse movement in pixels
+        double dx = pos.x() - m_lastPos.x();
+        double dy = pos.y() - m_lastPos.y();
+
+        // Scale movement (you can adjust the factor)
+        double moveScale = m_zoomDistance * 0.006;
+
+        QVector3D move = -right * dx * moveScale + up * dy * moveScale;
+        m_lookAt += move;
+        m_eye += move;
+    #endif
 
         m_lastPos = pos;
 
@@ -923,6 +971,7 @@ void GLWidget::leaveEvent(QEvent *event)
 void GLWidget::wheelEvent(QWheelEvent *we)
 {
     int delta = we->angleDelta().y();
+#if NAV_MODE == 1
     if (m_zoomDistance > MIN_ZOOM && delta < 0) {
         m_zoomDistance /= ZOOMSTEP;
     } else if (delta > 0) {
@@ -934,6 +983,24 @@ void GLWidget::wheelEvent(QWheelEvent *we)
     } else {
         updateView();
     }
+#endif
+#if NAV_MODE == 2
+    double zoomStep = (delta > 0) ? ZOOMSTEP : 1.0 / ZOOMSTEP;
+    if (m_perspective) {
+        // Przesuwamy kamerę i punkt obrotu wzdłuż osi patrzenia
+        QVector3D viewDir = (m_lookAt - m_eye).normalized();
+        double moveDist = m_zoomDistance * (zoomStep - 1.0);
+        m_eye += viewDir * moveDist;
+        m_lookAt += viewDir * moveDist;
+        m_zoomDistance = qBound(MIN_ZOOM, (m_eye - m_lookAt).length(), MAX_ZOOM);
+    } else {
+        // Ortho: scale only
+        m_zoomDistance *= zoomStep;
+        m_zoomDistance = qBound(MIN_ZOOM, m_zoomDistance, MAX_ZOOM);
+    }
+    updateProjection();
+    updateView();
+#endif
 }
 
 void GLWidget::timerEvent(QTimerEvent *te)
