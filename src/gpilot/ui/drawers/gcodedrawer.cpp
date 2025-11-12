@@ -78,7 +78,7 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
 {
     qDebug() << "preparing vectors" << this;
 
-    QList<LineSegment> list = m_viewParser->getLines();
+    QList<LineSegment> &list = m_viewParser->getLines();
     VertexData vertex;
 
     qDebug() << "lines count" << list.count();
