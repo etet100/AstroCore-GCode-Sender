@@ -2,7 +2,7 @@
 #include <QDebug>
 
 // has to be changed in vertex shaders too
-#define MAX_COLORS 25
+#define MAX_COLORS 50
 
 GLPalette::GLPalette() : m_colors(), m_indexes() {
     m_texture = nullptr;
@@ -32,14 +32,14 @@ void GLPalette::release()
     m_texture->release();
 }
 
-GLuint GLPalette::add(float r, float g, float b)
+GLuint GLPalette::add(float r, float g, float b, float a)
 {
     assert(m_colors.count() < MAX_COLORS);
     assert(r <= 1.0 && g <= 1.0 && b <= 1.0);
 
-    QString index = QString("%1_%2_%3").arg(r).arg(g).arg(b);
+    QString index = QString("%1_%2_%3_%4").arg(r).arg(g).arg(b).arg(a);
 
-    m_colors << GLColor(r, g, b, 1.0);
+    m_colors << GLColor(r, g, b, a);
     m_indexes[index] = m_colors.count() - 1;
     m_updated = true;
 
@@ -67,7 +67,7 @@ QString GLPalette::colorAsHex(int index)
 
 GLPalette &GLPalette::operator <<(const GLColor &color)
 {
-    add(color.x(), color.y(), color.z());
+    add(color.x(), color.y(), color.z(), color.w());
 
     return *this;
 }

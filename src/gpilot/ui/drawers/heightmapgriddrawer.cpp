@@ -8,7 +8,7 @@ HeightMapGridDrawer::HeightMapGridDrawer(Heightmap &model) : m_model(model)
     m_pointSize = 4;
 }
 
-#define STEPS(x) (trunc(x * 10.0) / 10.0)
+#define STEPS(x) (trunc(x * 5.0) / 5.0)
 
 void HeightMapGridDrawer::generateLines(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY)
 {
@@ -68,10 +68,10 @@ void HeightMapGridDrawer::generateTriangles(int gridPointsY, double min, QPointF
             QVector3D p11(startPos.x() + gridStepX * (j+1), startPos.y() + gridStepY * (i+1), v11);
 
             // Kolory dla wierzchołków
-            GLuint c00 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v00) / (max - min)), 1.0, 1.0));
-            GLuint c10 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v10) / (max - min)), 1.0, 1.0));
-            GLuint c01 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v01) / (max - min)), 1.0, 1.0));
-            GLuint c11 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v11) / (max - min)), 1.0, 1.0));
+            GLuint c00 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v00) / (max - min)), 1.0, 1.0, 0.5));
+            GLuint c10 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v10) / (max - min)), 1.0, 1.0, 0.5));
+            GLuint c01 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v01) / (max - min)), 1.0, 1.0, 0.5));
+            GLuint c11 = palette.color(QColor::fromHsvF(0.67 * STEPS((max - v11) / (max - min)), 1.0, 1.0, 0.5));
 
             // Dodaj dwa trójkąty na każdy kwadrat siatki
             VertexData vA, vB, vC;
