@@ -96,7 +96,7 @@ protected:
     virtual void bindAttributes(QOpenGLShaderProgram *&shaderProgram);
 
 private:
-    //QOpenGLVertexArrayObject m_vao;
+    QOpenGLVertexArrayObject m_vao;
 
     bool m_needsUpdateGeometry;
 };
