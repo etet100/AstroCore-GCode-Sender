@@ -3353,8 +3353,8 @@ bool frmMain::updateHeightmapGrid()
     QRectF borderRect = borderRectFromTextboxes();
     // m_heightmapGridDrawer.setBorderRect(borderRect);
     // m_heightmapGridDrawer.setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
-    m_heightmapGridDrawer.setZBottom(ui->txtHeightMapGridZBottom->value());
-    m_heightmapGridDrawer.setZTop(ui->txtHeightMapGridZTop->value());
+    // m_heightmapGridDrawer.setZBottom(ui->txtHeightMapGridZBottom->value());
+    // m_heightmapGridDrawer.setZTop(ui->txtHeightMapGridZTop->value());
 
     // Reset model
     int gridPointsX = ui->txtHeightMapGridX->value();
