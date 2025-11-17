@@ -627,6 +627,10 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     QOpenGLShaderProgram *currentProgram = nullptr;
 
+    static float lightRotation = 0;
+    QVector3D lightPos(100 * cos(lightRotation * M_PI / 180), 100 * sin(lightRotation * M_PI / 180), 40);
+    lightRotation += 1;
+
     if (m_gcodeShaderProgram) {
         if (currentProgram && currentProgram != m_gcodeShaderProgram) {
             currentProgram->release();
@@ -635,7 +639,8 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->bind();
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
-        currentProgram->setUniformValue("u_light_position", QVector3D(100, 10, 100));
+        currentProgram->setUniformValue("u_light_position", lightPos);
+        //
         currentProgram->setUniformValue("u_eye", m_eye);
         currentProgram->setUniformValue("u_near", (GLfloat) m_near);
         currentProgram->setUniformValue("u_far", (GLfloat) m_far);
@@ -649,6 +654,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->bind();
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
+        currentProgram->setUniformValue("u_light_position", lightPos);
     }
 
     foreach (ShaderDrawable *drawable, m_shaderDrawables) {
@@ -694,6 +700,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         }
         case ShaderDrawable::ProgramType::Default:
             m_palette.bind();
+            if (drawable->sort(m_viewMatrix)) {
+                drawable->bindData(currentProgram);
+            }
             drawable->draw(currentProgram);
             m_palette.release();
             break;

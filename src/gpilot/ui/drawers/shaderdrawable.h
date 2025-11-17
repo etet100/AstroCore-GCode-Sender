@@ -78,9 +78,11 @@ public:
 
     QList<VertexData>& lines() { return m_lines; }
     virtual bool updateData(GLPalette &palette);
+    void bindData(QOpenGLShaderProgram *shaderProgram);
 
     virtual ProgramType programType() { return ProgramType::Default; };
 
+    virtual bool sort(QMatrix4x4 viewMatrix);
 protected:
     double m_lineWidth;
     double m_pointSize;
@@ -90,13 +92,13 @@ protected:
     QVector<VertexData> m_points;
     QVector<VertexData> m_triangles;
 
+    QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo; // Protected for direct vbo access
 
     void init();
     virtual void bindAttributes(QOpenGLShaderProgram *&shaderProgram);
 
 private:
-    QOpenGLVertexArrayObject m_vao;
 
     bool m_needsUpdateGeometry;
 };

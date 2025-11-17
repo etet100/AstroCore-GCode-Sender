@@ -2,7 +2,7 @@
 #include <QDebug>
 
 // has to be changed in vertex shaders too
-#define MAX_COLORS 50
+#define MAX_COLORS 100
 
 GLPalette::GLPalette() : m_colors(), m_indexes() {
     m_texture = nullptr;

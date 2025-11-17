@@ -11,6 +11,7 @@ ToolDrawer::ToolDrawer()
     m_rotationAngle = 0;
 }
 
+
 bool ToolDrawer::updateData(GLPalette &palette)
 {
     const int arcs = 4;
@@ -18,13 +19,56 @@ bool ToolDrawer::updateData(GLPalette &palette)
     // Clear data
     m_lines.clear();
     m_points.clear();
+    m_triangles.clear();
 
     // Prepare vertex
     VertexData vertex;
+    m_color.setAlphaF(0.7);
     vertex.color = palette.color(m_color);
     vertex.start = QVector3D(sNan, sNan, sNan);
 
-    // Draw lines
+    // Draw tool
+    // createLines(arcs, vertex);
+    createTriangles(arcs * 3, vertex);
+
+    return true;
+}
+
+void ToolDrawer::setColor(const QColor &color)
+{
+    m_color = color;
+}
+
+bool ToolDrawer::sort(QMatrix4x4 viewMatrix)
+{
+    struct TriangleInfo {
+        int index;
+        float z;
+    };
+    QVector<TriangleInfo> infos;
+    int triangleCount = m_triangles.size() / 3;
+    for (int i = 0; i < triangleCount; ++i) {
+        QVector3D center = (m_triangles[i*3].position + m_triangles[i*3+1].position + m_triangles[i*3+2].position) / 3.0f;
+        QVector3D camCenter = viewMatrix.map(center);
+        infos.append({i, camCenter.z()});
+    }
+    std::sort(infos.begin(), infos.end(), [](const TriangleInfo &a, const TriangleInfo &b) {
+        // from farthest to nearest
+        return a.z > b.z;
+    });
+    QVector<VertexData> sorted;
+    for (const auto &info : infos) {
+        sorted.append(m_triangles[info.index*3]);
+        sorted.append(m_triangles[info.index*3+1]);
+        sorted.append(m_triangles[info.index*3+2]);
+    }
+    m_triangles = sorted;
+
+    return true;
+}
+
+void ToolDrawer::createLines(const int arcs, VertexData &vertex)
+{
     for (int i = 0; i < arcs; i++) {
         double x = m_toolPosition.x() + m_toolDiameter / 2 * cos(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
         double y = m_toolPosition.y() + m_toolDiameter / 2 * sin(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
@@ -68,13 +112,71 @@ bool ToolDrawer::updateData(GLPalette &palette)
         m_lines += createCircle(QVector3D(m_toolPosition.x(), m_toolPosition.y(), 0),
                                 m_toolDiameter / 2, 20, vertex.color);
     }
-
-    return true;
 }
 
-void ToolDrawer::setColor(const QColor &color)
+void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
 {
-    m_color = color;
+    // Prepare circles (top and bottom)
+    QVector<QVector3D> bottomCircle;
+    QVector<QVector3D> topCircle;
+    double angleStep = 2 * M_PI / arcs;
+
+    for (int i = 0; i < arcs; ++i) {
+        double angle = m_rotationAngle / 180 * M_PI + angleStep * i;
+        double x = m_toolPosition.x() + m_toolDiameter / 2 * cos(angle);
+        double y = m_toolPosition.y() + m_toolDiameter / 2 * sin(angle);
+        bottomCircle.append(QVector3D(x, y, m_toolPosition.z() + m_endLength));
+        topCircle.append(QVector3D(x, y, m_toolPosition.z() + m_toolLength + 0.1));
+    }
+
+    auto setTriangleNormal = [](VertexData &a, VertexData &b, VertexData &c) {
+        QVector3D normal = QVector3D::normal(a.position, b.position, c.position);
+        a.start = normal;
+        b.start = normal;
+        c.start = normal;
+    };
+
+    // Side triangles
+    for (int i = 0; i < arcs; ++i) {
+        int next = (i + 1) % arcs;
+        VertexData v1 = vertex; v1.position = bottomCircle[i];
+        VertexData v2 = vertex; v2.position = topCircle[i];
+        VertexData v3 = vertex; v3.position = topCircle[next];
+        setTriangleNormal(v1, v2, v3);
+        m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
+        VertexData v4 = vertex; v4.position = bottomCircle[i];
+        VertexData v5 = vertex; v5.position = topCircle[next];
+        VertexData v6 = vertex; v6.position = bottomCircle[next];
+        setTriangleNormal(v4, v5, v6);
+        m_triangles.append(v4); m_triangles.append(v5); m_triangles.append(v6);
+    }
+
+    // Top cap (fan from center)
+    QVector3D topCenter(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_toolLength);
+    for (int i = 0; i < arcs; ++i) {
+        int next = (i + 1) % arcs;
+        VertexData v1 = vertex; v1.position = topCenter;
+        VertexData v2 = vertex; v2.position = topCircle[i];
+        VertexData v3 = vertex; v3.position = topCircle[next];
+        setTriangleNormal(v1, v2, v3);
+        m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
+    }
+
+    // Sharp tip triangles (if m_endLength > 0)
+    if (m_endLength > 0) {
+        QVector3D tip(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z());
+        for (int i = 0; i < arcs; ++i) {
+            int next = (i + 1) % arcs;
+            VertexData v1 = vertex; v1.position = tip;
+            VertexData v2 = vertex; v2.position = bottomCircle[i];
+            VertexData v3 = vertex; v3.position = bottomCircle[next];
+            QVector3D normal = QVector3D::normal(v1.position, v2.position, v3.position);
+            v1.start = normal;
+            v2.start = normal;
+            v3.start = normal;
+            m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
+        }
+    }
 }
 
 QVector<VertexData> ToolDrawer::createCircle(QVector3D center, double radius, int arcs, uint color)
@@ -156,8 +258,8 @@ void ToolDrawer::setToolAngle(double toolAngle)
 
 double ToolDrawer::normalizeAngle(double angle)
 {
-    while (angle < 0) angle += 360;
-    while (angle > 360) angle -= 360;
-    
+    while (angle < 0) { angle += 360; }
+    while (angle > 360) { angle -= 360; }
+
     return angle;
 }

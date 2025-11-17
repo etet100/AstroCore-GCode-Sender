@@ -58,7 +58,7 @@ void ShaderDrawable::bindAttributes(QOpenGLShaderProgram *&shaderProgram)
     offset += sizeof(GLfloat);
 
     // Tell OpenGL programmable pipeline how to locate vertex line start point
-    pos = shaderProgram->attributeLocation("a_start");
+    pos = shaderProgram->attributeLocation("a_normal");
     if (pos > 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 3, sizeof(VertexData));
@@ -92,12 +92,30 @@ void ShaderDrawable::updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalet
         m_vbo.allocate(vertexData.constData(),
                        vertexData.count() * sizeof(VertexData));
         bindAttributes(shaderProgram);
-    } else {
-        m_vbo.release();
-        m_vao.release();
-        m_needsUpdateGeometry = false;
-        return;
     }
+
+    m_vbo.release();
+    m_vao.release();
+    m_needsUpdateGeometry = false;
+}
+
+void ShaderDrawable::bindData(QOpenGLShaderProgram *shaderProgram)
+{
+    // Init in context
+    if (!m_vbo.isCreated() || !m_vao.isCreated()) {
+        init();
+    }
+
+    m_vao.bind();
+    m_vbo.bind();
+
+    // Fill vertices buffer
+    QVector<VertexData> vertexData(m_triangles);
+    vertexData += m_lines;
+    vertexData += m_points;
+    m_vbo.allocate(vertexData.constData(),
+                   vertexData.count() * sizeof(VertexData));
+    bindAttributes(shaderProgram);
 
     m_vbo.release();
     m_vao.release();
@@ -116,6 +134,11 @@ bool ShaderDrawable::updateData(GLPalette &palette)
         << VertexData(QVector3D(0, 0, 10), palette.color(0, 0, 1), QVector3D(sNan, 0, 0));
 
     return true;
+}
+
+bool ShaderDrawable::sort(QMatrix4x4 viewMatrix)
+{
+    return false;
 }
 
 bool ShaderDrawable::needsUpdateGeometry() const

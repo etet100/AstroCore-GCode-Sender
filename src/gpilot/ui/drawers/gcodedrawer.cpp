@@ -421,6 +421,11 @@ void GcodeDrawer::setGrayscaleMax(int grayscaleMax)
     m_grayscaleMax = grayscaleMax;
 }
 
+void GcodeDrawer::onLinesUpdated(int fromLine, int toLine)
+{
+
+}
+
 void GcodeDrawer::setGrayscaleMin(int grayscaleMin)
 {
     m_grayscaleMin = grayscaleMin;

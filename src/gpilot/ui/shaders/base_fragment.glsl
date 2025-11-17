@@ -9,7 +9,6 @@ const float factor = 2.0;
 
 varying vec4 v_color;
 varying vec2 v_position;
-varying vec2 v_start;
 varying vec2 v_texture;
 
 // uniform sampler2D texture;

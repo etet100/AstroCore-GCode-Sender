@@ -441,10 +441,10 @@ void frmMain::initializeCommunicator()
 
 void frmMain::initializeVisualizer()
 {
-    *ui->glwVisualizer << &m_tableSurfaceDrawer << m_originDrawer << m_codeDrawer << m_probeDrawer
-                       << &m_toolDrawer << &m_cursorDrawer << &m_heightmapBorderDrawer
+    *ui->glwVisualizer << m_originDrawer << m_codeDrawer << m_probeDrawer
+                       << &m_cursorDrawer << &m_heightmapBorderDrawer
                        << &m_heightmapGridDrawer << &m_heightmapInterpolationDrawer
-                       << &m_selectionDrawer << &m_machineBoundsDrawer;
+                       << &m_selectionDrawer << &m_machineBoundsDrawer << &m_toolDrawer;
 
     ui->glwVisualizer->fitDrawable();
 }

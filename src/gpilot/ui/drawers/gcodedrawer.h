@@ -73,6 +73,9 @@ public:
 
     void setEyePos(QVector3D eye) { m_eye = eye; }
 
+public slots:
+    void onLinesUpdated(int fromLine, int toLine);
+
 private slots:
     void onTimerVertexUpdate();
 

@@ -23,6 +23,8 @@ public:
     void setToolAngle(double toolAngle);
     void setColor(const QColor &color);
 
+    bool sort(QMatrix4x4 viewMatrix) override;
+
 protected:
     bool updateData(GLPalette &palette) override;
 
@@ -37,6 +39,8 @@ private:
 
     double normalizeAngle(double angle);
     QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, uint color);
+    void createLines(const int arcs, VertexData &vertex);
+    void createTriangles(const int arcs, VertexData &vertex);
 };
 
 #endif // TOOLDRAWER_H
