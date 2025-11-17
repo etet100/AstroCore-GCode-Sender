@@ -1,10 +1,3 @@
-Status: DOUBTS
---------
-
-I started this project because Candle had not been developed for a long time and contained many bugs. Unfortunately, my perfectionism made me start rewriting it from scratch. At this point, I find myself at a crossroads and do not know whether to continue this project. If someone wanted to join the work on it, I would be very happy.
-
-At this point, it makes no sense to compile the code because it is being rebuilt and does not work properly.
-
 G-Pilot (formerly Candle)
 -----------
 <img src="screenshots/gpilot_big.jpg" width="200" height="200" align="right">
