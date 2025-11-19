@@ -92,7 +92,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     ui->console->initialize(m_configuration.consoleModule());
     connect(ui->console, &partMainConsole::newCommand, this, &frmMain::onConsoleNewCommand);
-    ui->console->append(QString("G-Candle %1 started").arg( qApp->applicationVersion()));
+    ui->console->append(QString("G-Pilot %1 started").arg( qApp->applicationVersion()));
     ui->console->append("---");
 
     connect(&m_program, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
