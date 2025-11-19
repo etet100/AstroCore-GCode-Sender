@@ -1080,6 +1080,11 @@ void frmMain::on_cmdRotationCube_clicked()
     ui->glwVisualizer->toggleRotationCube();
 }
 
+void frmMain::on_cmdVisualizerHeightmap_clicked()
+{
+    m_heightmapGridDrawer.toggleVisible();
+}
+
 void frmMain::on_cmdToggleProjection_clicked()
 {
     ui->glwVisualizer->toggleProjectionType();
@@ -2164,15 +2169,27 @@ void frmMain::placeVisualizerButtons()
     ui->cmdFront->setParent(ui->glwVisualizer);
     ui->cmdLeft->setParent(ui->glwVisualizer);
     ui->cmdRotationCube->setParent(ui->glwVisualizer);
+    ui->cmdVisualizerHeightmap->setParent(ui->glwVisualizer);
 
-    int w = ui->glwVisualizer->width();
-    ui->cmdIsometric->move(w - ui->cmdIsometric->width() - 8, 8);
-    ui->cmdTop->move(ui->cmdIsometric->geometry().left() - ui->cmdTop->width() - 8, 8);
-    ui->cmdLeft->move(w - ui->cmdLeft->width() - 8, ui->cmdIsometric->geometry().bottom() + 8);
-    ui->cmdFront->move(ui->cmdLeft->geometry().left() - ui->cmdFront->width() - 8, ui->cmdIsometric->geometry().bottom() + 8);
-    ui->cmdFit->move(w - ui->cmdFit->width() - 8, ui->cmdLeft->geometry().bottom() + 8);
-    ui->cmdToggleProjection->move(ui->cmdFit->geometry().left() - ui->cmdToggleProjection->width() - 8, ui->cmdLeft->geometry().bottom() + 8);
-    ui->cmdRotationCube->move(w - ui->cmdRotationCube->width() - 8, ui->cmdFit->geometry().bottom() + 8);
+    QSize gridSize = ui->cmdFit->size() + QSize(8, 8);
+    int x1 = ui->glwVisualizer->width() - gridSize.width() - gridSize.width() - 8;
+    int x2 = x1 + gridSize.width();
+    int y = 8;
+
+    ui->cmdIsometric->move(x1, y);
+    ui->cmdTop->move(x2, y);
+    y += gridSize.height();
+
+    ui->cmdLeft->move(x1, y);
+    ui->cmdFront->move(x2, y);
+    y += gridSize.height();
+
+    ui->cmdFit->move(x1, y);
+    ui->cmdToggleProjection->move(x2, y);
+    y += gridSize.height();
+
+    ui->cmdRotationCube->move(x1, y);
+    ui->cmdVisualizerHeightmap->move(x2, y);
 }
 
 void frmMain::preloadSettings()
@@ -3210,8 +3227,8 @@ void frmMain::updateControlsState()
     ui->cmdFileAbort->ensurePolished();
 
     // Heightmap
-    m_heightmapBorderDrawer.setVisible(ui->chkHeightMapBorderShow->isChecked() && m_heightmapMode);
-    m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
+    // m_heightmapBorderDrawer.setVisible(ui->chkHeightMapBorderShow->isChecked() && m_heightmapMode);
+    // m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
     m_heightmapInterpolationDrawer.setVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
 
     ui->grpProgram->setText(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));

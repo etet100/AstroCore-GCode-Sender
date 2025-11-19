@@ -148,7 +148,9 @@ bool ShaderDrawable::needsUpdateGeometry() const
 
 void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
 {
-    if (!m_visible) return;
+    if (!m_visible) {
+        return;
+    }
     if (m_vao.isCreated()) {
         m_vao.bind();
     } else {
@@ -212,6 +214,11 @@ bool ShaderDrawable::visible() const
 void ShaderDrawable::setVisible(bool visible)
 {
     m_visible = visible;
+}
+
+void ShaderDrawable::toggleVisible()
+{
+    m_visible = !m_visible;
 }
 
 double ShaderDrawable::pointSize() const

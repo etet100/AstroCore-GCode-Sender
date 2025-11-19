@@ -143,6 +143,7 @@ private slots:
     void on_cmdRotationCube_clicked();
     void on_cmdToggleProjection_clicked();
     void on_cmdFit_clicked();
+    void on_cmdVisualizerHeightmap_clicked();
     void on_grpOverriding_toggled(bool checked);
     void on_grpSpindle_toggled(bool checked);
     void on_grpJog_toggled(bool checked);
@@ -170,7 +171,6 @@ private slots:
     void on_menuViewWindows_aboutToShow();
     void on_menuViewPanels_aboutToShow();
     void on_dockVisualizer_visibilityChanged(bool visible);
-
     void onMachinePosChanged(QVector3D pos);
     void onWorkPosChanged(QVector3D pos);
     void onMachineStateChanged(MachineState state);

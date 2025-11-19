@@ -72,6 +72,7 @@ public:
 
     bool visible() const;
     void setVisible(bool visible);
+    void toggleVisible();
 
     double pointSize() const;
     void setPointSize(double pointSize);
