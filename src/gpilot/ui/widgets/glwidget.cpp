@@ -114,21 +114,95 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
 {
     stopAnimation();
 
-    m_zoomDistance = DEFAULT_ZOOM;
-
     if (drawable != nullptr) {
         updateExtremes(drawable);
 
-        double largestSize = qMax(qMax(m_xSize, m_ySize), m_zSize);
-
-        double newZoom = largestSize / (MAGIC_ZOOM_MULTIPLIER * tan((m_fov * ONE_DEG_IN_RAD) / 2.0));
-        m_zoomDistance = newZoom > 0 ? qMax(newZoom, MIN_ZOOM) : DEFAULT_ZOOM;
-
-        m_lookAt = QVector3D(
-            m_xSize / 2 + m_xMin,
-            m_ySize / 2 + m_yMin,
-            m_zSize / 2 + m_zMin
+        // Calculate center of drawable in world space
+        QVector3D center(
+            (m_xMin + m_xMax) * 0.5f,
+            (m_yMin + m_yMax) * 0.5f,
+            (m_zMin + m_zMax) * 0.5f
         );
+        m_lookAt = center;
+
+        // Calculate camera basis vectors (Z-up system) to determine object orientation relative to camera
+        float pitch = qDegreesToRadians((float)m_xRot);
+        float yaw = qDegreesToRadians((float)m_yRot);
+        float cosPitch = cos(pitch);
+        float sinPitch = sin(pitch);
+        float cosYaw = cos(yaw);
+        float sinYaw = sin(yaw);
+
+        // Camera Z axis (pointing towards viewer)
+        QVector3D camZ(sinYaw * cosPitch, -cosYaw * cosPitch, sinPitch);
+        camZ.normalize();
+
+        // Camera Y axis (Up)
+        QVector3D camY(-sinYaw * sinPitch, cosYaw * sinPitch, cosPitch);
+        if (qAbs(cosPitch) < 0.001f) {
+            camY = QVector3D(sinYaw, cosYaw, 0);
+            if (pitch < 0) camY = -camY;
+        }
+        camY.normalize();
+
+        // Camera X axis (Right)
+        QVector3D camX = QVector3D::crossProduct(camY, camZ).normalized();
+
+        // Calculate extents of the AABB projected onto the camera plane
+        // We use the "Separating Axis Theorem" logic here.
+        // The extent of the AABB along a vector V is sum(|halfSize_i * dot(axis_i, V)|)
+        float dx = m_xSize * 0.5f;
+        float dy = m_ySize * 0.5f;
+        float dz = m_zSize * 0.5f;
+
+        float maxProjX = qAbs(dx * camX.x()) + qAbs(dy * camX.y()) + qAbs(dz * camX.z());
+        float maxProjY = qAbs(dx * camY.x()) + qAbs(dy * camY.y()) + qAbs(dz * camY.z());
+        float maxProjZ = qAbs(dx * camZ.x()) + qAbs(dy * camZ.y()) + qAbs(dz * camZ.z());
+
+        if (maxProjX > 0.0f || maxProjY > 0.0f) {
+            if (m_perspective) {
+                float aspectRatio = width() / float(height() ? height() : 1);
+                float fovRad = qDegreesToRadians((float)m_fov);
+
+                // Calculate required distance
+                // For perspective, we must account for the fact that the front of the object
+                // is closer to the camera and thus appears larger.
+                // We need the frustum to be large enough at the front of the object (dist - maxProjZ).
+                float distY = maxProjY / tan(fovRad * 0.5f);
+                float distX = maxProjX / (tan(fovRad * 0.5f) * aspectRatio);
+
+                // Add maxProjZ to distance to ensure front face fits
+                m_zoomDistance = qMax(distX, distY) + maxProjZ;
+
+                // Use minimal margin (1%)
+                // m_zoomDistance *= 1.01f;
+
+                // Ensure we don't clip the front of the object with near plane
+                m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
+
+                qDebug() << "Perspective fit (Tight+Depth): projX=" << maxProjX << "projY=" << maxProjY
+                         << "dist=" << m_zoomDistance;
+            } else {
+                // For orthographic projection
+                float aspectRatio = width() / float(height() ? height() : 1);
+
+                float sizeY = maxProjY;
+                float sizeX = maxProjX / aspectRatio;
+
+                // Use minimal margin (1%)
+                m_zoomDistance = qMax(sizeX, sizeY) * 1.01f;
+
+                // Ensure we don't clip the front of the object with near plane
+                m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
+
+                qDebug() << "Ortho fit (Tight): projX=" << maxProjX << "projY=" << maxProjY
+                         << "orthoSize=" << m_zoomDistance;
+            }
+        } else {
+            m_zoomDistance = DEFAULT_ZOOM;
+        }        qDebug() << "fitDrawable: center=" << center
+                 << "size=" << m_xSize << m_ySize << m_zSize
+                 << "finalZoom=" << m_zoomDistance;
     } else {
         m_lookAt = QVector3D(0, 0, 0);
 
@@ -163,6 +237,13 @@ void GLWidget::updateExtremes(ShaderDrawable *drawable)
     m_xSize = m_xMax - m_xMin;
     m_ySize = m_yMax - m_yMin;
     m_zSize = m_zMax - m_zMin;
+
+    qDebug() << "Extremes updated: "
+             << "X:" << m_xMin << "..." << m_xMax
+             << "Y:" << m_yMin << "..." << m_yMax
+             << "Z:" << m_zMin << "..." << m_zMax
+             << "Sizes:"
+             << m_xSize << m_ySize << m_zSize;
 }
 
 bool GLWidget::antialiasing() const
@@ -530,41 +611,54 @@ void GLWidget::updateView()
 {
     m_viewMatrix.setToIdentity();
 
-    double angY = M_PI / 180 * m_yRot;
-    double angX = M_PI / 180 * m_xRot;
+    // Convert angles to radians
+    // m_xRot is Pitch (Elevation), m_yRot is Yaw (Azimuth)
+    float pitch = qDegreesToRadians((float)m_xRot);
+    float yaw = qDegreesToRadians((float)m_yRot);
 
-#if NAV_MODE == 1
-    m_eye = QVector3D(cos(angX) * sin(angY), sin(angX), cos(angX) * cos(angY)).normalized();
-#endif
-#if NAV_MODE == 2
-    // Calculate direction from rotation angles
-    QVector3D direction(
-        cos(angX) * sin(angY),
-        sin(angX),
-        cos(angX) * cos(angY)
+    // Calculate eye position relative to lookAt using Spherical Coordinates (Z-up)
+    // Pitch 0, Yaw 0 -> Front View (Looking from -Y towards +Y)
+    // Pitch 90 -> Top View (Looking from +Z towards -Z)
+
+    // We assume Front View is looking along Y axis (from negative to positive)
+    // So at Yaw=0, Pitch=0, Eye should be at (0, -dist, 0)
+
+    float cosPitch = cos(pitch);
+    float sinPitch = sin(pitch);
+    float cosYaw = cos(yaw);
+    float sinYaw = sin(yaw);
+
+    QVector3D offset(
+        sinYaw * cosPitch,  // X
+        -cosYaw * cosPitch, // Y (starts at -1 when yaw=0)
+        sinPitch            // Z
     );
-    direction.normalize();
 
-    m_eye = m_lookAt + direction * m_zoomDistance;
-#endif
+    m_eye = m_lookAt + offset * m_zoomDistance;
 
-    QVector3D up(fabs(m_xRot) == 90 ? -sin(angY + (m_xRot < 0 ? M_PI : 0)) : 0, cos(angX), fabs(m_xRot) == 90 ? -cos(angY + (m_xRot < 0 ? M_PI : 0)) : 0);
+    // Calculate Up vector
+    // The Up vector should be tangent to the sphere, pointing towards the north pole (Z+)
+    // Derivative of position with respect to pitch gives the Up direction
+    QVector3D up(
+        -sinYaw * sinPitch,
+        cosYaw * sinPitch,
+        cosPitch
+    );
+
+    // Handle singularity at poles (Pitch +/- 90)
+    // When looking straight down/up, the "Up" vector calculated above becomes (0,0,0)
+    // In this case, we define Up as Y+ (rotated by Yaw) to maintain orientation
+    if (qAbs(cosPitch) < 0.001f) {
+        up = QVector3D(sinYaw, cosYaw, 0); // Y-axis rotated by Yaw
+        if (pitch < 0) up = -up; // Invert for bottom view
+    }
+
     up.normalize();
 
     m_cubeDrawer.updateEyePosition(m_eye, up);
 
-#if NAV_MODE == 1
-    if (m_perspective) {
-        m_eye *= m_zoomDistance;
-    }
-    m_viewMatrix.lookAt(m_eye, QVector3D(0,0,0), up);
-    m_viewMatrix.rotate(-90, 1.0, 0.0, 0.0);
-    m_viewMatrix.translate(-m_lookAt);
-#endif
-#if NAV_MODE == 2
     m_viewMatrix.lookAt(m_eye, m_lookAt, up);
-    m_viewMatrix.rotate(-90, 1.0, 0.0, 0.0);
-#endif
+    // Removed the extra rotate(-90) as we now calculate in Z-up space directly
 }
 
 void GLWidget::drawText(QPainter &painter, QPoint &pos, QString text, int lineHeight, Qt::AlignmentFlag align)
@@ -887,6 +981,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         || event->buttons() & Qt::RightButton
         || (event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier)))
     {
+    #if NAV_MODE == 1
         // Get world to clip
         QMatrix4x4 mvp(m_projectionMatrix * m_viewMatrix);
         // Get clip to world
@@ -919,7 +1014,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         // Get difference
         QVector4D difference = currentMouseInWorld - lastMouseInWorld;
 
-    #if NAV_MODE == 1
         // Subtract difference from center point
         m_lookAt -= QVector3D(difference.x(), difference.y(), difference.z());
     #endif
@@ -927,9 +1021,22 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         // Move in camera local space ( screen space )
         // Calculate "right" and "up" vectors relative to the camera
         QVector3D direction = (m_lookAt - m_eye).normalized();
-        QVector3D up(0, 1, 0);
-        QVector3D right = QVector3D::crossProduct(direction, up).normalized();
-        up = QVector3D::crossProduct(right, direction).normalized();
+
+        // Use Z-up for world up vector
+        QVector3D worldUp(0, 0, 1);
+
+        // Calculate camera Right vector
+        QVector3D right = QVector3D::crossProduct(direction, worldUp).normalized();
+
+        // Handle singularity when looking straight down/up
+        if (right.lengthSquared() < 0.001f) {
+             // If looking down/up, Right is X-axis rotated by Yaw
+             float yaw = qDegreesToRadians((float)m_yRot);
+             right = QVector3D(cos(yaw), -sin(yaw), 0);
+        }
+
+        // Calculate camera Up vector (perpendicular to direction and right)
+        QVector3D up = QVector3D::crossProduct(right, direction).normalized();
 
         // Mouse movement in pixels
         double dx = pos.x() - m_lastPos.x();
