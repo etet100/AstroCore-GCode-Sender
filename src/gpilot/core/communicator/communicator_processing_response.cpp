@@ -171,32 +171,30 @@ void Communicator::processNewToolPosition()
 
 void Communicator::processWorkOffset(QString data)
 {
-    static QVector3D workOffset;
     static QRegularExpression wpx("WCO:([^,]*),([^,]*),([^,^>^|]*)");
     bool changed = false;
 
     QRegularExpressionMatch match = wpx.match(data);
     if (match.hasMatch()) {
-        QVector3D newWorkOffset(
+        QVector3D newWorkPos = m_machinePos - QVector3D(
             match.captured(1).toDouble(),
             match.captured(2).toDouble(),
             match.captured(3).toDouble()
         );
-        changed = newWorkOffset != workOffset;
-        workOffset = newWorkOffset;
+        changed = newWorkPos != m_workPos;;
+        m_workPos = newWorkPos;
     }
 
     // Update work coordinates
-    QVector3D pos(
-        m_machinePos.x() - workOffset.x(),
-        m_machinePos.y() - workOffset.y(),
-        m_machinePos.z() - workOffset.z()
-    );
-    m_workPos = pos;
+    // QVector3D pos(
+    //     m_machinePos.x() - workOffset.x(),
+    //     m_machinePos.y() - workOffset.y(),
+    //     m_machinePos.z() - workOffset.z()
+    // );
 
     if (changed) {
-        m_storedVars.setCoords("W", pos);
-        emit workPosChanged(pos);
+        m_storedVars.setCoords("W", m_workPos);
+        emit workPosChanged(m_workPos);
     }
 }
 
