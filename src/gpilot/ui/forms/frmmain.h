@@ -18,6 +18,7 @@
 #include <QProgressDialog>
 #include <QGroupBox>
 #include <exception>
+#include <QWinTaskBar/qwintaskbar.h>
 
 #include "io/connection/connection.h"
 #include "core/communicator/communicator.h"
@@ -238,6 +239,7 @@ private:
 #ifdef WINDOWS
     // QWinTaskbarButton *m_taskBarButton;
     // QWinTaskbarProgress *m_taskBarProgress;
+    QWinTaskBar m_taskBar;
 #endif
 
     // Parsers

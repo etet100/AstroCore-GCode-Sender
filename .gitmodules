@@ -24,3 +24,6 @@
 [submodule "src/vendor/grblHal"]
 	path = src/vendor/grblHal
 	url = https://github.com/grblHAL/simulator
+[submodule "src/vendor/QWinTaskBar"]
+	path = src/vendor/QWinTaskBar
+	url = https://github.com/romanmatv/QWinTaskBar

@@ -42,6 +42,9 @@
 frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
+#ifdef WINDOWS
+    m_taskBar(this),
+#endif
     m_heightmap(),
     m_heightmapBorderDrawer(m_heightmap),
     m_heightmapGridDrawer(m_heightmap),
@@ -219,6 +222,11 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     ui->fraDropUser->setVisible(false);
 
 #ifdef WINDOWS
+    // m_taskBar.setMin(0);
+    // m_taskBar.setMax(100);
+    // m_taskBar.setValue(50);
+    // m_taskBar.setVisible(true);
+
     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
     //     m_taskBarButton = NULL;
     //     m_taskBarProgress = NULL;
@@ -456,6 +464,12 @@ void frmMain::showEvent(QShowEvent *se)
     placeVisualizerButtons();
 
 #ifdef WINDOWS
+    if (m_firstShow) {
+        m_taskBar.setRange(0, 100);
+        m_taskBar.setOverlayTextIcon("Text abc");
+        m_taskBar.setVisible(true);
+        m_taskBar.setValue(50);
+    }
     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
     //     if (m_taskBarButton == NULL) {
     //         m_taskBarButton = new QWinTaskbarButton(this);

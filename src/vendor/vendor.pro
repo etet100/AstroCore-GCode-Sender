@@ -1,8 +1,9 @@
 TEMPLATE = subdirs
 
-SUBDIRS = PropertyEditor
+SUBDIRS = PropertyEditor \
+        grblHal \
+        QWinTaskBar
 
-    # grblHal
 SUBDIRS += uCNC
 
 HEADERS += Arduino.h

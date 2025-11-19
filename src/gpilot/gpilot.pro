@@ -414,6 +414,7 @@ LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
 
 LIBS += -L../vendor/uCNC -luCNC
 LIBS += -L../vendor/grblHal -lgrblHal
+LIBS += -L../vendor/QWinTaskBar -lQWinTaskBard
 
 DISTFILES += \
     shaders/2dcopy_fragment.glsl \
