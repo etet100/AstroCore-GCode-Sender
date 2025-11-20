@@ -80,7 +80,7 @@ bool ResetBehavior::onCommandResponse(QString command, CommandAttributes command
 
     if (command == "$#") {
         qDebug() << "[ConnectingBehavior] Processing offsets.";
-        m_communicator->processOffsetsVars(response);
+        m_communicator->processOffsetsVars(fullResponse);
 
         m_communicator->connection()->sendByteArray(QByteArray(1, '?'));
 

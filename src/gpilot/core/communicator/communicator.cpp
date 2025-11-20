@@ -150,7 +150,9 @@ SendCommandResult Communicator::sendCommand(
 
     // Queue offsets request on G92, G10 commands
     static QRegularExpression G92("(G92|G10)(?!\\d)");
-    if (command.contains(G92)) sendCommand(source, "$#", TABLE_INDEX_UTIL2, true);
+    if (command.contains(G92)) {
+        sendCommand(source, "$#", TABLE_INDEX_UTIL2, true);
+    }
 
     m_connection->sendLine(commandLine);
 
@@ -544,39 +546,67 @@ void Communicator::processConnectionTimer()
 }
 
 /* used by scripting engine only?? emit signal and do not use m_storedVars directly */
-void Communicator::processOffsetsVars(QString response)
+void Communicator::processOffsetsVars(QStringList response)
 {
     static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
     static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
 
-    int p = 0;
-    QRegularExpressionMatch match = gx.match(response);
-    while (match.hasMatch()) {
-        p = match.capturedStart();
-        m_storedVars.setCoords(
-            match.captured(1),
-            QVector3D(
-                match.captured(2).toDouble(),
-                match.captured(3).toDouble(),
-                match.captured(4).toDouble()
-            )
-        );
+    qDebug() << response;
 
-        p += match.capturedLength();
-        match = gx.match(response, p);
+    for (auto line : response) {
+        QRegularExpressionMatch match = gx.match(line);
+        if (match.hasMatch()) {
+            m_storedVars.setCoords(
+                match.captured(1),
+                QVector3D(
+                    match.captured(2).toDouble(),
+                    match.captured(3).toDouble(),
+                    match.captured(4).toDouble()
+                )
+            );
+        }
+
+        match = tx.match(line);
+        if (match.hasMatch()) {
+            m_storedVars.setCoords(
+                match.captured(1),
+                QVector3D(
+                    0,
+                    0,
+                    match.captured(2).toDouble()
+                )
+            );
+        }
     }
 
-    match = tx.match(response);
-    if (match.hasMatch()) {
-        m_storedVars.setCoords(
-            match.captured(1),
-            QVector3D(
-                0,
-                0,
-                match.captured(2).toDouble()
-            )
-        );
-    }
+    // int p = 0;
+    // QRegularExpressionMatch match = gx.match(response);
+    // while (match.hasMatch()) {
+    //     p = match.capturedStart();
+    //     m_storedVars.setCoords(
+    //         match.captured(1),
+    //         QVector3D(
+    //             match.captured(2).toDouble(),
+    //             match.captured(3).toDouble(),
+    //             match.captured(4).toDouble()
+    //         )
+    //     );
+
+    //     p += match.capturedLength();
+    //     match = gx.match(response, p);
+    // }
+
+    // match = tx.match(response);
+    // if (match.hasMatch()) {
+    //     m_storedVars.setCoords(
+    //         match.captured(1),
+    //         QVector3D(
+    //             0,
+    //             0,
+    //             match.captured(2).toDouble()
+    //         )
+    //     );
+    // }
 
     qDebug() << "[Communicator] Offsets updated";
 }

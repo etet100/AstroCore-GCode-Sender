@@ -53,7 +53,6 @@ class Communicator : public QObject
         const MachineState& machineState() const { return m_machineState; }
         PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
         QVector3D machinePos() const { return m_machinePos; }
-        void processWorkOffset(QString data);
         // void sendStreamerCommandsUntilBufferIsFull();
         bool isMachineConfigurationReady() const;
         bool isSenderState(SenderState state) const;
@@ -127,22 +126,27 @@ class Communicator : public QObject
         void setMachineStateAndEmitSignal(MachineState);
         void restoreOffsets();
         int bufferLength();
-        void processOffsetsVars(QString response);
+        void processOffsetsVars(QStringList response);
         static bool dataIsFloating(QString data);
         static bool dataIsEnd(QString data);
         static bool dataIsReset(QString data);
         bool compareCoordinates(double x, double y, double z);
         double toMetric(double value);
         double toInches(double value);
-        void processStatus(QString data);
+        void processStatus(QString line);
         bool processCommandResponse(QString data);
         void processUnhandledResponse(QString data);
         void processMessage(QString data);
         void processAlarm(QString data);
-        void processFeedSpindleSpeed(QString data);
-        void processBuffersStatus(QString data);
-        void processOverrides(QString data);
-        void processNewToolPosition();
+        void processFeedSpindleSpeed(QString line);
+        void processBuffersStatus(QString line);
+        void processOverrides(QString line);
+        void processWorkOffset(QString line);
+        void processMachinePosition(QString line);
+        void processMachineState(QString state);
+        void processPinsState(QString line);
+        void processSpindleState(QString line);
+        void processNewToolPosition();        
         void processWelcomeMessageDetected(QString message);
         void storeParserState();
         void restoreParserState();

@@ -44,7 +44,7 @@ void Communicator::onConnectionLineReceived(QString data)
     }
 
     // Status response
-    if (data[0] == '<') {
+    if (data.startsWith('<')) {
         processStatus(data);
         processStateBehaviorTransition();
 
@@ -80,32 +80,32 @@ void Communicator::onConnectionLineReceived(QString data)
     processStateBehaviorTransition();
 }
 
-void Communicator::processFeedSpindleSpeed(QString data)
+void Communicator::processFeedSpindleSpeed(QString line)
 {
-    static QRegularExpression fs("FS:([^,]*),([^,^|^>]*)");
+    static QRegularExpression fs("([^,]*),([^,^|^>]*)");
 
-    QRegularExpressionMatch match = fs.match(data);
+    QRegularExpressionMatch match = fs.match(line);
     if (match.hasMatch()) {
         emit feedSpindleSpeedReceived(match.captured(1).toInt(), match.captured(2).toInt());
     }
 }
 
-void Communicator::processBuffersStatus(QString data)
+void Communicator::processBuffersStatus(QString line)
 {
     //Bf:15,128
-    static QRegularExpression fs(R"(Bf:(\d*),(\d*))");
+    static QRegularExpression fs(R"((\d*),(\d*))");
 
-    QRegularExpressionMatch match = fs.match(data);
+    QRegularExpressionMatch match = fs.match(line);
     if (match.hasMatch()) {
         emit buffersStatusReceived(match.captured(1).toInt(), match.captured(2).toInt());
     }
 }
 
-void Communicator::processOverrides(QString data)
+void Communicator::processOverrides(QString line)
 {
-    static QRegularExpression ov("Ov:([^,]*),([^,]*),([^,^>^|]*)");
+    static QRegularExpression ov("([^,]*),([^,]*),([^,^>^|]*)");
 
-    QRegularExpressionMatch match = ov.match(data);
+    QRegularExpressionMatch match = ov.match(line);
     if (match.hasMatch())
     {
         int feedOverride = match.captured(1).toInt();
@@ -114,48 +114,36 @@ void Communicator::processOverrides(QString data)
 
         emit overridesReceived(feedOverride, spindleOverride, rapidOverride);
 
-        // @TODO why is this here?? This shouldn't be in processOverrides.
-
-        // Update pins state
-        QString pinState;
-        static QRegularExpression pn("Pn:([^|^>]*)");
-
-        match = pn.match(data);
-        if (match.hasMatch()) {
-            pinState.append(QString(tr("PS: %1")).arg(match.captured(1)));
-        }
-
         // Process spindle state
-        static QRegularExpression as("A:([^,^>^|]+)");
+        // static QRegularExpression as("A:([^,^>^|]+)");
 
-        match = as.match(data);
-        if (match.hasMatch()) {
-            QString q = match.captured(1);
-            m_spindleCW = q.contains("S");
-            if (q.contains("S") || q.contains("C")) {
-                emit spindleStateReceived(true);
-                // to spindleStateReceived handler
-                // m_timerToolAnimation.start(25, this);
-                // ui->cmdSpindle->setChecked(true);
-            } else {
-                emit spindleStateReceived(false);
-                // to spindleStateReceived handler
-                // m_timerToolAnimation.stop();
-                // ui->cmdSpindle->setChecked(false);
-            }
-            emit floodStateReceived(q.contains("F"));
+        // match = as.match(line);
+        // if (match.hasMatch()) {
+        //     QString q = match.captured(1);
+        //     m_spindleCW = q.contains("S");
+        //     if (q.contains("S") || q.contains("C")) {
+        //         emit spindleStateReceived(true);
+        //         // to spindleStateReceived handler
+        //         // m_timerToolAnimation.start(25, this);
+        //         // ui->cmdSpindle->setChecked(true);
+        //     } else {
+        //         emit spindleStateReceived(false);
+        //         // to spindleStateReceived handler
+        //         // m_timerToolAnimation.stop();
+        //         // ui->cmdSpindle->setChecked(false);
+        //     }
+        //     emit floodStateReceived(q.contains("F"));
 
-            if (!pinState.isEmpty()) pinState.append(" / ");
-            pinState.append(QString(tr("AS: %1")).arg(match.captured(1)));
-        } else {
-            emit spindleStateReceived(false);
-            // to spindleStateReceived handler
-            // m_timerToolAnimation.stop();
-            // ui->cmdSpindle->setChecked(false);
-        }
+        //     if (!pinState.isEmpty()) pinState.append(" / ");
+        //     pinState.append(QString(tr("AS: %1")).arg(match.captured(1)));
+        // } else {
+        //     emit spindleStateReceived(false);
+        //     // to spindleStateReceived handler
+        //     // m_timerToolAnimation.stop();
+        //     // ui->cmdSpindle->setChecked(false);
+        // }
         //ui->glwVisualizer->setPinState(pinState);
 
-        emit pinStateReceived(pinState);
     }
 }
 
@@ -169,12 +157,35 @@ void Communicator::processNewToolPosition()
     }
 }
 
-void Communicator::processWorkOffset(QString data)
+void Communicator::processMachinePosition(QString line)
 {
-    static QRegularExpression wpx("WCO:([^,]*),([^,]*),([^,^>^|]*)");
+    static QRegularExpression mpx("([^,]*),([^,]*),([^,^>^|]*)");
+
+    // qDebug() << "[Communicator] Processing machine position from line:" << line;
+
+    QRegularExpressionMatch match = mpx.match(line);
+    if (match.hasMatch()) {
+        QVector3D newPos(
+            match.captured(1).toDouble(),
+            match.captured(2).toDouble(),
+            match.captured(3).toDouble()
+        );
+        if (newPos != m_machinePos) {
+            m_machinePos = newPos;
+            m_storedVars.setCoords("M", newPos);
+            emit machinePosChanged(newPos);
+        }
+    }
+}
+
+void Communicator::processWorkOffset(QString line)
+{
+    static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
     bool changed = false;
 
-    QRegularExpressionMatch match = wpx.match(data);
+    // qDebug() << "[Communicator] Processing work offset from line:" << line;
+
+    QRegularExpressionMatch match = wpx.match(line);
     if (match.hasMatch()) {
         QVector3D newWorkPos = m_machinePos - QVector3D(
             match.captured(1).toDouble(),
@@ -198,121 +209,64 @@ void Communicator::processWorkOffset(QString data)
     }
 }
 
-void Communicator::processStatus(QString data)
+void Communicator::processStatus(QString line)
 {
-    MachineState state = MachineState::Unknown;
-
+    // MachineState state = MachineState::Unknown;
+    // Remove < and >, split by |
+    // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>
+    QStringList sections(line.mid(1, line.length() - 2).split("|"));
+    qDebug() << sections;
     m_statusReceived = true;
 
-    // Update machine coordinates
-    static QRegularExpression mpx("MPos:([^,]*),([^,]*),([^,^>^|]*)");
+    // processMachinePosition()
+    // // Update machine coordinates
+    // static QRegularExpression mpx("MPos:([^,]*),([^,]*),([^,^>^|]*)");
 
-    QRegularExpressionMatch match = mpx.match(data);
-    if (match.hasMatch()) {
-        QVector3D newPos(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-        if (newPos != m_machinePos) {
-            m_machinePos = newPos;
-            m_storedVars.setCoords("M", newPos);
-            emit machinePosChanged(newPos);
+    // QRegularExpressionMatch match = mpx.match(line);
+    // if (match.hasMatch()) {
+    //     QVector3D newPos(
+    //         match.captured(1).toDouble(),
+    //         match.captured(2).toDouble(),
+    //         match.captured(3).toDouble()
+    //     );
+    //     if (newPos != m_machinePos) {
+    //         m_machinePos = newPos;
+    //         m_storedVars.setCoords("M", newPos);
+    //         emit machinePosChanged(newPos);
+    //     }
+    // }
+
+    processMachineState(sections.takeFirst());
+
+    for (QString &section : sections) {
+        line = section;
+        if (line.startsWith("MPos:")) {
+            processMachinePosition(line.remove(0, 5));
+        } else if (line.startsWith("WCO:")) {
+            processWorkOffset(line.remove(0, 4));
+        } else if (line.startsWith("Ov:")) {
+            processOverrides(line.remove(0, 3));
+        } else if (line.startsWith("FS:")) {
+            processFeedSpindleSpeed(line.remove(0, 3));
+        } else if (line.startsWith("Bf:")) {
+            processBuffersStatus(line.remove(0, 3));
+        } else if (line.startsWith("Pn:")) {
+            processPinsState(line.remove(0, 3));
+        } else if (line.startsWith("A:")) {
+            processSpindleState(line.remove(0, 2));
+        } else if (line.startsWith("H:")) {
+            // processHoldState(line.remove(0, 2));
+            qDebug() << "[Communicator] Unhandled status section:" << line;
+        } else {
+            qDebug() << "[Communicator] Unhandled status section:" << line;
         }
     }
 
-    // Status
-    static QRegularExpression stx("<([^,^>^|]*)");
-
-    match = stx.match(data);
-    if (match.hasMatch()) {
-        state = m_machineStateDictionary.key(match.captured(1), MachineState::Unknown);
-
-        // Update status
-        if (state != m_machineState) {
-            // emit deviceStateChanged(state);
-            m_sb->onMachineStateChanged(state);
-        }
-        m_sb->onMachineState(state);
-
-        emit machineStateReceived(state);
-
-        // Update controls
-        // moved to deviceStateReceived handler
-        // ui->cmdCheck->setEnabled(state != DeviceRun && (m_senderState == SenderStopped));
-        // ui->cmdCheck->setChecked(state == DeviceCheck);
-        // ui->cmdHold->setChecked(state == DeviceHold0 || state == DeviceHold1 || state == DeviceQueue);
-        // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_senderState != SenderTransferring) &&
-        //                                                     (m_senderState != SenderStopping)));
-
-        // // Update "elapsed time" timer
-        // // moved to deviceStateReceived handler
-        // if ((m_senderState == SenderTransferring) || (m_senderState == SenderStopping)) {
-        //     QTime time(0, 0, 0);
-        //     int elapsed = m_startTime.elapsed();
-        //     ui->glwVisualizer->setSpendTime(time.addMSecs(elapsed));
-        // }
-
-        // Test for job complete
-        if ((m_senderState == SenderState::Stopping) &&
-            ((state == MachineState::Idle && m_machineState == MachineState::Run) || state == MachineState::Check))
-        {
-            completeTransfer();
-        }
-
-        // Abort
-        static double x = sNan;
-        static double y = sNan;
-        static double z = sNan;
-
-        if (m_aborting) {
-            switch (state) {
-                case MachineState::Idle: // Idle
-                    if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
-                        m_aborting = false;
-                        restoreParserState();
-                        restoreOffsets();
-                        return;
-                    }
-                    break;
-                case MachineState::Hold0: // Hold
-                case MachineState::Hold1:
-                case MachineState::Queue:
-                    if (!m_reseting && compareCoordinates(x, y, z)) {
-                        x = sNan;
-                        y = sNan;
-                        z = sNan;
-                        reset();
-                    } else {
-                        const QVector3D pos = m_machinePos;
-                        x = pos.x();
-                        y = pos.y();
-                        z = pos.z();
-                    }
-                    break;
-                case MachineState::Unknown:
-                case MachineState::Alarm:
-                case MachineState::Run:
-                case MachineState::Home:
-                case MachineState::Check:
-                case MachineState::Door0:
-                case MachineState::Door1:
-                case MachineState::Door2:
-                case MachineState::Door3:
-                case MachineState::Jog:
-                case MachineState::Sleep:
-                    break;
-            }
-        }
-    }
-
-    processWorkOffset(data);
-    processOverrides(data);
-    processFeedSpindleSpeed(data);
-    processBuffersStatus(data);
-
-    // Store device state
-    setMachineStateAndEmitSignal(state);
+    // processMachinePosition(line);
+    // processWorkOffset(line);
+    // processOverrides(line);
+    // processFeedSpindleSpeed(line);
+    // processBuffersStatus(line);
 
     processNewToolPosition();
 
@@ -321,7 +275,123 @@ void Communicator::processStatus(QString data)
     // m_form->jogContinuous();
 
     // Emit status signal
-    emit statusReceived(data);
+    emit statusReceived(line);
+}
+
+void Communicator::processPinsState(QString line)
+{
+    QString pinState;
+    static QRegularExpression pn("Pn:([^|^>]*)");
+
+    QRegularExpressionMatch match = pn.match(line);
+    if (match.hasMatch()) {
+        pinState.append(QString(tr("PS: %1")).arg(match.captured(1)));
+    }
+
+    emit pinStateReceived(pinState);
+}
+
+void Communicator::processSpindleState(QString line)
+{
+    QString q = line;
+    m_spindleCW = q.contains("S");
+    if (q.contains("S") || q.contains("C")) {
+        emit spindleStateReceived(true);
+        // to spindleStateReceived handler
+        // m_timerToolAnimation.start(25, this);
+        // ui->cmdSpindle->setChecked(true);
+    } else {
+        emit spindleStateReceived(false);
+        // to spindleStateReceived handler
+        // m_timerToolAnimation.stop();
+        // ui->cmdSpindle->setChecked(false);
+    }
+    emit floodStateReceived(q.contains("F"));
+}
+
+void Communicator::processMachineState(QString stateStr)
+{
+    MachineState state = m_machineStateDictionary.key(stateStr, MachineState::Unknown);
+
+    // Update status
+    if (state != m_machineState) {
+        // emit deviceStateChanged(state);
+        m_sb->onMachineStateChanged(state);
+    }
+    m_sb->onMachineState(state);
+
+    emit machineStateReceived(state);
+
+    // Update controls
+    // moved to deviceStateReceived handler
+    // ui->cmdCheck->setEnabled(state != DeviceRun && (m_senderState == SenderStopped));
+    // ui->cmdCheck->setChecked(state == DeviceCheck);
+    // ui->cmdHold->setChecked(state == DeviceHold0 || state == DeviceHold1 || state == DeviceQueue);
+    // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_senderState != SenderTransferring) &&
+    //                                                     (m_senderState != SenderStopping)));
+
+    // // Update "elapsed time" timer
+    // // moved to deviceStateReceived handler
+    // if ((m_senderState == SenderTransferring) || (m_senderState == SenderStopping)) {
+    //     QTime time(0, 0, 0);
+    //     int elapsed = m_startTime.elapsed();
+    //     ui->glwVisualizer->setSpendTime(time.addMSecs(elapsed));
+    // }
+
+    // Test for job complete
+    if ((m_senderState == SenderState::Stopping) &&
+        ((state == MachineState::Idle && m_machineState == MachineState::Run) || state == MachineState::Check))
+    {
+        completeTransfer();
+    }
+
+    // Abort
+    static double x = sNan;
+    static double y = sNan;
+    static double z = sNan;
+
+    if (m_aborting) {
+        switch (state) {
+            case MachineState::Idle: // Idle
+                if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
+                    m_aborting = false;
+                    restoreParserState();
+                    restoreOffsets();
+                    return;
+                }
+                break;
+            case MachineState::Hold0: // Hold
+            case MachineState::Hold1:
+            case MachineState::Queue:
+                if (!m_reseting && compareCoordinates(x, y, z)) {
+                    x = sNan;
+                    y = sNan;
+                    z = sNan;
+                    reset();
+                } else {
+                    const QVector3D pos = m_machinePos;
+                    x = pos.x();
+                    y = pos.y();
+                    z = pos.z();
+                }
+                break;
+            case MachineState::Unknown:
+            case MachineState::Alarm:
+            case MachineState::Run:
+            case MachineState::Home:
+            case MachineState::Check:
+            case MachineState::Door0:
+            case MachineState::Door1:
+            case MachineState::Door2:
+            case MachineState::Door3:
+            case MachineState::Jog:
+            case MachineState::Sleep:
+                break;
+        }
+    }
+
+    // Store device state
+    setMachineStateAndEmitSignal(state);
 }
 
 void Communicator::processDeviceConfiguration(QStringList response)
@@ -468,16 +538,16 @@ bool Communicator::processCommandResponse(QString data)
     if (m_sb != nullptr) {
         assert(m_sb != nullptr && !m_sb.isNull());
 
-        IdleBehavior *idleBehavior = qobject_cast<IdleBehavior *>(m_sb.data());
-        if (!idleBehavior) {
-            // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-            // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+        // IdleBehavior *idleBehavior = qobject_cast<IdleBehavior *>(m_sb.data());
+        // if (!idleBehavior) {
+        //     // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+        //     // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
+        //     result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
+        // } else {
+        //     // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
+        //     // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
             result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
-        } else {
-            // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-            // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
-            result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
-        }
+        // }
     }
 
     // Store current coordinate system
@@ -486,7 +556,9 @@ bool Communicator::processCommandResponse(QString data)
     // }
 
     // // Offsets
-    // if (command == "$#") processOffsetsVars(response);
+    if (command == "$#") {
+        processOffsetsVars(lines);
+    }
 
     // // Settings response
     // if (command == "$$") {
@@ -674,7 +746,7 @@ bool Communicator::processCommandResponse(QString data)
     // static QRegularExpression M6("(M0*6)(?!\\d)");
     // if ((m_senderState == SenderState::Pausing) && command.contains(M6)) {
     //     response.clear();
-        
+
     //     if (m_configuration->senderModule(). pauseSenderOnToolChange()) {
     //         // QMessageBox::information(this, qApp->applicationDisplayName(),
     //         //                          tr("Change tool and press 'Pause' button to continue job"));
