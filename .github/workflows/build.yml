@@ -94,6 +94,18 @@ jobs:
           qmake ../../src/designerplugins/designerplugins.pro -r
           mingw32-make -j12
 
+      - name: Build QWinTaskBar
+        shell: cmd
+        env:
+          QMAKESPEC: win32-g++
+          WINDOWS: "1"
+        run: |
+          mkdir build\vendor\QWinTaskBar
+          cd build\vendor\QWinTaskBar
+          qmake ../../../src/vendor/QWinTaskBar/QWinTaskBar.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          mingw32-make.exe -f Makefile qmake_all
+          mingw32-make -j12
+
       - name: Build G-Pilot
         shell: cmd
         env:
