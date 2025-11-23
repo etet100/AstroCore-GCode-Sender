@@ -18,6 +18,5 @@ QDialog { border: 1px solid palette(mid); }
 
 QDockWidget::close-button, QDockWidget::float-button {
     border-radius: 2px;
-    top: 1; right: 2;
 }
 

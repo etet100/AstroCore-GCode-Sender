@@ -258,10 +258,10 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     // ui->cmdLeft->setParent(ui->glwVisualizer);
     // ui->cmdRotationCube->setParent(ui->glwVisualizer);
 
-    ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
-    ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-    ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-    ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+    // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
+    // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+    // ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+    // ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
 
     // ui->cboJogStep->setValidator(new QDoubleValidator(0, 10000, 2));
     // ui->cboJogFeed->setValidator(new QIntValidator(0, 100000));

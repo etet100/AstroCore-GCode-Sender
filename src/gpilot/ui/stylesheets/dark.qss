@@ -7,3 +7,4 @@ QDockWidget::close-button, QDockWidget::float-button {
     background: silver;
     color: white;
 }
+

@@ -136,7 +136,7 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
         );
     } else {
         // Text
-        painter.setPen(this->isEnabled() ? m_foreColor : palette().color(QPalette::Mid));
+        painter.setPen(this->isEnabled() ? m_foreColor : palette().color(QPalette::ButtonText));
         painter.drawText(innerRect, Qt::AlignCenter, this->text());
     }
 }
