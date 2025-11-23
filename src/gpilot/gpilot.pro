@@ -202,6 +202,7 @@ SOURCES += main.cpp\
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
+    ui/utils/windowstaskbar.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
     ui/widgets/comboboxkey.cpp \
@@ -339,6 +340,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
+    ui/utils/windowstaskbar.h \
     utils.h \
     utils/interpolation.h \
     utils/utils.h \
@@ -412,9 +414,9 @@ LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
 
 #LIBS += C:/Projekty/Qt/Candle/src/vendor/build/uCNC-Debug
 
+LIBS += -lole32 -loleaut32 -luuid -luser32 -lshell32
 LIBS += -L../vendor/uCNC -luCNC
 LIBS += -L../vendor/grblHal -lgrblHal
-LIBS += -L../vendor/QWinTaskBar -lQWinTaskBard
 
 DISTFILES += \
     shaders/2dcopy_fragment.glsl \

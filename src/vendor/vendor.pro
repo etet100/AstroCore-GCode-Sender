@@ -1,8 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS = PropertyEditor \
-        grblHal \
-        QWinTaskBar
+        grblHal
 
 SUBDIRS += uCNC
 

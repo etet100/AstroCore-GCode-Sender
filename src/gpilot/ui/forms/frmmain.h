@@ -18,8 +18,9 @@
 #include <QProgressDialog>
 #include <QGroupBox>
 #include <exception>
-#include <QWinTaskBar/qwintaskbar.h>
-
+#ifdef WINDOWS
+#include <windows.h>
+#endif
 #include "io/connection/connection.h"
 #include "core/communicator/communicator.h"
 #include "io/connection/connectionmanager.h"
@@ -50,22 +51,14 @@
 #include "ui/tables/gcodetablemodel.h"
 #include "ui/tables/heightmaptablemodel.h"
 #include "ui/tables/gcodeitemdelegate.h"
-
 #include "utils/interpolation.h"
-
 #include "styledtoolbutton.h"
 #include "sliderbox.h"
-
 #include "ui/forms/frmsettings.h"
 #include "ui/forms/frmabout.h"
-
 #include "scripting/scriptvars.h"
 #include "ui/widgets/dropwidget.h"
-
-#ifdef WINDOWS
-    // #include <QtWinExtras/QtWinExtras>
-    #include "shobjidl.h"
-#endif
+#include "ui/utils/windowstaskbar.h"
 
 namespace Ui {
 class frmMain;
@@ -216,6 +209,7 @@ private slots:
     void placeVisualizerButtons();
 
 protected:
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
     void showEvent(QShowEvent *se) override;
     void hideEvent(QHideEvent *he) override;
     void resizeEvent(QResizeEvent *re) override;
@@ -237,9 +231,10 @@ private:
     QMenu *m_tableMenu;
     QMessageBox* m_senderErrorBox;
 #ifdef WINDOWS
+    UINT m_taskbarButtonCreatedMessageId;
     // QWinTaskbarButton *m_taskBarButton;
     // QWinTaskbarProgress *m_taskBarProgress;
-    QWinTaskBar m_taskBar;
+    WindowsTaskbar m_taskBar;
 #endif
 
     // Parsers

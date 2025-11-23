@@ -43,6 +43,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
 #ifdef WINDOWS
+    m_taskbarButtonCreatedMessageId(RegisterWindowMessage(L"TaskbarButtonCreated")),
     m_taskBar(this),
 #endif
     m_heightmap(),
@@ -457,27 +458,25 @@ void frmMain::initializeVisualizer()
     ui->glwVisualizer->fitDrawable();
 }
 
+bool frmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+#ifdef WINDOWS
+    MSG *msg = static_cast<MSG *>(message);
+    if (msg->message == m_taskbarButtonCreatedMessageId) {
+        m_taskBar.init();
+        m_taskBar.setProgress(20, 100);
+
+        return true;
+    }
+#endif
+    return QMainWindow::nativeEvent(eventType, message, result);
+}
+
 void frmMain::showEvent(QShowEvent *se)
 {
     Q_UNUSED(se)
 
     placeVisualizerButtons();
-
-#ifdef WINDOWS
-    if (m_firstShow) {
-        m_taskBar.setRange(0, 100);
-        m_taskBar.setOverlayTextIcon("Text abc");
-        m_taskBar.setVisible(true);
-        m_taskBar.setValue(50);
-    }
-    // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-    //     if (m_taskBarButton == NULL) {
-    //         m_taskBarButton = new QWinTaskbarButton(this);
-    //         m_taskBarButton->setWindow(this->windowHandle());
-    //         m_taskBarProgress = m_taskBarButton->progress();
-    //     }
-    // }
-#endif
 
     if (m_firstShow) {
         Utils::positionDialog(this, m_configuration.uiModule().mainFormGeometry(), m_configuration.uiModule().mainFormMaximized());
