@@ -74,6 +74,52 @@ void GcodeDrawer::computeNormals()
     }
 }
 
+void GcodeDrawer::generateBounds(GLPalette &palette)
+{
+    QVector3D min = minimumExtremes();
+    QVector3D max = maximumExtremes();
+
+    float color = palette.color(Qt::yellow);
+
+    // generate 12 lines
+
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), min.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), min.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), min.z()), color));
+
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), min.z()), color));
+
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), min.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), max.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), min.y(), max.z()), color));
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(max.x(), max.y(), max.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), max.z()), color));
+
+    m_lines.append(VertexData(QVector3D(min.x(), max.y(), max.z()), color));
+    m_lines.append(VertexData(QVector3D(min.x(), min.y(), max.z()), color));
+}
+
 bool GcodeDrawer::prepareVectors(GLPalette &palette)
 {
     qDebug() << "preparing vectors" << this;
@@ -178,6 +224,7 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
         }
     }
 
+    generateBounds(palette);
     computeNormals();
 
     // if (m_lines.count())
@@ -316,15 +363,15 @@ GLuint GcodeDrawer::getSegmentColorAndUpdateIndex(GLuint& var, GLuint index)
     return index;
 }
 
-QVector3D GcodeDrawer::getSizes()
+QVector3D GcodeDrawer::sizes()
 {
-    QVector3D min = m_viewParser->getMinimumExtremes();
-    QVector3D max = m_viewParser->getMaximumExtremes();
+    QVector3D min = m_viewParser->getMinimumExtremes() - QVector3D(1, 1, 1);
+    QVector3D max = m_viewParser->getMaximumExtremes() + QVector3D(1, 1, 1);
 
     return QVector3D(max.x() - min.x(), max.y() - min.y(), max.z() - min.z());
 }
 
-QVector3D GcodeDrawer::getMinimumExtremes()
+QVector3D GcodeDrawer::minimumExtremes()
 {
     QVector3D v = m_viewParser->getMinimumExtremes();
     if (m_ignoreZ) {
@@ -334,7 +381,7 @@ QVector3D GcodeDrawer::getMinimumExtremes()
     return v;
 }
 
-QVector3D GcodeDrawer::getMaximumExtremes()
+QVector3D GcodeDrawer::maximumExtremes()
 {
     QVector3D v = m_viewParser->getMaximumExtremes();
     if (m_ignoreZ) {

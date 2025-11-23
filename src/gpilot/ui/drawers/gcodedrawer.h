@@ -24,17 +24,17 @@ public:
     void update(QList<int> indexes);
     bool updateData(GLPalette &palette) override;
 
-    QVector3D getSizes() override;
-    QVector3D getMinimumExtremes() override;
-    QVector3D getMaximumExtremes() override;
+    QVector3D sizes() override;
+    QVector3D minimumExtremes() override;
+    QVector3D maximumExtremes() override;
 
     void setViewParser(GCodeViewParser* viewParser);
     GCodeViewParser* viewParser();
 
-    bool simplify() const;
+    // bool simplify() const;
     void setSimplify(bool simplify);
 
-    double simplifyPrecision() const;
+    // double simplifyPrecision() const;
     void setSimplifyPrecision(double simplifyPrecision);
 
     bool geometryUpdated();
@@ -122,6 +122,7 @@ private:
     GLuint getSegmentColor(LineSegment& segment, GLPalette &palette);
     GLuint getSegmentColorAndUpdateIndex(GLuint& var, GLuint index);
     void computeNormals();
+    void generateBounds(GLPalette &palette);
 };
 
 #endif // GCODEDRAWER_H

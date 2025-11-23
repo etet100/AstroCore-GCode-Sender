@@ -22,8 +22,8 @@ public:
     QPointF offset() const;
     void setOffset(const QPointF &offset);
 
-    QVector3D getMinimumExtremes();
-    QVector3D getMaximumExtremes();
+    QVector3D minimumExtremes();
+    QVector3D maximumExtremes();
 
 protected:
     bool updateData(GLPalette &palette) override;

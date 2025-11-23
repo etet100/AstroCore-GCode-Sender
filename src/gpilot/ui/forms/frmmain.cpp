@@ -3349,10 +3349,10 @@ QRectF frmMain::borderRectFromExtremes()
 {
     QRectF rect;
 
-    rect.setX(m_codeDrawer->getMinimumExtremes().x());
-    rect.setY(m_codeDrawer->getMinimumExtremes().y());
-    rect.setWidth(m_codeDrawer->getSizes().x());
-    rect.setHeight(m_codeDrawer->getSizes().y());
+    rect.setX(m_codeDrawer->minimumExtremes().x());
+    rect.setY(m_codeDrawer->minimumExtremes().y());
+    rect.setWidth(m_codeDrawer->sizes().x());
+    rect.setHeight(m_codeDrawer->sizes().y());
 
     return rect;
 }

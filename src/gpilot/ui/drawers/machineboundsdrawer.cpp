@@ -45,6 +45,7 @@ void MachineBoundsDrawer::setGridSize(const QSizeF &gridSize)
     m_gridSize = gridSize;
     update();
 }
+
 QRectF MachineBoundsDrawer::borderRect() const
 {
     return m_borderRect;
@@ -67,12 +68,12 @@ void MachineBoundsDrawer::setOffset(const QPointF &offset)
     update();
 }
 
-QVector3D MachineBoundsDrawer::getMinimumExtremes()
+QVector3D MachineBoundsDrawer::minimumExtremes()
 {
     return QVector3D();
 }
 
-QVector3D MachineBoundsDrawer::getMaximumExtremes()
+QVector3D MachineBoundsDrawer::maximumExtremes()
 {
     return QVector3D(m_borderRect.width(), m_borderRect.height(), 0);
 }

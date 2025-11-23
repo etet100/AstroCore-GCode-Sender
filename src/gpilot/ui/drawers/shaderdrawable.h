@@ -14,6 +14,18 @@ struct VertexData
 {
     VertexData() {}
 
+    VertexData(QVector3D pos, GLfloat col) {
+        position = pos;
+        color = (GLuint) col;
+        this->cumSegPosition = 0;
+    }
+
+    VertexData(QVector3D pos, GLfloat col, GLfloat cumSegPosition) {
+        position = pos;
+        color = (GLuint) col;
+        this->cumSegPosition = cumSegPosition;
+    }
+
     VertexData(QVector3D pos, GLfloat col, QVector3D sta) {
         position = pos;
         color = (GLuint) col;
@@ -62,9 +74,9 @@ public:
     bool needsUpdateGeometry() const;
     virtual void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette);
 
-    virtual QVector3D getSizes();
-    virtual QVector3D getMinimumExtremes();
-    virtual QVector3D getMaximumExtremes();
+    virtual QVector3D sizes();
+    virtual QVector3D minimumExtremes();
+    virtual QVector3D maximumExtremes();
     virtual int getVertexCount();
 
     double lineWidth() const;

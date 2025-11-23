@@ -30,7 +30,7 @@ void main()
 
     vec3 viewDir = normalize(-v_eye);
 
-    // Wektor normalny (iloczyn wektorowy wektora widzenia i kierunku linii)
+    // normal vector pointing perpendicular to view direction and line direction
     vec3 normal = normalize(cross(viewDir, v_normal));
 
     // calc diffuse light

@@ -224,8 +224,8 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
 
 void GLWidget::updateExtremes(ShaderDrawable *drawable)
 {
-    QVector3D minExtremes = drawable->getMinimumExtremes();
-    QVector3D maxExtremes = drawable->getMaximumExtremes();
+    QVector3D minExtremes = drawable->minimumExtremes();
+    QVector3D maxExtremes = drawable->maximumExtremes();
 
     m_xMin = !qIsNaN(minExtremes.x()) ? minExtremes.x() : 0;
     m_xMax = !qIsNaN(maxExtremes.x()) ? maxExtremes.x() : 0;

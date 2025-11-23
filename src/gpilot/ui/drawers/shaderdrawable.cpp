@@ -176,17 +176,17 @@ void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     }
 }
 
-QVector3D ShaderDrawable::getSizes()
+QVector3D ShaderDrawable::sizes()
 {
     return QVector3D(0, 0, 0);
 }
 
-QVector3D ShaderDrawable::getMinimumExtremes()
+QVector3D ShaderDrawable::minimumExtremes()
 {
     return QVector3D(0, 0, 0);
 }
 
-QVector3D ShaderDrawable::getMaximumExtremes()
+QVector3D ShaderDrawable::maximumExtremes()
 {
     return QVector3D(0, 0, 0);
 }
