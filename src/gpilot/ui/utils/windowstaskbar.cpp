@@ -7,13 +7,19 @@ WindowsTaskbar::WindowsTaskbar(QWidget *widget) : m_widget(widget)
 {
 }
 
+WindowsTaskbar::~WindowsTaskbar() {
+    if (m_pTaskbar) {
+        m_pTaskbar->Release();
+        m_pTaskbar = nullptr;
+    }
+}
+
 void WindowsTaskbar::init()
 {
     if (CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_ALL, IID_ITaskbarList3, (void**)&m_pTaskbar) == S_OK) {
         if (m_pTaskbar->HrInit() == S_OK) {
             m_pTaskbar->SetProgressState(hwnd(), TBPF_NORMAL);
         }
-        m_pTaskbar->Release();
     }
 }
 

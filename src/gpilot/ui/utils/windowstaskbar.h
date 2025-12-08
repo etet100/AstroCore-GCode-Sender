@@ -10,6 +10,7 @@ class WindowsTaskbar
 {
     public:
         WindowsTaskbar(QWidget *widget);
+        ~WindowsTaskbar();
         void init();
         void setProgress(int value, int total);
 
