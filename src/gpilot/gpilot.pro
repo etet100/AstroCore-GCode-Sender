@@ -183,21 +183,7 @@ SOURCES += main.cpp\
     state_behaviour/pausebehavior.cpp \
     # state_behaviour/probingbehavior.cpp \
     state_behaviour/runningbehavior.cpp \
-    # state_behaviour/state.cpp \
-    # state_behaviour/statealarm.cpp \
     state_behaviour/statebehavior.cpp \
-    # state_behaviour/statecheckmode.cpp \
-    # state_behaviour/stateconnecting.cpp \
-    # state_behaviour/stateerror.cpp \
-    # state_behaviour/statehoming.cpp \
-    # state_behaviour/stateidle.cpp \
-    # state_behaviour/stateinitialization.cpp \
-    # state_behaviour/statejogging.cpp \
-    # state_behaviour/statejoggingwaitingforidle.cpp \
-    # state_behaviour/statepause.cpp \
-    # state_behaviour/stateprobing.cpp \
-    # state_behaviour/staterunning.cpp \
-    # state_behaviour/statetoolchange.cpp \
     # state_behaviour/toolchangebehavior.cpp \
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
@@ -320,22 +306,7 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/pausebehavior.h \
     # state_behaviour/probingbehavior.h \
     state_behaviour/runningbehavior.h \
-    # state_behaviour/state.h \
-    # state_behaviour/statealarm.h \
     state_behaviour/statebehavior.h \
-    # state_behaviour/statecheckmode.h \
-    # state_behaviour/stateconnecting.h \
-    # state_behaviour/stateerror.h \
-    # state_behaviour/statehoming.h \
-    # state_behaviour/stateidle.h \
-    # state_behaviour/stateinitialization.h \
-    # state_behaviour/statejogging.h \
-    # state_behaviour/statejoggingwaitingforidle.h \
-    # state_behaviour/statepause.h \
-    # state_behaviour/stateprobing.h \
-    # state_behaviour/staterunning.h \
-    # state_behaviour/states.h \
-    # state_behaviour/statetoolchange.h \
     state_behaviour/toolchangebehavior.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
