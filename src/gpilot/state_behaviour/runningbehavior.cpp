@@ -32,11 +32,11 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-bool RunningBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+StateBehavior::Result RunningBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     Q_UNUSED(fullResponse);
 
-    qDebug() << "[RunningBehavior] onCommandResponse:" << command << "->" << response;
+    qDebug() << "[RunningBehavior] onCommandResponse:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
     m_program.setCommandResponse(commandAttributes.tableIndex, response);
 
@@ -54,7 +54,7 @@ bool RunningBehavior::onCommandResponse(QString command, CommandAttributes comma
         sendStreamerCommandsUntilBufferIsFull();
     }
 
-    return true;
+    return Result::Ok;;
 }
 
 void RunningBehavior::onAlarm(int code)
@@ -146,6 +146,7 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
 
     // Pass empty commands through loop too, we will skip them inside
     QString command = m_program.command();
+    int sent = 0;
     while (command.isEmpty() || (
         !m_communicator->willOverflowBuffer(command) && m_program.hasMoreCommands()
         && !(!m_communicator->m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_communicator->m_commands.last().commandLine).contains(M230))
@@ -155,7 +156,8 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         } else {
             m_program.setCommandSent();
             m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
-            qDebug() << "[RunningBehavior] Sent command:" << command;
+            // qDebug() << "[RunningBehavior] Sent command:" << command;
+            sent++;
         }
         if (!m_program.isLastCommand()) {
             m_program.advanceCommandIndex();
@@ -165,6 +167,8 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
             break;
         }
     }
+
+    qDebug() << "[RunningBehavior] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
 }
 
 void RunningBehavior::pause()

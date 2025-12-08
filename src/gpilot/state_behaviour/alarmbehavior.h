@@ -17,7 +17,7 @@ class AlarmBehavior : public StateBehavior
 
         void onMachineStateChanged(MachineState state) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
-        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void unlock() override;
         bool action(const Action &action) override;
         bool isActionAllowed(const Action &action) override;

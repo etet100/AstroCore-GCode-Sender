@@ -21,10 +21,12 @@ class StateBehavior : public QObject
     Q_OBJECT
 
     public:
-        enum Result {
-            Ok,
+        enum Result : int {
+            Ok = 0,
+            ReturnCommandToQueue,
+            Unhandled,
             Error,
-            WaitForAsyncResult
+            WaitForAsyncResult,
         };
 
         explicit StateBehavior(QObject *parent = nullptr);
@@ -80,22 +82,23 @@ class StateBehavior : public QObject
 
         // returns true if the response was handled and should not be processed further, for example
         // passed to onCommandResponse.
-        virtual bool onRawResponse(QString response);
+        virtual Result onRawResponse(QString response);
 
         // returns true if the response was handled and should not be processed further.
-        virtual bool onCommandResponse(QString command, QString response, QStringList fullResponse) {
-            Q_UNUSED(command);
-            Q_UNUSED(response);
-            Q_UNUSED(fullResponse);
+        // virtual Result onCommandResponse(QString command, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
+        //     Q_UNUSED(command);
+        //     Q_UNUSED(response);
+        //     Q_UNUSED(fullResponse);
 
-            return false;
-        }
+        //     return Result::Unhandled;;
+        // }
 
         // returns true if the response was handled and should not be processed further.
-        virtual bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) {
+        virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);
 
-            return onCommandResponse(command, response, fullResponse);
+            // return onCommandResponse(command, cmdStatus, response, fullResponse);
+            return Result::Unhandled;
         }
 
         virtual void onConnectionStateChanged(ConnectionState state) {

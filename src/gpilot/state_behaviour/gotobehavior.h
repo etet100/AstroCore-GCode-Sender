@@ -14,7 +14,7 @@ class GoToBehavior : public StateBehavior
         explicit GoToBehavior(QPointF target, int feedRate, QObject *parent = nullptr);
         QString name() override { return "Go to..."; }
         void onMachineState(MachineState state) override;
-        bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
+        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
 
     private:

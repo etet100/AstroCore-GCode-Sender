@@ -87,6 +87,11 @@ class HomingDirs {
         HomingDir m_z;
 };
 
+struct CmdStatus {
+    bool ok;
+    int errorCode;
+};
+
 enum class Axis : int {
     None = -1,
     X,

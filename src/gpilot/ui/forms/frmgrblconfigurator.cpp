@@ -450,8 +450,8 @@ void frmGrblConfigurator::update()
         this,
         &frmGrblConfigurator::onConfigurationReceived
     );
-    QTimer::singleShot(200, this, [this]() {
-        m_communicator->sendCommand(CommandSource::System, "$$");
+    QTimer::singleShot(100, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
     });
 }
 
@@ -533,9 +533,10 @@ void frmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)
     }
 
     for (QMap<int, double>::iterator it = toBeSaved.begin(); it != toBeSaved.end(); it++) {
-        QString command = QString("$%1=%2").arg(it.key()).arg(it.value());
-        qDebug() << (int) m_communicator->sendCommand(CommandSource::System, command);
-        qDebug() << "Sending command" << command;
+        m_communicator->stateBehavior()->action(SaveMachineConfigurationParamAction(it.key(), it.value()));
+        // QString command = QString("$%1=%2").arg(it.key()).arg(it.value());
+        // qDebug() << (int) m_communicator->sendCommand(CommandSource::System, command);
+        // qDebug() << "Sending command" << command;
     }
 
     QDialog::accept();

@@ -34,31 +34,36 @@ void ResetBehavior::onMachineState(MachineState state)
     }
 }
 
-bool ResetBehavior::onRawResponse(QString response)
+StateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
     qDebug() << "[ResetBehavior] Raw Response:" << response;
 
     if (dataIsReset(response)) {
         if (m_stage == SentReset) {
-            qDebug() << "[ResetBehavior] Reset detected in raw response. Sending $$ and $#.";
+            qDebug() << "[ResetBehavior] Reset detected in raw response. Sending $$.";
 
             m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-            m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
 
             m_stage = SentSettingsAndOffsets;
         } else {
             // Ignore silently
         }
 
-        return true;
+        return Result::Ok;
     }
 
-    return false;
+    return Result::Unhandled;
 }
 
-bool ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
+
+    if (command == "$$" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
+        qDebug() << "[ResetBehavior] Eeprom error during $$, requeue and wait for ok.";
+
+        return Result::ReturnCommandToQueue;
+    }
 
     // if (dataIsReset(response)) {
     //     qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
@@ -70,19 +75,33 @@ bool ResetBehavior::onCommandResponse(QString command, CommandAttributes command
     // }
 
     if (command == "$$") {
-        qDebug() << "[ConnectingBehavior] Processing device configuration.";
+        if (!cmdStatus.ok) {
+            qDebug() << "[ResetBehavior] Error receiving device configuration.";
+
+            return Result::Ok;
+        }
+
+        qDebug() << "[ResetBehavior] Processing device configuration.";
         m_communicator->processDeviceConfiguration(fullResponse);
 
         m_stage = ReceivedSettings;
+        m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1);
 
-        return true;
+        return Result::Ok;
     }
 
     if (command == "$#") {
-        qDebug() << "[ConnectingBehavior] Processing offsets.";
+        if (!cmdStatus.ok) {
+            qDebug() << "[ResetBehavior] Error receiving offsets.";
+
+            return Result::Ok;
+        }
+
+        qDebug() << "[ResetBehavior] Processing offsets.";
         m_communicator->processOffsetsVars(fullResponse);
 
-        m_communicator->connection()->sendByteArray(QByteArray(1, '?'));
+        qDebug() << "[ResetBehavior] Reset completed.";
+        m_communicator->queryMachineState();
 
         // if (m_state == DeviceState::Alarm) {
         //     emit transition(this, new IdleBehavior());
@@ -92,14 +111,14 @@ bool ResetBehavior::onCommandResponse(QString command, CommandAttributes command
 
         m_stage = Completed;
 
-        return true;
+        return Result::Ok;
     }
 
     // if (command == "$G") {
     //     m_communicator->processGCodeParserState(commandAttributes, response.first());
     // }
 
-    return false;
+    return Result::Unhandled;
 }
 
 StateBehavior::Result ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)

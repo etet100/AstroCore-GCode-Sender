@@ -14,7 +14,7 @@ class RunningBehavior : public StateBehavior
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString name() override { return "Running"; }
         void onMachineStateChanged(MachineState state) override;
-        bool onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse) override;
+        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
         bool action(const Action &action) override;
         Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;

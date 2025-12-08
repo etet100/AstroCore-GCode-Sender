@@ -16,13 +16,15 @@ const PhysicalMachineConfiguration PhysicalMachineConfigurationParser::parse(QSt
         QRegularExpressionMatch match = gs.match(line);
         if (match.hasMatch()) {
             rawMachineConfiguration[match.captured(1).toInt()] = match.captured(2).toDouble();
+        } else {
+            qDebug() << "[PhysicalMachineConfigurationParser] Invalid configuration line:" << line;
         }
     }
 
-    PhysicalMachineConfiguration machineConfiguration(
-        rawMachineConfiguration,
-        m_configuration
-    );
+    // PhysicalMachineConfiguration machineConfiguration(
+    //     rawMachineConfiguration,
+    //     m_configuration
+    // );
 
-    return machineConfiguration;
+    return PhysicalMachineConfiguration(rawMachineConfiguration, m_configuration);
 }

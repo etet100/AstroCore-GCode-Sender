@@ -88,7 +88,7 @@ QString GcodePreprocessorUtils::removeComment(QString command)
     // Remove any comment beginning with ';' using regex ";.*"
     if (command.contains(';')) command.remove(rx2);
 
-    return command.trimmed();
+    return command.trimmed().toUpper();
 }
 
 // Get comment from a command string

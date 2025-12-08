@@ -97,9 +97,9 @@ void PauseBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-bool PauseBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+StateBehavior::Result PauseBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
-    return true;
+    return Result::Ok;
 }
 
 void PauseBehavior::resume()

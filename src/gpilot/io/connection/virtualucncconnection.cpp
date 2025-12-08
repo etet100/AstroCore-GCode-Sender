@@ -162,6 +162,9 @@ void VirtualUCNCConnection::onReadyRead()
 void VirtualUCNCConnection::processIncomingData()
 {
     while (true) {
+        #ifdef DEBUG_UCNC_COMMUNICATION
+            qDebug() << "uCNC == " << m_incoming;
+        #endif
         if (m_incoming.isEmpty()) {
             return;
         }

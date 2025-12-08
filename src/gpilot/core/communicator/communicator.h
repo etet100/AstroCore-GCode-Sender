@@ -67,7 +67,8 @@ class Communicator : public QObject
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
-        void requestStatusUpdate();
+        void queryMachineState();
+        void queryMachineConfiguration();
         void processStateBehaviorTransition();
 
         StateBehavior* stateBehavior() const { return m_sb.data(); }
@@ -96,7 +97,7 @@ class Communicator : public QObject
 
         // Coordinates
         QVector3D m_machinePos;
-        QVector3D m_workPos;
+        QVector3D m_workOffset;
 
         // Flags
         bool m_reseting;

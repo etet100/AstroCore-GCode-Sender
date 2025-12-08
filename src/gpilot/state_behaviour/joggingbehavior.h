@@ -22,7 +22,7 @@ class JoggingBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         void onMachineState(MachineState state) override;
-        bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
+        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 
         // Jogging-specific methods
         void startJogging();

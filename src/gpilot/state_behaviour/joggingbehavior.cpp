@@ -79,7 +79,7 @@ void JoggingBehavior::onMachineState(MachineState state)
     }
 }
 
-bool JoggingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[JoggingBehavior] Command Response:" << command << "->" << response;
 
@@ -136,7 +136,7 @@ bool JoggingBehavior::onCommandResponse(QString command, QString response, QStri
 
     m_firstCommand = false;
 
-    return true;
+    return Result::Ok;
 }
 
 void JoggingBehavior::continueJogging()

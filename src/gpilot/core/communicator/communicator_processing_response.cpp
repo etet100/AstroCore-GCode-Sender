@@ -59,7 +59,7 @@ void Communicator::onConnectionLineReceived(QString data)
 
     if (m_sb) {
         assert(m_sb != nullptr && !m_sb.isNull());
-        if (m_sb->onRawResponse(data)) {
+        if (m_sb->onRawResponse(data) == StateBehavior::Result::Ok) {
             processStateBehaviorTransition();
 
             return;
@@ -187,13 +187,13 @@ void Communicator::processWorkOffset(QString line)
 
     QRegularExpressionMatch match = wpx.match(line);
     if (match.hasMatch()) {
-        QVector3D newWorkPos = m_machinePos - QVector3D(
+        QVector3D workOffset = QVector3D(
             match.captured(1).toDouble(),
             match.captured(2).toDouble(),
             match.captured(3).toDouble()
         );
-        changed = newWorkPos != m_workPos;;
-        m_workPos = newWorkPos;
+        changed = workOffset != m_workOffset;
+        m_workOffset = workOffset;
     }
 
     // Update work coordinates
@@ -204,8 +204,7 @@ void Communicator::processWorkOffset(QString line)
     // );
 
     if (changed) {
-        m_storedVars.setCoords("W", m_workPos);
-        emit workPosChanged(m_workPos);
+        m_storedVars.setCoords("W", m_workOffset);
     }
 }
 
@@ -215,7 +214,6 @@ void Communicator::processStatus(QString line)
     // Remove < and >, split by |
     // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>
     QStringList sections(line.mid(1, line.length() - 2).split("|"));
-    qDebug() << sections;
     m_statusReceived = true;
 
     // processMachinePosition()
@@ -261,6 +259,8 @@ void Communicator::processStatus(QString line)
             qDebug() << "[Communicator] Unhandled status section:" << line;
         }
     }
+
+    emit workPosChanged(m_machinePos - m_workOffset);
 
     // processMachinePosition(line);
     // processWorkOffset(line);
@@ -506,13 +506,13 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
 bool Communicator::processCommandResponse(QString data)
 {
-    bool result;
+    bool result = false;
 
     // @TODO why static?? what is this for???
     static QString response; // Full response string
     static QStringList lines; // Response lines
 
-    // qDebug() << "< CMD <" << data;
+    qDebug() << "< CMD <" << data;
 
     assert(m_commands.length() > 0);
 
@@ -527,7 +527,21 @@ bool Communicator::processCommandResponse(QString data)
     }
 
     response.append(data);
-    lines.append(data);
+    // lines.append(data);
+
+    CmdStatus cmdStatus{.ok = false, .errorCode = 0};
+    if (data == "ok" || data == ">:ok") {
+        cmdStatus.ok = true;
+    } else if (data.startsWith("error:")) {
+        cmdStatus.errorCode = data.mid(6).toInt();
+        qDebug() << "[Communicator] error" << cmdStatus.errorCode;
+    } else if (data.startsWith(">:error:")) {
+        cmdStatus.errorCode = data.mid(8).toInt();
+        qDebug() << "[Communicator] error" << cmdStatus.errorCode;
+    } else {
+        qDebug() << "[Communicator] unknown response status" << data;
+        assert(false);
+    }
 
     // Take command from buffer
     CommandAttributes commandAttributes = m_commands.takeFirst();
@@ -537,17 +551,18 @@ bool Communicator::processCommandResponse(QString data)
 
     if (m_sb != nullptr) {
         assert(m_sb != nullptr && !m_sb.isNull());
+        StateBehavior::Result sbResult = m_sb->onCommandResponse(command, commandAttributes, cmdStatus, data, lines);
+        switch (sbResult) {
+            case StateBehavior::Result::Ok:
+                result = true;
+                break;
 
-        // IdleBehavior *idleBehavior = qobject_cast<IdleBehavior *>(m_sb.data());
-        // if (!idleBehavior) {
-        //     // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-        //     // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
-        //     result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
-        // } else {
-        //     // qDebug() << "[Communicator] Thread:" << QThread::currentThread() << m_sb->thread();
-        //     // qDebug() << "[Communicator] Passing command response to state behavior: " << command << m_sb->name();
-            result = m_sb->onCommandResponse(command, commandAttributes, lines.first(), lines);
-        // }
+            case StateBehavior::Result::ReturnCommandToQueue:
+                // return command to the queue
+                qDebug() << "[Communicator] Returning command to queue:" << commandAttributes.commandLine;
+                m_commands.prepend(commandAttributes);
+                break;
+        }
     }
 
     // Store current coordinate system
@@ -556,7 +571,7 @@ bool Communicator::processCommandResponse(QString data)
     // }
 
     // // Offsets
-    if (command == "$#") {
+    if (command == "$#" && cmdStatus.ok) {
         processOffsetsVars(lines);
     }
 
@@ -857,7 +872,7 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
 void Communicator::processMessage(QString data)
 {
-    qDebug() << "< MSG <" << data;
+    // qDebug() << "< MSG <" << data;
     // static QRegularExpression msg("\\[MSG:([^\\]]+)\\]");
     // if (msg.indexIn(data) != -1) {
     //     QString message = msg.cap(1);
@@ -875,7 +890,6 @@ void Communicator::processAlarm(QString data)
     static QRegularExpression re("^(\\[)?ALARM:(\\d+)(\\])?$");
     QRegularExpressionMatch match = re.match(data);
     if (match.hasMatch()) {
-        qDebug() << match;
         int code = match.captured(2).toInt();
 
         emit alarm(code);
@@ -884,4 +898,49 @@ void Communicator::processAlarm(QString data)
             m_sb->onAlarm(code);
         }
     }
+}
+
+// Save offset to be used when calculating work coordinates
+void Communicator::processOffsetsVars(QStringList response)
+{
+    static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
+    static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
+
+    for (auto &line : response) {
+        QRegularExpressionMatch match = gx.match(line);
+        if (match.hasMatch()) {
+            if (match.captured(1) == "G92") {
+                qDebug() << "[Communicator] G92 offset updated";
+                m_workOffset = QVector3D(
+                    match.captured(2).toDouble(),
+                    match.captured(3).toDouble(),
+                    match.captured(4).toDouble()
+                );
+            }
+
+            m_storedVars.setCoords(
+                match.captured(1),
+                QVector3D(
+                    match.captured(2).toDouble(),
+                    match.captured(3).toDouble(),
+                    match.captured(4).toDouble()
+                    )
+                );
+        } else {
+            match = tx.match(line);
+            if (match.hasMatch()) {
+                m_storedVars.setCoords(
+                    match.captured(1),
+                    QVector3D(0, 0, match.captured(2).toDouble())
+                    );
+            } else {
+                qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
+                assert(false);
+
+                return;
+            }
+        }
+    }
+
+    qDebug() << "[Communicator] Offsets updated";
 }

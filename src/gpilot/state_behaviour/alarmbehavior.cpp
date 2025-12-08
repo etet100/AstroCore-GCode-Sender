@@ -70,7 +70,7 @@ void AlarmBehavior::setAlarmMessage()
     }
 }
 
-bool AlarmBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[AlarmBehavior] Command Response:" << command << response;
     // Handle command responses in alarm state
@@ -83,10 +83,10 @@ bool AlarmBehavior::onCommandResponse(QString command, QString response, QString
             // emit error(this, "Failed to unlock alarm: " + response.join(" "));
         }
 
-        return true;
+        return Result::Ok;
     }
 
-    return false;
+    return Result::Unhandled;
 }
 
 // void AlarmBehavior::onConnectionStateChanged(ConnectionState state)

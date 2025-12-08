@@ -15,7 +15,7 @@ void StateBehavior::reset()
     emit transition(this, new ResetBehavior(this));
 }
 
-bool StateBehavior::onRawResponse(QString response) {
+StateBehavior::Result StateBehavior::onRawResponse(QString response) {
     Q_UNUSED(response);
     // if (dataIsReset(response)) {
     //     qDebug() << "[StateBehavior] Unexpected reset?";
@@ -27,7 +27,7 @@ bool StateBehavior::onRawResponse(QString response) {
     //     return true;
     // }
 
-    return false;
+    return Result::Unhandled;
 }
 
 StateBehavior::Result StateBehavior::onExit(StateBehavior *next)

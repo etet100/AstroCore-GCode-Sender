@@ -52,7 +52,6 @@ QDockWidget::float-button {
 
 QDockWidget::close-button:hover, QDockWidget::float-button:hover {
     background: gray;
-    cursor: pointer;
 }
 
 QSpinBox, QDoubleSpinBox {

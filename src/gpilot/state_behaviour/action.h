@@ -20,6 +20,8 @@ class Action
             Jog,
             Home,
             Unlock,
+            QueryMachineConfiguration,
+            SaveMachineConfigurationParam,
         };
 
         Action(Type type);
@@ -27,6 +29,21 @@ class Action
 
     private:
         Type m_type;
+};
+
+class SaveMachineConfigurationParamAction : public Action
+{
+    public:
+        SaveMachineConfigurationParamAction(int index, double value)
+            : Action(Action::Type::SaveMachineConfigurationParam), m_index(index), m_value(value) {
+        }
+
+        int index() const { return m_index; }
+        double value() const { return m_value; }
+
+    private:
+        int m_index;
+        double m_value;
 };
 
 #endif // ACTION_H

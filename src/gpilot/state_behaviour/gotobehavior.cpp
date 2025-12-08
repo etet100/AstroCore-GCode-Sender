@@ -28,11 +28,11 @@ void GoToBehavior::onMachineState(MachineState state)
     }
 }
 
-bool GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[GoToBehavior] Command Response:" << command << response;
 
-    return true;
+    return Result::Ok;
 }
 
 StateBehavior::Result GoToBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
@@ -46,7 +46,7 @@ StateBehavior::Result GoToBehavior::onEntry(Communicator *communicator, StateBeh
         .arg(m_feedRate);
 
     communicator->sendCommand(CommandSource::System, cmd, TABLE_INDEX_UI);
-    communicator->requestStatusUpdate();
+    communicator->queryMachineState();
 
     m_stage = CommandSent;
 

@@ -24,7 +24,7 @@ void IdleBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-bool IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, QString response, QStringList fullResponse)
+StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     assert(m_communicator != nullptr && !m_communicator.isNull());
 
@@ -33,10 +33,47 @@ bool IdleBehavior::onCommandResponse(QString command, CommandAttributes commandA
     if (command == "$G") {
         m_communicator->processGCodeParserState(commandAttributes, response);
 
-        return true;
+        return Result::Ok;
     }
 
-    return false;
+    if (command == "$$") {
+        if (!cmdStatus.ok) {
+            qDebug() << "[IdleBehavior] Error receiving device configuration.";
+
+            return Result::Ok;
+        }
+
+        qDebug() << "[IdleBehavior] Processing device configuration.";
+        m_communicator->processDeviceConfiguration(fullResponse);
+
+        return Result::Ok;
+    }
+
+    return Result::Unhandled;;
+}
+
+bool IdleBehavior::action(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::QueryMachineConfiguration:
+            m_communicator->queryMachineConfiguration();
+            return true;
+
+        case Action::Type::SaveMachineConfigurationParam:
+            {
+                SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
+                QString command = QString("$%1=%2").arg(saveAction.index()).arg(saveAction.value());
+                qDebug() << "[IdleBehavior] Saving machine configuration parameter:" << command;
+                m_communicator->sendCommand(CommandSource::System, command);
+            }
+            return true;
+
+        case Action::Type::Home:
+            m_communicator->home();
+            return true;
+    }
+
+    return StateBehavior::action(action);
 }
 
 StateBehavior::Result IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)

@@ -61,7 +61,7 @@ void Communicator::resetStateVariables()
     m_machineState = MachineState::Unknown;
     m_senderState = SenderState::Unknown;
     m_machinePos = QVector3D(0, 0, 0);
-    m_workPos = QVector3D(0, 0, 0);
+    m_workOffset = QVector3D(0, 0, 0);
     m_machineConfiguration = nullptr;
 }
 
@@ -76,6 +76,15 @@ SendCommandResult Communicator::sendCommand(
     CommandCallback callback
 ) {
     QRegularExpressionMatch match;
+
+    // Handle special console commands
+    if (source == CommandSource::Console) {
+        QString trimmed = GcodePreprocessorUtils::removeComment(commandLine);
+        if (trimmed == "$H") {
+            m_sb->action(Action::Home);
+            return SendCommandResult::Done;
+        }
+    }
 
     // tableIndex:
     // 0...n - commands from g-code program
@@ -169,9 +178,14 @@ void Communicator::sendRealtimeCommand(QString command)
     m_connection->sendByteArray(QByteArray(command.toLatin1(), 1));
 }
 
-void Communicator::requestStatusUpdate()
+void Communicator::queryMachineState()
 {
     m_connection->sendByteArray(QByteArray(1, '?'));
+}
+
+void Communicator::queryMachineConfiguration()
+{
+    sendCommand(CommandSource::System, "$$");
 }
 
 // Process new state requested be current state behavior
@@ -358,7 +372,7 @@ void Communicator::restoreOffsets()
 
     sendCommand(
         CommandSource::System,
-        QString("%4G92X%1Y%2Z%3").arg(m_workPos.x()).arg(m_workPos.y()).arg(m_workPos.z()).arg(m_machineConfiguration->unitsInches() ? "G20" : "G21"),
+        QString("%4G92X%1Y%2Z%3").arg(m_workOffset.x()).arg(m_workOffset.y()).arg(m_workOffset.z()).arg(m_machineConfiguration->unitsInches() ? "G20" : "G21"),
         TABLE_INDEX_UTIL1
     );
 }
@@ -537,78 +551,12 @@ void Communicator::processConnectionTimer()
             m_updateSpindleSpeed = false;
             // sendCommand(CommandSource::System, QString("S%1").arg(ui->slbSpindle->value()), COMMAND_TI_UTIL1);
         }
-        if (m_updateParserState) {
-            m_updateParserState = false;
-            sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
-        }
+        // if (m_updateParserState) {
+        //     m_updateParserState = false;
+        //     sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
+        // }
     }
 
-}
-
-/* used by scripting engine only?? emit signal and do not use m_storedVars directly */
-void Communicator::processOffsetsVars(QStringList response)
-{
-    static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
-    static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
-
-    qDebug() << response;
-
-    for (auto line : response) {
-        QRegularExpressionMatch match = gx.match(line);
-        if (match.hasMatch()) {
-            m_storedVars.setCoords(
-                match.captured(1),
-                QVector3D(
-                    match.captured(2).toDouble(),
-                    match.captured(3).toDouble(),
-                    match.captured(4).toDouble()
-                )
-            );
-        }
-
-        match = tx.match(line);
-        if (match.hasMatch()) {
-            m_storedVars.setCoords(
-                match.captured(1),
-                QVector3D(
-                    0,
-                    0,
-                    match.captured(2).toDouble()
-                )
-            );
-        }
-    }
-
-    // int p = 0;
-    // QRegularExpressionMatch match = gx.match(response);
-    // while (match.hasMatch()) {
-    //     p = match.capturedStart();
-    //     m_storedVars.setCoords(
-    //         match.captured(1),
-    //         QVector3D(
-    //             match.captured(2).toDouble(),
-    //             match.captured(3).toDouble(),
-    //             match.captured(4).toDouble()
-    //         )
-    //     );
-
-    //     p += match.capturedLength();
-    //     match = gx.match(response, p);
-    // }
-
-    // match = tx.match(response);
-    // if (match.hasMatch()) {
-    //     m_storedVars.setCoords(
-    //         match.captured(1),
-    //         QVector3D(
-    //             0,
-    //             0,
-    //             match.captured(2).toDouble()
-    //         )
-    //     );
-    // }
-
-    qDebug() << "[Communicator] Offsets updated";
 }
 
 void Communicator::onTimerStateQuery()
@@ -619,7 +567,7 @@ void Communicator::onTimerStateQuery()
 
     // qDebug() << m_connection->isConnected() << m_resetCompleted << m_statusReceived;
     if (m_connection->isConnected() && m_resetCompleted) {// && m_statusReceived) {
-        this->requestStatusUpdate();
+        // this->queryMachineState();
         // m_connection->sendByteArray(QByteArray(1, '?'));
         m_statusReceived = false;
     }

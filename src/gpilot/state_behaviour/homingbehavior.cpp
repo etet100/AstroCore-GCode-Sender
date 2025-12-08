@@ -49,7 +49,7 @@ void HomingBehavior::onMachineStateChanged(MachineState state)
     // }
 }
 
-bool HomingBehavior::onCommandResponse(QString command, QString response, QStringList fullResponse)
+StateBehavior::Result HomingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[HomingBehavior] Command Response:" << command << response;
     if (command == "$H") {
@@ -78,10 +78,10 @@ bool HomingBehavior::onCommandResponse(QString command, QString response, QStrin
             emit transition(this, new IdleBehavior(this));
         }
 
-        return true;
+        return Result::Ok;
     }
 
-    return false;
+    return Result::Unhandled;
 }
 
 void HomingBehavior::onAlarm(int code)
