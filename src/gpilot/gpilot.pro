@@ -122,6 +122,7 @@ SOURCES += main.cpp\
     core/heightmap/heightmapinterpolator.cpp \
     state_behaviour/action.cpp \
     state_behaviour/connectingbehavior.cpp \
+    state_behaviour/errorbehaviour.cpp \
     state_behaviour/gotobehavior.cpp \
     state_behaviour/reconnectingbehavior.cpp \
     state_behaviour/resetbehavior.cpp \
@@ -243,6 +244,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/heightmapinterpolator.h \
     state_behaviour/action.h \
     state_behaviour/connectingbehavior.h \
+    state_behaviour/errorbehaviour.h \
     state_behaviour/gotobehavior.h \
     state_behaviour/reconnectingbehavior.h \
     state_behaviour/resetbehavior.h \

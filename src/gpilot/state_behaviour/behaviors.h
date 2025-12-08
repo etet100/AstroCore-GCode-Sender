@@ -16,6 +16,7 @@
 #include "runningbehavior.h"
 #include "joggingbehavior.h"
 #include "homingbehavior.h"
+#include "errorbehaviour.h"
 // #include "probingbehavior.h"
 #include "pausebehavior.h"
 #include "alarmbehavior.h"

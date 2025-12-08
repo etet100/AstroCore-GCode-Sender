@@ -93,12 +93,17 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
     if (command == "$#") {
         if (!cmdStatus.ok) {
             qDebug() << "[ResetBehavior] Error receiving offsets.";
+            if (cmdStatus.errorCode != 7) {
+                emit transition(this, new ErrorBehaviour(cmdStatus.errorCode));
 
-            return Result::Ok;
+                return Result::Ok;
+            }
+
+            qDebug() << "[ResetBehavior] We continue despite the error 7.";
+        } else {
+            qDebug() << "[ResetBehavior] Processing offsets.";
+            m_communicator->processOffsetsVars(fullResponse);
         }
-
-        qDebug() << "[ResetBehavior] Processing offsets.";
-        m_communicator->processOffsetsVars(fullResponse);
 
         qDebug() << "[ResetBehavior] Reset completed.";
         m_communicator->queryMachineState();
