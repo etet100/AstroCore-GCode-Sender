@@ -120,6 +120,7 @@ signals:
     void entered();
     void left();
     void goToCursor(QPointF);
+    void zoomChanged(double);
 
 private slots:
     void onFramesTimer();
@@ -181,6 +182,8 @@ private:
 
     void initializeDebugLogger();
     void initializeGL() override;
+
+    void emitZoomChanged();
 
 protected:
     void resizeGL(int width, int height) override;

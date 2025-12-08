@@ -110,6 +110,16 @@ GLWidget& GLWidget::operator<<(ShaderDrawable *drawable)
     return *this;
 }
 
+void GLWidget::emitZoomChanged()
+{
+    if (m_perspective) {
+        // distance between eye and origin (0,0,0)
+        emit zoomChanged(m_eye.length() / 100.0);
+    } else {
+        emit zoomChanged(m_zoomDistance / 100.0);
+    }
+}
+
 void GLWidget::fitDrawable(ShaderDrawable *drawable)
 {
     stopAnimation();
@@ -220,6 +230,7 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
 
     updateProjection();
     updateView();
+    emitZoomChanged();
 }
 
 void GLWidget::updateExtremes(ShaderDrawable *drawable)
@@ -1103,7 +1114,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
 #if NAV_MODE == 2
     double zoomStep = (delta > 0) ? ZOOMSTEP : 1.0 / ZOOMSTEP;
     if (m_perspective) {
-        // Przesuwamy kamerę i punkt obrotu wzdłuż osi patrzenia
+        // Move the camera and lookAt point along the view direction
         QVector3D viewDir = (m_lookAt - m_eye).normalized();
         double moveDist = m_zoomDistance * (zoomStep - 1.0);
         m_eye += viewDir * moveDist;
@@ -1114,6 +1125,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
         m_zoomDistance *= zoomStep;
         m_zoomDistance = qBound(MIN_ZOOM, m_zoomDistance, MAX_ZOOM);
     }
+    emitZoomChanged();
     updateProjection();
     updateView();
 #endif

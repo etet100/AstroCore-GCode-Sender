@@ -248,7 +248,7 @@ private:
     // Visualizer drawers
     // TODO: Add machine table visualizer
     TableSurfaceDrawer m_tableSurfaceDrawer;
-    OriginDrawer *m_originDrawer;
+    OriginDrawer m_originDrawer;
     GcodeDrawer *m_codeDrawer;
     GcodeDrawer *m_probeDrawer;
     GcodeDrawer *m_currentDrawer;

@@ -282,7 +282,6 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
 
-    m_originDrawer = new OriginDrawer();
     m_codeDrawer = new GcodeDrawer();
     // connect(&m_program, &GCode::linesUpdated, m_codeDrawer, &GcodeDrawer::onLinesUpdated);
     m_codeDrawer->setViewParser(&m_viewParser);
@@ -305,6 +304,9 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     });
     connect(ui->glwVisualizer, &GLContainer::left, this, [this]() {
         m_cursorDrawer.setVisible(false);
+    });
+    connect(ui->glwVisualizer, &GLContainer::zoomChanged, this, [this](double zoom) {
+        m_originDrawer.setZoom(zoom);
     });
     connect(ui->glwVisualizer, &GLContainer::goToCursor, this, [this](QPointF pos) {
         m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
@@ -450,12 +452,12 @@ void frmMain::initializeCommunicator()
 
 void frmMain::initializeVisualizer()
 {
-    *ui->glwVisualizer << m_originDrawer << m_codeDrawer << m_probeDrawer
+    *ui->glwVisualizer << &m_originDrawer << m_codeDrawer << m_probeDrawer
                        << &m_cursorDrawer << &m_heightmapBorderDrawer
                        << &m_heightmapGridDrawer << &m_heightmapInterpolationDrawer
                        << &m_selectionDrawer << &m_machineBoundsDrawer << &m_toolDrawer;
 
-    ui->glwVisualizer->fitDrawable();
+    ui->glwVisualizer->fitDrawable(m_codeDrawer);
 }
 
 bool frmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -2623,7 +2625,7 @@ void frmMain::applySettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
-    m_originDrawer->setLineWidth(visualizerConfiguration.lineWidth());
+    m_originDrawer.setLineWidth(visualizerConfiguration.lineWidth());
 
     // @TODO watch for changes is communicator?
     m_communicator->stopUpdatingState();
