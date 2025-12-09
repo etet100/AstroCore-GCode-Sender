@@ -4,10 +4,15 @@
 #ifdef WINDOWS
 
 #include <QWidget>
+#include <QObject>
+#include <QPropertyAnimation>
 #include "shobjidl.h"
 
-class WindowsTaskbar
+class WindowsTaskbar : public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(float animation WRITE setAnimation)
+
     public:
         WindowsTaskbar(QWidget *widget);
         ~WindowsTaskbar();
@@ -15,9 +20,12 @@ class WindowsTaskbar
         void setProgress(int value, int total);
 
     private:
+        QPropertyAnimation *m_animator;
         QWidget *m_widget;
         ITaskbarList3* m_pTaskbar = nullptr;
         HWND hwnd();
+        void startAnimator();
+        void setAnimation(float value);
 };
 
 #endif

@@ -3,8 +3,9 @@
 #include "windowstaskbar.h"
 #include <windows.h>
 
-WindowsTaskbar::WindowsTaskbar(QWidget *widget) : m_widget(widget)
+WindowsTaskbar::WindowsTaskbar(QWidget *widget) : QObject(widget), m_widget(widget)
 {
+    startAnimator();
 }
 
 WindowsTaskbar::~WindowsTaskbar() {
@@ -31,6 +32,30 @@ void WindowsTaskbar::setProgress(int value, int total)
 HWND WindowsTaskbar::hwnd()
 {
     return (HWND)m_widget->winId();
+}
+
+void WindowsTaskbar::startAnimator()
+{
+    m_animator = new QPropertyAnimation(this, "animation");
+    m_animator->setDuration(2500);
+    m_animator->setStartValue(0);
+    m_animator->setEndValue(1);
+    m_animator->setEasingCurve(QEasingCurve::InOutSine);
+    QObject::connect(m_animator, &QPropertyAnimation::finished, [this]() {
+        if (m_animator->direction() == QAbstractAnimation::Forward)
+            m_animator->setDirection(QAbstractAnimation::Backward);
+        else
+            m_animator->setDirection(QAbstractAnimation::Forward);
+        m_animator->start();
+    });
+    m_animator->start();
+}
+
+void WindowsTaskbar::setAnimation(float value)
+{
+    if (m_pTaskbar) {
+        setProgress(value * 500, 500);
+    }
 }
 
 #endif
