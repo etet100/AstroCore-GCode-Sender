@@ -40,7 +40,7 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-StateBehavior::Result InitializationBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result InitializationBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[InitializationBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);

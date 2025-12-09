@@ -5,6 +5,7 @@
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
 #include <QRegularExpression>
+#include "state_behaviour/resetbehavior.h"
 
 StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 {
@@ -33,6 +34,7 @@ StateBehavior::Result StateBehavior::onRawResponse(QString response) {
 StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
+    m_communicator->stopQueryingMachineState();
     stopTimer();
     emit asyncCompleted();
 
@@ -48,7 +50,7 @@ void StateBehavior::stopTimer()
     }
 }
 
-StateBehavior::Result StateBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     if (previous) {
         m_previous = previous;
@@ -97,3 +99,4 @@ bool StateBehavior::dataIsReset(QString data)
 
     return data.contains(re);
 }
+

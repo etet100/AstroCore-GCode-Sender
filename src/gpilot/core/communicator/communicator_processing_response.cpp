@@ -210,6 +210,8 @@ void Communicator::processWorkOffset(QString line)
 
 void Communicator::processStatus(QString line)
 {
+    qDebug() << "[Communicator] Processing status line:" << line;
+
     // MachineState state = MachineState::Unknown;
     // Remove < and >, split by |
     // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>
@@ -312,6 +314,7 @@ void Communicator::processSpindleState(QString line)
 void Communicator::processMachineState(QString stateStr)
 {
     MachineState state = m_machineStateDictionary.key(stateStr, MachineState::Unknown);
+    qDebug() << "[Communicator] Machine state:" << stateStr;
 
     // Update status
     if (state != m_machineState) {
@@ -890,12 +893,12 @@ void Communicator::processAlarm(QString data)
     static QRegularExpression re("^(\\[)?ALARM:(\\d+)(\\])?$");
     QRegularExpressionMatch match = re.match(data);
     if (match.hasMatch()) {
-        int code = match.captured(2).toInt();
+        m_lastAlarmCode = match.captured(2).toInt();
 
-        emit alarm(code);
+        emit alarm(m_lastAlarmCode);
 
         if (m_sb != nullptr) {
-            m_sb->onAlarm(code);
+            m_sb->onAlarm(m_lastAlarmCode);
         }
     }
 }

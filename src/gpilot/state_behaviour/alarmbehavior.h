@@ -16,11 +16,10 @@ class AlarmBehavior : public StateBehavior
         QString name() override { return "Alarm: " + m_alarmMessage; }
 
         void onMachineStateChanged(MachineState state) override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void unlock() override;
         bool action(const Action &action) override;
-        bool isActionAllowed(const Action &action) override;
 
     private:
         int m_alarmCode;

@@ -7,6 +7,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include "core/communicator/communicator.h"
+#include "state_behaviour/behaviors.h"
 
 ConnectingBehavior::ConnectingBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -14,7 +15,7 @@ ConnectingBehavior::ConnectingBehavior(QObject *parent)
 
 QString ConnectingBehavior::name() { return "Connecting"; }
 
-StateBehavior::Result ConnectingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[ConnectingBehavior] Entry, attempting to connect...";
     StateBehavior::onEntry(communicator, previous);
@@ -55,7 +56,7 @@ StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
         log("Connection not established. Giving up.", {"Connecting", m_communicator->connection()->name()});
 
         m_communicator->connection()->deleteLater();
-        m_communicator->m_connection = nullptr;
+        m_communicator->setConnection(nullptr, true);
     }
 
     return StateBehavior::onExit(next);

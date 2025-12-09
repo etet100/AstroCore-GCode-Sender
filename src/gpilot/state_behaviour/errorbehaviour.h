@@ -12,7 +12,7 @@ class ErrorBehaviour : public StateBehavior
         ~ErrorBehaviour();
 
         QString name() override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
 
     private:

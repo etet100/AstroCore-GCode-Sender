@@ -15,7 +15,7 @@ class ReconnectingBehavior : public StateBehavior
     public:
         explicit ReconnectingBehavior(Connection *newConnection);
         QString name() override { return "Reconnecting"; }
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
 
     private:
         enum Stage {

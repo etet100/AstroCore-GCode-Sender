@@ -23,7 +23,7 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result AlarmBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result AlarmBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[AlarmBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -101,6 +101,7 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
 void AlarmBehavior::unlock()
 {
     m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
+    m_communicator->queryMachineState();
 }
 
 bool AlarmBehavior::action(const Action &action)
@@ -112,14 +113,4 @@ bool AlarmBehavior::action(const Action &action)
     }
 
     return true;
-}
-
-bool AlarmBehavior::isActionAllowed(const Action &action)
-{
-    switch (action.type()) {
-        case Action::Type::Unlock:
-            return true;
-    }
-
-    return StateBehavior::isActionAllowed(action);
 }

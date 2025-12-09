@@ -14,7 +14,7 @@
 #include <QMap>
 #include <QPointer>
 
-class Communicator;
+class CommunicatorApi;
 
 class StateBehavior : public QObject
 {
@@ -40,11 +40,6 @@ class StateBehavior : public QObject
             return false;
         }
 
-        virtual bool isActionAllowed(const Action &action) {
-            Q_UNUSED(action);
-            return false;
-        }
-
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
             Q_UNUSED(forced);
@@ -56,11 +51,10 @@ class StateBehavior : public QObject
 
         virtual void reset();
         virtual void unlock() {};
-        // virtual bool isJoggingAllowed() { return false; };
-        // virtual bool isHomingAllowed() { return false; };
+
         StateBehavior* previous() const { return m_previous; }
 
-        virtual Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) = 0;
+        virtual Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) = 0;
         virtual Result onExit(StateBehavior *next = nullptr);
 
         virtual void onAlarm(int code) {
@@ -85,15 +79,6 @@ class StateBehavior : public QObject
         virtual Result onRawResponse(QString response);
 
         // returns true if the response was handled and should not be processed further.
-        // virtual Result onCommandResponse(QString command, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
-        //     Q_UNUSED(command);
-        //     Q_UNUSED(response);
-        //     Q_UNUSED(fullResponse);
-
-        //     return Result::Unhandled;;
-        // }
-
-        // returns true if the response was handled and should not be processed further.
         virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
             Q_UNUSED(commandAttributes);
 
@@ -115,7 +100,7 @@ class StateBehavior : public QObject
 
     protected:
         StateBehavior *m_previous = nullptr;
-        QPointer<Communicator> m_communicator = nullptr;
+        QPointer<CommunicatorApi> m_communicator = nullptr;
         QTimer *m_timer = nullptr;
         QList<StateResponseCallback> m_stateResponseCallbacks;
 

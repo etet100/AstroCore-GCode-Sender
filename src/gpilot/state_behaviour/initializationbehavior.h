@@ -13,7 +13,7 @@ class InitializationBehavior : public StateBehavior
         void onMachineStateChanged(MachineState state) override;
         // bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onConnectionStateChanged(ConnectionState state) override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
 };
 

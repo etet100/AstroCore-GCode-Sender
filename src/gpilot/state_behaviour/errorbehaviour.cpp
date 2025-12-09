@@ -13,7 +13,7 @@ QString ErrorBehaviour::name()
     return QString("Error: %1").arg(m_errorCode);
 }
 
-StateBehavior::Result ErrorBehaviour::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ErrorBehaviour::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     return Result::Ok;
 }

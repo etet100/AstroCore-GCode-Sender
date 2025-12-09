@@ -17,7 +17,7 @@ class JoggingBehavior : public StateBehavior
         explicit JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString name() override { return "Jogging"; }
 
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;

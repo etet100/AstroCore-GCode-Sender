@@ -15,7 +15,9 @@ class ResetBehavior : public StateBehavior
         void onMachineState(MachineState state) override;
         Result onRawResponse(QString response) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        void onAlarm(int code) override;
+
     private:
         enum Stage {
             None,

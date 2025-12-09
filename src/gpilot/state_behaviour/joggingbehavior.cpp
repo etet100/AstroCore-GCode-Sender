@@ -32,7 +32,7 @@ bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
     return forced || (newState->inherits("ResetBehavior") && newState->name() == "Reset");
 }
 
-StateBehavior::Result JoggingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[JoggingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);

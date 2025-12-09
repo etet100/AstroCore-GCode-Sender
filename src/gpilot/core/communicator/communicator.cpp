@@ -5,7 +5,8 @@
 #include <QMessageBox>
 #include <QTextCursor>
 #include <QRegularExpression>
-//#include <parser/gcodeviewparser.h>
+#include "state_behaviour/initializationbehavior.h"
+#include "state_behaviour/homingbehavior.h"
 
 Communicator::Communicator(
     QObject *parent,
@@ -15,7 +16,7 @@ Communicator::Communicator(
     m_connection(connection),
     m_configuration(configuration),
     m_jogger(*this, configuration->joggingModule()),
-    m_timerStateQuery(this),
+    m_queryMachineStateTimer(nullptr),
     m_machineStateDictionary({
         {MachineState::Unknown, "Unknown"},
         {MachineState::Idle, "Idle"},
@@ -39,6 +40,7 @@ Communicator::Communicator(
     m_aborting = false;
     m_statusReceived = false;
     m_spindleCW = true;
+    m_comApi = new CommunicatorApi(this);
 
     execute(new InitializationBehavior());
 
@@ -52,8 +54,8 @@ Communicator::Communicator(
     setSenderStateAndEmitSignal(SenderState::Stopped);
 
     // Update state timer
-    connect(&m_timerStateQuery, &QTimer::timeout, this, &Communicator::onTimerStateQuery);
-    m_timerStateQuery.start();
+    // connect(&m_timerQueryState, &QTimer::timeout, this, &Communicator::onTimerStateQuery);
+    // m_timerQueryState.start();
 }
 
 void Communicator::resetStateVariables()
@@ -299,7 +301,7 @@ void Communicator::unlock()
 {
     assert(m_sb != nullptr && !m_sb.isNull());
 
-    m_sb->unlock();
+    m_sb->action(Action::Unlock);
 }
 
 void Communicator::abort()
@@ -323,6 +325,9 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
 
     // m_connection->disconnect();
     m_connection = newConnection;
+    if (!m_connection) {
+        return true;
+    }
 
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
@@ -346,19 +351,6 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
 Connection *Communicator::connection()
 {
     return m_connection;
-}
-
-void Communicator::stopUpdatingState()
-{
-    m_timerStateQuery.stop();
-}
-
-void Communicator::startUpdatingState(int interval)
-{
-    if (interval > 0) {
-        m_timerStateQuery.setInterval(interval);
-    }
-    m_timerStateQuery.start();
 }
 
 void Communicator::restoreOffsets()
@@ -518,7 +510,7 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
     }
 
     QPointer<StateBehavior> psb = m_sb;
-    if (sb->onEntry(this, psb) == StateBehavior::Result::WaitForAsyncResult) {
+    if (sb->onEntry(m_comApi, psb) == StateBehavior::Result::WaitForAsyncResult) {
         connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
             qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async enter!!)";;
 
@@ -540,41 +532,41 @@ void Communicator::processConnectionTimer()
     // TODO!!
     processStateBehaviorTransition();
 
-    if (m_connection == nullptr || !m_connection->isConnected()) {
-        return;
-    }
+    // if (m_connection == nullptr || !m_connection->isConnected()) {
+    //     return;
+    // }
 
-    // @TODO what does it do??? not homing, not hold, empty queue, are these the idle state tasks??
-    // @TODO refactor ui->cmdHold->isChecked, for now we will assume that its value is always false
-    if (!m_homing /*&& !ui->cmdHold->isChecked()*/ && m_queue.empty()) {
-        if (m_updateSpindleSpeed) {
-            m_updateSpindleSpeed = false;
-            // sendCommand(CommandSource::System, QString("S%1").arg(ui->slbSpindle->value()), COMMAND_TI_UTIL1);
-        }
-        // if (m_updateParserState) {
-        //     m_updateParserState = false;
-        //     sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
-        // }
-    }
+    // // @TODO what does it do??? not homing, not hold, empty queue, are these the idle state tasks??
+    // // @TODO refactor ui->cmdHold->isChecked, for now we will assume that its value is always false
+    // if (!m_homing /*&& !ui->cmdHold->isChecked()*/ && m_queue.empty()) {
+    //     if (m_updateSpindleSpeed) {
+    //         m_updateSpindleSpeed = false;
+    //         // sendCommand(CommandSource::System, QString("S%1").arg(ui->slbSpindle->value()), COMMAND_TI_UTIL1);
+    //     }
+    //     // if (m_updateParserState) {
+    //     //     m_updateParserState = false;
+    //     //     sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
+    //     // }
+    // }
 
 }
 
-void Communicator::onTimerStateQuery()
-{
-    if (!m_connection) {
-        return;
-    }
+// void Communicator::onTimerStateQuery()
+// {
+//     if (!m_connection) {
+//         return;
+//     }
 
-    // qDebug() << m_connection->isConnected() << m_resetCompleted << m_statusReceived;
-    if (m_connection->isConnected() && m_resetCompleted) {// && m_statusReceived) {
-        // this->queryMachineState();
-        // m_connection->sendByteArray(QByteArray(1, '?'));
-        m_statusReceived = false;
-    }
+//     // qDebug() << m_connection->isConnected() << m_resetCompleted << m_statusReceived;
+//     if (m_connection->isConnected() && m_resetCompleted) {// && m_statusReceived) {
+//         // this->queryMachineState();
+//         // m_connection->sendByteArray(QByteArray(1, '?'));
+//         m_statusReceived = false;
+//     }
 
-    // @todo find some other way to update buffer state
-    //ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_commands.length()).arg(m_queue.length()));
-}
+//     // @todo find some other way to update buffer state
+//     //ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_commands.length()).arg(m_queue.length()));
+// }
 
 bool Communicator::compareCoordinates(double x, double y, double z)
 {
@@ -649,6 +641,11 @@ void Communicator::onConnectionError(QString message)
 
 void Communicator::onConnectionStateChanged(ConnectionState state)
 {
+    qDebug() << "[Communicator] Connection state changed to " << static_cast<int>(state);
+
+    if (state == ConnectionState::Connected) {
+        m_lastAlarmCode = 0;
+    }
 
 
     // if (state == ConnectionState::Connected) {
@@ -669,4 +666,27 @@ void Communicator::onStateError(StateBehavior *sb, QString message)
 {
     qDebug() << "State error: " << message;
     // execute(new StateError(sb, message));
+}
+
+void Communicator::startQueryingMachineState()
+{
+    if (m_queryMachineStateTimer != nullptr) {
+        return;
+    }
+
+    m_queryMachineStateTimer = new QTimer(this);
+    connect(m_queryMachineStateTimer, &QTimer::timeout, this, [this]() {
+        queryMachineState();
+    });
+
+    m_queryMachineStateTimer->start(100); // 100 ms interval
+}
+
+void Communicator::stopQueryingMachineState()
+{
+    if (m_queryMachineStateTimer) {
+        m_queryMachineStateTimer->stop();
+        m_queryMachineStateTimer->deleteLater();
+        m_queryMachineStateTimer = nullptr;
+    }
 }

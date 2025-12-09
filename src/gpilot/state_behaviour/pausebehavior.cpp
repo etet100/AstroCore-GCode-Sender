@@ -43,7 +43,7 @@ QString PauseBehavior::name()
     }
 }
 
-StateBehavior::Result PauseBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     StateBehavior::onEntry(communicator, previous);
 

@@ -36,6 +36,7 @@
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
 #include "state_behaviour/action.h"
+#include "state_behaviour/behaviors.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
@@ -2628,8 +2629,8 @@ void frmMain::applySettings()
     m_originDrawer.setLineWidth(visualizerConfiguration.lineWidth());
 
     // @TODO watch for changes is communicator?
-    m_communicator->stopUpdatingState();
-    m_communicator->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
+    // m_communicator->stopUpdatingState();
+    // m_communicator->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
 
     applyToolDrawerConfiguration(visualizerConfiguration);
     applyCursorDrawerConfiguration(visualizerConfiguration);
@@ -3757,14 +3758,14 @@ void frmMain::onTransferCompleted()
 
     // Show message box
     qApp->beep();
-    m_communicator->stopUpdatingState();
-    m_timerConnection.stop();
+    // m_communicator->stopUpdatingState();
+    // m_timerConnection.stop();
 
     QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
                                 .arg(ui->glwVisualizer->spendTime().toString("hh:mm:ss")));
 
-    m_timerConnection.start();
-    m_communicator->startUpdatingState();
+    // m_timerConnection.start();
+    // m_communicator->startUpdatingState();
 }
 
 QString frmMain::getLineInitCommands(int row)

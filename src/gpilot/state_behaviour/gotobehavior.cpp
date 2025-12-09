@@ -23,6 +23,7 @@ void GoToBehavior::onMachineState(MachineState state)
         // }
     } else if (state == MachineState::Idle && m_stage == WaitingForMovementEnd) {
         m_stage = Completed;
+        m_communicator->stopQueryingMachineState();
 
         emit transition(this, new IdleBehavior(this));
     }
@@ -35,7 +36,7 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
     return Result::Ok;
 }
 
-StateBehavior::Result GoToBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[GoToBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -46,7 +47,7 @@ StateBehavior::Result GoToBehavior::onEntry(Communicator *communicator, StateBeh
         .arg(m_feedRate);
 
     communicator->sendCommand(CommandSource::System, cmd, TABLE_INDEX_UI);
-    communicator->queryMachineState();
+    communicator->startQueryingMachineState();
 
     m_stage = CommandSent;
 

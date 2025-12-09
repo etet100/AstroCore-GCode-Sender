@@ -17,7 +17,7 @@ class RunningBehavior : public StateBehavior
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
         bool action(const Action &action) override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         // Running-specific methods
         void handleFeedOverride(int percentage);
         void handleSpindleOverride(int percentage);

@@ -21,7 +21,7 @@ class PauseBehavior : public StateBehavior
         explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
         bool action(const Action &action) override;
         QString name() override;
-        Result onEntry(Communicator *communicator, StateBehavior *previous = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;

@@ -15,7 +15,7 @@ HomingBehavior::HomingBehavior(QObject *parent)
 {
 }
 
-StateBehavior::Result HomingBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result HomingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[HomingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -24,6 +24,7 @@ StateBehavior::Result HomingBehavior::onEntry(Communicator *communicator, StateB
     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", TABLE_INDEX_UI);
     m_homingStarted = true;
     m_homingCompleted = false;
+    m_communicator->startQueryingMachineState();
 
     return Result::Ok;
 }

@@ -8,19 +8,15 @@
 #include "scripting/scriptvars.h"
 #include "core/machine/physicalmachineconfiguration.h"
 #include "core/jogger/jogger.h"
-#include "state_behaviour/behaviors.h"
+#include "state_behaviour/statebehavior.h"
 #include <QTimer>
 #include <QPointer>
 
 class Communicator : public QObject
 {
     friend class frmMain;
-    friend class ResetBehavior;
-    friend class ConnectingBehavior;
-    friend class ReconnectingBehavior;
-    friend class RunningBehavior;
-    friend class IdleBehavior;
     friend class Jogger;
+    friend class CommunicatorApi;
 
     Q_OBJECT
 
@@ -47,8 +43,8 @@ class Communicator : public QObject
         bool setConnection(Connection *, bool force);
         // bool openConnection();
         Connection* connection();
-        void stopUpdatingState();
-        void startUpdatingState(int interval = -1);
+        // void stopUpdatingState();
+        // void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
         const MachineState& machineState() const { return m_machineState; }
         PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
@@ -60,8 +56,7 @@ class Communicator : public QObject
         bool isSenderState(SenderState state, Args... args) const {
             return isSenderState(state) || isSenderState(args...);
         }
-        void probe();
-        void home();
+        // void probe();
         bool execute(StateBehavior *stateBehaviour, bool force = false);
 
         // @TODO to be removed!! another local timer? how it works??
@@ -80,6 +75,7 @@ class Communicator : public QObject
         GCode *m_streamer = nullptr;
         PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
         Jogger m_jogger;
+        CommunicatorApi *m_comApi;
 
         // Queues
         QList<CommandAttributes> m_commands;
@@ -118,10 +114,13 @@ class Communicator : public QObject
         QString m_storedParserState; // saved by storeParserState
 
         // Timers
-        QTimer m_timerStateQuery;
+        QTimer *m_queryMachineStateTimer = nullptr;
 
         // Dictionary
         QMap<MachineState, QString> m_machineStateDictionary;
+
+        //
+        int m_lastAlarmCode = 0;
 
         void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
@@ -157,9 +156,13 @@ class Communicator : public QObject
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
         bool finalizeExecute(StateBehavior *sb);
         bool willOverflowBuffer(QString command);
+        void startQueryingMachineState();
+        void stopQueryingMachineState();
+        void home();
+        void probe();
 
     private slots:
-        void onTimerStateQuery();
+        // void onTimerStateQuery();
         void onConnectionLineReceived(QString);
         void onConnectionError(QString);
         void onConnectionStateChanged(ConnectionState state);
@@ -198,6 +201,45 @@ class Communicator : public QObject
         void transferCompleted();
         void stateBehaviorChanged(StateBehavior *sb);
         void log(QString message);
+};
+
+class CommunicatorApi : public QObject
+{
+    Q_OBJECT
+
+    public:
+        CommunicatorApi(Communicator *communicator) : QObject(), m_communicator(communicator) {}
+
+        Connection *connection() { return m_communicator->m_connection; }
+        void queryMachineState() { m_communicator->queryMachineState(); }
+        void processDeviceConfiguration(QStringList response) { m_communicator->processDeviceConfiguration(response); }
+        void processOffsetsVars(QStringList response) { m_communicator->processOffsetsVars(response); }
+        void processConnectionTimer() { m_communicator->processConnectionTimer(); }
+        void processGCodeParserState(CommandAttributes commandAttributes, QString response) { m_communicator->processGCodeParserState(commandAttributes, response); }
+        bool setConnection(Connection *connection, bool force) { return m_communicator->setConnection(connection, force); }
+        int lastAlarmCode() const { return m_communicator->m_lastAlarmCode; }
+        void startQueryingMachineState() { m_communicator->startQueryingMachineState(); }
+        void stopQueryingMachineState() { m_communicator->stopQueryingMachineState(); }
+        void queryMachineConfiguration() { m_communicator->queryMachineConfiguration(); }
+
+        // Command
+        SendCommandResult sendCommand(CommandSource source, QString commandLine, int tableIndex = TABLE_INDEX_UI, bool wait = false, CommandCallback callback = nullptr) {
+            return m_communicator->sendCommand(source, commandLine, tableIndex, wait, callback);
+        }
+        void sendRealtimeCommand(QString command) { m_communicator->sendRealtimeCommand(command); }
+        void sendRealtimeCommand(int command) { m_communicator->sendRealtimeCommand(command); }
+
+        // Buffers
+        void clearQueue() { m_communicator->clearQueue(); }
+        void clearCommandsAndQueue() { m_communicator->clearCommandsAndQueue(); }
+        bool willOverflowBuffer(QString command) { return m_communicator->willOverflowBuffer(command); }
+        bool isCommandBufferEmpty() { return m_communicator->m_commands.isEmpty(); }
+        bool isQueueEmpty() { return m_communicator->m_queue.isEmpty(); }
+        QList<CommandAttributes>& commands() { return m_communicator->m_commands; }
+        int bufferLength() { return m_communicator->bufferLength(); }
+
+    private:
+        Communicator *m_communicator = nullptr;
 };
 
 #endif // COMMUNICATOR_H

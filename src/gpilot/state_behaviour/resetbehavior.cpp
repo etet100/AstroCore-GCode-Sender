@@ -4,10 +4,8 @@
 
 #include "core/globals.h"
 #include <QRegularExpression>
-#include "runningbehavior.h"
-#include "alarmbehavior.h"
-#include "resetbehavior.h"
 #include "core/communicator/communicator.h"
+#include "state_behaviour/behaviors.h"
 
 ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -26,12 +24,17 @@ void ResetBehavior::onMachineState(MachineState state)
 
         return;
     } else if (state == MachineState::Alarm) {
-        emit transition(this, new AlarmBehavior());
+        emit transition(this, new AlarmBehavior(m_communicator->lastAlarmCode()));
 
         return;
     } else {
         qDebug() << "[ResetBehavior] Unhandled state after reset:" << int(state);
     }
+}
+
+void ResetBehavior::onAlarm(int code)
+{
+    emit transition(this, new AlarmBehavior(code));
 }
 
 StateBehavior::Result ResetBehavior::onRawResponse(QString response)
@@ -61,6 +64,11 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
 
     if (command == "$$" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
         qDebug() << "[ResetBehavior] Eeprom error during $$, requeue and wait for ok.";
+
+        return Result::ReturnCommandToQueue;
+    }
+    if (command == "$#" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
+        qDebug() << "[ResetBehavior] Eeprom error during $#, requeue and wait for ok.";
 
         return Result::ReturnCommandToQueue;
     }
@@ -126,7 +134,7 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
     return Result::Unhandled;
 }
 
-StateBehavior::Result ResetBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);

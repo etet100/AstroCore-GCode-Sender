@@ -3,10 +3,8 @@
 // Copyright 2024 BTS
 
 #include "core/globals.h"
-#include "runningbehavior.h"
-#include "alarmbehavior.h"
-#include "idlebehavior.h"
 #include "core/communicator/communicator.h"
+#include "state_behaviour/behaviors.h"
 
 IdleBehavior::IdleBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -22,6 +20,13 @@ void IdleBehavior::onMachineStateChanged(MachineState state)
         // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }
+}
+
+StateBehavior::Result IdleBehavior::onExit(StateBehavior *next)
+{
+    qDebug() << "[IdleBehavior] Exit";
+
+    return StateBehavior::onExit(next);
 }
 
 StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
@@ -69,15 +74,18 @@ bool IdleBehavior::action(const Action &action)
             return true;
 
         case Action::Type::Home:
-            m_communicator->home();
+            emit transition(this, new HomingBehavior());
             return true;
     }
 
     return StateBehavior::action(action);
 }
 
-StateBehavior::Result IdleBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[IdleBehavior] Entry";
+
+    communicator->startQueryingMachineState();
+
     return StateBehavior::onEntry(communicator, previous);
 }

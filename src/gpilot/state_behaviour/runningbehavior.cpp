@@ -83,7 +83,7 @@ bool RunningBehavior::action(const Action &action)
     return false;
 }
 
-StateBehavior::Result RunningBehavior::onEntry(Communicator *communicator, StateBehavior *previous)
+StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
     qDebug() << "[RunningBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
@@ -133,7 +133,9 @@ void RunningBehavior::handleSpindleOverride(int percentage)
 
 void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
 {
-    if (m_communicator->m_queue.length() > 0) return;
+    if (!m_communicator->isQueueEmpty()) {
+        return;
+    }
 
     static QRegularExpression M230("(M0*2|M30|M0*6)(?!\\d)");
 
@@ -149,7 +151,7 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
     int sent = 0;
     while (command.isEmpty() || (
         !m_communicator->willOverflowBuffer(command) && m_program.hasMoreCommands()
-        && !(!m_communicator->m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_communicator->m_commands.last().commandLine).contains(M230))
+        && !(!m_communicator->isCommandBufferEmpty() && GcodePreprocessorUtils::removeComment(m_communicator->commands().last().commandLine).contains(M230))
     )) {
         if (command.isEmpty()) {
             m_program.setCommandSkipped();
