@@ -14,17 +14,17 @@ PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
 {
 }
 
-bool PauseBehavior::action(const Action &action)
+bool PauseBehavior::doAction(const Action &action)
 {
     if (action.type() == Action::Type::Resume) {
         resume();
         return true;
     }
 
-    return false;
+    return StateBehavior::doAction(action);
 }
 
-QString PauseBehavior::name()
+QString PauseBehavior::description()
 {
     QString baseName = "Paused";
 

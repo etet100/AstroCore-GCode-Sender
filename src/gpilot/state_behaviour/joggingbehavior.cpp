@@ -29,7 +29,7 @@ JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, 
 
 bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
 {
-    return forced || (newState->inherits("ResetBehavior") && newState->name() == "Reset");
+    return forced || (newState->inherits("ResetBehavior") && newState->description() == "Reset");
 }
 
 StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

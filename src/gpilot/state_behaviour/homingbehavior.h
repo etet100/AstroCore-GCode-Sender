@@ -11,11 +11,14 @@ class HomingBehavior : public StateBehavior
 {
     public:
         explicit HomingBehavior(QObject *parent = nullptr);
-        QString name() override { return "Homing"; }
+        QString description() override { return "Homing"; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
+
+    protected:
+        QString name() const override { return "HomingBehavior"; }
 
     private:
         bool m_homingStarted;

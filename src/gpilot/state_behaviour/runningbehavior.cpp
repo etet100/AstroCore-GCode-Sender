@@ -63,7 +63,7 @@ void RunningBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
-bool RunningBehavior::action(const Action &action)
+bool RunningBehavior::doAction(const Action &action)
 {
     if (action.type() == Action::Type::Pause && !m_pause) {
         pause();
@@ -80,7 +80,7 @@ bool RunningBehavior::action(const Action &action)
         return true;
     }
 
-    return false;
+    return StateBehavior::doAction(action);
 }
 
 StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

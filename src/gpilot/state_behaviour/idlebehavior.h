@@ -11,12 +11,16 @@ class IdleBehavior : public StateBehavior
 
     public:
         explicit IdleBehavior(QObject *parent = nullptr);
-        QString name() override { return "Idle"; }
+        QString description() override { return "Idle"; }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
-        bool action(const Action &action) override;
+
+    protected:
+        QString name() const override { return "IdleBehavior"; }
+        bool doAction(const Action &action) override;
+
 };
 
 #endif // IDLEBEHAVIOR_H

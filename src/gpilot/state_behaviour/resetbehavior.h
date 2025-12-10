@@ -11,12 +11,15 @@ class ResetBehavior : public StateBehavior
 
     public:
         explicit ResetBehavior(QObject *parent = nullptr);
-        QString name() override { return "Reset"; }
+        QString description() override { return "Reset"; }
         void onMachineState(MachineState state) override;
         Result onRawResponse(QString response) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         void onAlarm(int code) override;
+
+    protected:
+        QString name() const override { return "ResetBehavior"; }
 
     private:
         enum Stage {

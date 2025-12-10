@@ -454,18 +454,21 @@ void Communicator::probe()
     //     }),
     //     TABLE_INDEX_UI
     // );
+
+    m_sb->action(Action::Probe);
 }
 
 void Communicator::home()
 {
-    execute(new HomingBehavior());
+    m_sb->action(Action::Home);
+    // execute(new HomingBehavior());
 }
 
 bool Communicator::execute(StateBehavior *sb, bool force)
 {
     if (m_sb != nullptr) {
         if (!m_sb->onAboutToChange(sb, force)) {
-            qDebug() << "[Communicator][Behavior] Transition from" << m_sb->name() << "to" << sb->name() << "is not allowed";
+            qDebug() << "[Communicator][Behavior] Transition from" << m_sb->description() << "to" << sb->description() << "is not allowed";
 
             return false;
         }
@@ -480,7 +483,7 @@ bool Communicator::execute(StateBehavior *sb, bool force)
 
         if (m_sb->onExit(sb) == StateBehavior::Result::WaitForAsyncResult) {
             connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
-                qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
+                qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description() << ". (async exit!!)";;
 
                 this->finalizeExecute(sb);
             }, Qt::ConnectionType::SingleShotConnection);
@@ -488,9 +491,9 @@ bool Communicator::execute(StateBehavior *sb, bool force)
             return true;
         }
 
-        qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name();
+        qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description();
     } else {
-        qDebug() << "[Communicator][Behavior] State behavior set to" << sb->name();
+        qDebug() << "[Communicator][Behavior] State behavior set to" << sb->description();
     }
 
     return finalizeExecute(sb);
@@ -512,7 +515,7 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
     QPointer<StateBehavior> psb = m_sb;
     if (sb->onEntry(m_comApi, psb) == StateBehavior::Result::WaitForAsyncResult) {
         connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
-            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async enter!!)";;
+            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description() << ". (async enter!!)";;
 
             m_sb = sb;
             emit stateBehaviorChanged(sb);
@@ -657,7 +660,7 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
 {
-    qDebug() << "[Communicator] State transition requested from " << sb->name() << " to " << nsb->name();
+    qDebug() << "[Communicator] State transition requested from " << sb->description() << " to " << nsb->description();
     m_nsb = nsb;
     //execute(nsb, true);
 }

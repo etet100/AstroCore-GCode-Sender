@@ -8,7 +8,7 @@ ErrorBehaviour::~ErrorBehaviour()
 {
 }
 
-QString ErrorBehaviour::name()
+QString ErrorBehaviour::description()
 {
     return QString("Error: %1").arg(m_errorCode);
 }

@@ -104,7 +104,7 @@ void AlarmBehavior::unlock()
     m_communicator->queryMachineState();
 }
 
-bool AlarmBehavior::action(const Action &action)
+bool AlarmBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
         case Action::Type::Unlock:
@@ -112,5 +112,5 @@ bool AlarmBehavior::action(const Action &action)
             return true;
     }
 
-    return true;
+    return StateBehavior::doAction(action);
 }

@@ -1827,8 +1827,8 @@ void frmMain::onConsoleNewCommand(QString command)
 
 void frmMain::onStateBehaviorChanged(StateBehavior *sb)
 {
-    ui->state->setStatusText(sb->name(), "black", "white");
-    ui->console->appendSystem(QString("State: %1").arg(sb->name()));
+    ui->state->setStatusText(sb->description(), "black", "white");
+    ui->console->appendSystem(QString("State: %1").arg(sb->description()));
 }
 
 void frmMain::onTimerConnection()

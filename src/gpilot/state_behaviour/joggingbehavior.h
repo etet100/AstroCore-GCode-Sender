@@ -15,8 +15,7 @@ class JoggingBehavior : public StateBehavior
     public:
         explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, int feedRateZ, QObject *parent = nullptr);
         explicit JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent = nullptr);
-        QString name() override { return "Jogging"; }
-
+        QString description() override { return "Jogging"; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
         Result onExit(StateBehavior *next = nullptr) override;
@@ -28,6 +27,9 @@ class JoggingBehavior : public StateBehavior
         void startJogging();
         void stopJogging();
         void setJoggingFeedRate(double feedRate);
+
+    protected:
+        QString name() const override { return "JoggingBehavior"; }
 
     private:
         JoggindDir m_currentDirection;

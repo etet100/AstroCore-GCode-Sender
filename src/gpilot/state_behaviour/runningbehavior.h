@@ -12,15 +12,18 @@ class RunningBehavior : public StateBehavior
 {
     public:
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
-        QString name() override { return "Running"; }
+        QString description() override { return "Running"; }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
-        bool action(const Action &action) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         // Running-specific methods
         void handleFeedOverride(int percentage);
         void handleSpindleOverride(int percentage);
+
+    protected:
+        QString name() const override { return "RunningBehavior"; }
+        bool doAction(const Action &action) override;
 
     private:
         int m_feedOverride;

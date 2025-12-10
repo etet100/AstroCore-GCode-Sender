@@ -57,7 +57,7 @@ StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAt
     return Result::Unhandled;;
 }
 
-bool IdleBehavior::action(const Action &action)
+bool IdleBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
         case Action::Type::QueryMachineConfiguration:
@@ -78,7 +78,7 @@ bool IdleBehavior::action(const Action &action)
             return true;
     }
 
-    return StateBehavior::action(action);
+    return StateBehavior::doAction(action);
 }
 
 StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

@@ -13,7 +13,7 @@ ConnectingBehavior::ConnectingBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-QString ConnectingBehavior::name() { return "Connecting"; }
+QString ConnectingBehavior::description() { return "Connecting"; }
 
 StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {

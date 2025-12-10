@@ -7,3 +7,20 @@
 Action::Action(Type type) : m_type(type)
 {
 }
+
+const QMap<int, QString> Action::NAMES = {
+    {None, "None"},
+    {Reset, "Reset"},
+    {Start, "Start"},
+    {Stop, "Stop"},
+    {Pause, "Pause"},
+    {Resume, "Resume"},
+    {FeedHold, "Feed Hold"},
+    {CycleStart, "Cycle Start"},
+    {Jog, "Jog"},
+    {Home, "Home"},
+    {Probe, "Probe"},
+    {Unlock, "Unlock"},
+    {QueryMachineConfiguration, "QueryMachineConfiguration"},
+    {SaveMachineConfigurationParam, "SaveMachineConfigurationParam"},
+};

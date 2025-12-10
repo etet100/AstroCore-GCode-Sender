@@ -100,3 +100,12 @@ bool StateBehavior::dataIsReset(QString data)
     return data.contains(re);
 }
 
+bool StateBehavior::action(const Action &action)
+{
+    bool result = doAction(action);
+    if (!result) {
+        log(QString("[%1] Action rejected: %2").arg(name()).arg(action.name()));
+    }
+    
+    return false;
+}

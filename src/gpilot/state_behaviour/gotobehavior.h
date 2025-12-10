@@ -12,10 +12,13 @@ class GoToBehavior : public StateBehavior
 {
     public:
         explicit GoToBehavior(QPointF target, int feedRate, QObject *parent = nullptr);
-        QString name() override { return "Go to..."; }
+        QString description() override { return "Go to..."; }
         void onMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+
+    protected:
+        QString name() const override { return "GoToBehavior"; }
 
     private:
         enum Stage {

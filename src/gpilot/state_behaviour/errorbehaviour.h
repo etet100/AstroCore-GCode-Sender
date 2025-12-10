@@ -11,9 +11,12 @@ class ErrorBehaviour : public StateBehavior
         explicit ErrorBehaviour(int code, QObject *parent = nullptr);
         ~ErrorBehaviour();
 
-        QString name() override;
+        QString description() override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
+
+    protected:
+        QString name() const override { return "ErrorBehaviour"; }
 
     private:
         int m_errorCode;

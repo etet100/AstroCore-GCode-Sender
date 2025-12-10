@@ -30,15 +30,12 @@ class StateBehavior : public QObject
         };
 
         explicit StateBehavior(QObject *parent = nullptr);
-        virtual QString name() = 0;
+        virtual QString description() = 0;
 
         bool eventsAttached() const { return m_eventsAttached; }
         void markEventsAttached() { m_eventsAttached = true; }
 
-        virtual bool action(const Action &action) {
-            Q_UNUSED(action);
-            return false;
-        }
+        virtual bool action(const Action &action);
 
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
@@ -104,11 +101,17 @@ class StateBehavior : public QObject
         QTimer *m_timer = nullptr;
         QList<StateResponseCallback> m_stateResponseCallbacks;
 
+        virtual QString name() const = 0;
         void stopTimer();
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
         // This is something we will need in almost every behavior
         bool dataIsReset(QString data);
+
+        virtual bool doAction(const Action &action) {
+            Q_UNUSED(action);
+            return false;
+        }
 
     private:
         bool m_eventsAttached = false; // used by Communicator

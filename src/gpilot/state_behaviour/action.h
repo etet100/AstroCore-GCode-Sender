@@ -5,11 +5,14 @@
 #ifndef ACTION_H
 #define ACTION_H
 
+#include <QMap>
+#include <QString>
+
 class Action
 {
     public:
-        enum Type {
-            None,
+        enum Type : int {
+            None = 0,
             Reset,
             Start,
             Stop,
@@ -19,6 +22,7 @@ class Action
             CycleStart,
             Jog,
             Home,
+            Probe,
             Unlock,
             QueryMachineConfiguration,
             SaveMachineConfigurationParam,
@@ -26,9 +30,14 @@ class Action
 
         Action(Type type);
         Type type() const { return m_type; }
+        QString name() const {
+            return NAMES.value(static_cast<int>(m_type), "Unknown");
+        }
 
     private:
         Type m_type;
+
+        static const QMap<int, QString> NAMES;
 };
 
 class SaveMachineConfigurationParamAction : public Action
