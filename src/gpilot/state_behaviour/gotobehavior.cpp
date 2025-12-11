@@ -31,6 +31,10 @@ void GoToBehavior::onMachineState(MachineState state)
 
 StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
+    Q_UNUSED(commandAttributes);
+    Q_UNUSED(cmdStatus);
+    Q_UNUSED(fullResponse);
+
     qDebug() << "[GoToBehavior] Command Response:" << command << response;
 
     return Result::Ok;

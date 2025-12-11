@@ -31,7 +31,7 @@ class Communicator : public QObject
         void sendRealtimeCommand(int command);
         void sendCommands(CommandSource source, QString commands, int tableIndex = -1);
         void sendCommands(CommandSource source, QStringList commands, int tableIndex = -1);
-        bool streamCommands(GCode &streamer);
+        // bool streamCommands(GCode &streamer);
         void clearCommandsAndQueue();
         void clearQueue();
         void reset();

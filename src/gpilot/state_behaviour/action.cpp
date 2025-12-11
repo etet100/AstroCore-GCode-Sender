@@ -11,7 +11,7 @@ Action::Action(Type type) : m_type(type)
 const QMap<int, QString> Action::NAMES = {
     {None, "None"},
     {Reset, "Reset"},
-    {Start, "Start"},
+    {Run, "Start"},
     {Stop, "Stop"},
     {Pause, "Pause"},
     {Resume, "Resume"},

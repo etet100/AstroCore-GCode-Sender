@@ -71,10 +71,10 @@ void GCode::setCommandSent()
     addUpdatedRange(m_commandIndex);
 }
 
-void GCode::setCommandResponse(int commandIndex, QString response)
+void GCode::setCommandResponse(int commandIndex, bool success, QString response)
 {
     GCodeItem& item = m_data[commandIndex];
-    item.state = GCodeItem::Processed;
+    item.state = success ? GCodeItem::Processed : GCodeItem::Error;
     item.response = response;
     m_processedCommandIndex = commandIndex;
     addUpdatedRange(commandIndex);

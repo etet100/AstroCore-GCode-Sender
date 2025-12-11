@@ -7,6 +7,47 @@
 #include <QRegularExpression>
 #include "state_behaviour/resetbehavior.h"
 
+const QMap<int, QString> StateBehavior::ERRORS = {
+    { GRBL_ERROR_EXPECTED_COMMAND_LETTER,     "Missing letter" },
+    { GRBL_ERROR_BAD_NUMBER_FORMAT,           "Bad number" },
+    { GRBL_ERROR_INVALID_STATEMENT,           "Invalid line" },
+    { GRBL_ERROR_VALUE_LESS_THAN_ZERO,        "Value < 0" },
+    { GRBL_ERROR_HOMING_DISABLED,             "Homing off" },
+    { GRBL_ERROR_EEPROM_READ_FAIL,            "EEPROM error" },
+    { GRBL_ERROR_NOT_IDLE,                    "Machine not idle" },
+    { GRBL_ERROR_GCODE_LOCK,                  "G-code locked" },
+    { GRBL_ERROR_HOMING_NOT_ENABLED,          "No homing" },
+    { GRBL_ERROR_LINE_OVERFLOW,               "Line too long" },
+    { GRBL_ERROR_LINE_LENGTH_EXCEEDED,        "Limit exceeded" },
+    { GRBL_ERROR_TRAVEL_EXCEEDED,             "Travel limit" },
+    { GRBL_ERROR_SETTING_DISABLED,            "Setting off" },
+    { GRBL_ERROR_UNSUPPORTED_COMMAND,         "Unsupported cmd" },
+    { GRBL_ERROR_MODAL_GROUP_VIOLATION,       "Modal error" },
+    { GRBL_ERROR_UNDEFINED_FEED_RATE,         "No feed rate" }
+};
+
+#define GRBL_ALARM_HARD_LIMITS          1
+#define GRBL_ALARM_SOFT_LIMITS          2
+#define GRBL_ALARM_RESET                3
+#define GRBL_ALARM_PROBE_FAIL_1         4
+#define GRBL_ALARM_PROBE_FAIL_2         5
+#define GRBL_ALARM_HOMING_FAIL_1        6
+#define GRBL_ALARM_HOMING_FAIL_2        7
+#define GRBL_ALARM_HOMING_FAIL_3        8
+#define GRBL_ALARM_HOMING_FAIL_4        9
+
+const QMap<int, QString> StateBehavior::ALARMS = {
+    { GRBL_ALARM_HARD_LIMITS,      "Hard limits" },
+    { GRBL_ALARM_SOFT_LIMITS,      "Soft limits" },
+    { GRBL_ALARM_RESET,            "Reset" },
+    { GRBL_ALARM_PROBE_FAIL_1,     "Probe fail" },
+    { GRBL_ALARM_PROBE_FAIL_2,     "Probe fail" },
+    { GRBL_ALARM_HOMING_FAIL_1,    "Homing fail" },
+    { GRBL_ALARM_HOMING_FAIL_2,    "Homing fail" },
+    { GRBL_ALARM_HOMING_FAIL_3,    "Homing fail" },
+    { GRBL_ALARM_HOMING_FAIL_4,    "Homing fail" }
+};
+
 StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 {
 }
@@ -100,12 +141,22 @@ bool StateBehavior::dataIsReset(QString data)
     return data.contains(re);
 }
 
+QString StateBehavior::enrichErrorMessage(QString message) {
+    if (message.startsWith("error:")) {
+        int code = message.mid(6).toInt();
+
+        return QString("%1 (error %2)").arg(ERRORS.value(code, "Unknown error")).arg(code);
+    }
+
+    return message;
+}
+
 bool StateBehavior::action(const Action &action)
 {
     bool result = doAction(action);
     if (!result) {
         log(QString("[%1] Action rejected: %2").arg(name()).arg(action.name()));
     }
-    
+
     return false;
 }

@@ -8,6 +8,7 @@
 #include <QVector3D>
 #include <QString>
 
+// GRBL live commands
 #define GRBL_LIVE_SOFT_RESET 0x18
 #define GRBL_LIVE_STATUS_REPORT '?'
 #define GRBL_LIVE_CYCLE_START '~'
@@ -30,6 +31,66 @@
 #define GRBL_LIVE_SPINDLE_DECREASE_1 0x9D
 
 #define GRBL_LIVE_JOG_CANCEL 0x85
+
+// GRBL errors
+#define GRBL_ERROR_EXPECTED_COMMAND_LETTER        1
+#define GRBL_ERROR_BAD_NUMBER_FORMAT              2
+#define GRBL_ERROR_INVALID_STATEMENT              3
+#define GRBL_ERROR_VALUE_LESS_THAN_ZERO           4
+#define GRBL_ERROR_HOMING_DISABLED                5
+#define GRBL_ERROR_EEPROM_READ_FAIL               7
+#define GRBL_ERROR_NOT_IDLE                       8
+#define GRBL_ERROR_GCODE_LOCK                     9
+#define GRBL_ERROR_HOMING_NOT_ENABLED             10
+#define GRBL_ERROR_LINE_OVERFLOW                  11
+#define GRBL_ERROR_LINE_LENGTH_EXCEEDED           14
+#define GRBL_ERROR_TRAVEL_EXCEEDED                15
+#define GRBL_ERROR_SETTING_DISABLED               17
+#define GRBL_ERROR_UNSUPPORTED_COMMAND            20
+#define GRBL_ERROR_MODAL_GROUP_VIOLATION          21
+#define GRBL_ERROR_UNDEFINED_FEED_RATE            22
+
+enum class GrblError {
+    ExpectedCommandLetter = 1,
+    BadNumberFormat = 2,
+    InvalidStatement = 3,
+    ValueLessThanZero = 4,
+    HomingDisabled = 5,
+    EEPROMReadFail = 7,
+    NotIdle = 8,
+    GcodeLock = 9,
+    HomingNotEnabled = 10,
+    LineOverflow = 11,
+    LineLengthExceeded = 14,
+    TravelExceeded = 15,
+    SettingDisabled = 17,
+    UnsupportedCommand = 20,
+    ModalGroupViolation = 21,
+    UndefinedFeedRate = 22
+};
+
+// GRBL alarms
+#define GRBL_ALARM_HARD_LIMITS          1
+#define GRBL_ALARM_SOFT_LIMITS          2
+#define GRBL_ALARM_RESET                3
+#define GRBL_ALARM_PROBE_FAIL_1         4
+#define GRBL_ALARM_PROBE_FAIL_2         5
+#define GRBL_ALARM_HOMING_FAIL_1        6
+#define GRBL_ALARM_HOMING_FAIL_2        7
+#define GRBL_ALARM_HOMING_FAIL_3        8
+#define GRBL_ALARM_HOMING_FAIL_4        9
+
+enum class GrblAlarm {
+    HardLimits = 1,
+    SoftLimits = 2,
+    Reset = 3,
+    ProbeFail1 = 4,
+    ProbeFail2 = 5,
+    HomingFail1 = 6,
+    HomingFail2 = 7,
+    HomingFail3 = 8,
+    HomingFail4 = 9
+};
 
 #define CONFIGURATION_FILE "settings_.ini"
 

@@ -224,17 +224,17 @@ void Communicator::sendCommands(CommandSource source, QStringList commands, int 
     }
 }
 
-bool Communicator::streamCommands(GCode &streamer)
-{
-    // if (cannot be streamed) {
-    //     return false;
-    // }
+// bool Communicator::streamCommands(GCode &streamer)
+// {
+//     // if (cannot be streamed) {
+//     //     return false;
+//     // }
 
-    m_streamer = &streamer;
-    //startStreaming();
+//     m_streamer = &streamer;
+//     //startStreaming();
 
-    return true;
-}
+//     return true;
+// }
 
 void Communicator::clearCommandsAndQueue()
 {

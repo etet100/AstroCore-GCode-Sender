@@ -25,6 +25,8 @@ void Communicator::onConnectionLineReceived(QString data)
     }
 
     if (data.startsWith("ALARM:")) {
+        qDebug() << "[Communicator] Alarm:" << data;
+
         processAlarm(data);
         processStateBehaviorTransition();
 

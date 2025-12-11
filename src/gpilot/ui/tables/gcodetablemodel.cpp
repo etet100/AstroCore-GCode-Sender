@@ -39,6 +39,7 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
                     case GCodeItem::InQueue: return tr("In queue");
                     case GCodeItem::Sent: return tr("Sent");
                     case GCodeItem::Processed: return tr("Processed");
+                    case GCodeItem::Error: return tr("Error");
                     case GCodeItem::Skipped: return tr("Skipped");
                     case GCodeItem::Comment: return tr("Comment");
                 }

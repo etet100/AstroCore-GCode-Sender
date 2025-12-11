@@ -7,6 +7,7 @@
 
 #include <QMap>
 #include <QString>
+#include "core/gcode/gcode.h"
 
 class Action
 {
@@ -14,7 +15,7 @@ class Action
         enum Type : int {
             None = 0,
             Reset,
-            Start,
+            Run,
             Stop,
             Pause,
             Resume,
@@ -38,6 +39,18 @@ class Action
         Type m_type;
 
         static const QMap<int, QString> NAMES;
+};
+
+class RunAction : public Action
+{
+    public:
+        RunAction(GCode &program)
+            : Action(Action::Type::Run)
+            , m_program(program) {}
+        GCode &program() const { return m_program; }
+
+    private:
+        GCode &m_program;
 };
 
 class SaveMachineConfigurationParamAction : public Action

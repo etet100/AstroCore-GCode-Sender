@@ -38,7 +38,7 @@ enum class GCodeItemGroup
 
 struct GCodeItem
 {
-    enum States { InQueue = 0, Sent, Processed, Skipped, Comment };
+    enum States { InQueue = 0, Sent, Processed, Error, Skipped, Comment };
 
     QString command;
     QString comment;
@@ -75,7 +75,7 @@ class GCode : public QObject
         int lastCommandIndex();
         bool isLastCommandProcessed();
         void setCommandSent();
-        void setCommandResponse(int commandIndex, QString response);
+        void setCommandResponse(int commandIndex, bool success, QString response);
         void setCommandSkipped();
         GCodeItem& operator [] (int index) { return m_data[index]; }
         int count() { return m_data.count(); }

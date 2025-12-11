@@ -60,6 +60,8 @@ StateBehavior::Result ResetBehavior::onRawResponse(QString response)
 
 StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
+    Q_UNUSED(commandAttributes);
+
     qDebug() << "[ResetBehavior] Command Response:" << command << response;
 
     if (command == "$$" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
@@ -139,7 +141,7 @@ StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, Stat
     qDebug() << "[ResetBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    m_communicator->clearCommandsAndQueue();
+    communicator->clearCommandsAndQueue();
 
     // QString command = "[CTRL+X]";
     // CommandAttributes commandAttributes(
@@ -151,7 +153,9 @@ StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, Stat
     // m_communicator->m_commands.append(commandAttributes);
 
     qDebug() << "[ResetBehavior] Soft reset";
-    m_communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+    communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+
+    communicator->startQueryingMachineState();
 
     m_stage = SentReset;
 

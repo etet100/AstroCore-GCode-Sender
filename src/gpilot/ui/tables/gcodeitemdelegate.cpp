@@ -34,6 +34,9 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
             case GCodeItem::States::Processed:
                 painter->fillRect(opt.rect, QColor("#e6ffed"));
                 break;
+            case GCodeItem::States::Error:
+                painter->fillRect(opt.rect, QColor("#ffe6e6"));
+                break;
             case GCodeItem::States::Skipped:
                 painter->fillRect(opt.rect, QColor("#f0f0f0"));
                 break;

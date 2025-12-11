@@ -843,9 +843,7 @@ void frmMain::on_cmdFileOpen_clicked()
 void frmMain::on_cmdFileSend_clicked()
 {
     m_program.reset();
-    m_communicator->execute(new RunningBehavior(
-        m_program
-    ));
+    m_communicator->m_sb->action(RunAction(m_program));
 
 //     if (m_currentModel->rowCount() == 1) return;
 

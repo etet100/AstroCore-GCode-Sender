@@ -65,7 +65,7 @@ class StateBehavior : public QObject
         using StateResponseCallback = std::function<void(MachineState)>;
 
         virtual void onMachineState(MachineState state) {
-            for (auto cbk : m_stateResponseCallbacks) {
+            for (auto& cbk : m_stateResponseCallbacks) {
                 cbk(state);
             }
             m_stateResponseCallbacks.clear();
@@ -77,9 +77,12 @@ class StateBehavior : public QObject
 
         // returns true if the response was handled and should not be processed further.
         virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
+            Q_UNUSED(command);
             Q_UNUSED(commandAttributes);
+            Q_UNUSED(cmdStatus);
+            Q_UNUSED(response);
+            Q_UNUSED(fullResponse);
 
-            // return onCommandResponse(command, cmdStatus, response, fullResponse);
             return Result::Unhandled;
         }
 
@@ -112,6 +115,10 @@ class StateBehavior : public QObject
             Q_UNUSED(action);
             return false;
         }
+
+        QString enrichErrorMessage(QString message);
+        static const QMap<int, QString> ERRORS;
+        static const QMap<int, QString> ALARMS;
 
     private:
         bool m_eventsAttached = false; // used by Communicator

@@ -11,7 +11,17 @@ AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
     : StateBehavior{parent}
     , m_alarmCode(alarmCode)
 {
-    setAlarmMessage();
+    if (alarmCode) {
+        setAlarmMessage();
+    }
+}
+
+QString AlarmBehavior::description() {
+    if (!m_alarmCode) {
+        return "Alarm";
+    }
+
+    return "Alarm: " + m_alarmMessage;
 }
 
 void AlarmBehavior::onMachineStateChanged(MachineState state)
@@ -36,38 +46,7 @@ StateBehavior::Result AlarmBehavior::onEntry(CommunicatorApi *communicator, Stat
 
 void AlarmBehavior::setAlarmMessage()
 {
-    // Map alarm codes to meaningful user messages
-    switch(m_alarmCode) {
-        case 1:
-            m_alarmMessage = "Hard limits";
-            break;
-        case 2:
-            m_alarmMessage = "Soft limits";
-            break;
-        case 3:
-            m_alarmMessage = "Reset";
-            break;
-        case 4:
-            m_alarmMessage = "Probe fail";
-            break;
-        case 5:
-            m_alarmMessage = "Probe fail";
-            break;
-        case 6:
-            m_alarmMessage = "Homing fail";
-            break;
-        case 7:
-            m_alarmMessage = "Homing fail";
-            break;
-        case 8:
-            m_alarmMessage = "Homing fail";
-            break;
-        case 9:
-            m_alarmMessage = "Homing fail";
-            break;
-        default:
-            m_alarmMessage = QString("Unknown (%1)").arg(m_alarmCode);
-    }
+    m_alarmMessage = ALARMS.value(m_alarmCode, QString("Unknown (%1)").arg(m_alarmCode));
 }
 
 StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)

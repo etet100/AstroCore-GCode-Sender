@@ -76,6 +76,13 @@ bool IdleBehavior::doAction(const Action &action)
         case Action::Type::Home:
             emit transition(this, new HomingBehavior());
             return true;
+
+        case Action::Type::Run:
+            {
+                RunAction runAction = static_cast<const RunAction&>(action);
+                emit transition(this, new RunningBehavior(runAction.program()));
+            }
+            return true;
     }
 
     return StateBehavior::doAction(action);

@@ -13,7 +13,7 @@ class AlarmBehavior : public StateBehavior
 
     public:
         explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
-        QString description() override { return "Alarm: " + m_alarmMessage; }
+        QString description() override;
         void onMachineStateChanged(MachineState state) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;

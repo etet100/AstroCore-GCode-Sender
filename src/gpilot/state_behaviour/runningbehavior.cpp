@@ -38,7 +38,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 
     qDebug() << "[RunningBehavior] onCommandResponse:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
-    m_program.setCommandResponse(commandAttributes.tableIndex, response);
+    m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
     // Process command responses during running state
     // For example, handle M6 commands for tool change
@@ -59,6 +59,10 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 
 void RunningBehavior::onAlarm(int code)
 {
+    if (m_pause) {
+
+    }
+
     // Handle alarm during running state
     emit transition(this, new AlarmBehavior(code));
 }
@@ -177,12 +181,12 @@ void RunningBehavior::pause()
 {
     qDebug() << "[RunningBehavior] Pausing";
     m_pause = true;
-    m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
+    // m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
 }
 
 void RunningBehavior::resume()
 {
     qDebug() << "[RunningBehavior] Resuming";
-    m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+    // m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
     m_pause = false;
 }
