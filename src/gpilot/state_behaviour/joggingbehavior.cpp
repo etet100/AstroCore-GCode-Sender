@@ -38,12 +38,14 @@ StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, St
     StateBehavior::onEntry(communicator, previous);
 
     startJogging();
+    communicator->startQueryingMachineState();
 
     return Result::Ok;
 }
 
 StateBehavior::Result JoggingBehavior::onExit(StateBehavior *next)
 {
+    m_communicator->stopQueryingMachineState();
     stopJogging();
 
     return StateBehavior::onExit(next);

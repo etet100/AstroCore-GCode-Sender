@@ -843,7 +843,7 @@ void frmMain::on_cmdFileOpen_clicked()
 void frmMain::on_cmdFileSend_clicked()
 {
     m_program.reset();
-    m_communicator->m_sb->action(RunAction(m_program));
+    m_communicator->sb()->action(RunAction(m_program));
 
 //     if (m_currentModel->rowCount() == 1) return;
 
@@ -929,7 +929,7 @@ void frmMain::on_cmdFileReset_clicked()
 {
     m_program.reset();
     m_lastDrawnLineIndex = 0;
-    m_communicator->m_probeIndex = -1;
+    // m_communicator->m_probeIndex = -1;
 
     if (!m_heightmapMode) {
         QList<LineSegment>& list = m_viewParser.getLineSegmentList();
@@ -1781,7 +1781,7 @@ void frmMain::onResponseReceived(QString command, int tableIndex, QString respon
     Q_UNUSED(tableIndex)
     Q_UNUSED(response)
 
-    updateToolpathShadowingOnCheckMode();
+    // updateToolpathShadowingOnCheckMode();
 }
 
 void frmMain::onCommandResponseReceived(CommandAttributes commandAttributes)
@@ -1997,86 +1997,88 @@ void frmMain::onActRecentFileTriggered()
     }
 }
 
-void frmMain::onActSendFromLineTriggered()
-{
-    if (m_currentModel->rowCount() == 1) return;
+// Starts G-code execution from the currently selected line in the program table,
+// optionally sending initialization commands to restore machine state for that position
+// void frmMain::onActSendFromLineTriggered()
+// {
+//     if (m_currentModel->rowCount() == 1) return;
 
-    //Line to start from
-    int commandIndex = ui->tblProgram->currentIndex().row();
+//     //Line to start from
+//     int commandIndex = ui->tblProgram->currentIndex().row();
 
-    // Set parser state
-    if (m_configuration.senderModule().setParserStateBeforeSendingFromSelectedLine()) {
-        QString commands = getLineInitCommands(commandIndex);
+//     // Set parser state
+//     if (m_configuration.senderModule().setParserStateBeforeSendingFromSelectedLine()) {
+//         QString commands = getLineInitCommands(commandIndex);
 
-        QMessageBox box(this);
-        box.setIcon(QMessageBox::Information);
-        box.setText(tr("Following commands will be sent before selected line:\n") + commands);
-        box.setWindowTitle(qApp->applicationDisplayName());
-        box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        box.addButton(tr("Skip"), QMessageBox::DestructiveRole);
+//         QMessageBox box(this);
+//         box.setIcon(QMessageBox::Information);
+//         box.setText(tr("Following commands will be sent before selected line:\n") + commands);
+//         box.setWindowTitle(qApp->applicationDisplayName());
+//         box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+//         box.addButton(tr("Skip"), QMessageBox::DestructiveRole);
 
-        int res = box.exec();
-        if (res == QMessageBox::Cancel) return;
-        else if (res == QMessageBox::Ok) {
-            // foreach (QString command, commands) {
-            //     sendCommand(command, COMMAND_TI_UI);
-            // }
-            m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, commands, TABLE_INDEX_UI);
-        }
-    }
+//         int res = box.exec();
+//         if (res == QMessageBox::Cancel) return;
+//         else if (res == QMessageBox::Ok) {
+//             // foreach (QString command, commands) {
+//             //     sendCommand(command, COMMAND_TI_UI);
+//             // }
+//             m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, commands, TABLE_INDEX_UI);
+//         }
+//     }
 
-    m_program.reset(commandIndex);
-    m_lastDrawnLineIndex = 0;
-    m_communicator->m_probeIndex = -1;
+//     m_program.reset(commandIndex);
+//     m_lastDrawnLineIndex = 0;
+//     // m_communicator->m_probeIndex = -1;
 
-    QList<LineSegment>& list = m_viewParser.getLineSegmentList();
+//     QList<LineSegment>& list = m_viewParser.getLineSegmentList();
 
-    QList<int> indexes;
-    for (int i = 0; i < list.count(); i++) {
-        list[i].setDrawn(list[i].getLineNumber() < (*m_currentProgram)[commandIndex].lineNumber);
-        indexes.append(i);
-    }
-    m_codeDrawer->update(indexes);
+//     QList<int> indexes;
+//     for (int i = 0; i < list.count(); i++) {
+//         list[i].setDrawn(list[i].getLineNumber() < (*m_currentProgram)[commandIndex].lineNumber);
+//         indexes.append(i);
+//     }
+//     m_codeDrawer->update(indexes);
 
-    ui->tblProgram->setUpdatesEnabled(false);
+//     ui->tblProgram->setUpdatesEnabled(false);
 
-    for (int i = 0; i < m_currentProgram->count() - 1; i++) {
-        (*m_currentProgram)[i].state = i < commandIndex ? GCodeItem::Skipped : GCodeItem::InQueue;
-        (*m_currentProgram)[i].response = QString();
-    }
-    ui->tblProgram->setUpdatesEnabled(true);
-    ui->glwVisualizer->setSpendTime(QTime(0, 0, 0));
+//     for (int i = 0; i < m_currentProgram->count() - 1; i++) {
+//         (*m_currentProgram)[i].state = i < commandIndex ? GCodeItem::Skipped : GCodeItem::InQueue;
+//         (*m_currentProgram)[i].response = QString();
+//     }
+//     ui->tblProgram->setUpdatesEnabled(true);
+//     ui->glwVisualizer->setSpendTime(QTime(0, 0, 0));
 
-    m_startTime = QDateTime::currentSecsSinceEpoch();
+//     m_startTime = QDateTime::currentSecsSinceEpoch();
 
-    m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
+//     m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
 
-    ui->jog->storeAndResetKeyboardControl();
-    // m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
-    // ui->chkKeyboardControl->setChecked(false);
+//     ui->jog->storeAndResetKeyboardControl();
+//     // m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
+//     // ui->chkKeyboardControl->setChecked(false);
 
-    m_communicator->storeParserState();
+//     m_communicator->storeParserState();
 
-#ifdef WINDOWS
-    // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-    //     if (m_taskBarProgress) {
-    //         m_taskBarProgress->setMaximum(m_currentModel->rowCount() - 2);
-    //         m_taskBarProgress->setValue(commandIndex);
-    //         m_taskBarProgress->show();
-    //     }
-    // }
-#endif
+// #ifdef WINDOWS
+//     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+//     //     if (m_taskBarProgress) {
+//     //         m_taskBarProgress->setMaximum(m_currentModel->rowCount() - 2);
+//     //         m_taskBarProgress->setValue(commandIndex);
+//     //         m_taskBarProgress->show();
+//     //     }
+//     // }
+// #endif
 
-    updateControlsState();
-    ui->cmdFilePause->setFocus();
+//     updateControlsState();
+//     ui->cmdFilePause->setFocus();
 
-    m_program.reset(commandIndex);
-    // m_communicator->sendStreamerCommandsUntilBufferIsFull();
-}
+//     m_program.reset(commandIndex);
+//     // m_communicator->sendStreamerCommandsUntilBufferIsFull();
+// }
 
 void frmMain::onSlbSpindleValueUserChanged()
 {
-    m_communicator->m_updateSpindleSpeed = true;
+    // m_communicator->m_updateSpindleSpeed = true;
 }
 
 void frmMain::onSlbSpindleValueChanged()
@@ -3580,6 +3582,8 @@ bool frmMain::eventFilter(QObject *obj, QEvent *event)
 //     m_program->setModel(m_currentModel);
 // }
 
+// Updates tool position in visualizer and marks toolpath segments as drawn when tool reaches them
+// during active program execution (excluding check mode)
 void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
     m_toolDrawer.setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
@@ -3617,41 +3621,43 @@ void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
     }
 }
 
-void frmMain::updateToolpathShadowingOnCheckMode()
-{
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
-    QList<LineSegment> list = parser->getLineSegmentList();
+// Updates toolpath visualization in check mode by marking processed segments as drawn
+// and positioning the tool indicator at the end of the last processed line
+// void frmMain::updateToolpathShadowingOnCheckMode()
+// {
+//     GCodeViewParser *parser = m_currentDrawer->viewParser();
+//     QList<LineSegment> list = parser->getLineSegmentList();
 
-    if ((m_communicator->m_senderState != SenderState::Stopping) && m_program.processedCommandIndex() < m_currentModel->rowCount() - 1) {
-        int i;
-        QList<int> drawnLines;
+//     if ((m_communicator->m_senderState != SenderState::Stopping) && m_program.processedCommandIndex() < m_currentModel->rowCount() - 1) {
+//         int i;
+//         QList<int> drawnLines;
 
-        for (i = m_lastDrawnLineIndex; i < list.count()
-                                               && list[i].getLineNumber()
-                                                <= (m_currentModel->data(m_currentModel->index(m_program.processedCommandIndex(), 4)).toInt()); i++) {
-            drawnLines << i;
-        }
+//         for (i = m_lastDrawnLineIndex; i < list.count()
+//                                                && list[i].getLineNumber()
+//                                                 <= (m_currentModel->data(m_currentModel->index(m_program.processedCommandIndex(), 4)).toInt()); i++) {
+//             drawnLines << i;
+//         }
 
-        if (!drawnLines.isEmpty() && (i < list.count())) {
-            m_lastDrawnLineIndex = i;
-            QVector3D vec = list[i].getEnd();
-            m_toolDrawer.setToolPosition(vec);
-        }
+//         if (!drawnLines.isEmpty() && (i < list.count())) {
+//             m_lastDrawnLineIndex = i;
+//             QVector3D vec = list[i].getEnd();
+//             m_toolDrawer.setToolPosition(vec);
+//         }
 
-        foreach (int i, drawnLines) {
-            list[i].setDrawn(true);
-        }
-        if (!drawnLines.isEmpty()) m_currentDrawer->update(drawnLines);
-    } else {
-        for (auto& s : list) {
-            if (!qIsNaN(s.getEnd().length())) {
-                m_toolDrawer.setToolPosition(s.getEnd());
-                break;
-            }
-        }
-    }
-}
-
+//         foreach (int i, drawnLines) {
+//             list[i].setDrawn(true);
+//         }
+//         if (!drawnLines.isEmpty()) m_currentDrawer->update(drawnLines);
+//     } else {
+//         for (auto& s : list) {
+//             if (!qIsNaN(s.getEnd().length())) {
+//                 m_toolDrawer.setToolPosition(s.getEnd());
+//                 break;
+//             }
+//         }
+//     }
+// }
+\
 QString frmMain::lastWorkingDirectory()
 {
     return m_configuration.uiModule().currentWorkingDirectory();

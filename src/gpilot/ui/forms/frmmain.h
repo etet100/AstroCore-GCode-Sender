@@ -197,7 +197,7 @@ private slots:
     void onOverridingToggled(bool checked);
     void onOverrideChanged();
     void onActRecentFileTriggered();
-    void onActSendFromLineTriggered();
+    // void onActSendFromLineTriggered();
     void onSlbSpindleValueUserChanged();
     void onSlbSpindleValueChanged();
 //    void onCboCommandReturnPressed();
@@ -353,7 +353,7 @@ private:
     bool eventFilter(QObject *obj, QEvent *event) override;
     // void updateCurrentModel(GCodeTableModel *m_currentModel);
     void updateToolPositionAndToolpathShadowing(QVector3D toolPosition);
-    void updateToolpathShadowingOnCheckMode();
+    // void updateToolpathShadowingOnCheckMode();
     QString lastWorkingDirectory();
 
     // Utility

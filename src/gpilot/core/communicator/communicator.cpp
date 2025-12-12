@@ -337,6 +337,11 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     return true;
 }
 
+StateBehavior *Communicator::sb() const
+{
+    return m_sb;
+}
+
 // bool Communicator::openConnection()
 // {
 //     if (m_connection) {

@@ -14,7 +14,6 @@
 
 class Communicator : public QObject
 {
-    friend class frmMain;
     friend class Jogger;
     friend class CommunicatorApi;
 
@@ -36,11 +35,14 @@ class Communicator : public QObject
         void clearQueue();
         void reset();
         void unlock();
+        void home();
+        void probe();
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
         // may be used to set connection for the first time, if m_connection is no null,
         // ReconnectingBehavior should be used instead!!
         bool setConnection(Connection *, bool force);
+        StateBehavior *sb() const;
         // bool openConnection();
         Connection* connection();
         // void stopUpdatingState();
@@ -106,7 +108,7 @@ class Communicator : public QObject
         bool m_updateParserState;
 
         // Indices
-        int m_probeIndex;
+        // int m_probeIndex;
         int m_commandIndex = 0;
 
         // Stored parser params
@@ -158,8 +160,6 @@ class Communicator : public QObject
         bool willOverflowBuffer(QString command);
         void startQueryingMachineState();
         void stopQueryingMachineState();
-        void home();
-        void probe();
 
     private slots:
         // void onTimerStateQuery();
