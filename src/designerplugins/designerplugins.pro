@@ -1,9 +1,10 @@
 TEMPLATE = subdirs
- 
+
 SUBDIRS = customwidgetsplugin
 
-install_customwidgetsplugin.path = ../../bin
-install_customwidgetsplugin.files = customwidgetsplugin/customwidgets.dll
+# Qt Creator plugins path
+install_customwidgetsplugin.path = $$QTCREATOR_PLUGINS_PATH
+install_customwidgetsplugin.files = customwidgetsplugin/gpilot-customwidgets.dll
 
 win32: {
     # SUBDIRS += joystickplugin

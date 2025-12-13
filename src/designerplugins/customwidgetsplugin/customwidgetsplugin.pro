@@ -3,7 +3,7 @@ CONFIG -= debug_and_release
 TEMPLATE = lib
 QT += widgets uiplugin multimedia multimediawidgets
 
-TARGET = customwidgets
+TARGET = gpilot-customwidgets
 
 DEFINES += CUSTOMWIDGETS_EXPORT
 
@@ -28,3 +28,12 @@ SOURCES +=  colorpicker.cpp \
             customwidgetsplugin.cpp
 
 FORMS +=    sliderbox.ui
+
+# Install plugin to Qt Creator plugins directory
+# Use environment variable or qmake argument to override, e.g.:
+# qmake QTCREATOR_PLUGINS_PATH="C:/custom/path"
+isEmpty(QTCREATOR_PLUGINS_PATH) {
+    QTCREATOR_PLUGINS_PATH = C:/Programy/Qt/Tools/QtCreator/bin/plugins/designer
+}
+target.path = $$QTCREATOR_PLUGINS_PATH
+INSTALLS += target

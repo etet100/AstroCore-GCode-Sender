@@ -281,6 +281,44 @@ How to build (Windows, Qt, MinGW/LLVM)
 
 If you have build errors, check that all submodules are updated and you are using the correct Qt version.
 
+Building Qt Creator Designer Plugins
+-------------------
+
+G-Pilot includes custom Qt Designer widgets that can be used in Qt Creator. These plugins must be built with the same compiler used to build Qt Creator (typically MSVC 2022 64-bit).
+
+**Important:** The main G-Pilot project uses a different compiler (LLVM/Clang or MinGW), so you need to build the designer plugins separately.
+
+### Steps:
+
+1. Open the designer plugins project:
+   - In Qt Creator, open `src/designerplugins/designerplugins.pro` (not the main gpilot.pro)
+
+2. Select the correct kit:
+   - Use Qt 6.x with MSVC 2022 64-bit compiler (the same compiler used to build your Qt Creator)
+   - Do NOT use LLVM/Clang or MinGW for this build
+   - **Build in Release mode** - Qt Creator cannot load Debug plugins
+
+3. Configure the installation path:
+   - By default, plugins install to `C:/Programy/Qt/Tools/QtCreator/bin/plugins/designer`
+   - To use a different path, configure it before building:
+     ```
+     qmake QTCREATOR_PLUGINS_PATH="C:/YourPath/QtCreator/bin/plugins/designer"
+     ```
+   - Or set it as an environment variable:
+     ```
+     set QTCREATOR_PLUGINS_PATH=C:/YourPath/QtCreator/bin/plugins/designer
+     ```
+
+4. Build and install:
+   - Build the project (Ctrl+B)
+   - Run `make install` or add an install step in Qt Creator:
+     - Go to Projects → Build Settings → Build Steps
+     - Add a Make step with argument: `install`
+
+5. Restart Qt Creator to load the new plugins
+
+The custom widgets (ColorPicker, Slider, SliderBox, StyledToolButton, and so on...) will now appear in the Qt Designer widget palette.
+
 How it looks:
 
 Main window:
@@ -290,6 +328,10 @@ Main window:
 Dark mode:
 
 ![main](/screenshots/screenshot_main_dark.png)
+
+Heightmap preview:
+
+![heightmap](/screenshots/screenshot_main_dark_heightmap.png)
 
 Settings:
 

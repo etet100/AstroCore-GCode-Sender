@@ -367,7 +367,7 @@ include(../vendor/CRC.pri)
 include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
 
-LIBS += -L../designerplugins/customwidgetsplugin -lcustomwidgets
+LIBS += -L../designerplugins/customwidgetsplugin -lgpilot-customwidgets
 
 # qtPrepareTool(LRELEASE, lrelease)
 # for(tsfile, TRANSLATIONS) {
