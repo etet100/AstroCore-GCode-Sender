@@ -8,6 +8,8 @@ SliderPlugin::SliderPlugin(QObject *parent): QObject(parent), m_initialized(fals
 
 void SliderPlugin::initialize(QDesignerFormEditorInterface *core)
 {
+    Q_UNUSED(core)
+
     if (m_initialized) return;
 
     m_initialized = true;
@@ -35,7 +37,7 @@ QString SliderPlugin::name() const
 
 QString SliderPlugin::group() const
 {
-    return QStringLiteral("Custom widgets");
+    return QStringLiteral("GPilot widgets");
 }
 
 QIcon SliderPlugin::icon() const

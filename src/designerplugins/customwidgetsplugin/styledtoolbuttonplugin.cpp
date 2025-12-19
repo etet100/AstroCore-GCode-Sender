@@ -8,6 +8,8 @@ StyledToolButtonPlugin::StyledToolButtonPlugin(QObject *parent): QObject(parent)
 
 void StyledToolButtonPlugin::initialize(QDesignerFormEditorInterface *core)
 {
+    Q_UNUSED(core)
+
     if (m_initialized) return;
 
     m_initialized = true;
@@ -35,7 +37,7 @@ QString StyledToolButtonPlugin::name() const
 
 QString StyledToolButtonPlugin::group() const
 {
-    return QStringLiteral("Custom widgets");
+    return QStringLiteral("GPilot widgets");
 }
 
 QIcon StyledToolButtonPlugin::icon() const

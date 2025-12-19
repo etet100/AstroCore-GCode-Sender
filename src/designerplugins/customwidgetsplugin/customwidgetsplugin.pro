@@ -8,6 +8,9 @@ TARGET = gpilot-customwidgets
 DEFINES += CUSTOMWIDGETS_EXPORT
 
 HEADERS +=  colorpicker.h \
+            customwidgetsshared.h \
+            qtvalueslider.h \
+            qtvaluesliderplugin.h \
             slider.h \
             colorpickerplugin.h \
             sliderplugin.h \
@@ -15,9 +18,13 @@ HEADERS +=  colorpicker.h \
             sliderboxplugin.h \
             styledtoolbutton.h \
             styledtoolbuttonplugin.h \
-            customwidgetsplugin.h
+            customwidgetsplugin.h \
+            xswitchbutton.h \
+            xswitchbuttonplugin.h
 
 SOURCES +=  colorpicker.cpp \
+            qtvalueslider.cpp \
+            qtvaluesliderplugin.cpp \
             slider.cpp \
             colorpickerplugin.cpp \
             sliderplugin.cpp \
@@ -25,9 +32,13 @@ SOURCES +=  colorpicker.cpp \
             sliderboxplugin.cpp \
             styledtoolbutton.cpp \
             styledtoolbuttonplugin.cpp \
-            customwidgetsplugin.cpp
+            customwidgetsplugin.cpp \
+            xswitchbutton.cpp \
+            xswitchbuttonplugin.cpp
 
 FORMS +=    sliderbox.ui
+
+include(../../vendor/QtValueSlider.pri)
 
 # Install plugin to Qt Creator plugins directory
 # Use environment variable or qmake argument to override, e.g.:

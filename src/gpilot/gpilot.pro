@@ -367,6 +367,7 @@ INCLUDEPATH += ../designerplugins/customwidgetsplugin
 INCLUDEPATH += ../vendor/PropertyEditor
 
 include(../vendor/CRC.pri)
+include(../vendor/QtValueSlider.pri)
 include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
 

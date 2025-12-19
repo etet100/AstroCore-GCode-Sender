@@ -12,9 +12,6 @@
 [submodule "src/vendor/CircularBuffer"]
 	path = src/vendor/CircularBuffer
 	url = https://github.com/rlogiacco/CircularBuffer
-[submodule "src/vendor/QtEventBus"]
-	path = src/vendor/QtEventBus
-	url = https://github.com/cmguo/QtEventBus
 [submodule "src/vendor/CRC"]
 	path = src/vendor/CRC
 	url = https://github.com/RobTillaart/CRC
@@ -24,3 +21,6 @@
 [submodule "src/vendor/grblHal"]
 	path = src/vendor/grblHal
 	url = https://github.com/grblHAL/simulator
+[submodule "src/vendor/QtValueSlider"]
+	path = src/vendor/QtValueSlider
+	url = https://github.com/BugelNiels/qt-value-slider

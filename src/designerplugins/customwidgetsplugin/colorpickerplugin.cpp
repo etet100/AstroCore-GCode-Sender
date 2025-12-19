@@ -8,6 +8,8 @@ ColorPickerPlugin::ColorPickerPlugin(QObject *parent): QObject(parent), m_initia
 
 void ColorPickerPlugin::initialize(QDesignerFormEditorInterface *core)
 {
+    Q_UNUSED(core)
+
     if (m_initialized) return;
 
     m_initialized = true;
@@ -35,7 +37,7 @@ QString ColorPickerPlugin::name() const
 
 QString ColorPickerPlugin::group() const
 {
-    return QStringLiteral("Custom widgets");
+    return QStringLiteral("GPilot widgets");
 }
 
 QIcon ColorPickerPlugin::icon() const

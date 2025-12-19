@@ -3,8 +3,8 @@ TEMPLATE = subdirs
 SUBDIRS = customwidgetsplugin
 
 # Qt Creator plugins path
-install_customwidgetsplugin.path = $$QTCREATOR_PLUGINS_PATH
-install_customwidgetsplugin.files = customwidgetsplugin/gpilot-customwidgets.dll
+customwidgetsplugin.path = $$QTCREATOR_PLUGINS_PATH
+customwidgetsplugin.files = customwidgetsplugin/gpilot-customwidgets.dll
 
 win32: {
     # SUBDIRS += joystickplugin
@@ -12,7 +12,7 @@ win32: {
     # install_joystickplugin.path = ../../bin/plugins/joystick/plugins
     # install_joystickplugin.files = joystickplugin/joystickplugin.dll
 
-    INSTALLS += install_customwidgetsplugin
+    INSTALLS += customwidgetsplugin
 }
 
 # CONFIG += c++17

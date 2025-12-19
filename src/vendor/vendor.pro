@@ -1,10 +1,10 @@
 TEMPLATE = subdirs
 
 SUBDIRS = PropertyEditor \
-        grblHal
-
-SUBDIRS += uCNC
+        grblHal \
+        uCNC
 
 HEADERS += Arduino.h
 
-DISTFILES += CRC.pri
+DISTFILES += CRC.pri QtValueSlider.pri
+
