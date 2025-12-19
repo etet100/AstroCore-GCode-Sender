@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://json.schemastore.org/clang-format.json
 ---
 Language:        Cpp
-AccessModifierOffset: 0
+AccessModifierOffset: 4
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: None
 AlignConsecutiveAssignments:
@@ -166,7 +166,7 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 50
 PenaltyIndentedWhitespace: 0
 PenaltyReturnTypeOnItsOwnLine: 300
-PointerAlignment: Right
+PointerAlignment: Left
 PPIndentWidth:   -1
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer
