@@ -397,6 +397,7 @@ QLabel[overrided=&quot;false&quot;] {
      <string>&amp;Help</string>
     </property>
     <addaction name="actAbout"/>
+    <addaction name="actDebug"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -2120,6 +2121,11 @@ border-top: 0;</string>
    </property>
    <property name="text">
     <string>L&amp;ock panels</string>
+   </property>
+  </action>
+  <action name="actDebug">
+   <property name="text">
+    <string>Debug</string>
    </property>
   </action>
  </widget>

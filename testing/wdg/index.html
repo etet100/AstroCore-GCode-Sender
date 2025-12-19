@@ -1,0 +1,140 @@
+<html>
+<head>
+    <title>Widget Testing</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            background-color: black;
+        }
+
+        td {
+            padding: 2px 0;
+            text-align: center;
+            overflow: hidden;
+            font-size: 150%;
+        }
+        td:hover {
+            background: rgb(231, 231, 231);
+            color: black;
+            cursor: pointer;
+        }
+        tr.mul th {
+            /* text-align: left; */
+            padding: 0px;
+        }
+        tr.head th {
+            background-color: rgb(49, 71, 119);
+            padding: 0px;
+            text-transform: uppercase;
+            text-align: left;
+        }
+        tr.head th span  {
+            float: right;
+        }
+        tr.mul th::before {
+            content: '';
+        }
+        table {
+            border-spacing: 1px;
+            width: 250px;
+            border-color: white;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            margin-bottom: -1px;
+        }
+        ._5 td {
+            width: 20%;
+        }
+        ._6 td {
+            width: 16.6666%;
+        }
+        ._7 td {
+            width: 14.28571428571429%;
+        }
+        ._10 {
+            background-color: hsl(180, 29%, 15%)
+        }
+        ._100 {
+            background-color: hsl(200, 29%, 30%)
+        }
+        ._1000 {
+            background-color: hsl(220, 29%, 45%)
+        }
+        ._10000 {
+            background-color: hsl(240, 29%, 60%)
+        }
+    </style>
+</head>
+<body>
+    <div id="widget-container">
+        <table>
+            <thead class="_5">
+                <tr class="head">
+                    <th colspan="5" class="head">Step</th>
+                </tr>
+                <tr class="mul">
+                    <th class="_10" colspan="1">10</th>
+                    <th class="_100" colspan="2">100</th>
+                    <th class="_1000" colspan="1">1000</th>
+                    <th class="_10000" colspan="1">10000</th>
+                </tr>
+            </thead>
+            <tr class="_5">
+                <td class="_10">1</td>
+                <td class="_100">2</td>
+                <td class="_100">5</td>
+                <td class="_1000">1</td>
+                <td class="_10000">5</td>
+            </tr>
+        </table>
+        <table>
+            <thead class="_6">
+                <tr class="head">
+                    <th colspan="6" class="head">
+                        Feed XY
+                        <span>
+                            500mm
+                        </span>
+                    </th>
+                </tr>
+                <tr class="mul">
+                    <th class="_100" colspan="3">0.1mm</th>
+                    <th class="_1000" colspan="2">1mm</th>
+                    <th class="_10000" colspan="1">10mm</th>
+                </tr>
+            </thead>
+            <tr class="_6">
+                <td class="_100">1</td>
+                <td class="_100">2</td>
+                <td class="_100">5</td>
+                <td class="_1000">1</td>
+                <td class="_1000">2</td>
+                <td class="_10000">5</td>
+            </tr>
+        </table>
+        <table>
+            <thead class="_7">
+                <tr class="head">
+                    <th colspan="7" class="head">Feed Z <span>1000</span></th>
+                </tr>
+                <tr class="mul">
+                    <th class="_100" colspan="2">0.1mm</th>
+                    <th class="_1000" colspan="2">1mm</th>
+                    <th class="_10000" colspan="3">10mm</th>
+                </tr>
+            </thead>
+            <tr class="_7">
+                <td class="_100">1</td>
+                <td class="_100">2</td>
+                <td class="_1000">5</td>
+                <td class="_1000">1</td>
+                <td class="_10000">2</td>
+                <td class="_10000">5</td>
+                <td class="_10000">9</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

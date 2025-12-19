@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>226</width>
-    <height>258</height>
+    <height>365</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>10</number>
+    <number>3</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -36,9 +36,19 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="partMainJogParameters2" name="widget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>120</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QGridLayout" name="joggingLayout">
-     <item row="2" column="2">
-      <widget class="StyledToolButton" name="cmdXPlus">
+     <item row="2" column="1">
+      <widget class="StyledToolButton" name="cmdStop">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -46,72 +56,14 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>X+</string>
+        <string>Stop</string>
        </property>
        <property name="text">
         <string/>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/1401562173_chevron-right.png</normaloff>:/images/1401562173_chevron-right.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>32</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="adjustSize" stdset="0">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="StyledToolButton" name="cmdXMinus">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>X-</string>
-       </property>
-       <property name="text">
-        <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/1401561986_chevron-left.png</normaloff>:/images/1401561986_chevron-left.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>32</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="adjustSize" stdset="0">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="StyledToolButton" name="cmdYMinus">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>Y-</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/1401562173_chevron-down.png</normaloff>:/images/1401562173_chevron-down.png</iconset>
+         <normaloff>:/images/brake.png</normaloff>:/images/brake.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -170,8 +122,8 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="1">
-      <widget class="StyledToolButton" name="cmdStop">
+     <item row="2" column="0">
+      <widget class="StyledToolButton" name="cmdXMinus">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -179,14 +131,43 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Stop</string>
+        <string>X-</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/1401561986_chevron-left.png</normaloff>:/images/1401561986_chevron-left.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="adjustSize" stdset="0">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="StyledToolButton" name="cmdXPlus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>X+</string>
        </property>
        <property name="text">
         <string/>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/brake.png</normaloff>:/images/brake.png</iconset>
+         <normaloff>:/images/1401562173_chevron-right.png</normaloff>:/images/1401562173_chevron-right.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -244,6 +225,35 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="3" column="1">
+      <widget class="StyledToolButton" name="cmdYMinus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Y-</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/1401562173_chevron-down.png</normaloff>:/images/1401562173_chevron-down.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="adjustSize" stdset="0">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="0" column="1">
       <widget class="StyledToolButton" name="cmdYPlus">
@@ -465,6 +475,12 @@
    <class>ComboBoxKey</class>
    <extends>QComboBox</extends>
    <header>ui/widgets/comboboxkey.h</header>
+  </customwidget>
+  <customwidget>
+   <class>partMainJogParameters2</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/main/partmainjogparameters2.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

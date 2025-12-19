@@ -134,6 +134,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmaincontrol.cpp \
     ui/forms/partials/main/partmainheightmap.cpp \
     ui/forms/partials/main/partmainjog.cpp \
+    ui/forms/partials/main/partmainjogparameters2.cpp \
     ui/forms/partials/main/partmainoverride.cpp \
     ui/forms/partials/main/partmainspindle.cpp \
     ui/forms/partials/main/partmainstate.cpp \
@@ -257,6 +258,8 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmaincontrol.h \
     ui/forms/partials/main/partmainheightmap.h \
     ui/forms/partials/main/partmainjog.h \
+    ui/forms/partials/main/partmainjogparameters2.h \
+    ui/forms/partials/main/partmainjogparametersinterface.h \
     ui/forms/partials/main/partmainoverride.h \
     ui/forms/partials/main/partmainspindle.h \
     ui/forms/partials/main/partmainstate.h \
@@ -335,6 +338,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/main/partmaincontrol.ui \
     ui/forms/partials/main/partmainheightmap.ui \
     ui/forms/partials/main/partmainjog.ui \
+    ui/forms/partials/main/partmainjogparameters2.ui \
     ui/forms/partials/main/partmainoverride.ui \
     ui/forms/partials/main/partmainspindle.ui \
     ui/forms/partials/main/partmainstate.ui \
@@ -346,7 +350,6 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/settings/partsettingssender.ui \
     ui/forms/partials/settings/partsettingsshortcuts.ui \
     ui/forms/partials/settings/partsettingsvisualizer.ui \
-    ui/forms/frmdebug.ui \
     ui/forms/frmgrblconfigurator.ui \
     ui/forms/frmsettings.ui \
     ui/forms/frmabout.ui \
