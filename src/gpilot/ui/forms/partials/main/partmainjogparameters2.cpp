@@ -12,18 +12,15 @@ partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogPar
     ui->setupUi(this);
     ui->sectionFrame->deleteLater();
 
-    setStepSizeOptions({0.1, 0.5, 1, 5, 10, 50, 100});
-    setFeedRateXYOptions({100, 200, 500, 1000, 2000, 5000});
-    setFeedRateZOptions({100, 200, 500, 1000, 2000, 5000});
-
-    // Default visibility
-    setSeparateZFeedrate(false);
+    m_stepSection.type = SectionType::Step;
+    m_feedXYSection.type = SectionType::FeedXY;
+    m_feedZSection.type = SectionType::FeedZ;
 
     style()->unpolish(this);
     style()->polish(this);
 }
 
-void partMainJogParameters2::setStepSizeOptions(const QList<float>& options) {
+void partMainJogParameters2::setStepSizeOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {1.0f, 0.1f},
@@ -31,31 +28,42 @@ void partMainJogParameters2::setStepSizeOptions(const QList<float>& options) {
         {100.0f, 10.0f},
         {1000.0f, 100.0f}
     };
+    QList<float> floatOptions;
+    for (const QString& opt : options) {
+        floatOptions.append(opt.toFloat());
+    }
 
-
-    rebuildSection(m_stepSection, "STEP SIZE", options, groups);
+    rebuildSection(m_stepSection, "STEP SIZE", floatOptions, groups);
 }
 
-void partMainJogParameters2::setFeedRateXYOptions(const QList<float>& options) {
+void partMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {10, 1},
         {100, 10},
         {1000, 100}
     };
+    QList<float> floatOptions;
+    for (const QString& opt : options) {
+        floatOptions.append(opt.toFloat());
+    }
 
-    rebuildSection(m_feedXYSection, "FEEDRATE (XY)", options, groups);
+    rebuildSection(m_feedXYSection, "FEEDRATE (XY)", floatOptions, groups);
 }
 
-void partMainJogParameters2::setFeedRateZOptions(const QList<float>& options) {
+void partMainJogParameters2::setFeedRateZOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {10, 1},
         {100, 10},
         {1000, 100}
     };
+    QList<float> floatOptions;
+    for (const QString& opt : options) {
+        floatOptions.append(opt.toFloat());
+    }
 
-    rebuildSection(m_feedZSection, "FEEDRATE (Z)", options, groups);
+    rebuildSection(m_feedZSection, "FEEDRATE (Z)", floatOptions, groups);
 }
 
 void partMainJogParameters2::setStepSize(float value) {
@@ -79,19 +87,19 @@ void partMainJogParameters2::setSeparateZFeedrate(bool enabled) {
     }
 }
 
-bool partMainJogParameters2::isSeparateZFeedrate() const {
-    return m_feedZSection.mainFrame ? m_feedZSection.mainFrame->isVisible() : false;
-}
+// bool partMainJogParameters2::isSeparateZFeedrate() const {
+//     return m_feedZSection.mainFrame ? m_feedZSection.mainFrame->isVisible() : false;
+// }
 
-float partMainJogParameters2::getStepSize() const {
+float partMainJogParameters2::stepSize() const {
     return m_stepSection.currentValue;
 }
 
-float partMainJogParameters2::getFeedRateXY() const {
+float partMainJogParameters2::feedRateXY() const {
     return m_feedXYSection.currentValue;
 }
 
-float partMainJogParameters2::getFeedRateZ() const {
+float partMainJogParameters2::feedRateZ() const {
     return m_feedZSection.currentValue;
 }
 
@@ -177,7 +185,7 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
 
     QHBoxLayout* horizontalLayout = new QHBoxLayout(headFrame);
     horizontalLayout->setSpacing(1);
-    horizontalLayout->setObjectName("horizontalLayout");
+    // horizontalLayout->setObjectName("horizontalLayout");
     horizontalLayout->setContentsMargins(5, 1, 5, 1);
 
     QLabel* titleLabel = new QLabel(headFrame);
@@ -186,11 +194,11 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
     horizontalLayout->addWidget(titleLabel);
 
     QLabel* valueLabel = new QLabel(headFrame);
-    valueLabel->setObjectName("value");
+    // valueLabel->setObjectName("value");
     valueLabel->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
     horizontalLayout->addWidget(valueLabel);
 
-    if (outValueLabel) *outValueLabel = valueLabel;
+    if (outValueLabel) { *outValueLabel = valueLabel; }
 
     return headFrame;
 }
@@ -198,28 +206,38 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
 QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section)
 {
     QPushButton *btn = new QPushButton(parent);
-    btn->setObjectName("pushButton_5");
+
     btn->setFlat(true);
     btn->setProperty("tag", tag);
     btn->setText(text);
     btn->setCursor(Qt::PointingHandCursor);
     btn->setCheckable(true);
     btn->setAutoExclusive(false);
-
-    if (&section == &m_stepSection) btn->setProperty("section", "step");
-    else if (&section == &m_feedXYSection) btn->setProperty("section", "feedXY");
-    else if (&section == &m_feedZSection) btn->setProperty("section", "feedZ");
-
+    btn->setProperty("section", section.type);
     btn->setProperty("value", realValue);
+    btn->setMinimumHeight(25);
     btn->installEventFilter(this);
 
     connect(btn, &QPushButton::clicked, this, [this, &section, realValue]() {
         section.currentValue = realValue;
         updateSectionUiState(section);
 
-        if (&section == &m_stepSection) emit stepSizeChanged(realValue);
-        else if (&section == &m_feedXYSection) emit feedRateXYChanged(realValue);
-        else if (&section == &m_feedZSection) emit feedRateZChanged(realValue);
+        switch (section.type) {
+            case SectionType::Step:
+                emit stepSizeChanged(realValue);
+                break;
+            case SectionType::FeedXY:
+                emit feedRateXYChanged(realValue);
+                break;
+            case SectionType::FeedZ:
+                emit feedRateZChanged(realValue);
+                break;
+        }
+
+        // mark value as final, not temporary
+        section.valueLabel->setProperty("tag", "");
+        section.valueLabel->style()->unpolish(section.valueLabel);
+        section.valueLabel->style()->polish(section.valueLabel);
     });
 
     return btn;
@@ -228,7 +246,7 @@ QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString
 QLabel *partMainJogParameters2::createGrpLabel(QWidget *parent, const QString& text, const QString& tag)
 {
     QLabel *btnsGroupLabel = new QLabel(parent);
-    btnsGroupLabel->setObjectName("label_4");
+
     btnsGroupLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
     btnsGroupLabel->setProperty("tag", tag);
     btnsGroupLabel->setText(text);
@@ -245,28 +263,36 @@ void partMainJogParameters2::updateSectionUiState(Section& section)
 
 bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::Enter || event->type() == QEvent::Leave) {
-        QPushButton *btn = qobject_cast<QPushButton*>(watched);
-        if (btn) {
-            QString sectionType = btn->property("section").toString();
-            Section *section = nullptr;
-            if (sectionType == "step") section = &m_stepSection;
-            else if (sectionType == "feedXY") section = &m_feedXYSection;
-            else if (sectionType == "feedZ") section = &m_feedZSection;
-
-            if (section && section->valueLabel) {
-                if (event->type() == QEvent::Enter) {
-                    float val = btn->property("value").toFloat();
-                    section->valueLabel->setText(QString::number(val));
-                    // Use a distinct color for preview
-                    section->valueLabel->setStyleSheet("color: #e67e22; font-weight: bold;");
-                } else {
-                    section->valueLabel->setText(QString::number(section->currentValue));
-                    section->valueLabel->setStyleSheet("");
-                }
-            }
-        }
+    if (event->type() != QEvent::Enter && event->type() != QEvent::Leave) {
+        return partMainJogParametersInterface::eventFilter(watched, event);
     }
+    QPushButton *btn = qobject_cast<QPushButton*>(watched);
+    if (!btn) {
+        return partMainJogParametersInterface::eventFilter(watched, event);
+    }
+
+    SectionType sectionType = static_cast<SectionType>(btn->property("section").toInt());
+    qDebug() << sectionType;
+    Section* section = nullptr;
+    if (sectionType == SectionType::Step) section = &m_stepSection;
+    else if (sectionType == SectionType::FeedXY) section = &m_feedXYSection;
+    else if (sectionType == SectionType::FeedZ) section = &m_feedZSection;
+    if (!section || !section->valueLabel) {
+        return partMainJogParametersInterface::eventFilter(watched, event);
+    }
+
+    float val = btn->property("value").toFloat();
+    if (event->type() == QEvent::Enter && abs(section->currentValue - val) > 0.01f) {
+        section->valueLabel->setText(QString::number(val));
+        section->valueLabel->setProperty("tag", "temp_value");
+    } else {
+        section->valueLabel->setText(QString::number(section->currentValue));
+        section->valueLabel->setProperty("tag", "");
+    }
+
+    section->valueLabel->style()->unpolish(section->valueLabel);
+    section->valueLabel->style()->polish(section->valueLabel);
+
     return partMainJogParametersInterface::eventFilter(watched, event);
 }
 

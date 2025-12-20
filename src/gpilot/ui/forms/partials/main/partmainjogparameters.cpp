@@ -71,7 +71,7 @@ void partMainJogParameters::configurationUpdated()
 
     //
 
-    double stepSize = m_configurationJogging->step();
+    float stepSize = m_configurationJogging->step();
     int feedRate = m_configurationJogging->feed();
     int feedRateZ = m_configurationJogging->feedZ();
 
@@ -177,28 +177,16 @@ void partMainJogParameters::onChkSeparateZFeedToggled(bool checked)
     qDebug() << "[Jog UI] Separate Z feed toggled" << checked;
 }
 
-void partMainJogParameters::setStepSizeOptions(const QList<float>& options) {
-    QStringList items;
-    for(float opt : options) {
-        items << QString::number(opt);
-    }
-    ui->cboJogStep->setItems(items);
+void partMainJogParameters::setStepSizeOptions(const QStringList& options) {
+    ui->cboJogStep->setItems(options);
 }
 
-void partMainJogParameters::setFeedRateXYOptions(const QList<float>& options) {
-    QStringList items;
-    for(float opt : options) {
-        items << QString::number(opt);
-    }
-    ui->cboJogFeed->setItems(items);
+void partMainJogParameters::setFeedRateXYOptions(const QStringList& options) {
+    ui->cboJogFeed->setItems(options);
 }
 
-void partMainJogParameters::setFeedRateZOptions(const QList<float>& options) {
-    QStringList items;
-    for(float opt : options) {
-        items << QString::number(opt);
-    }
-    ui->cboJogFeedZ->setItems(items);
+void partMainJogParameters::setFeedRateZOptions(const QStringList& options) {
+    ui->cboJogFeedZ->setItems(options);
 }
 
 void partMainJogParameters::setStepSize(float value) {
@@ -217,18 +205,18 @@ void partMainJogParameters::setSeparateZFeedrate(bool enabled) {
     ui->middlePartLayout->setRowVisible(2, enabled);
 }
 
-bool partMainJogParameters::isSeparateZFeedrate() const {
-    return ui->cboJogFeedZ->isVisible();
-}
+// bool partMainJogParameters::isSeparateZFeedrate() const {
+//     return ui->cboJogFeedZ->isVisible();
+// }
 
-float partMainJogParameters::getStepSize() const {
+float partMainJogParameters::stepSize() const {
     return ui->cboJogStep->currentText().toFloat();
 }
 
-float partMainJogParameters::getFeedRateXY() const {
+float partMainJogParameters::feedRateXY() const {
     return ui->cboJogFeed->currentText().toFloat();
 }
 
-float partMainJogParameters::getFeedRateZ() const {
+float partMainJogParameters::feedRateZ() const {
     return ui->cboJogFeedZ->currentText().toFloat();
 }

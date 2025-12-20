@@ -26,6 +26,14 @@ QPushButton, QLabel, QFrame#header {
 	border-radius: 4px;
 }
 
+QFrame#header QLabel {
+	font-weight: bold;
+}
+
+QLabel[tag=&quot;temp_value&quot;] {
+	color: hsl(240, 29%, 60%);
+}
+
 QFrame#sectionFrame {
     border-radius: 5px;
 }
@@ -49,7 +57,7 @@ QLabel[tag=&quot;_3&quot;], QPushButton[tag=&quot;_3&quot;]  {
 QLabel[tag=&quot;_4&quot;], QPushButton[tag=&quot;_4&quot;]  {
     background-color: hsl(240, 29%, 60%);
 }
-</string>
+x</string>
   </property>
   <property name="frameShape">
    <enum>QFrame::Shape::NoFrame</enum>

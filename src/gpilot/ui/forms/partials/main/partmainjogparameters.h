@@ -18,29 +18,28 @@ class partMainJogParameters : public partMainJogParametersInterface
         explicit partMainJogParameters(QWidget* parent = nullptr);
         ~partMainJogParameters();
 
-        int feedRate() const { return m_configurationJogging->feed(); };
-        int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
-        double stepSize() const { return m_configurationJogging->step(); };
+        // int feedRate() const { return m_configurationJogging->feed(); };
+        // int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
+        // double stepSize() const { return m_configurationJogging->step(); };
         JoggingVector jogVector() const { return m_jogVector; };
         void configurationUpdated();
 
         void initialize(ConfigurationJogging &configurationJogging);
 
         // partMainJogParametersInterface implementation
-        void setStepSizeOptions(const QList<float>& options) override;
-        void setFeedRateXYOptions(const QList<float>& options) override;
-        void setFeedRateZOptions(const QList<float>& options) override;
+        void setStepSizeOptions(const QStringList& options) override;
+        void setFeedRateXYOptions(const QStringList& options) override;
+        void setFeedRateZOptions(const QStringList& options) override;
 
         void setStepSize(float value) override;
         void setFeedRateXY(float value) override;
         void setFeedRateZ(float value) override;
 
         void setSeparateZFeedrate(bool enabled) override;
-        bool isSeparateZFeedrate() const override;
 
-        float getStepSize() const override;
-        float getFeedRateXY() const override;
-        float getFeedRateZ() const override;
+        float stepSize() const override;
+        float feedRateXY() const override;
+        float feedRateZ() const override;
 
     private:
         Ui::partMainJogParameters *ui;

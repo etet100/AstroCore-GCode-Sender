@@ -52,9 +52,9 @@ private slots:
     void onCmdZMinusPressed();
     void onCmdZMinusReleased();
     void onCmdStopClicked();
-    void onCmdFeedChanged(int index);
-    void onCmdFeedZChanged(int index);
-    void onCmdStepChanged(int index);
+    // void onCmdFeedChanged(int index);
+    // void onCmdFeedZChanged(int index);
+    // void onCmdStepChanged(int index);
     void onChkSeparateZFeedToggled(bool);
 
 signals:

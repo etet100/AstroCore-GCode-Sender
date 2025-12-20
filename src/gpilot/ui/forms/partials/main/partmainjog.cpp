@@ -3,12 +3,12 @@
 
 void partMainJog::updateControls()
 {
-    ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
-    ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
-    ui->cboJogStep->setEnabled(!ui->chkKeyboardControl->isChecked());
-    ui->cboJogFeed->setEnabled(!ui->chkKeyboardControl->isChecked());
-    //ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
-    ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
+    // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogStep->setEnabled(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogFeed->setEnabled(!ui->chkKeyboardControl->isChecked());
+    // //ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
+    // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 }
 
 partMainJog::partMainJog(QWidget *parent)
@@ -32,37 +32,42 @@ void partMainJog::configurationUpdated()
     // Sep. feed settings for Z axis
 
     ui->chkSeparateZFeed->setChecked(m_configurationJogging->separateFeedZ());
-    ui->middlePartLayout->setRowVisible(2, m_configurationJogging->separateFeedZ());
+    ui->jogParameters->setSeparateZFeedrate(m_configurationJogging->separateFeedZ());
+    // ui->middlePartLayout->setRowVisible(2, m_configurationJogging->separateFeedZ());
 
     //
 
-    double stepSize = m_configurationJogging->step();
-    int feedRate = m_configurationJogging->feed();
-    int feedRateZ = m_configurationJogging->feedZ();
+    // double stepSize = m_configurationJogging->step();
+    // int feedRate = m_configurationJogging->feed();
+    // int feedRateZ = m_configurationJogging->feedZ();
 
-    ui->cboJogStep->setItems(QStringList("Continuous") + m_configurationJogging->stepChoices());
-    for (const QString &ch : m_configurationJogging->stepChoices()) {
-        if (ch.toDouble() == stepSize) {
-            ui->cboJogStep->setCurrentText(ch);
-            break;
-        }
-    }
+    // ui->cboJogStep->setItems(QStringList("Continuous") + m_configurationJogging->stepChoices());
+    // for (const QString &ch : m_configurationJogging->stepChoices()) {
+    //     if (ch.toDouble() == stepSize) {
+    //         ui->cboJogStep->setCurrentText(ch);
+    //         break;
+    //     }
+    // }
 
-    ui->cboJogFeed->setItems(m_configurationJogging->feedChoices());
-    for (const QString &ch : m_configurationJogging->feedChoices()) {
-        if (ch.toInt() == feedRate) {
-            ui->cboJogFeed->setCurrentText(ch);
-            break;
-        }
-    }
+    // ui->cboJogFeed->setItems(m_configurationJogging->feedChoices());
+    // for (const QString &ch : m_configurationJogging->feedChoices()) {
+    //     if (ch.toInt() == feedRate) {
+    //         ui->cboJogFeed->setCurrentText(ch);
+    //         break;
+    //     }
+    // }
 
-    ui->cboJogFeedZ->setItems(m_configurationJogging->feedChoices());
-    for (const QString &ch : m_configurationJogging->feedChoices()) {
-        if (ch.toInt() == feedRateZ) {
-            ui->cboJogFeedZ->setCurrentText(ch);
-            break;
-        }
-    }
+    // ui->cboJogFeedZ->setItems(m_configurationJogging->feedChoices());
+    // for (const QString &ch : m_configurationJogging->feedChoices()) {
+    //     if (ch.toInt() == feedRateZ) {
+    //         ui->cboJogFeedZ->setCurrentText(ch);
+    //         break;
+    //     }
+    // }
+
+    ui->jogParameters->setFeedRateXYOptions(m_configurationJogging->feedChoices());
+    ui->jogParameters->setFeedRateZOptions(m_configurationJogging->feedChoices());
+    ui->jogParameters->setStepSizeOptions(m_configurationJogging->stepChoices());
 
     m_initialized = true;
 }
@@ -184,72 +189,73 @@ void partMainJog::onCmdStopClicked()
     stopJogging();
 }
 
-void partMainJog::onCmdFeedChanged(int index)
-{
-    if (!m_initialized) {
-        return;
-    }
+// void partMainJog::onCmdFeedChanged(int index)
+// {
+//     if (!m_initialized) {
+//         return;
+//     }
 
-    // should not happen in real life, only during initialization (clear old items)
-    if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
-        return;
-    }
+//     // should not happen in real life, only during initialization (clear old items)
+//     if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
+//         return;
+//     }
 
-    int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-    m_configurationJogging->setFeed(feedRate);
+//     int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
+//     m_configurationJogging->setFeed(feedRate);
 
-    qDebug() << "[Jog UI] Feed rate changed" << index << feedRate;
+//     qDebug() << "[Jog UI] Feed rate changed" << index << feedRate;
 
-    emit this->parametersChanged(feedRate, m_configurationJogging->step());
-}
+//     emit this->parametersChanged(feedRate, m_configurationJogging->step());
+// }
 
-void partMainJog::onCmdFeedZChanged(int index)
-{
-    if (!m_initialized) {
-        return;
-    }
+// void partMainJog::onCmdFeedZChanged(int index)
+// {
+//     if (!m_initialized) {
+//         return;
+//     }
 
-    // should not happen in real life, only during initialization (clear old items)
-    if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
-        return;
-    }
+//     // should not happen in real life, only during initialization (clear old items)
+//     if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
+//         return;
+//     }
 
-    int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-    m_configurationJogging->setFeedZ(feedRate);
+//     int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
+//     m_configurationJogging->setFeedZ(feedRate);
 
-    qDebug() << "[Jog UI] Feed rate for Z changed" << index << feedRate;
+//     qDebug() << "[Jog UI] Feed rate for Z changed" << index << feedRate;
 
-    emit this->parametersChanged(feedRate, m_configurationJogging->step());
-}
+//     emit this->parametersChanged(feedRate, m_configurationJogging->step());
+// }
 
-void partMainJog::onCmdStepChanged(int index)
-{
-    if (!m_initialized) {
-        return;
-    }
+// void partMainJog::onCmdStepChanged(int index)
+// {
+//     if (!m_initialized) {
+//         return;
+//     }
 
-    // should not happen in real life, only during initialization (clear old items)
-    if (index < 0 || index >= m_configurationJogging->stepChoices().count()) {
-        return;
-    }
+//     // should not happen in real life, only during initialization (clear old items)
+//     if (index < 0 || index >= m_configurationJogging->stepChoices().count()) {
+//         return;
+//     }
 
-    double stepSize;
-    if (index == 0) {
-        stepSize = JoggingContinuous;
-    } else {
-        stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
-    }
-    m_configurationJogging->setStep(stepSize);
+//     double stepSize;
+//     if (index == 0) {
+//         stepSize = JoggingContinuous;
+//     } else {
+//         stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
+//     }
+//     m_configurationJogging->setStep(stepSize);
 
-    qDebug() << "[Jog UI] Step size changed" << index << stepSize;
+//     qDebug() << "[Jog UI] Step size changed" << index << stepSize;
 
-    emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
-}
+//     emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
+// }
 
 void partMainJog::onChkSeparateZFeedToggled(bool checked)
 {
     m_configurationJogging->setSeparateFeedZ(checked);
-    ui->middlePartLayout->setRowVisible(2, checked);
+    ui->jogParameters->setSeparateZFeedrate(checked);
+    // ui->middlePartLayout->setRowVisible(2, checked);
 
     qDebug() << "[Jog UI] Separate Z feed toggled" << checked;
 }

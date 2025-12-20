@@ -11,24 +11,19 @@ public:
     explicit partMainJogParametersInterface(QWidget *parent = nullptr) : QFrame(parent) {}
     virtual ~partMainJogParametersInterface() = default;
 
-    // Configuration of available options
-    virtual void setStepSizeOptions(const QList<float>& options) = 0;
-    virtual void setFeedRateXYOptions(const QList<float>& options) = 0;
-    virtual void setFeedRateZOptions(const QList<float>& options) = 0;
+    virtual void setStepSizeOptions(const QStringList& options) = 0;
+    virtual void setFeedRateXYOptions(const QStringList& options) = 0;
+    virtual void setFeedRateZOptions(const QStringList& options) = 0;
 
-    // Setting current values
     virtual void setStepSize(float value) = 0;
     virtual void setFeedRateXY(float value) = 0;
     virtual void setFeedRateZ(float value) = 0;
 
-    // Configuration of visibility/behavior
     virtual void setSeparateZFeedrate(bool enabled) = 0;
-    virtual bool isSeparateZFeedrate() const = 0;
 
-    // Getting current values
-    virtual float getStepSize() const = 0;
-    virtual float getFeedRateXY() const = 0;
-    virtual float getFeedRateZ() const = 0;
+    virtual float stepSize() const = 0;
+    virtual float feedRateXY() const = 0;
+    virtual float feedRateZ() const = 0;
 
 signals:
     void stepSizeChanged(float value);

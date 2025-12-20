@@ -18,23 +18,32 @@ class partMainJogParameters2 : public partMainJogParametersInterface
     public:
         explicit partMainJogParameters2(QWidget* parent = nullptr);
 
-        // partMainJogParametersInterface implementation
-        void setStepSizeOptions(const QList<float>& options) override;
-        void setFeedRateXYOptions(const QList<float>& options) override;
-        void setFeedRateZOptions(const QList<float>& options) override;
+        void setStepSizeOptions(const QStringList& options) override;
+        void setFeedRateXYOptions(const QStringList& options) override;
+        void setFeedRateZOptions(const QStringList& options) override;
 
         void setStepSize(float value) override;
         void setFeedRateXY(float value) override;
         void setFeedRateZ(float value) override;
 
         void setSeparateZFeedrate(bool enabled) override;
-        bool isSeparateZFeedrate() const override;
 
-        float getStepSize() const override;
-        float getFeedRateXY() const override;
-        float getFeedRateZ() const override;
+        float stepSize() const override;
+        float feedRateXY() const override;
+        float feedRateZ() const override;
 
     private:
+        enum SectionType : int {
+            Step = 0,
+            FeedXY,
+            FeedZ
+        };
+        inline const static QMap<SectionType, QString> sectionTypeName {
+            {SectionType::Step, "step"},
+            {SectionType::FeedXY, "feedXY"},
+            {SectionType::FeedZ, "feedZ"}
+        };
+
         Ui::partMainJogParameters2* ui;
 
         struct Section {
@@ -43,6 +52,7 @@ class partMainJogParameters2 : public partMainJogParametersInterface
             QList<QPushButton*> buttons;
             float currentValue = 0.0f;
             QList<float> currentOptions;
+            SectionType type;
         };
 
         Section m_stepSection;
