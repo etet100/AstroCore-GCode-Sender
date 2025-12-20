@@ -4,6 +4,8 @@
 #include <QGridLayout>
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QEvent>
+#include <QVariant>
 
 partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogParametersInterface(parent), ui(new Ui::partMainJogParameters2)
 {
@@ -204,6 +206,13 @@ QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString
     btn->setCheckable(true);
     btn->setAutoExclusive(false);
 
+    if (&section == &m_stepSection) btn->setProperty("section", "step");
+    else if (&section == &m_feedXYSection) btn->setProperty("section", "feedXY");
+    else if (&section == &m_feedZSection) btn->setProperty("section", "feedZ");
+
+    btn->setProperty("value", realValue);
+    btn->installEventFilter(this);
+
     connect(btn, &QPushButton::clicked, this, [this, &section, realValue]() {
         section.currentValue = realValue;
         updateSectionUiState(section);
@@ -233,3 +242,31 @@ void partMainJogParameters2::updateSectionUiState(Section& section)
         section.valueLabel->setText(QString::number(section.currentValue));
     }
 }
+
+bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::Enter || event->type() == QEvent::Leave) {
+        QPushButton *btn = qobject_cast<QPushButton*>(watched);
+        if (btn) {
+            QString sectionType = btn->property("section").toString();
+            Section *section = nullptr;
+            if (sectionType == "step") section = &m_stepSection;
+            else if (sectionType == "feedXY") section = &m_feedXYSection;
+            else if (sectionType == "feedZ") section = &m_feedZSection;
+
+            if (section && section->valueLabel) {
+                if (event->type() == QEvent::Enter) {
+                    float val = btn->property("value").toFloat();
+                    section->valueLabel->setText(QString::number(val));
+                    // Use a distinct color for preview
+                    section->valueLabel->setStyleSheet("color: #e67e22; font-weight: bold;");
+                } else {
+                    section->valueLabel->setText(QString::number(section->currentValue));
+                    section->valueLabel->setStyleSheet("");
+                }
+            }
+        }
+    }
+    return partMainJogParametersInterface::eventFilter(watched, event);
+}
+
