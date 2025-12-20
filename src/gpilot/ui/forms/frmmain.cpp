@@ -1818,8 +1818,14 @@ void frmMain::onToolPositionReceived(QVector3D pos)
     updateToolPositionAndToolpathShadowing(pos);
 }
 
-void frmMain::onConsoleNewCommand(QString command)
+void frmMain::onConsoleNewCommand(QString command, bool isInternal)
 {
+    if (isInternal) {
+        qDebug() << "Internal commands not handled yet:" << command;
+
+        return;
+    }
+
     m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
 }
 

@@ -186,7 +186,7 @@ private slots:
     void onToolPositionReceived(QVector3D pos);
     void onTransferCompleted();
     void onConnectionError(QString error);
-    void onConsoleNewCommand(QString command);
+    void onConsoleNewCommand(QString command, bool isInternal);
     void onStateBehaviorChanged(StateBehavior *sb);
 
     void onTimerConnection();

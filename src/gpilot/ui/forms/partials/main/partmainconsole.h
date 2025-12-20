@@ -31,12 +31,18 @@ class partMainConsole : public QWidget
         int appendProgress(QString text);
         void setProgress(int index, int progress);
         void clear();
+        // Internal commands are commands starting with ':', these are handled by the application itself
+        // and not sent to the device
+        void setInternalCommands(const QStringList& commands);
 
     signals:
-        void newCommand(QString command);
+        void newCommand(QString command, bool isInternal);
         void consoleCleared();
 
     private:
+        // When we want to append something to a history entry (e.g. device response),
+        // we search for that entry in the last few blocks. There's no point in searching further because
+        // it will be an old entry.
         static const int MAX_BLOCKS_TO_CHECK = 100;
 
         Ui::partMainConsole *ui;
@@ -88,6 +94,16 @@ class partMainConsole : public QWidget
         void applyDarkBackgroundMode();
 
         int m_index = 0;
+
+        QStringList m_internalCommands = {"start", "stop", "status", "pause", "open", "reset"};
+        QString m_autocompletePrefix;
+        int m_autocompleteIndex = -1;
+        QStringList m_autocompleteMatches;
+
+        void handleAutocomplete();
+        void cancelAutocomplete();
+        QStringList findMatches(const QString& prefix);
+        bool eventFilter(QObject *watched, QEvent *event) override;
 
     private slots:
         void onClearClicked();

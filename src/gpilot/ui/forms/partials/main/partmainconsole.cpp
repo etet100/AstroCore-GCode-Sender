@@ -6,6 +6,8 @@
 #include "ui_partmainconsole.h"
 #include <QScrollBar>
 #include <QCompleter>
+#include <QKeyEvent>
+#include <QLineEdit>
 
 partMainConsole::partMainConsole(QWidget *parent)
     : QWidget(parent)
@@ -20,6 +22,8 @@ partMainConsole::partMainConsole(QWidget *parent)
     ui->cboCommand->setMinimumHeight(ui->cboCommand->height());
     ui->cmdClearConsole->setFixedHeight(ui->cboCommand->height());
     ui->cmdCommandSend->setFixedHeight(ui->cboCommand->height());
+
+    ui->cboCommand->installEventFilter(this);
 }
 
 void partMainConsole::initialize(ConfigurationConsole &configurationConsole)
@@ -176,11 +180,21 @@ void partMainConsole::send()
     QString command = ui->cboCommand->currentText().trimmed();
     ui->cboCommand->clearEditText();
 
-    if (command.isEmpty()) return;
+    if (command.isEmpty()) {
+        return;
+    }
 
     m_configurationConsole->setCommandHistory(ui->cboCommand->items());
 
-    emit newCommand(command);
+    if (command.startsWith(":")) {
+        command = command.mid(1).toLower();
+        if (m_internalCommands.contains(command)) {
+            emit newCommand(command, true);
+        }
+        return;
+    }
+
+    emit newCommand(command, false);
 }
 
 bool partMainConsole::isScrolledToEnd()
@@ -221,4 +235,115 @@ QString partMainConsole::ProgressBlockData::text(int progress)
     // int rest = 20 - scaled;
 
     // return QString("%1 [%2%3]").arg(m_text).arg(QString("#").repeated(scaled)).arg(QString("_").repeated(rest));
+}
+
+void partMainConsole::setInternalCommands(const QStringList& commands)
+{
+    m_internalCommands = commands;
+}
+
+bool partMainConsole::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->cboCommand && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        QString currentText = ui->cboCommand->currentText();
+
+        // Disable built-in completer for commands starting with ':'
+        if (currentText.startsWith(':') && ui->cboCommand->completer()) {
+            ui->cboCommand->completer()->setCompletionPrefix("");
+        }
+
+        if (keyEvent->key() == Qt::Key_Tab) {
+            // Clear any selection from built-in completer
+            if (ui->cboCommand->lineEdit() && ui->cboCommand->lineEdit()->hasSelectedText()) {
+                QString textBeforeSelection = currentText.left(ui->cboCommand->lineEdit()->selectionStart());
+                ui->cboCommand->setEditText(textBeforeSelection);
+            }
+            handleAutocomplete();
+            return true;
+        }
+
+        if (keyEvent->key() == Qt::Key_Escape) {
+            if (!m_autocompletePrefix.isEmpty()) {
+                cancelAutocomplete();
+                return true;
+            }
+        }
+
+        if (keyEvent->key() != Qt::Key_Return && keyEvent->key() != Qt::Key_Enter) {
+            cancelAutocomplete();
+        }
+    }
+
+    return QWidget::eventFilter(watched, event);
+}
+
+void partMainConsole::handleAutocomplete()
+{
+    QString currentText = ui->cboCommand->currentText();
+
+    if (!currentText.startsWith(':')) {
+        return;
+    }
+
+    QString prefix = currentText.mid(1);
+
+    // Check if current text is one of our matches - if so, continue cycling
+    bool isMatchedCompletion = false;
+    if (!m_autocompleteMatches.isEmpty()) {
+        for (const QString& match : m_autocompleteMatches) {
+            if (prefix == match) {
+                isMatchedCompletion = true;
+                break;
+            }
+        }
+    }
+
+    // Reset matches if prefix changed and current text is not a match
+    if (!isMatchedCompletion && m_autocompletePrefix != prefix) {
+        m_autocompletePrefix = prefix;
+        m_autocompleteMatches = findMatches(prefix);
+        m_autocompleteIndex = -1;
+    }
+
+    if (m_autocompleteMatches.isEmpty()) {
+        return;
+    }
+
+    m_autocompleteIndex = (m_autocompleteIndex + 1) % m_autocompleteMatches.size();
+    QString completion = ":" + m_autocompleteMatches[m_autocompleteIndex];
+    ui->cboCommand->setEditText(completion);
+
+    if (ui->cboCommand->lineEdit()) {
+        ui->cboCommand->lineEdit()->setCursorPosition(completion.length());
+    }
+}
+
+void partMainConsole::cancelAutocomplete()
+{
+    if (!m_autocompletePrefix.isEmpty()) {
+        QString restoredText = ":" + m_autocompletePrefix;
+        ui->cboCommand->setEditText(restoredText);
+        if (ui->cboCommand->lineEdit()) {
+            ui->cboCommand->lineEdit()->setCursorPosition(restoredText.length());
+        }
+    }
+    m_autocompletePrefix.clear();
+    m_autocompleteIndex = -1;
+    m_autocompleteMatches.clear();
+}
+
+QStringList partMainConsole::findMatches(const QString& prefix)
+{
+    QStringList matches;
+    QString lowerPrefix = prefix.toLower();
+
+    for (const QString& cmd : m_internalCommands) {
+        if (cmd.startsWith(lowerPrefix)) {
+            matches.append(cmd);
+        }
+    }
+
+    matches.sort();
+    return matches;
 }
