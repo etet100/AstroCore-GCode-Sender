@@ -23,4 +23,4 @@
 	url = https://github.com/grblHAL/simulator
 [submodule "src/vendor/QtValueSlider"]
 	path = src/vendor/QtValueSlider
-	url = https://github.com/BugelNiels/qt-value-slider
+	url = https://github.com/etet100/G-Pilot-qt-value-slider
