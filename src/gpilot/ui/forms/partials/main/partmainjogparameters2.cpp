@@ -6,18 +6,17 @@
 #include <QHBoxLayout>
 #include <QEvent>
 #include <QVariant>
+#include "utils/utils.h"
 
 partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogParametersInterface(parent), ui(new Ui::partMainJogParameters2)
 {
     ui->setupUi(this);
     ui->sectionFrame->deleteLater();
+    Utils::refreshStyle(this);
 
     m_stepSection.type = SectionType::Step;
     m_feedXYSection.type = SectionType::FeedXY;
     m_feedZSection.type = SectionType::FeedZ;
-
-    style()->unpolish(this);
-    style()->polish(this);
 }
 
 void partMainJogParameters2::setStepSizeOptions(const QStringList& options) {
@@ -41,12 +40,14 @@ void partMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
     QMap<float, float> groups = {
         {10, 1},
         {100, 10},
-        {1000, 100}
+        {1000, 100},
+        {100000, 1000}
     };
     QList<float> floatOptions;
     for (const QString& opt : options) {
         floatOptions.append(opt.toFloat());
     }
+    qDebug() << "Feedrate XY options:" << floatOptions << groups;
 
     rebuildSection(m_feedXYSection, "FEEDRATE (XY)", floatOptions, groups);
 }
@@ -56,7 +57,8 @@ void partMainJogParameters2::setFeedRateZOptions(const QStringList& options) {
     QMap<float, float> groups = {
         {10, 1},
         {100, 10},
-        {1000, 100}
+        {1000, 100},
+        {100000, 1000}
     };
     QList<float> floatOptions;
     for (const QString& opt : options) {
@@ -87,10 +89,6 @@ void partMainJogParameters2::setSeparateZFeedrate(bool enabled) {
     }
 }
 
-// bool partMainJogParameters2::isSeparateZFeedrate() const {
-//     return m_feedZSection.mainFrame ? m_feedZSection.mainFrame->isVisible() : false;
-// }
-
 float partMainJogParameters2::stepSize() const {
     return m_stepSection.currentValue;
 }
@@ -107,13 +105,15 @@ QMap<float, QList<float>> partMainJogParameters2::groupSelections(const QList<fl
 {
     QMap<float, QList<float>> groupedSelections;
     for (float selection : selections) {
-        float multiplier = 1.0f;
+        float multiplier = -1.0f;
         for (auto it = groups.begin(); it != groups.end(); ++it) {
+            qDebug() << "Grouping selection" << selection << "with max" << it.key() << "multiplier" << it.value();
             if (selection < it.key()) {
                 multiplier = it.value();
                 break;
             }
         }
+        assert(multiplier > 0.0f);
         groupedSelections[multiplier].append(selection / multiplier);
     }
 
@@ -215,7 +215,7 @@ QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString
     btn->setAutoExclusive(false);
     btn->setProperty("section", section.type);
     btn->setProperty("value", realValue);
-    btn->setMinimumHeight(25);
+    btn->setMinimumHeight(30);
     btn->installEventFilter(this);
 
     connect(btn, &QPushButton::clicked, this, [this, &section, realValue]() {
@@ -236,8 +236,7 @@ QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString
 
         // mark value as final, not temporary
         section.valueLabel->setProperty("tag", "");
-        section.valueLabel->style()->unpolish(section.valueLabel);
-        section.valueLabel->style()->polish(section.valueLabel);
+        Utils::refreshStyle(section.valueLabel);
     });
 
     return btn;

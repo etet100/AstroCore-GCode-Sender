@@ -12,6 +12,7 @@
 #include <QEventLoop>
 #include <QTimer>
 #include <QDockWidget>
+#include <QStyle>
 
 class Utils
 {
@@ -79,6 +80,12 @@ class Utils
                    || fileName.endsWith(".tap", Qt::CaseInsensitive)
                    || fileName.endsWith(".gc", Qt::CaseInsensitive)
                    || fileName.endsWith(".gcode", Qt::CaseInsensitive);
+        }
+
+        static void refreshStyle(QWidget* widget)
+        {
+            widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
         }
 };
 

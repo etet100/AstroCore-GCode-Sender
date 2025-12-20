@@ -303,6 +303,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="chkKeyboardControl">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Keyboard control</string>
        </property>

@@ -32,7 +32,6 @@ void partMainJog::configurationUpdated()
     // Sep. feed settings for Z axis
 
     ui->chkSeparateZFeed->setChecked(m_configurationJogging->separateFeedZ());
-    ui->jogParameters->setSeparateZFeedrate(m_configurationJogging->separateFeedZ());
     // ui->middlePartLayout->setRowVisible(2, m_configurationJogging->separateFeedZ());
 
     //
@@ -66,8 +65,13 @@ void partMainJog::configurationUpdated()
     // }
 
     ui->jogParameters->setFeedRateXYOptions(m_configurationJogging->feedChoices());
+    ui->jogParameters->setFeedRateXY(m_configurationJogging->feed());
     ui->jogParameters->setFeedRateZOptions(m_configurationJogging->feedChoices());
+    ui->jogParameters->setFeedRateZ(m_configurationJogging->feedZ());
     ui->jogParameters->setStepSizeOptions(m_configurationJogging->stepChoices());
+    ui->jogParameters->setStepSize(m_configurationJogging->step());
+    // It has to be calles after FeedRateZOptions is set
+    ui->jogParameters->setSeparateZFeedrate(m_configurationJogging->separateFeedZ());
 
     m_initialized = true;
 }
