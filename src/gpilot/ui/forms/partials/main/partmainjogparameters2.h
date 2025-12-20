@@ -2,9 +2,11 @@
 #define PARTMAINJOGPARAMETERS2_H
 
 #include "partmainjogparametersinterface.h"
+#include "styledtoolbutton.h"
 #include <QFrame>
 #include <QPushButton>
 #include <QLabel>
+#include <QTimer>
 #include <QMap>
 
 namespace Ui {
@@ -45,11 +47,12 @@ class partMainJogParameters2 : public partMainJogParametersInterface
         };
 
         Ui::partMainJogParameters2* ui;
+        QTimer m_updateTimer;
 
         struct Section {
             QFrame* mainFrame = nullptr;
             QLabel* valueLabel = nullptr;
-            QList<QPushButton*> buttons;
+            QList<StyledToolButton*> buttons;
             float currentValue = 0.0f;
             QList<float> currentOptions;
             SectionType type;
@@ -63,7 +66,7 @@ class partMainJogParameters2 : public partMainJogParametersInterface
         void rebuildSection(Section& section, const QString& title, const QList<float>& options, QMap<float, float>& groups);
         QFrame* createHeader(QWidget* parent, const QString& name, QLabel** outValueLabel);
         QLabel* createGrpLabel(QWidget* parent, const QString& text, const QString& tag);
-        QPushButton* createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section);
+        StyledToolButton* createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section);
 
         QMap<float, QList<float>> groupSelections(const QList<float>& selections, QMap<float, float>& groups);
         void updateSectionUiState(Section& section);

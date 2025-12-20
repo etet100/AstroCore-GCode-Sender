@@ -25,16 +25,16 @@ bool StyledToolButton::isHover()
 
 void StyledToolButton::enterEvent(QEnterEvent *e)
 {
-    Q_UNUSED(e)
-
     m_hovered = true;
+
+    QToolButton::enterEvent(e);
 }
 
 void StyledToolButton::leaveEvent(QEvent *e)
 {
-    Q_UNUSED(e)
-
     m_hovered = false;
+
+    QToolButton::leaveEvent(e);
 }
 
 void StyledToolButton::paintEvent(QPaintEvent *e)

@@ -18,6 +18,14 @@ partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogPar
     m_stepSection.type = SectionType::Step;
     m_feedXYSection.type = SectionType::FeedXY;
     m_feedZSection.type = SectionType::FeedZ;
+
+    m_updateTimer.setInterval(10);
+    m_updateTimer.setSingleShot(true);
+    connect(&m_updateTimer, &QTimer::timeout, this, [this]() {
+        Utils::refreshStyle(m_stepSection.valueLabel);
+        Utils::refreshStyle(m_feedXYSection.valueLabel);
+        Utils::refreshStyle(m_feedZSection.valueLabel);
+    });
 }
 
 void partMainJogParameters2::setStepSizeOptions(const QStringList& options) {
@@ -160,7 +168,7 @@ void partMainJogParameters2::rebuildSection(Section& section, const QString& tit
         // Buttons
         for (float label : labels) {
             float realValue = label * multiplier;
-            QPushButton *btn = createButton(section.mainFrame, QString::number(label), QString("_%1").arg(groupIndex), realValue, section);
+            StyledToolButton *btn = createButton(section.mainFrame, QString::number(label), QString("_%1").arg(groupIndex), realValue, section);
             gridLayout->setColumnStretch(col, 1);
             gridLayout->addWidget(btn, 2, col++, 1, 1);
             section.buttons.append(btn);
@@ -186,7 +194,6 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
 
     QHBoxLayout* horizontalLayout = new QHBoxLayout(headFrame);
     horizontalLayout->setSpacing(1);
-    // horizontalLayout->setObjectName("horizontalLayout");
     horizontalLayout->setContentsMargins(5, 1, 5, 1);
 
     QLabel* titleLabel = new QLabel(headFrame);
@@ -195,7 +202,6 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
     horizontalLayout->addWidget(titleLabel);
 
     QLabel* valueLabel = new QLabel(headFrame);
-    // valueLabel->setObjectName("value");
     valueLabel->setAlignment(Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter);
     horizontalLayout->addWidget(valueLabel);
 
@@ -204,19 +210,21 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
     return headFrame;
 }
 
-QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section)
+StyledToolButton* partMainJogParameters2::createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section)
 {
-    QPushButton *btn = new QPushButton(parent);
+    StyledToolButton *btn = new StyledToolButton(parent);
 
-    btn->setFlat(true);
     btn->setProperty("tag", tag);
     btn->setText(text);
     btn->setCursor(Qt::PointingHandCursor);
-    btn->setCheckable(true);
     btn->setAutoExclusive(false);
     btn->setProperty("section", section.type);
     btn->setProperty("value", realValue);
     btn->setMinimumHeight(28);
+    btn->setSizePolicy(QSizePolicy(
+        QSizePolicy::Policy::Preferred,
+        QSizePolicy::Policy::Expanding
+    ));
     btn->installEventFilter(this);
 
     connect(btn, &QPushButton::clicked, this, [this, &section, realValue]() {
@@ -272,7 +280,6 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     }
 
     SectionType sectionType = static_cast<SectionType>(btn->property("section").toInt());
-    qDebug() << sectionType;
     Section* section = nullptr;
     if (sectionType == SectionType::Step) section = &m_stepSection;
     else if (sectionType == SectionType::FeedXY) section = &m_feedXYSection;
@@ -281,16 +288,26 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
         return partMainJogParametersInterface::eventFilter(watched, event);
     }
 
+    m_updateTimer.stop();
     float val = btn->property("value").toFloat();
-    if (event->type() == QEvent::Enter && abs(section->currentValue - val) > 0.01f) {
-        section->valueLabel->setText(QString::number(val));
-        section->valueLabel->setProperty("tag", "temp_value");
+    if (event->type() == QEvent::Enter) {
+        qDebug() << "Hover " << btn->property("value").toString();
+        if (abs(section->currentValue - val) > 0.01f) {
+            qDebug() << "Temp";
+            // not the current value, show temporary
+            section->valueLabel->setText(QString::number(val));
+            section->valueLabel->setProperty("tag", "temp_value");
+        } else {
+            qDebug() << "Same as current";
+            section->valueLabel->setText(QString::number(section->currentValue));
+            section->valueLabel->setProperty("tag", "");
+        }
     } else {
         section->valueLabel->setText(QString::number(section->currentValue));
         section->valueLabel->setProperty("tag", "");
+        qDebug() << "Hover leave " << btn->property("value").toString();
     }
-
-    Utils::refreshStyle(section->valueLabel);
+    m_updateTimer.start();
 
     return partMainJogParametersInterface::eventFilter(watched, event);
 }

@@ -46,22 +46,22 @@ QPushButton:hover {
 	border: 1px solid rgb(14, 49, 95);
 }
 
-QLabel[tag=&quot;_1&quot;], QPushButton[tag=&quot;_1&quot;] {
+StyledToolButton[tag=&quot;_1&quot;], QLabel[tag=&quot;_1&quot;], QPushButton[tag=&quot;_1&quot;] {
 	background-color: hsl(180, 29%, 15%);
 }
 
-QLabel[tag=&quot;_2&quot;], QPushButton[tag=&quot;_2&quot;]  {
+StyledToolButton[tag=&quot;_2&quot;], QLabel[tag=&quot;_2&quot;], QPushButton[tag=&quot;_2&quot;]  {
 	background-color: hsl(200, 29%, 30%);
 }
 
-QLabel[tag=&quot;_3&quot;], QPushButton[tag=&quot;_3&quot;]  {
+StyledToolButton[tag=&quot;_3&quot;], QLabel[tag=&quot;_3&quot;], QPushButton[tag=&quot;_3&quot;]  {
     background-color: hsl(220, 29%, 45%);
 }
 
-QLabel[tag=&quot;_4&quot;], QPushButton[tag=&quot;_4&quot;]  {
+StyledToolButton[tag=&quot;_4&quot;], QLabel[tag=&quot;_4&quot;], QPushButton[tag=&quot;_4&quot;]  {
     background-color: hsl(240, 29%, 60%);
 }
-</string>
+`</string>
   </property>
   <property name="frameShape">
    <enum>QFrame::Shape::NoFrame</enum>
