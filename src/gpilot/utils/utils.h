@@ -85,7 +85,7 @@ class Utils
         static void refreshStyle(QWidget* widget)
         {
             widget->style()->unpolish(widget);
-            widget->style()->polish(widget);
+            widget->ensurePolished();
         }
 };
 

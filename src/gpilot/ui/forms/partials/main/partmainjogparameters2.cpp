@@ -13,6 +13,7 @@ partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogPar
     ui->setupUi(this);
     ui->sectionFrame->deleteLater();
     Utils::refreshStyle(this);
+    Utils::setVisualMode(this, qApp->property("dark").toBool());
 
     m_stepSection.type = SectionType::Step;
     m_feedXYSection.type = SectionType::FeedXY;
@@ -215,7 +216,7 @@ QPushButton* partMainJogParameters2::createButton(QWidget* parent, const QString
     btn->setAutoExclusive(false);
     btn->setProperty("section", section.type);
     btn->setProperty("value", realValue);
-    btn->setMinimumHeight(30);
+    btn->setMinimumHeight(28);
     btn->installEventFilter(this);
 
     connect(btn, &QPushButton::clicked, this, [this, &section, realValue]() {
@@ -289,8 +290,7 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
         section->valueLabel->setProperty("tag", "");
     }
 
-    section->valueLabel->style()->unpolish(section->valueLabel);
-    section->valueLabel->style()->polish(section->valueLabel);
+    Utils::refreshStyle(section->valueLabel);
 
     return partMainJogParametersInterface::eventFilter(watched, event);
 }

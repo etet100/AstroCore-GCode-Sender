@@ -173,6 +173,8 @@ int main(int argc, char *argv[])
 
     setTheme(app, configuration.uiModule().darkTheme());
     loadStyleSheets(app, configuration.uiModule().darkTheme());
+    // Use qApp->property("dark").toBool() to check current mode
+    app.setProperty("dark", configuration.uiModule().darkTheme());
 
     frmMain form(configuration);
     form.show();

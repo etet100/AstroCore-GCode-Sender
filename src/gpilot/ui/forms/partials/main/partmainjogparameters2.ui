@@ -26,12 +26,16 @@ QPushButton, QLabel, QFrame#header {
 	border-radius: 4px;
 }
 
+*[mode=&quot;light&quot;] QPushButton, *[mode=&quot;light&quot;] QLabel {
+	color: white;
+}
+
 QFrame#header QLabel {
 	font-weight: bold;
 }
 
 QLabel[tag=&quot;temp_value&quot;] {
-	color: hsl(240, 29%, 60%);
+	color: rgb(255, 224, 71);
 }
 
 QFrame#sectionFrame {
@@ -57,7 +61,7 @@ QLabel[tag=&quot;_3&quot;], QPushButton[tag=&quot;_3&quot;]  {
 QLabel[tag=&quot;_4&quot;], QPushButton[tag=&quot;_4&quot;]  {
     background-color: hsl(240, 29%, 60%);
 }
-x</string>
+</string>
   </property>
   <property name="frameShape">
    <enum>QFrame::Shape::NoFrame</enum>
@@ -129,7 +133,7 @@ x</string>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: hsl(180, 29%, 15%);</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>1MM</string>
@@ -160,7 +164,7 @@ x</string>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: hsl(200, 29%, 30%); border: 0;</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>1</string>
@@ -191,7 +195,7 @@ x</string>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: hsl(200, 29%, 30%);</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>10MM</string>
@@ -225,7 +229,7 @@ x</string>
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: hsl(200, 29%, 30%); border: 0;</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>2</string>
@@ -290,7 +294,7 @@ x</string>
          <cursorShape>PointingHandCursor</cursorShape>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: hsl(200, 29%, 30%); border: 0;</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>3</string>

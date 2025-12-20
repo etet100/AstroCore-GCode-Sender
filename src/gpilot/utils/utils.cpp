@@ -89,8 +89,7 @@ bool Utils::triangleDir(QPoint p0, QPoint p1, QPoint p2)
 void Utils::setVisualMode(QWidget *widget, bool dark)
 {
     widget->setProperty("mode", dark ? "dark" : "light");
-    widget->style()->unpolish(widget);
-    widget->ensurePolished();
+    Utils::refreshStyle(widget);
 }
 
 void Utils::setDockableLocked(QDockWidget *widget, bool locked)
