@@ -22,6 +22,7 @@ class partSettingsShortcuts : public QWidget
 
     private:
         Ui::frmSettingsShortcuts *ui;
+        void setShortcuts(QList<QAction *> acts);
 };
 
 #endif // PARTSETTINGSSHORTCUTS_H

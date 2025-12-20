@@ -467,28 +467,6 @@ void frmSettings::onCmdDefaultsClicked()
 
     resetToDefaults();
 
-    // Shortcuts
-    QMap<QString, QString> d;
-    d["actFileNew"] = "Ctrl+N";
-    d["actFileOpen"] = "Ctrl+O";
-    d["actFileSave"] = "Ctrl+S";
-    d["actFileSaveAs"] = "Ctrl+Shift+S";
-    d["actJogXPlus"] = "Num+6";
-    d["actJogXMinus"] = "Num+4";
-    d["actJogYPlus"] = "Num+8";
-    d["actJogYMinus"] = "Num+2";
-    d["actJogZPlus"] = "Num+9";
-    d["actJogZMinus"] = "Num+3";
-    d["actJogStop"] = "Num+5";
-    d["actJogStepNext"] = "Num+1";
-    d["actJogStepPrevious"] = "Num+7";
-    d["actJogFeedNext"] = "Num++";
-    d["actJogFeedPrevious"] = "Num+-";
-    d["actJogKeyboardControl"] = "ScrollLock";
-    d["actSpindleOnOff"] = "Num+0";
-    d["actSpindleSpeedPlus"] = "Num+*";
-    d["actSpindleSpeedMinus"] = "Num+/";
-
     ui->shortcuts->setDefaults();
 
     ui->sender->setStartCommands("");
