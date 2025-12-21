@@ -11,7 +11,6 @@ ToolDrawer::ToolDrawer()
     m_rotationAngle = 0;
 }
 
-
 bool ToolDrawer::updateData(GLPalette &palette)
 {
     const int arcs = 4;
@@ -174,6 +173,17 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
             v1.start = normal;
             v2.start = normal;
             v3.start = normal;
+            m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
+        }
+    } else {
+        // Bottom cap (fan from center)
+        QVector3D bottomCenter(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_endLength);
+        for (int i = 0; i < arcs; ++i) {
+            int next = (i + 1) % arcs;
+            VertexData v1 = vertex; v1.position = bottomCenter;
+            VertexData v2 = vertex; v2.position = bottomCircle[next];
+            VertexData v3 = vertex; v3.position = bottomCircle[i];
+            setTriangleNormal(v1, v2, v3);
             m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
         }
     }

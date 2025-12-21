@@ -2536,7 +2536,7 @@ void frmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerCo
     m_toolDrawer.setToolDiameter(visualizerConfiguration.toolDiameter());
     m_toolDrawer.setToolLength(visualizerConfiguration.toolLength());
     m_toolDrawer.setLineWidth(visualizerConfiguration.lineWidth());
-    m_toolDrawer.setToolAngle(visualizerConfiguration.toolType() == ConfigurationVisualizer::ToolType::Conic ? 180 : visualizerConfiguration.toolAngle());
+    m_toolDrawer.setToolAngle(visualizerConfiguration.toolType() == ConfigurationVisualizer::ToolType::Conic ? visualizerConfiguration.toolAngle() : 180);
     m_toolDrawer.setColor(visualizerConfiguration.toolColor());
     m_toolDrawer.update();
 }
