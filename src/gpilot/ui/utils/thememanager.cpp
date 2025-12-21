@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QStyleHints>
 #include <QDebug>
+#include <QRegularExpression>
 
 ThemeManager::ThemeManager(QObject *parent)
     : QObject(parent)
@@ -38,6 +39,16 @@ void ThemeManager::setDarkMode(bool dark)
     applyTheme(dark);
 
     emit themeChanged(dark);
+}
+
+void ThemeManager::setFontSize(int size)
+{
+    m_app->setStyleSheet(QString(m_app->styleSheet()).replace(
+        QRegularExpression("/\\* mainfontsize \\*/ font-size:[^;^\\}]+"),
+        QString("/* mainfontsize */ font-size: %1pt").arg(size))
+    );
+
+    emit fontSizeChanged(size);
 }
 
 void ThemeManager::applyTheme(bool dark)

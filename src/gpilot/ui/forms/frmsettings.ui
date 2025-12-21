@@ -1489,19 +1489,6 @@ QSplitter::handle {
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QLabel" name="label_34">
-               <property name="styleSheet">
-                <string notr="true">color: blue;</string>
-               </property>
-               <property name="text">
-                <string>(restart needed)</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignmentFlag::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
             </layout>
            </item>
            <item>

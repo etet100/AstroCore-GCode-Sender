@@ -1,4 +1,7 @@
-QWidget { font-family: "Ubuntu"; }
+QWidget {
+    /* mainfontfamily */ font-family: "Ubuntu";
+    /* mainfontsize */ font-size: 8pt;
+}
 
 QMenuBar { padding-top: 2px; padding-bottom: 2px; }
 

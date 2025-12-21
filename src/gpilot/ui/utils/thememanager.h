@@ -18,9 +18,11 @@ public:
     void initialize(QApplication *app, bool darkMode);
     void setDarkMode(bool dark);
     bool isDarkMode() const { return m_darkMode; }
+    void setFontSize(int);
 
 signals:
     void themeChanged(bool darkMode);
+    void fontSizeChanged(int size);
 
 private:
     explicit ThemeManager(QObject *parent = nullptr);

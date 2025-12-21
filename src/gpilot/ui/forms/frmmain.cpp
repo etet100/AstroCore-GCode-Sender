@@ -2189,9 +2189,7 @@ void frmMain::preloadSettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
 
-    qApp->setStyleSheet(
-        QString(qApp->styleSheet()).replace(QRegularExpression("font-size:[^;^\\}]+"), QString("font-size: %1pt").arg(uiConfiguration.fontSize()))
-    );
+    ThemeManager::instance().setFontSize(uiConfiguration.fontSize());
 
     // Update v-sync in glformat
     // QGLFormat fmt = QGLFormat::defaultFormat();
@@ -2572,9 +2570,9 @@ void frmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visuali
 void frmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
     ui->chkAutoScrollGCode->setChecked(uiConfiguration.autoScrollGCode());
-    qApp->setStyleSheet(
-        QString(qApp->styleSheet()).replace(QRegularExpression("font-size:[^;^\\}]+"), QString("font-size: %1pt").arg(uiConfiguration.fontSize()))
-    );
+    ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
+    ThemeManager::instance().setFontSize(uiConfiguration.fontSize());
+    ThemeManager::instance().setDarkMode(uiConfiguration.darkTheme());
 }
 
 void frmMain::applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration)
