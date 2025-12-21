@@ -418,6 +418,8 @@ QLabel[overrided=&quot;false&quot;] {
     <addaction name="separator"/>
     <addaction name="actViewLockWindows"/>
     <addaction name="actViewLockPanels"/>
+    <addaction name="separator"/>
+    <addaction name="actViewDarkMode"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -1877,7 +1879,7 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <x>0</x>
           <y>0</y>
           <width>105</width>
-          <height>254</height>
+          <height>255</height>
          </rect>
         </property>
         <property name="acceptDrops">
@@ -2164,6 +2166,14 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
   <action name="actDebug">
    <property name="text">
     <string>Debug</string>
+   </property>
+  </action>
+  <action name="actViewDarkMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dark mode</string>
    </property>
   </action>
  </widget>

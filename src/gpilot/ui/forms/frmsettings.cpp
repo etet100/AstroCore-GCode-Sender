@@ -271,7 +271,7 @@ void frmSettings::applySettings()
     ConfigurationUI &ui_ = m_configuration.uiModule();
     ui_.m_fontSize = ui->cboFontSize->currentText().toInt();
     ui_.m_language = ui->cboLanguage->currentData().toString();
-    ui_.m_darkTheme = ui->chkDarkTheme->isChecked();
+    ui_.m_darkMode = ui->chkDarkTheme->isChecked();
 
     ConfigurationJogging &jogging = m_configuration.joggingModule();
     jogging.m_stepChoices = ui->jogging->stepChoices();

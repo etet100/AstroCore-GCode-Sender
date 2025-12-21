@@ -35,7 +35,7 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(QRect mainFormGeometry MEMBER m_mainFormGeometry NOTIFY changed)
     Q_PROPERTY(bool mainFormMaximized MEMBER m_mainFormMaximized NOTIFY changed)
     Q_PROPERTY(QList<int> settingsFormSlicerSizes MEMBER m_settingsFormSlicerSizes NOTIFY changed)
-    Q_PROPERTY(bool darkTheme MEMBER m_darkTheme NOTIFY changed)
+    Q_PROPERTY(bool darkMode MEMBER m_darkMode NOTIFY changed)
 
     public:
         explicit ConfigurationUI(QObject *parent);
@@ -70,8 +70,8 @@ class ConfigurationUI : public ConfigurationModule
         bool mainFormMaximized() const { return m_mainFormMaximized; }
         QList<int> settingsFormSlicerSizes() const { return m_settingsFormSlicerSizes; }
         void setSettingsFormSlicerSizes(QList<int> sizes) { m_settingsFormSlicerSizes = sizes; emit changed(); }
-        bool darkTheme() const { return m_darkTheme; }
-        void setDarkTheme(bool darkTheme) { m_darkTheme = darkTheme; emit changed(); }
+        bool darkTheme() const { return m_darkMode; }
+        void setDarkMode(bool darkMode) { m_darkMode = darkMode; emit changed(); }
 
     private:
         static const int MAX_RECENT_FILES = 10;
@@ -90,7 +90,7 @@ class ConfigurationUI : public ConfigurationModule
         QRect m_grblConfigratorFormGeometry;
         bool m_grblConfigratorFormMaximized;
         QList<int> m_settingsFormSlicerSizes;
-        bool m_darkTheme;
+        bool m_darkMode;
 };
 
 #endif // CONFIGURATIONUI_H

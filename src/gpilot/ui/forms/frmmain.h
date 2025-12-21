@@ -122,6 +122,7 @@ private slots:
     void on_actSpindleSpeedPlus_triggered();
     void on_actSpindleSpeedMinus_triggered();
     void on_actViewLockWindows_toggled(bool checked);
+    void on_actViewDarkMode_toggled(bool checked);
     void on_cmdFileOpen_clicked();
     void on_cmdFileSend_clicked();
     void on_cmdFilePause_clicked(bool checked);

@@ -18,25 +18,26 @@
 #include <QMimeData>
 #include <QTranslator>
 #include <QDockWidget>
-#include <QTcpServer>
-#include <QTcpSocket>
+#include <QStyleHints>
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
 #include "utils/utils.h"
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmaincontrol.h"
 #include "ui/forms/partials/main/partmainvirtualsettings.h"
+#include "ui/utils/thememanager.h"
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
 #include "ui_frmmain.h"
-#include "ui_frmsettings.h"
 #include "ui_partmainoverride.h"
 #include "ui/widgets/widgetmimedata.h"
 #include "io/connection/connectionmanager.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
 #include "state_behaviour/action.h"
-#include "state_behaviour/behaviors.h"
+#include "state_behaviour/joggingbehavior.h"
+#include "state_behaviour/gotobehavior.h"
+#include "state_behaviour/reconnectingbehavior.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
@@ -801,6 +802,12 @@ void frmMain::on_actViewLockWindows_toggled(bool checked)
     }
 
     m_configuration.uiModule().setLockWindows(checked);
+}
+
+void frmMain::on_actViewDarkMode_toggled(bool checked)
+{
+    m_configuration.uiModule().setDarkMode(checked);
+    ThemeManager::instance().setDarkMode(checked);
 }
 
 void frmMain::on_cmdFileOpen_clicked()
@@ -2286,6 +2293,7 @@ void frmMain::loadSettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ui->actViewLockWindows->setChecked(uiConfiguration.lockWindows());
     ui->actViewLockPanels->setChecked(uiConfiguration.lockPanels());
+    ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
     // @TODO move to configuration form
     //m_settings->restoreGeometry(set.value("formSettingsGeometry", m_settings->saveGeometry()).toByteArray());
 

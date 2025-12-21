@@ -191,6 +191,7 @@ SOURCES += main.cpp\
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
+    ui/utils/thememanager.cpp \
     ui/utils/windowstaskbar.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
@@ -318,6 +319,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
+    ui/utils/thememanager.h \
     ui/utils/windowstaskbar.h \
     utils.h \
     utils/interpolation.h \

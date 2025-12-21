@@ -15,7 +15,7 @@
 #include <QLoggingCategory>
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
-#include "phantomstyle/src/phantom/phantomstyle.h"
+#include "ui/utils/thememanager.h"
 #include "core/config/implementations.h"
 
 void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
@@ -45,48 +45,6 @@ void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & 
     ts << txt << Qt::endl;
     QTextStream(stdout) << txt << Qt::endl;
 }
-
-void initAppInfo()
-{
-    QCoreApplication::setApplicationName("G-Pilot");
-    QCoreApplication::setOrganizationName("BTS");
-}
-
-void loadStyleSheets(QApplication &app, bool dark)
-{
-    QFile stylesheetFile(":/stylesheets/main.qss");
-    if (!stylesheetFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning("Cannot open stylesheet file");
-        app.exit(-1);
-    }
-
-    QString stylesheet = stylesheetFile.readAll();
-    stylesheetFile.close();
-    if (dark) {
-        stylesheetFile.setFileName(":/stylesheets/dark.qss");
-    } else {
-        stylesheetFile.setFileName(":/stylesheets/light.qss");
-    }
-    if (!stylesheetFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning("Cannot open stylesheet file");
-        app.exit(-1);
-    }
-    stylesheet += "\n\n" + stylesheetFile.readAll();
-    stylesheetFile.close();
-    app.setStyleSheet(stylesheet);
-}
-
-void setTheme(QApplication &app, bool dark)
-{
-    app.styleHints()->setColorScheme(dark ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
-    app.setStyle(new PhantomStyle());
-
-    QPalette palette;
-    palette.setColor(QPalette::Highlight, QColor(204, 204, 254));
-    palette.setColor(QPalette::HighlightedText, QColor(0, 0, 0));
-    app.setPalette(palette);
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -171,10 +129,7 @@ int main(int argc, char *argv[])
     Configuration configuration(nullptr, persister, provider);
     configuration.load();
 
-    setTheme(app, configuration.uiModule().darkTheme());
-    loadStyleSheets(app, configuration.uiModule().darkTheme());
-    // Use qApp->property("dark").toBool() to check current mode
-    app.setProperty("dark", configuration.uiModule().darkTheme());
+    ThemeManager::instance().initialize(&app, configuration.uiModule().darkTheme());
 
     frmMain form(configuration);
     form.show();
