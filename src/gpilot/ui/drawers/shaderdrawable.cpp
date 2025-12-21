@@ -158,9 +158,13 @@ void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
         bindAttributes(shaderProgram);
     }
 
+    // Temporary solution for z-fighting in heightmap visualization
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0f, 1.0f);
     if (!m_triangles.isEmpty()) {
         glDrawArrays(GL_TRIANGLES, 0, m_triangles.count());
     }
+    glDisable(GL_POLYGON_OFFSET_FILL);
     if (!m_lines.isEmpty()) {
         glLineWidth(m_lineWidth);
         glDrawArrays(GL_LINES, m_triangles.count(), m_lines.count());
