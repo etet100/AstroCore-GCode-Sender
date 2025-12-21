@@ -28,8 +28,17 @@ bool ToolDrawer::updateData(GLPalette &palette)
     vertex.start = QVector3D(sNan, sNan, sNan);
 
     // Draw tool
-    // createLines(arcs, vertex);
-    createTriangles(arcs * 3, vertex);
+    switch (m_mode) {
+        case ConfigurationVisualizer::ToolType::Modern:
+            createTriangles(arcs * 3, vertex);
+            break;
+        case ConfigurationVisualizer::ToolType::Flat:
+            createLines(arcs, vertex);
+            break;
+        case ConfigurationVisualizer::ToolType::Conic:
+            createLines(arcs, vertex);
+            break;
+    }
 
     return true;
 }
@@ -37,6 +46,13 @@ bool ToolDrawer::updateData(GLPalette &palette)
 void ToolDrawer::setColor(const QColor &color)
 {
     m_color = color;
+}
+
+void ToolDrawer::setMode(ConfigurationVisualizer::ToolType mode)
+{
+    m_mode = mode;
+    updateEndLength();
+    update();
 }
 
 bool ToolDrawer::sort(QMatrix4x4 viewMatrix)
@@ -261,6 +277,10 @@ void ToolDrawer::rotate(double angle)
 
 void ToolDrawer::updateEndLength()
 {
+    if (m_mode == ConfigurationVisualizer::ToolType::Flat) {
+        m_toolAngle = 180;
+    }
+
     m_endLength = m_toolAngle > 0 && m_toolAngle < 180 ? m_toolDiameter / 2 / tan(m_toolAngle / 180 * M_PI / 2) : 0;
     assert(!qIsInf(m_endLength));
     if (m_toolLength < m_endLength) {

@@ -1193,12 +1193,17 @@ QSplitter::handle {
              </property>
              <item>
               <property name="text">
-               <string>Flat</string>
+               <string>Modern</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Conic</string>
+               <string>Flat (wireframe)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Conic (wireframe)</string>
               </property>
              </item>
             </widget>

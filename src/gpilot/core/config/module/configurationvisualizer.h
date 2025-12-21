@@ -52,6 +52,7 @@ class ConfigurationVisualizer : public ConfigurationModule
         QString getSectionName() override { return "baseui.visualizer"; }
 
         enum ToolType {
+            Modern,
             Flat,
             Conic
         };

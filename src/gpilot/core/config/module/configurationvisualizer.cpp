@@ -33,7 +33,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"tableSurfaceGridColor", QColor("#00BFFF")},
     {"toolDiameter", 3.175},
     {"toolLength", 30.0},
-    {"toolType", ConfigurationVisualizer::ToolType::Flat},
+    {"toolType", ConfigurationVisualizer::ToolType::Modern},
     {"toolAngle", 15.0},
     {"show3dCursor", false},
 };

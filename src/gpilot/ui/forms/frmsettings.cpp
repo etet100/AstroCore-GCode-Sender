@@ -449,8 +449,9 @@ void FrmSettings::onCmdCancelClicked()
 
 void FrmSettings::on_cboToolType_currentIndexChanged(int index)
 {
-    ui->lblToolAngle->setEnabled(index == 1);
-    ui->txtToolAngle->setEnabled(index == 1);
+    // Enable angle only disabled for flat tool
+    ui->lblToolAngle->setEnabled(index != 1);
+    ui->txtToolAngle->setEnabled(index != 1);
 }
 
 void FrmSettings::resetToDefaults()

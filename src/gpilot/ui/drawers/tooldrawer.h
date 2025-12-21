@@ -9,6 +9,7 @@
 #include <QColor>
 #include <cmath>
 #include "shaderdrawable.h"
+#include "core/config/module/configurationvisualizer.h"
 
 class ToolDrawer : public ShaderDrawable
 {
@@ -22,9 +23,9 @@ public:
     void rotate(double angle);
     void setToolAngle(double toolAngle);
     void setColor(const QColor &color);
-
+    void setMode(ConfigurationVisualizer::ToolType);
     bool sort(QMatrix4x4 viewMatrix) override;
-
+    
 protected:
     bool updateData(GLPalette &palette) override;
 
@@ -36,6 +37,7 @@ private:
     double m_rotationAngle;
     double m_toolAngle;
     QColor m_color;
+    ConfigurationVisualizer::ToolType m_mode;
 
     double normalizeAngle(double angle);
     QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, uint color);
