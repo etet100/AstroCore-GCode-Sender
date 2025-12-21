@@ -7,6 +7,7 @@ ToolDrawer::ToolDrawer()
 {
     m_toolDiameter = 3;
     m_toolLength = 15;
+    m_toolAngle = 35;
     m_toolPosition = QVector3D(0, 0, 0);
     m_rotationAngle = 0;
 }
@@ -136,18 +137,20 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
     };
 
     // Side triangles
-    for (int i = 0; i < arcs; ++i) {
-        int next = (i + 1) % arcs;
-        VertexData v1 = vertex; v1.position = bottomCircle[i];
-        VertexData v2 = vertex; v2.position = topCircle[i];
-        VertexData v3 = vertex; v3.position = topCircle[next];
-        setTriangleNormal(v1, v2, v3);
-        m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
-        VertexData v4 = vertex; v4.position = bottomCircle[i];
-        VertexData v5 = vertex; v5.position = topCircle[next];
-        VertexData v6 = vertex; v6.position = bottomCircle[next];
-        setTriangleNormal(v4, v5, v6);
-        m_triangles.append(v4); m_triangles.append(v5); m_triangles.append(v6);
+    if (m_toolLength > m_endLength) {
+        for (int i = 0; i < arcs; ++i) {
+            int next = (i + 1) % arcs;
+            VertexData v1 = vertex; v1.position = bottomCircle[i];
+            VertexData v2 = vertex; v2.position = topCircle[i];
+            VertexData v3 = vertex; v3.position = topCircle[next];
+            setTriangleNormal(v1, v2, v3);
+            m_triangles.append(v1); m_triangles.append(v2); m_triangles.append(v3);
+            VertexData v4 = vertex; v4.position = bottomCircle[i];
+            VertexData v5 = vertex; v5.position = topCircle[next];
+            VertexData v6 = vertex; v6.position = bottomCircle[next];
+            setTriangleNormal(v4, v5, v6);
+            m_triangles.append(v4); m_triangles.append(v5); m_triangles.append(v6);
+        }
     }
 
     // Top cap (fan from center)
@@ -229,6 +232,8 @@ void ToolDrawer::setToolLength(double toolLength)
 {
     if (m_toolLength != toolLength) {
         m_toolLength = toolLength;
+        // Call to update end length in case tool length is less than end length
+        updateEndLength();
         update();
     }
 }
@@ -254,14 +259,20 @@ void ToolDrawer::rotate(double angle)
     setRotationAngle(normalizeAngle(m_rotationAngle + angle));
 }
 
+void ToolDrawer::updateEndLength()
+{
+    m_endLength = m_toolAngle > 0 && m_toolAngle < 180 ? m_toolDiameter / 2 / tan(m_toolAngle / 180 * M_PI / 2) : 0;
+    assert(!qIsInf(m_endLength));
+    if (m_toolLength < m_endLength) {
+        m_toolLength = m_endLength;
+    }
+}
+
 void ToolDrawer::setToolAngle(double toolAngle)
 {
     if (m_toolAngle != toolAngle) {
         m_toolAngle = toolAngle;
-
-        m_endLength = m_toolAngle > 0 && m_toolAngle < 180 ? m_toolDiameter / 2 / tan(m_toolAngle / 180 * M_PI / 2) : 0;
-        if (m_toolLength < m_endLength) m_toolLength = m_endLength;
-
+        updateEndLength();
         update();
     }
 }

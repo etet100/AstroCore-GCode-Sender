@@ -41,6 +41,7 @@ private:
     QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, uint color);
     void createLines(const int arcs, VertexData &vertex);
     void createTriangles(const int arcs, VertexData &vertex);
+    void updateEndLength();
 };
 
 #endif // TOOLDRAWER_H
