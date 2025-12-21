@@ -142,6 +142,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmainstatebase.cpp \
     ui/forms/partials/main/partmainstatelcd.cpp \
     ui/forms/partials/main/partmainvirtualsettings.cpp \
+    ui/forms/partials/main/partmainvisualizer.cpp \
     ui/forms/partials/settings/partsettingscolors.cpp \
     ui/forms/partials/settings/partsettingsconsole.cpp \
     ui/forms/partials/settings/partsettingsjogging.cpp \
@@ -269,6 +270,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmainstatebase.h \
     ui/forms/partials/main/partmainstatelcd.h \
     ui/forms/partials/main/partmainvirtualsettings.h \
+    ui/forms/partials/main/partmainvisualizer.h \
     ui/forms/partials/settings/partsettingscolors.h \
     ui/forms/partials/settings/partsettingsconsole.h \
     ui/forms/partials/settings/partsettingsjogging.h \
@@ -349,6 +351,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/main/partmainstate.ui \
     ui/forms/partials/main/partmainstatelcd.ui \
     ui/forms/partials/main/partmainvirtualsettings.ui \
+    ui/forms/partials/main/partmainvisualizer.ui \
     ui/forms/partials/settings/partsettingscolors.ui \
     ui/forms/partials/settings/partsettingsconsole.ui \
     ui/forms/partials/settings/partsettingsjogging.ui \

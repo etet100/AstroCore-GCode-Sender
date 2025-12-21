@@ -1446,7 +1446,7 @@ QLabel[overrided=&quot;false&quot;] {
       <number>0</number>
      </property>
      <item>
-      <widget class="QFrame" name="fraProgram">
+      <widget class="QFrame" name="fraVisualizer">
        <property name="minimumSize">
         <size>
          <width>0</width>
