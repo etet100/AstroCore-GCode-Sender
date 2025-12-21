@@ -739,7 +739,7 @@ class Ui_frmMain(object):
         self.cmdToggleProjection.setMinimumSize(QtCore.QSize(30, 30))
         self.cmdToggleProjection.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/images/toggle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/images/visualizer_toggle_view_mode.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.cmdToggleProjection.setIcon(icon2)
         self.cmdToggleProjection.setIconSize(QtCore.QSize(20, 20))
         self.cmdToggleProjection.setObjectName("cmdToggleProjection")

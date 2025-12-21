@@ -2170,34 +2170,11 @@ void frmMain::updateHeightMapInterpolationDrawer(bool reset)
 
 void frmMain::placeVisualizerButtons()
 {
-    ui->cmdToggleProjection->setParent(ui->glwVisualizer);
-    ui->cmdFit->setParent(ui->glwVisualizer);
-    ui->cmdIsometric->setParent(ui->glwVisualizer);
-    ui->cmdTop->setParent(ui->glwVisualizer);
-    ui->cmdFront->setParent(ui->glwVisualizer);
-    ui->cmdLeft->setParent(ui->glwVisualizer);
-    ui->cmdRotationCube->setParent(ui->glwVisualizer);
-    ui->cmdVisualizerHeightmap->setParent(ui->glwVisualizer);
-
-    QSize gridSize = ui->cmdFit->size() + QSize(8, 8);
-    int x1 = ui->glwVisualizer->width() - gridSize.width() - gridSize.width() - 8;
-    int x2 = x1 + gridSize.width();
-    int y = 8;
-
-    ui->cmdIsometric->move(x1, y);
-    ui->cmdTop->move(x2, y);
-    y += gridSize.height();
-
-    ui->cmdLeft->move(x1, y);
-    ui->cmdFront->move(x2, y);
-    y += gridSize.height();
-
-    ui->cmdFit->move(x1, y);
-    ui->cmdToggleProjection->move(x2, y);
-    y += gridSize.height();
-
-    ui->cmdRotationCube->move(x1, y);
-    ui->cmdVisualizerHeightmap->move(x2, y);
+    ui->visualizerButtons->setParent(ui->glwVisualizer);
+    ui->visualizerButtons->move(
+        ui->glwVisualizer->width() - ui->visualizerButtons->width() - 8,
+        8
+    );
 }
 
 void frmMain::preloadSettings()
@@ -2494,7 +2471,18 @@ void frmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerCo
     QColor base = visualizerConfiguration.backgroundColor();
     bool light = base.value() > LIGHTBOUND;
 
-    ui->cmdToggleProjection->setIcon(QIcon(":/images/toggle.png"));
+    // Use background color with some transparency for buttons background
+    ui->visualizerButtons->setStyleSheet(
+        ui->visualizerButtons->styleSheet().replace(
+            QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
+                        QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(base.red())
+                                                   .arg(base.green())
+                                                   .arg(base.blue())
+                .arg(std::max(0, base.alpha() - 100))
+            )
+        );
+
+    ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
     ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
     ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
     ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));

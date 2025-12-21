@@ -859,7 +859,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     QFontMetrics fm(painter.font());
 
-    pos.setY(fm.height() + 10);
+    pos.setY(this->height() - 80 - (4*15));
 
     drawText(painter, pos, m_parserState, 10);
     drawText(painter, pos, m_speedState, 10);
