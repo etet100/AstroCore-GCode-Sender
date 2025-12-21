@@ -41,7 +41,7 @@
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
-frmMain::frmMain(Configuration &configuration, QWidget *parent) :
+FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
 #ifdef WINDOWS
@@ -94,7 +94,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     ui->jog->initialize(m_configuration.joggingModule());
 
     ui->console->initialize(m_configuration.consoleModule());
-    connect(ui->console, &partMainConsole::newCommand, this, &frmMain::onConsoleNewCommand);
+    connect(ui->console, &PartMainConsole::newCommand, this, &FrmMain::onConsoleNewCommand);
     ui->console->append(QString("G-Pilot %1 started").arg( qApp->applicationVersion()));
     ui->console->append("---");
 
@@ -140,22 +140,22 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         m_programModel.setCommentsVisible(state != Qt::Checked);
     });
 
-    connect(ui->control, &partMainControl::unlock, this, [this]() {
+    connect(ui->control, &PartMainControl::unlock, this, [this]() {
         // m_communicator->m_updateSpindleSpeed = true;
         // m_communicator->sendCommand(CommandSource::GeneralUI, "$X", TABLE_INDEX_UI);
         m_communicator->unlock();
     });
-    connect(ui->control, &partMainControl::home, this, [this]() {
+    connect(ui->control, &PartMainControl::home, this, [this]() {
         // m_communicator->m_homing = true;
         // m_communicator->m_updateSpindleSpeed = true;
         // m_communicator->sendCommand(CommandSource::GeneralUI, "$H", TABLE_INDEX_UI);
 
         m_communicator->home();
     });
-    connect(ui->control, &partMainControl::probe, this, [this]() {
+    connect(ui->control, &PartMainControl::probe, this, [this]() {
         m_communicator->probe();
     });
-    connect(ui->control, &partMainControl::reset, this, [this]() {
+    connect(ui->control, &PartMainControl::reset, this, [this]() {
         m_communicator->reset();
     });
     // connect(ui->control, &partMainControl::command, this, [=](GRBLCommand command) {
@@ -187,7 +187,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
-    connect(ui->jog, &partMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
+    connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
         //m_communicator->jogger().jog(dir);
 
         m_configuration.save();
@@ -206,7 +206,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
         // qDebug() << "Jog: " << jog;
         // jogStep(jog);
     });
-    connect(ui->jog, &partMainJog::stop, this, [this]() {
+    connect(ui->jog, &PartMainJog::stop, this, [this]() {
         JoggingBehavior *joggingBehavior = dynamic_cast<JoggingBehavior*>(m_communicator->stateBehavior());
         if (joggingBehavior) {
             joggingBehavior->stopJogging();
@@ -267,8 +267,8 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     // ui->cboJogStep->setValidator(new QDoubleValidator(0, 10000, 2));
     // ui->cboJogFeed->setValidator(new QIntValidator(0, 100000));
-    // connect(ui->cboJogStep, &ComboBoxKey::currentTextChanged, this, &frmMain::updateJogTitle);
-    // connect(ui->cboJogFeed, &ComboBoxKey::currentTextChanged, this, &frmMain::updateJogTitle);
+    // connect(ui->cboJogStep, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
+    // connect(ui->cboJogFeed, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
 
     QMenu *menu;
 
@@ -299,8 +299,8 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
 
     initializeVisualizer();
 
-    connect(ui->glwVisualizer, &GLContainer::resized, this, &frmMain::placeVisualizerButtons);
-    connect(ui->glwVisualizer, &GLContainer::cursorPosChanged, this, &frmMain::onVisualizerCursorPosChanged);
+    connect(ui->glwVisualizer, &GLContainer::resized, this, &FrmMain::placeVisualizerButtons);
+    connect(ui->glwVisualizer, &GLContainer::cursorPosChanged, this, &FrmMain::onVisualizerCursorPosChanged);
     connect(ui->glwVisualizer, &GLContainer::entered, this, [this]() {
         m_cursorDrawer.setVisible(true);
     });
@@ -313,17 +313,17 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->glwVisualizer, &GLContainer::goToCursor, this, [this](QPointF pos) {
         m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
     });
-    connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
-    connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
-    connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &frmMain::onTableCellChanged);
+    connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
+    connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
+    connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
     connect(&m_heightmapModel, SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
-    // connect(&m_program, &GCode::linesUpdated, this, &frmMain::onProgramLinesUpdated);
+    // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
 
     ui->tblProgram->setModel(&m_programModel);
     ui->tblProgram->setItemDelegate(&m_programItemDelegate);
     ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    connect(ui->tblProgram->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, &frmMain::onScroolBarAction);
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &frmMain::onTableCurrentChanged);
+    connect(ui->tblProgram->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, &FrmMain::onScroolBarAction);
+    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
     clearTable();
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
@@ -341,8 +341,8 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     // ui->slbSpindle->setTitle(tr("Speed:"));
     // ui->slbSpindle->setCheckable(false);
     // ui->slbSpindle->setChecked(true);
-    // connect(ui->slbSpindle, &SliderBox::valueUserChanged, this, &frmMain::onSlbSpindleValueUserChanged);
-    // connect(ui->slbSpindle, &SliderBox::valueChanged, this, &frmMain::onSlbSpindleValueChanged);
+    // connect(ui->slbSpindle, &SliderBox::valueUserChanged, this, &FrmMain::onSlbSpindleValueUserChanged);
+    // connect(ui->slbSpindle, &SliderBox::valueChanged, this, &FrmMain::onSlbSpindleValueChanged);
 
     // Enable form actions
     // QList<QAction*> noActions;
@@ -397,7 +397,7 @@ frmMain::frmMain(Configuration &configuration, QWidget *parent) :
     restoreDockableLayoutState();
 }
 
-frmMain::~frmMain()
+FrmMain::~FrmMain()
 {
     delete m_communicator;
     delete m_connection;
@@ -405,7 +405,7 @@ frmMain::~frmMain()
     delete ui; ui = nullptr;
 }
 
-void frmMain::initializeCommunicator()
+void FrmMain::initializeCommunicator()
 {
     m_communicator = new Communicator(
         this,
@@ -416,43 +416,43 @@ void frmMain::initializeCommunicator()
     // @TODO temporary!
     // m_communicator->streamCommands(m_program);
 
-    connect(m_communicator, &Communicator::machinePosChanged, this, &frmMain::onMachinePosChanged);
-    connect(m_communicator, &Communicator::workPosChanged, this, &frmMain::onWorkPosChanged);
-    connect(m_communicator, &Communicator::machineStateReceived, this, &frmMain::onMachineStateReceived);
-    connect(m_communicator, &Communicator::machineStateChanged, this, &frmMain::onMachineStateChanged);
-    connect(m_communicator, &Communicator::senderStateReceived, this, &frmMain::onSenderStateReceived);
+    connect(m_communicator, &Communicator::machinePosChanged, this, &FrmMain::onMachinePosChanged);
+    connect(m_communicator, &Communicator::workPosChanged, this, &FrmMain::onWorkPosChanged);
+    connect(m_communicator, &Communicator::machineStateReceived, this, &FrmMain::onMachineStateReceived);
+    connect(m_communicator, &Communicator::machineStateChanged, this, &FrmMain::onMachineStateChanged);
+    connect(m_communicator, &Communicator::senderStateReceived, this, &FrmMain::onSenderStateReceived);
     connect(m_communicator, SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
-    connect(m_communicator, &Communicator::floodStateReceived, this, &frmMain::onFloodStateReceived);
-    connect(m_communicator, &Communicator::commandSent, this, &frmMain::onCommandSent);
-    connect(m_communicator, &Communicator::commandResponseReceived, this, &frmMain::onCommandResponseReceived);
-    connect(m_communicator, &Communicator::parserStateReceived, this, &frmMain::onParserStateReceived);
+    connect(m_communicator, &Communicator::floodStateReceived, this, &FrmMain::onFloodStateReceived);
+    connect(m_communicator, &Communicator::commandSent, this, &FrmMain::onCommandSent);
+    connect(m_communicator, &Communicator::commandResponseReceived, this, &FrmMain::onCommandResponseReceived);
+    connect(m_communicator, &Communicator::parserStateReceived, this, &FrmMain::onParserStateReceived);
     connect(m_communicator, &Communicator::welcomeMessageReceived, this, [this](QString message) {
         ui->console->appendSystem(message);
     });
     connect(m_communicator, &Communicator::log, this, [this](QString message) {
         ui->console->append(message);
     });
-    connect(m_communicator, &Communicator::pinStateReceived, this, &frmMain::onPinStateReceived);
-    connect(m_communicator, &Communicator::spindleSpeedReceived, this, &frmMain::onSpindleSpeedReceived);
-    // connect(m_communicator, &Communicator::commandProcessed, this, &frmMain::onCommandProcessed);
+    connect(m_communicator, &Communicator::pinStateReceived, this, &FrmMain::onPinStateReceived);
+    connect(m_communicator, &Communicator::spindleSpeedReceived, this, &FrmMain::onSpindleSpeedReceived);
+    // connect(m_communicator, &Communicator::commandProcessed, this, &FrmMain::onCommandProcessed);
     connect(m_communicator, SIGNAL(feedSpindleSpeedReceived(int,int)), this, SLOT(onFeedSpindleSpeedReceived(int,int)));
-    connect(m_communicator, &Communicator::overridesReceived, this, &frmMain::onOverridesReceived);
-    connect(m_communicator, &Communicator::toolPositionReceived, this, &frmMain::onToolPositionReceived);
-    connect(m_communicator, &Communicator::transferCompleted, this, &frmMain::onTransferCompleted);
-    connect(m_communicator, &Communicator::aborted, this, &frmMain::onAborted);
+    connect(m_communicator, &Communicator::overridesReceived, this, &FrmMain::onOverridesReceived);
+    connect(m_communicator, &Communicator::toolPositionReceived, this, &FrmMain::onToolPositionReceived);
+    connect(m_communicator, &Communicator::transferCompleted, this, &FrmMain::onTransferCompleted);
+    connect(m_communicator, &Communicator::aborted, this, &FrmMain::onAborted);
     connect(m_communicator, &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
     // connect(m_communicator, &Communicator::statusReceived, this, [this]() {
     //     jogContinuous();
     // });
-    connect(m_communicator, &Communicator::stateBehaviorChanged, this, &frmMain::onStateBehaviorChanged);
+    connect(m_communicator, &Communicator::stateBehaviorChanged, this, &FrmMain::onStateBehaviorChanged);
     connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
         ui->state->setConName(connection->name());
     });
 }
 
-void frmMain::initializeVisualizer()
+void FrmMain::initializeVisualizer()
 {
     *ui->glwVisualizer << &m_originDrawer << m_codeDrawer << m_probeDrawer
                        << &m_cursorDrawer << &m_heightmapBorderDrawer
@@ -462,7 +462,7 @@ void frmMain::initializeVisualizer()
     ui->glwVisualizer->fitDrawable(m_codeDrawer);
 }
 
-bool frmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
 #ifdef WINDOWS
     MSG *msg = static_cast<MSG *>(message);
@@ -476,7 +476,7 @@ bool frmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *r
     return QMainWindow::nativeEvent(eventType, message, result);
 }
 
-void frmMain::showEvent(QShowEvent *se)
+void FrmMain::showEvent(QShowEvent *se)
 {
     Q_UNUSED(se)
 
@@ -488,12 +488,12 @@ void frmMain::showEvent(QShowEvent *se)
     }
 }
 
-void frmMain::hideEvent(QHideEvent *he)
+void FrmMain::hideEvent(QHideEvent *he)
 {
     Q_UNUSED(he)
 }
 
-void frmMain::resizeEvent(QResizeEvent *re)
+void FrmMain::resizeEvent(QResizeEvent *re)
 {
     QMainWindow::resizeEvent(re);
 
@@ -505,7 +505,7 @@ void frmMain::resizeEvent(QResizeEvent *re)
     }
 }
 
-void frmMain::timerEvent(QTimerEvent *te)
+void FrmMain::timerEvent(QTimerEvent *te)
 {
     if (te->timerId() == m_timerToolAnimation.timerId()) {
         // m_toolDrawer.rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
@@ -516,7 +516,7 @@ void frmMain::timerEvent(QTimerEvent *te)
     }
 }
 
-void frmMain::closeEvent(QCloseEvent *ce)
+void FrmMain::closeEvent(QCloseEvent *ce)
 {
     bool mode = m_heightmapMode;
     m_heightmapMode = false;
@@ -549,7 +549,7 @@ void frmMain::closeEvent(QCloseEvent *ce)
     saveSettings();
 }
 
-void frmMain::dragEnterEvent(QDragEnterEvent *dee)
+void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
 {
     if (m_communicator->senderState() != SenderState::Stopped) return;
 
@@ -564,7 +564,7 @@ void frmMain::dragEnterEvent(QDragEnterEvent *dee)
     }
 }
 
-void frmMain::dropEvent(QDropEvent *de)
+void FrmMain::dropEvent(QDropEvent *de)
 {
     QString fileName = de->mimeData()->urls().at(0).toLocalFile();
 
@@ -593,7 +593,7 @@ void frmMain::dropEvent(QDropEvent *de)
     }
 }
 
-void frmMain::changeEvent(QEvent *ce)
+void FrmMain::changeEvent(QEvent *ce)
 {
     QMainWindow::changeEvent(ce);
     if (ce->type() == QEvent::WindowStateChange) {
@@ -601,7 +601,7 @@ void frmMain::changeEvent(QEvent *ce)
     }
 }
 
-void frmMain::moveEvent(QMoveEvent *me)
+void FrmMain::moveEvent(QMoveEvent *me)
 {
     QMainWindow::moveEvent(me);
     if (!m_firstShow) {
@@ -609,7 +609,7 @@ void frmMain::moveEvent(QMoveEvent *me)
     }
 }
 
-QMenu *frmMain::createPopupMenu()
+QMenu *FrmMain::createPopupMenu()
 {
     QMenu *menu = QMainWindow::createPopupMenu();
 
@@ -622,7 +622,7 @@ QMenu *frmMain::createPopupMenu()
     return menu;
 }
 
-void frmMain::on_actFileNew_triggered()
+void FrmMain::on_actFileNew_triggered()
 {
     if (!saveChanges(m_heightmapMode)) return;
 
@@ -633,12 +633,12 @@ void frmMain::on_actFileNew_triggered()
     }
 }
 
-void frmMain::on_actFileOpen_triggered()
+void FrmMain::on_actFileOpen_triggered()
 {
     on_cmdFileOpen_clicked();
 }
 
-void frmMain::on_actFileSave_triggered()
+void FrmMain::on_actFileSave_triggered()
 {
     if (!m_heightmapMode) {
         // G-code saving
@@ -652,7 +652,7 @@ void frmMain::on_actFileSave_triggered()
     }
 }
 
-void frmMain::on_actFileSaveAs_triggered()
+void FrmMain::on_actFileSaveAs_triggered()
 {
     if (!m_heightmapMode) {
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), "", tr(FILE_FILTER_TEXT));
@@ -682,7 +682,7 @@ void frmMain::on_actFileSaveAs_triggered()
     }
 }
 
-void frmMain::on_actFileSaveTransformedAs_triggered()
+void FrmMain::on_actFileSaveTransformedAs_triggered()
 {
     QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastWorkingDirectory(), tr(FILE_FILTER_TEXT)));
 
@@ -691,7 +691,7 @@ void frmMain::on_actFileSaveTransformedAs_triggered()
     }
 }
 
-void frmMain::onActRecentClearTriggered()
+void FrmMain::onActRecentClearTriggered()
 {
     if (!m_heightmapMode) m_configuration.uiModule().clearRecentFiles();
         else m_configuration.uiModule().clearRecentHeightmaps();
@@ -699,12 +699,12 @@ void frmMain::onActRecentClearTriggered()
     updateRecentFilesMenu();
 }
 
-void frmMain::on_actFileExit_triggered()
+void FrmMain::on_actFileExit_triggered()
 {
     close();
 }
 
-void frmMain::on_actServiceSettings_triggered()
+void FrmMain::on_actServiceSettings_triggered()
 {
     QList<QAction*> acts = findChildren<QAction*>(QRegularExpression("act.*"));
 
@@ -718,7 +718,7 @@ void frmMain::on_actServiceSettings_triggered()
     // table->verticalHeader()->setDefaultAlignment(Qt::AlignCenter);
     // table->verticalHeader()->setFixedWidth(table->verticalHeader()->sizeHint().width() + 11);
 
-    // qSort(acts.begin(), acts.end(), frmMain::actionLessThan);
+    // qSort(acts.begin(), acts.end(), FrmMain::actionLessThan);
     // for (int i = 0; i < acts.count(); i++) {
     //     table->setItem(i, 0, new QTableWidgetItem(acts.at(i)->objectName()));
     //     table->setItem(i, 1, new QTableWidgetItem(acts.at(i)->text().remove("&")));
@@ -737,7 +737,7 @@ void frmMain::on_actServiceSettings_triggered()
 
     emit settingsAboutToShow();
 
-    QScopedPointer<frmSettings> form(new frmSettings(this, m_configuration));
+    QScopedPointer<FrmSettings> form(new FrmSettings(this, m_configuration));
     Utils::setVisualMode(form.data(), m_configuration.uiModule().darkTheme());
     if (form->exec()) {
         // @TODO connection
@@ -769,31 +769,31 @@ void frmMain::on_actServiceSettings_triggered()
     }
 }
 
-void frmMain::on_actServiceConfigureGRBL_triggered()
+void FrmMain::on_actServiceConfigureGRBL_triggered()
 {
-    frmGrblConfigurator *form = new frmGrblConfigurator(this, m_configuration.uiModule(), m_communicator);
+    FrmGrblConfigurator *form = new FrmGrblConfigurator(this, m_configuration.uiModule(), m_communicator);
     form->exec();
     form->deleteLater();
 }
 
-void frmMain::on_actAbout_triggered()
+void FrmMain::on_actAbout_triggered()
 {
-    frmAbout *form = new frmAbout(this);
+    FrmAbout *form = new FrmAbout(this);
     form->exec();
     form->deleteLater();
 }
 
-void frmMain::on_actSpindleSpeedPlus_triggered()
+void FrmMain::on_actSpindleSpeedPlus_triggered()
 {
     // ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() + 1);
 }
 
-void frmMain::on_actSpindleSpeedMinus_triggered()
+void FrmMain::on_actSpindleSpeedMinus_triggered()
 {
     // ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() - 1);
 }
 
-void frmMain::on_actViewLockWindows_toggled(bool checked)
+void FrmMain::on_actViewLockWindows_toggled(bool checked)
 {
     QList<QDockWidget*> dl = findChildren<QDockWidget*>();
 
@@ -804,13 +804,13 @@ void frmMain::on_actViewLockWindows_toggled(bool checked)
     m_configuration.uiModule().setLockWindows(checked);
 }
 
-void frmMain::on_actViewDarkMode_toggled(bool checked)
+void FrmMain::on_actViewDarkMode_toggled(bool checked)
 {
     m_configuration.uiModule().setDarkMode(checked);
     ThemeManager::instance().setDarkMode(checked);
 }
 
-void frmMain::on_cmdFileOpen_clicked()
+void FrmMain::on_cmdFileOpen_clicked()
 {
     if (!m_communicator->isMachineConfigurationReady()) {
         qWarning() << "[UI] Machine configuration is not ready";
@@ -847,7 +847,7 @@ void frmMain::on_cmdFileOpen_clicked()
     }
 }
 
-void frmMain::on_cmdFileSend_clicked()
+void FrmMain::on_cmdFileSend_clicked()
 {
     m_program.reset();
     m_communicator->sb()->action(RunAction(m_program));
@@ -887,7 +887,7 @@ void frmMain::on_cmdFileSend_clicked()
 //     m_communicator->sendStreamerCommandsUntilBufferIsFull();
 }
 
-void frmMain::on_cmdFilePause_clicked(bool checked)
+void FrmMain::on_cmdFilePause_clicked(bool checked)
 {
     static SenderState s;
 
@@ -926,13 +926,13 @@ void frmMain::on_cmdFilePause_clicked(bool checked)
 
 
 
-void frmMain::on_cmdFileAbort_clicked()
+void FrmMain::on_cmdFileAbort_clicked()
 {
     ui->cmdFileAbort->setEnabled(false);
     m_communicator->abort();
 }
 
-void frmMain::on_cmdFileReset_clicked()
+void FrmMain::on_cmdFileReset_clicked()
 {
     m_program.reset();
     m_lastDrawnLineIndex = 0;
@@ -975,7 +975,7 @@ void frmMain::on_cmdFileReset_clicked()
     }
 }
 
-// void frmMain::on_cmdCommandSend_clicked()
+// void FrmMain::on_cmdCommandSend_clicked()
 // {
 //     QString command = ui->cboCommand->currentText();
 //     if (command.isEmpty()) return;
@@ -985,19 +985,19 @@ void frmMain::on_cmdFileReset_clicked()
 //     m_communicator->sendCommand(command, COMMAND_TI_UI);
 // }
 
-// void frmMain::on_cmdClearConsole_clicked()
+// void FrmMain::on_cmdClearConsole_clicked()
 // {
 //     ui->txtConsole->clear();
 // }
 
-// void frmMain::on_cmdHome_clicked()
+// void FrmMain::on_cmdHome_clicked()
 // {
 //     m_communicator->m_homing = true;
 //     m_communicator->m_updateSpindleSpeed = true;
 //     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", COMMAND_TI_UI);
 // }
 
-// void frmMain::on_cmdCheck_clicked(bool checked)
+// void FrmMain::on_cmdCheck_clicked(bool checked)
 // {
 //     if (checked) {
 //         m_communicator->storeParserState();
@@ -1008,39 +1008,39 @@ void frmMain::on_cmdFileReset_clicked()
 //     };
 // }
 
-// void frmMain::on_cmdReset_clicked()
+// void FrmMain::on_cmdReset_clicked()
 // {
 //     m_communicator->reset();
 //     //grblReset();
 // }
 
-// void frmMain::on_cmdUnlock_clicked()
+// void FrmMain::on_cmdUnlock_clicked()
 // {
 //     m_communicator->m_updateSpindleSpeed = true;
 //     m_communicator->sendCommand(CommandSource::GeneralUI, "$X", COMMAND_TI_UI);
 // }
 
-// void frmMain::on_cmdHold_clicked(bool checked)
+// void FrmMain::on_cmdHold_clicked(bool checked)
 // {
 //     m_connection->sendByteArray(QByteArray(1, checked ? (char)'!' : (char)'~'));
 // }
 
-// void frmMain::on_cmdSleep_clicked()
+// void FrmMain::on_cmdSleep_clicked()
 // {
 //     m_communicator->sendCommand(CommandSource::GeneralUI, "$SLP", COMMAND_TI_UI);
 // }
 
-// void frmMain::on_cmdDoor_clicked()
+// void FrmMain::on_cmdDoor_clicked()
 // {
 //     m_connection->sendByteArray(QByteArray(1, (char)0x84));
 // }
 
-// void frmMain::on_cmdFlood_clicked()
+// void FrmMain::on_cmdFlood_clicked()
 // {
 //     m_connection->sendByteArray(QByteArray(1, (char)0xa0));
 // }
 
-// void frmMain::on_cmdSpindle_toggled(bool checked)
+// void FrmMain::on_cmdSpindle_toggled(bool checked)
 // {
 //     ui->grpSpindle->setProperty("overrided", checked);
 //     style()->unpolish(ui->grpSpindle);
@@ -1053,7 +1053,7 @@ void frmMain::on_cmdFileReset_clicked()
 //     }
 // }
 
-void frmMain::on_cmdSpindle_clicked(bool checked)
+void FrmMain::on_cmdSpindle_clicked(bool checked)
 {
     if (ui->control->hold()) {
         m_connection->sendByteArray(QByteArray(1, char(0x9e)));
@@ -1062,49 +1062,49 @@ void frmMain::on_cmdSpindle_clicked(bool checked)
     }
 }
 
-void frmMain::on_cmdTop_clicked()
+void FrmMain::on_cmdTop_clicked()
 {
     ui->glwVisualizer->setTopView();
 }
 
-void frmMain::on_cmdFront_clicked()
+void FrmMain::on_cmdFront_clicked()
 {
     ui->glwVisualizer->setFrontView();
 }
 
-void frmMain::on_cmdLeft_clicked()
+void FrmMain::on_cmdLeft_clicked()
 {
     ui->glwVisualizer->setLeftView();
 }
 
-void frmMain::on_cmdIsometric_clicked()
+void FrmMain::on_cmdIsometric_clicked()
 {
     ui->glwVisualizer->setIsometricView();
 }
 
-void frmMain::on_cmdRotationCube_clicked()
+void FrmMain::on_cmdRotationCube_clicked()
 {
     ui->glwVisualizer->toggleRotationCube();
 }
 
-void frmMain::on_cmdVisualizerHeightmap_clicked()
+void FrmMain::on_cmdVisualizerHeightmap_clicked()
 {
     m_heightmapGridDrawer.toggleVisible();
 }
 
-void frmMain::on_cmdToggleProjection_clicked()
+void FrmMain::on_cmdToggleProjection_clicked()
 {
     ui->glwVisualizer->toggleProjectionType();
 }
 
-void frmMain::on_cmdFit_clicked()
+void FrmMain::on_cmdFit_clicked()
 {
     ui->glwVisualizer->fitDrawable(m_currentDrawer);
 }
 
-void frmMain::on_grpOverriding_toggled(bool checked)
+void FrmMain::on_grpOverriding_toggled(bool checked)
 {
-    partMainOverride::Overrides overrides = ui->overrides->overrides();
+    PartMainOverride::Overrides overrides = ui->overrides->overrides();
 
     if (checked) {
         ui->grpOverriding->setTitle(tr("Overriding"));
@@ -1119,7 +1119,7 @@ void frmMain::on_grpOverriding_toggled(bool checked)
     ui->overrides->setVisible(checked);
 }
 
-void frmMain::on_grpSpindle_toggled(bool checked)
+void FrmMain::on_grpSpindle_toggled(bool checked)
 {
 //     if (checked) {
 //         ui->grpSpindle->setTitle(tr("Spindle"));
@@ -1132,7 +1132,7 @@ void frmMain::on_grpSpindle_toggled(bool checked)
     // ui->spindle->setVisible(checked);
 }
 
-void frmMain::on_grpJog_toggled(bool checked)
+void FrmMain::on_grpJog_toggled(bool checked)
 {
     updateJogTitle();
     updateLayouts();
@@ -1140,12 +1140,12 @@ void frmMain::on_grpJog_toggled(bool checked)
     ui->jog->setVisible(checked);
 }
 
-void frmMain::on_grpHeightMap_toggled(bool arg1)
+void FrmMain::on_grpHeightMap_toggled(bool arg1)
 {
     ui->widgetHeightMap->setVisible(arg1);
 }
 
-void frmMain::on_chkKeyboardControl_toggled(bool checked)
+void FrmMain::on_chkKeyboardControl_toggled(bool checked)
 {
     ui->grpJog->setProperty("overrided", checked);
     style()->unpolish(ui->grpJog);
@@ -1165,21 +1165,21 @@ void frmMain::on_chkKeyboardControl_toggled(bool checked)
     updateControlsState();
 }
 
-void frmMain::on_chkHeightMapBorderShow_toggled(bool checked)
+void FrmMain::on_chkHeightMapBorderShow_toggled(bool checked)
 {
     Q_UNUSED(checked)
 
     updateControlsState();
 }
 
-void frmMain::on_chkHeightMapInterpolationShow_toggled(bool checked)
+void FrmMain::on_chkHeightMapInterpolationShow_toggled(bool checked)
 {
     Q_UNUSED(checked)
 
     updateControlsState();
 }
 
-void frmMain::on_chkHeightMapUse_clicked(bool checked)
+void FrmMain::on_chkHeightMapUse_clicked(bool checked)
 {
 // //    static bool fileChanged;
 
@@ -1423,72 +1423,72 @@ void frmMain::on_chkHeightMapUse_clicked(bool checked)
 //     ui->actFileSaveTransformedAs->setVisible(checked);
 }
 
-void frmMain::on_chkHeightMapGridShow_toggled(bool checked)
+void FrmMain::on_chkHeightMapGridShow_toggled(bool checked)
 {
     Q_UNUSED(checked)
 
     updateControlsState();
 }
 
-void frmMain::on_txtHeightMapBorderX_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapBorderX_valueChanged(double arg1)
 {
     updateHeightmapBorderDrawer();
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapBorderWidth_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapBorderWidth_valueChanged(double arg1)
 {
     updateHeightmapBorderDrawer();
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapBorderY_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapBorderY_valueChanged(double arg1)
 {
     updateHeightmapBorderDrawer();
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapBorderHeight_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapBorderHeight_valueChanged(double arg1)
 {
     updateHeightmapBorderDrawer();
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapGridX_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapGridX_valueChanged(double arg1)
 {
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapGridY_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapGridY_valueChanged(double arg1)
 {
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapGridZBottom_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapGridZBottom_valueChanged(double arg1)
 {
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapGridZTop_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapGridZTop_valueChanged(double arg1)
 {
     updateHeightmapGrid(arg1);
 }
 
-void frmMain::on_txtHeightMapInterpolationStepX_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapInterpolationStepX_valueChanged(double arg1)
 {
     Q_UNUSED(arg1)
 
     updateHeightMapInterpolationDrawer();
 }
 
-void frmMain::on_txtHeightMapInterpolationStepY_valueChanged(double arg1)
+void FrmMain::on_txtHeightMapInterpolationStepY_valueChanged(double arg1)
 {
     Q_UNUSED(arg1)
 
     updateHeightMapInterpolationDrawer();
 }
 
-void frmMain::on_cmdHeightMapMode_toggled(bool checked)
+void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
 {
     // Update flag
     m_heightmapMode = checked;
@@ -1542,13 +1542,13 @@ void frmMain::on_cmdHeightMapMode_toggled(bool checked)
     updateControlsState();
 }
 
-void frmMain::on_cmdHeightMapCreate_clicked()
+void FrmMain::on_cmdHeightMapCreate_clicked()
 {
     ui->cmdHeightMapMode->setChecked(true);
     on_actFileNew_triggered();
 }
 
-void frmMain::on_cmdHeightMapLoad_clicked()
+void FrmMain::on_cmdHeightMapLoad_clicked()
 {
     if (!saveChanges(true)) {
         return;
@@ -1573,7 +1573,7 @@ void frmMain::on_cmdHeightMapLoad_clicked()
     }
 }
 
-void frmMain::on_cmdHeightMapBorderAuto_clicked()
+void FrmMain::on_cmdHeightMapBorderAuto_clicked()
 {
     QRectF rect = borderRectFromExtremes();
 
@@ -1585,7 +1585,7 @@ void frmMain::on_cmdHeightMapBorderAuto_clicked()
     }
 }
 
-void frmMain::on_tblProgram_customContextMenuRequested(const QPoint &pos)
+void FrmMain::on_tblProgram_customContextMenuRequested(const QPoint &pos)
 {
     if (m_communicator->senderState() != SenderState::Stopped) return;
 
@@ -1599,7 +1599,7 @@ void frmMain::on_tblProgram_customContextMenuRequested(const QPoint &pos)
     m_tableMenu->popup(ui->tblProgram->viewport()->mapToGlobal(pos));
 }
 
-void frmMain::on_menuViewWindows_aboutToShow()
+void FrmMain::on_menuViewWindows_aboutToShow()
 {
     QAction *a;
     QList<QAction*> al;
@@ -1612,13 +1612,13 @@ void frmMain::on_menuViewWindows_aboutToShow()
         al.append(a);
     }
 
-    std::sort(al.begin(), al.end(), frmMain::actionTextLessThan);
+    std::sort(al.begin(), al.end(), FrmMain::actionTextLessThan);
 
     ui->menuViewWindows->clear();
     ui->menuViewWindows->addActions(al);
 }
 
-void frmMain::on_menuViewPanels_aboutToShow()
+void FrmMain::on_menuViewPanels_aboutToShow()
 {
     QAction *a;
 
@@ -1644,12 +1644,12 @@ void frmMain::on_menuViewPanels_aboutToShow()
     }
 }
 
-void frmMain::on_dockVisualizer_visibilityChanged(bool visible)
+void FrmMain::on_dockVisualizer_visibilityChanged(bool visible)
 {
     ui->glwVisualizer->setUpdatesEnabled(visible);
 }
 
-void frmMain::onConnectionError(QString error)
+void FrmMain::onConnectionError(QString error)
 {
     // @TODO connection
     // if (error != QSerialPort::NoError && error != previousError) {
@@ -1664,17 +1664,17 @@ void frmMain::onConnectionError(QString error)
     updateControlsState();
 }
 
-void frmMain::onMachinePosChanged(QVector3D pos)
+void FrmMain::onMachinePosChanged(QVector3D pos)
 {
     ui->state->setMachineCoordinates(pos);
 }
 
-void frmMain::onWorkPosChanged(QVector3D pos)
+void FrmMain::onWorkPosChanged(QVector3D pos)
 {
     ui->state->setWorkCoordinates(pos);
 }
 
-void frmMain::onMachineStateChanged(MachineState state)
+void FrmMain::onMachineStateChanged(MachineState state)
 {
     ui->state->setState(state);
 
@@ -1684,7 +1684,7 @@ void frmMain::onMachineStateChanged(MachineState state)
     // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&                                                        (m_communicator->senderState() != SenderStopping)));
 }
 
-void frmMain::onMachineStateReceived(MachineState state)
+void FrmMain::onMachineStateReceived(MachineState state)
 {
     // Update controls state
     // ui->control->updateControlsState(state == DeviceState::Idle, m_communicator->deviceState());
@@ -1704,14 +1704,14 @@ void frmMain::onMachineStateReceived(MachineState state)
     updateControlsState();
 }
 
-void frmMain::onSenderStateReceived(SenderState state)
+void FrmMain::onSenderStateReceived(SenderState state)
 {
     Q_UNUSED(state);
 
     updateControlsState();
 }
 
-void frmMain::onSpindleStateReceived(bool state)
+void FrmMain::onSpindleStateReceived(bool state)
 {
     switch (state) {
         case true:
@@ -1725,37 +1725,37 @@ void frmMain::onSpindleStateReceived(bool state)
     }
 }
 
-void frmMain::onFloodStateReceived(bool state)
+void FrmMain::onFloodStateReceived(bool state)
 {
     ui->control->setFlood(state);
 }
 
-void frmMain::onParserStateReceived(QString state)
+void FrmMain::onParserStateReceived(QString state)
 {
     ui->glwVisualizer->setParserState(state);
 }
 
-void frmMain::onPinStateReceived(QString state)
+void FrmMain::onPinStateReceived(QString state)
 {
     ui->glwVisualizer->setPinState(state);
 }
 
-void frmMain::onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed)
+void FrmMain::onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed)
 {
     ui->glwVisualizer->setSpeedState((QString(tr("F/S: %1 / %2")).arg(feedRate, spindleSpeed)));
 }
 
-void frmMain::onSpindleSpeedReceived(int spindleSpeed)
+void FrmMain::onSpindleSpeedReceived(int spindleSpeed)
 {
     // ui->slbSpindle->setCurrentValue(spindleSpeed);
 }
 
-void frmMain::onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride)
+void FrmMain::onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride)
 {
     updateOverride(ui->overrides->ui->slbFeed, feedOverride, '\x91');
     updateOverride(ui->overrides->ui->slbSpindle, spindleOverride, '\x9a');
 
-    partMainOverride::Overrides overrides = ui->overrides->overrides();
+    PartMainOverride::Overrides overrides = ui->overrides->overrides();
 
     ui->overrides->setRapid(rapidOverride);
 
@@ -1776,13 +1776,13 @@ void frmMain::onOverridesReceived(int feedOverride, int spindleOverride, int rap
     }
 }
 
-void frmMain::onAborted()
+void FrmMain::onAborted()
 {
     //ui->cmdFileAbort->setEnabled(false);
     updateControlsState();
 }
 
-void frmMain::onResponseReceived(QString command, int tableIndex, QString response)
+void FrmMain::onResponseReceived(QString command, int tableIndex, QString response)
 {
     Q_UNUSED(command)
     Q_UNUSED(tableIndex)
@@ -1791,17 +1791,17 @@ void frmMain::onResponseReceived(QString command, int tableIndex, QString respon
     // updateToolpathShadowingOnCheckMode();
 }
 
-void frmMain::onCommandResponseReceived(CommandAttributes commandAttributes)
+void FrmMain::onCommandResponseReceived(CommandAttributes commandAttributes)
 {
     ui->console->appendResponse(commandAttributes);
 }
 
-void frmMain::onCommandSent(CommandAttributes commandAttributes)
+void FrmMain::onCommandSent(CommandAttributes commandAttributes)
 {
     ui->console->appendFiltered(commandAttributes);
 }
 
-// void frmMain::onCommandProcessed(int tableIndex, QString response)
+// void FrmMain::onCommandProcessed(int tableIndex, QString response)
 // {
 //     if (ui->chkAutoScrollGCode->isChecked()) {
 //         // scroll to NEXT command (+1)
@@ -1815,17 +1815,17 @@ void frmMain::onCommandSent(CommandAttributes commandAttributes)
 //     }
 // }
 
-void frmMain::onConfigurationReceived(PhysicalMachineConfiguration configuration)
+void FrmMain::onConfigurationReceived(PhysicalMachineConfiguration configuration)
 {
     ui->state->setUnits(configuration.units());
 }
 
-void frmMain::onToolPositionReceived(QVector3D pos)
+void FrmMain::onToolPositionReceived(QVector3D pos)
 {
     updateToolPositionAndToolpathShadowing(pos);
 }
 
-void frmMain::onConsoleNewCommand(QString command, bool isInternal)
+void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
 {
     if (isInternal) {
         qDebug() << "Internal commands not handled yet:" << command;
@@ -1836,13 +1836,13 @@ void frmMain::onConsoleNewCommand(QString command, bool isInternal)
     m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
 }
 
-void frmMain::onStateBehaviorChanged(StateBehavior *sb)
+void FrmMain::onStateBehaviorChanged(StateBehavior *sb)
 {
     ui->state->setStatusText(sb->description(), "black", "white");
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
 }
 
-void frmMain::onTimerConnection()
+void FrmMain::onTimerConnection()
 {
     // /openPortIfNeeded();
 
@@ -1851,7 +1851,7 @@ void frmMain::onTimerConnection()
 }
 
 // @todo another way to update visualizer??
-// void frmMain::onTimerStateQuery()
+// void FrmMain::onTimerStateQuery()
 // {
 //     if (m_connection->isConnected() && m_communicator->m_resetCompleted && m_communicator->m_statusReceived) {
 //         m_connection->sendByteArray(QByteArray(1, '?'));
@@ -1861,7 +1861,7 @@ void frmMain::onTimerConnection()
 //     ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_communicator->m_commands.length()).arg(m_communicator->m_queue.length()));
 // }
 
-void frmMain::onTableInsertLine()
+void FrmMain::onTableInsertLine()
 {
     if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) return;
@@ -1876,7 +1876,7 @@ void frmMain::onTableInsertLine()
     ui->tblProgram->selectRow(row);
 }
 
-void frmMain::onTableDeleteLines()
+void FrmMain::onTableDeleteLines()
 {
     if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping) ||
@@ -1898,7 +1898,7 @@ void frmMain::onTableDeleteLines()
     ui->tblProgram->selectRow(firstRow.row());
 }
 
-void frmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
+void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
 {
     Q_UNUSED(i2)
 
@@ -1930,7 +1930,7 @@ void frmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
     }
 }
 
-void frmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previousIndex)
+void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previousIndex)
 {
     if (m_currentProgram->empty()) {
         return;
@@ -1983,23 +1983,23 @@ void frmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
     m_selectionDrawer.update();
 }
 
-void frmMain::onOverridingToggled(bool checked)
+void FrmMain::onOverridingToggled(bool checked)
 {
     Q_UNUSED(checked)
 
-    partMainOverride::Overrides overrides = ui->overrides->overrides();
+    PartMainOverride::Overrides overrides = ui->overrides->overrides();
 
     ui->grpOverriding->setProperty("overrided", overrides.feedOverridden | overrides.rapidOverridden | overrides.spindleOverridden);
     style()->unpolish(ui->grpOverriding);
     ui->grpOverriding->ensurePolished();
 }
 
-void frmMain::onOverrideChanged()
+void FrmMain::onOverrideChanged()
 {
 //    updateProgramEstimatedTime(m_currentDrawer->viewParser()->getLineSegmentList());
 }
 
-void frmMain::onActRecentFileTriggered()
+void FrmMain::onActRecentFileTriggered()
 {
     QAction *action = static_cast<QAction*>(sender());
     QString fileName = action->text();
@@ -2012,7 +2012,7 @@ void frmMain::onActRecentFileTriggered()
 
 // Starts G-code execution from the currently selected line in the program table,
 // optionally sending initialization commands to restore machine state for that position
-// void frmMain::onActSendFromLineTriggered()
+// void FrmMain::onActSendFromLineTriggered()
 // {
 //     if (m_currentModel->rowCount() == 1) return;
 
@@ -2089,18 +2089,18 @@ void frmMain::onActRecentFileTriggered()
 //     // m_communicator->sendStreamerCommandsUntilBufferIsFull();
 // }
 
-void frmMain::onSlbSpindleValueUserChanged()
+void FrmMain::onSlbSpindleValueUserChanged()
 {
     // m_communicator->m_updateSpindleSpeed = true;
 }
 
-void frmMain::onSlbSpindleValueChanged()
+void FrmMain::onSlbSpindleValueChanged()
 {
     // if (!ui->grpSpindle->isChecked() && ui->cmdSpindle->isChecked())
     //     ui->grpSpindle->setTitle(tr("Spindle") + QString(tr(" (%1)")).arg(ui->slbSpindle->value()));
 }
 
-// void frmMain::onCboCommandReturnPressed()
+// void FrmMain::onCboCommandReturnPressed()
 // {
 //     QString command = ui->cboCommand->currentText();
 //     if (command.isEmpty()) return;
@@ -2109,13 +2109,13 @@ void frmMain::onSlbSpindleValueChanged()
 //     m_communicator->sendCommand(command, COMMAND_TI_UI);
 // }
 
-void frmMain::onDockTopLevelChanged(bool topLevel)
+void FrmMain::onDockTopLevelChanged(bool topLevel)
 {
     Q_UNUSED(topLevel)
     static_cast<QWidget*>(sender())->setStyleSheet("");
 }
 
-void frmMain::onScroolBarAction(int action)
+void FrmMain::onScroolBarAction(int action)
 {
     Q_UNUSED(action)
 
@@ -2123,17 +2123,17 @@ void frmMain::onScroolBarAction(int action)
         ui->chkAutoScrollGCode->setChecked(false);
 }
 
-void frmMain::onVisualizerCursorPosChanged(QPointF pos)
+void FrmMain::onVisualizerCursorPosChanged(QPointF pos)
 {
     m_cursorDrawer.setPosition(pos);
 }
 
-// void frmMain::onProgramLinesUpdated(int from, int to)
+// void FrmMain::onProgramLinesUpdated(int from, int to)
 // {
-//     qDebug() << "frmMain::onProgramLinesUpdated from" << from << "to" << to;
+//     qDebug() << "FrmMain::onProgramLinesUpdated from" << from << "to" << to;
 // }
 
-void frmMain::updateHeightMapInterpolationDrawer(bool reset)
+void FrmMain::updateHeightMapInterpolationDrawer(bool reset)
 {
     if (m_settingsLoading) return;
 
@@ -2175,7 +2175,7 @@ void frmMain::updateHeightMapInterpolationDrawer(bool reset)
     m_programHeightmapModel.clear();
 }
 
-void frmMain::placeVisualizerButtons()
+void FrmMain::placeVisualizerButtons()
 {
     ui->visualizerButtons->setParent(ui->glwVisualizer);
     ui->visualizerButtons->move(
@@ -2184,7 +2184,7 @@ void frmMain::placeVisualizerButtons()
     );
 }
 
-void frmMain::preloadSettings()
+void FrmMain::preloadSettings()
 {
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
@@ -2197,7 +2197,7 @@ void frmMain::preloadSettings()
     // QGLFormat::setDefaultFormat(fmt);
 }
 
-void frmMain::applyHeightmapConfiguration(ConfigurationHeightmap &configurationHeightmap)
+void FrmMain::applyHeightmapConfiguration(ConfigurationHeightmap &configurationHeightmap)
 {
     ui->txtHeightMapBorderX->setValue(configurationHeightmap.borderX());
     ui->txtHeightMapBorderY->setValue(configurationHeightmap.borderY());
@@ -2218,7 +2218,7 @@ void frmMain::applyHeightmapConfiguration(ConfigurationHeightmap &configurationH
     ui->chkHeightMapInterpolationShow->setChecked(configurationHeightmap.interpolationShow());
 }
 
-void frmMain::applyOverridesConfiguration(ConfigurationMachine &machineConfiguration)
+void FrmMain::applyOverridesConfiguration(ConfigurationMachine &machineConfiguration)
 {
     // ui->slbFeedOverride->setChecked(machineConfiguration.overrideFeed());
     // ui->slbFeedOverride->setValue(machineConfiguration.overrideFeedValue());
@@ -2230,7 +2230,7 @@ void frmMain::applyOverridesConfiguration(ConfigurationMachine &machineConfigura
     // ui->slbSpindle->setValue(machineConfiguration.overrideSpindleSpeedValue());
 }
 
-void frmMain::applySpindleConfiguration(ConfigurationMachine &machineConfiguration)
+void FrmMain::applySpindleConfiguration(ConfigurationMachine &machineConfiguration)
 {
     // ui->slbSpindle->setRatio(machineConfiguration.spindleSpeedRatio());
     // ui->slbSpindle->setMinimum(machineConfiguration.spindleSpeedRange().min);
@@ -2238,12 +2238,12 @@ void frmMain::applySpindleConfiguration(ConfigurationMachine &machineConfigurati
     // ui->slbSpindle->setValue(machineConfiguration.spindleSpeed());
 }
 
-void frmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
+void FrmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
 {
     updateRecentFilesMenu();
 }
 
-void frmMain::loadSettings()
+void FrmMain::loadSettings()
 {
     QSettings set(m_settingsFileName, QSettings::IniFormat);
 
@@ -2300,7 +2300,7 @@ void frmMain::loadSettings()
     emit settingsLoaded();
 }
 
-void frmMain::restoreDockableLayoutState()
+void FrmMain::restoreDockableLayoutState()
 {
     QSettings set(m_settingsFileName, QSettings::IniFormat);
 
@@ -2337,7 +2337,7 @@ void frmMain::restoreDockableLayoutState()
     // Restore docks
     // Signals/slots
     foreach (QDockWidget *w, findChildren<QDockWidget*>()) {
-        // connect(w, &QDockWidget::topLevelChanged, this, &frmMain::onDockTopLevelChanged);
+        // connect(w, &QDockWidget::topLevelChanged, this, &FrmMain::onDockTopLevelChanged);
     }
 
     // Panels
@@ -2374,7 +2374,7 @@ void frmMain::restoreDockableLayoutState()
     // m_settings->ui->splitMain->restoreState(set.value("settingsSplitMain").toByteArray());
 }
 
-void frmMain::saveSettings()
+void FrmMain::saveSettings()
 {
     QSettings set(m_settingsFileName, QSettings::IniFormat);
 
@@ -2447,7 +2447,7 @@ void frmMain::saveSettings()
     emit settingsSaved();
 }
 
-void frmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
+void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
 {
     m_connection = m_connectionManager.createConnection(mode);
 
@@ -2455,7 +2455,7 @@ void frmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
     connect(m_connection, SIGNAL(error(QString)), this, SLOT(onConnectionError(QString)));
 }
 
-void frmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     ui->glwVisualizer->setLineWidth(visualizerConfiguration.lineWidth());
     ui->glwVisualizer->setAntialiasing(visualizerConfiguration.antialiasing());
@@ -2517,7 +2517,7 @@ void frmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerCo
     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
 }
 
-void frmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_codeDrawer->setLineWidth(visualizerConfiguration.lineWidth());
     m_codeDrawer->setSimplify(visualizerConfiguration.simplifyGeometry());
@@ -2537,7 +2537,7 @@ void frmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerCo
     m_codeDrawer->update();
 }
 
-void frmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_toolDrawer.setToolDiameter(visualizerConfiguration.toolDiameter());
     m_toolDrawer.setToolLength(visualizerConfiguration.toolLength());
@@ -2547,27 +2547,27 @@ void frmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerCo
     m_toolDrawer.update();
 }
 
-void frmMain::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
     m_cursorDrawer.setColor(visualizerConfiguration.cursorColor());
     m_cursorDrawer.update();
 }
 
-void frmMain::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_tableSurfaceDrawer.setGridColor(visualizerConfiguration.tableSurfaceGridColor());
     m_tableSurfaceDrawer.update();
 }
 
-void frmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+void FrmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_heightmapBorderDrawer.setLineWidth(visualizerConfiguration.lineWidth());
     m_heightmapGridDrawer.setLineWidth(0.1);
     m_heightmapInterpolationDrawer.setLineWidth(visualizerConfiguration.lineWidth());
 }
 
-void frmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
+void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
     ui->chkAutoScrollGCode->setChecked(uiConfiguration.autoScrollGCode());
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
@@ -2575,12 +2575,12 @@ void frmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
     ThemeManager::instance().setDarkMode(uiConfiguration.darkTheme());
 }
 
-void frmMain::applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration)
+void FrmMain::applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration)
 {
     ui->jog->configurationUpdated();
 }
 
-void frmMain::appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel)
+void FrmMain::appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel)
 {
     QGroupBox *grp = new QGroupBox(tr(title.toStdString().c_str()));
     grp->setCheckable(true);
@@ -2594,7 +2594,7 @@ void frmMain::appendPanel(DropWidget *dockPanel, const QString name, const QStri
     dockPanel->layout()->addWidget(grp);
 }
 
-void frmMain::appendSpacer(DropWidget *dockPanel)
+void FrmMain::appendSpacer(DropWidget *dockPanel)
 {
     QGroupBox *grp = new QGroupBox();
     QSizePolicy sp = grp->sizePolicy();
@@ -2608,7 +2608,7 @@ void frmMain::appendSpacer(DropWidget *dockPanel)
     layout->setStretchFactor(grp, 1);
 }
 
-void frmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
+void FrmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
     dock->setMinimumHeight(200);
@@ -2618,7 +2618,7 @@ void frmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea
     addDockWidget(area, dock, orientation);
 }
 
-void frmMain::applySettings()
+void FrmMain::applySettings()
 {
     ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
     ConfigurationHeightmap &heightmapConfiguration = m_configuration.heightmapModule();
@@ -2660,7 +2660,7 @@ void frmMain::applySettings()
     }
 }
 
-// void frmMain::openPortIfNeeded()
+// void FrmMain::openPortIfNeeded()
 // {
 //     assert(m_communicator != nullptr);
 
@@ -2673,7 +2673,7 @@ void frmMain::applySettings()
 //     }
 // }
 
-void frmMain::updateParser()
+void FrmMain::updateParser()
 {
     assert(m_communicator->isMachineConfigurationReady());
 
@@ -2747,7 +2747,7 @@ void frmMain::updateParser()
 }
 
 // @TODO scripting only??
-// void frmMain::storeOffsetsVars(QString response)
+// void FrmMain::storeOffsetsVars(QString response)
 // {
 //     static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
 //     static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
@@ -2772,7 +2772,7 @@ void frmMain::updateParser()
 //     }
 // }
 
-void frmMain::loadFile(QString fileName)
+void FrmMain::loadFile(QString fileName)
 {
     GCodeThreadedLoader *loader = new GCodeThreadedLoader(this);
     int progressIndex = ui->console->appendProgress("Loading " + fileName);
@@ -2817,7 +2817,7 @@ void frmMain::loadFile(QString fileName)
     // loadLines(data);
 }
 
-void frmMain::applyLoaderGCode(GCodeLoaderData *data)
+void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
     qDebug() << "Finished loading file" << data->gcode->count();
 
@@ -2876,7 +2876,7 @@ void frmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->tblProgram->horizontalHeader()->restoreState(headerState);
 
     // Update tableview
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &frmMain::onTableCurrentChanged);
+    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
     ui->tblProgram->selectRow(0);
 
     //  Update code drawer
@@ -2887,7 +2887,7 @@ void frmMain::applyLoaderGCode(GCodeLoaderData *data)
     updateControlsState();
 }
 
-void frmMain::loadLines(QList<std::string> data)
+void FrmMain::loadLines(QList<std::string> data)
 {
     assert(m_communicator->isMachineConfigurationReady());
     if (!m_communicator->isMachineConfigurationReady()) {
@@ -3003,7 +3003,7 @@ void frmMain::loadLines(QList<std::string> data)
     ui->tblProgram->horizontalHeader()->restoreState(headerState);
 
     // Update tableview
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &frmMain::onTableCurrentChanged);
+    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
     ui->tblProgram->selectRow(0);
 
     //  Update code drawer
@@ -3020,7 +3020,7 @@ void frmMain::loadLines(QList<std::string> data)
     updateControlsState();
 }
 
-bool frmMain::saveChanges(bool heightMapMode)
+bool FrmMain::saveChanges(bool heightMapMode)
 {
     if ((!heightMapMode && m_fileChanged)) {
         int res = QMessageBox::warning(this, this->windowTitle(), tr("G-code program file was changed. Save?"),
@@ -3047,7 +3047,7 @@ bool frmMain::saveChanges(bool heightMapMode)
     return true;
 }
 
-bool frmMain::saveProgramToFile(QString fileName, GCode &model)
+bool FrmMain::saveProgramToFile(QString fileName, GCode &model)
 {
     QFile file(fileName);
     QDir dir;
@@ -3066,13 +3066,13 @@ bool frmMain::saveProgramToFile(QString fileName, GCode &model)
     return true;
 }
 
-void frmMain::clearTable()
+void FrmMain::clearTable()
 {
     m_programModel.clear();
     m_programModel.insertRow(0);
 }
 
-void frmMain::resetHeightmap()
+void FrmMain::resetHeightmap()
 {
     // delete m_heightmapInterpolationDrawer.data();
     m_heightmapInterpolationDrawer.setData(nullptr);
@@ -3085,7 +3085,7 @@ void frmMain::resetHeightmap()
     m_heightmapChanged = false;
 }
 
-void frmMain::newFile()
+void FrmMain::newFile()
 {
     // Reset tables
     clearTable();
@@ -3132,7 +3132,7 @@ void frmMain::newFile()
     updateControlsState();
 }
 
-void frmMain::newHeightmap()
+void FrmMain::newHeightmap()
 {
     m_heightmapModel.clear();
     on_cmdFileReset_clicked();
@@ -3147,7 +3147,7 @@ void frmMain::newHeightmap()
     updateControlsState();
 }
 
-void frmMain::updateControlsState()
+void FrmMain::updateControlsState()
 {
     bool portOpened = m_connection && m_connection->isConnected();
     bool process = (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping);
@@ -3262,13 +3262,13 @@ void frmMain::updateControlsState()
     m_selectionDrawer.setVisible(!ui->cmdHeightMapMode->isChecked());
 }
 
-void frmMain::updateLayouts()
+void FrmMain::updateLayouts()
 {
     this->update();
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
-void frmMain::updateRecentFilesMenu()
+void FrmMain::updateRecentFilesMenu()
 {
     ui->menuRecent->clear();
     QMenu *fileOpenMenu = ui->cmdFileOpen->menu();
@@ -3281,7 +3281,7 @@ void frmMain::updateRecentFilesMenu()
         while (it != files.constBegin()) {
             --it;
             QAction *action = new QAction(*it, this);
-            connect(action, &QAction::triggered, this, &frmMain::onActRecentFileTriggered);
+            connect(action, &QAction::triggered, this, &FrmMain::onActRecentFileTriggered);
             ui->menuRecent->addAction(action);
             fileOpenMenu->addAction(action);
         }
@@ -3290,7 +3290,7 @@ void frmMain::updateRecentFilesMenu()
         fileOpenMenu->addSeparator();
 
         QAction *clearAction = new QAction(tr("&Clear"), this);
-        connect(clearAction, &QAction::triggered, this, &frmMain::onActRecentClearTriggered);
+        connect(clearAction, &QAction::triggered, this, &FrmMain::onActRecentClearTriggered);
 
         ui->menuRecent->addAction(clearAction);
         fileOpenMenu->addAction(clearAction);
@@ -3299,7 +3299,7 @@ void frmMain::updateRecentFilesMenu()
     updateControlsState();
 }
 
-void frmMain::updateOverride(SliderBox *slider, int value, char command)
+void FrmMain::updateOverride(SliderBox *slider, int value, char command)
 {
     slider->setCurrentValue(value);
 
@@ -3313,7 +3313,7 @@ void frmMain::updateOverride(SliderBox *slider, int value, char command)
     }
 }
 
-void frmMain::updateJogTitle()
+void FrmMain::updateJogTitle()
 {
     if (ui->grpJog->isChecked() || !ui->jog->keyboardControl()) {
         ui->grpJog->setTitle(tr("Jog"));
@@ -3324,19 +3324,19 @@ void frmMain::updateJogTitle()
     }
 }
 
-void frmMain::addRecentFile(QString fileName)
+void FrmMain::addRecentFile(QString fileName)
 {
     m_configuration.uiModule().addRecentFile(fileName);
     m_configuration.save();
 }
 
-void frmMain::addRecentHeightmap(QString fileName)
+void FrmMain::addRecentHeightmap(QString fileName)
 {
     m_configuration.uiModule().addRecentHeightmap(fileName);
     m_configuration.save();
 }
 
-QRectF frmMain::borderRectFromTextboxes()
+QRectF FrmMain::borderRectFromTextboxes()
 {
     QRectF rect;
 
@@ -3348,7 +3348,7 @@ QRectF frmMain::borderRectFromTextboxes()
     return rect;
 }
 
-QRectF frmMain::borderRectFromExtremes()
+QRectF FrmMain::borderRectFromExtremes()
 {
     QRectF rect;
 
@@ -3360,14 +3360,14 @@ QRectF frmMain::borderRectFromExtremes()
     return rect;
 }
 
-void frmMain::updateHeightmapBorderDrawer()
+void FrmMain::updateHeightmapBorderDrawer()
 {
     if (m_settingsLoading) return;
 
     m_heightmapBorderDrawer.setBorderRect(borderRectFromTextboxes());
 }
 
-bool frmMain::updateHeightmapGrid()
+bool FrmMain::updateHeightmapGrid()
 {
     if (m_settingsLoading) return true;
 
@@ -3440,14 +3440,14 @@ bool frmMain::updateHeightmapGrid()
     return true;
 }
 
-void frmMain::updateHeightmapGrid(double arg1)
+void FrmMain::updateHeightmapGrid(double arg1)
 {
     if (sender()->property("previousValue").toDouble() != arg1 && !updateHeightmapGrid())
         static_cast<QDoubleSpinBox*>(sender())->setValue(sender()->property("previousValue").toDouble());
     else sender()->setProperty("previousValue", arg1);
 }
 
-void frmMain::resizeTableHeightmapSections()
+void FrmMain::resizeTableHeightmapSections()
 {
     if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize()
             * ui->tblHeightMap->horizontalHeader()->count() < ui->glwVisualizer->width())
@@ -3456,7 +3456,7 @@ void frmMain::resizeTableHeightmapSections()
     }
 }
 
-bool frmMain::eventFilter(QObject *obj, QEvent *event)
+bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 {
     if (ui == nullptr) {
         return QMainWindow::eventFilter(obj, event);
@@ -3576,7 +3576,7 @@ bool frmMain::eventFilter(QObject *obj, QEvent *event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-// void frmMain::updateCurrentModel(GCodeTableModel *m_currentModel)
+// void FrmMain::updateCurrentModel(GCodeTableModel *m_currentModel)
 // {
 //     this->m_currentModel = m_currentModel;
 //     m_program->setModel(m_currentModel);
@@ -3584,7 +3584,7 @@ bool frmMain::eventFilter(QObject *obj, QEvent *event)
 
 // Updates tool position in visualizer and marks toolpath segments as drawn when tool reaches them
 // during active program execution (excluding check mode)
-void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
+void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
     m_toolDrawer.setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
@@ -3623,7 +3623,7 @@ void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 
 // Updates toolpath visualization in check mode by marking processed segments as drawn
 // and positioning the tool indicator at the end of the last processed line
-// void frmMain::updateToolpathShadowingOnCheckMode()
+// void FrmMain::updateToolpathShadowingOnCheckMode()
 // {
 //     GCodeViewParser *parser = m_currentDrawer->viewParser();
 //     QList<LineSegment> list = parser->getLineSegmentList();
@@ -3658,15 +3658,15 @@ void frmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 //     }
 // }
 \
-QString frmMain::lastWorkingDirectory()
+QString FrmMain::lastWorkingDirectory()
 {
     return m_configuration.uiModule().currentWorkingDirectory();
 }
 
-QTime frmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
+QTime FrmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
 {
     double time = 0;
-    partMainOverride::Overrides overrides = ui->overrides->overrides();
+    PartMainOverride::Overrides overrides = ui->overrides->overrides();
 
     for (int i = 0; i < lines.count(); i++) {
         LineSegment& ls = lines[i];
@@ -3692,7 +3692,7 @@ QTime frmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
     return t;
 }
 
-QList<LineSegment*> frmMain::subdivideSegment(LineSegment* segment)
+QList<LineSegment*> FrmMain::subdivideSegment(LineSegment* segment)
 {
     QList<LineSegment*> list;
 
@@ -3741,12 +3741,12 @@ QList<LineSegment*> frmMain::subdivideSegment(LineSegment* segment)
 
 
 
-// int frmMain::buttonSize()
+// int FrmMain::buttonSize()
 // {
 //     return ui->cmdHome->minimumWidth();
 // }
 
-void frmMain::onTransferCompleted()
+void FrmMain::onTransferCompleted()
 {
     // Shadow last segment
     GCodeViewParser *parser = m_currentDrawer->viewParser();
@@ -3772,7 +3772,7 @@ void frmMain::onTransferCompleted()
     // m_communicator->startUpdatingState();
 }
 
-QString frmMain::getLineInitCommands(int row)
+QString FrmMain::getLineInitCommands(int row)
 {
     int commandIndex = row;
 
@@ -3818,12 +3818,12 @@ QString frmMain::getLineInitCommands(int row)
     return commands;
 }
 
-bool frmMain::actionLessThan(const QAction *a1, const QAction *a2)
+bool FrmMain::actionLessThan(const QAction *a1, const QAction *a2)
 {
     return a1->objectName() < a2->objectName();
 }
 
-bool frmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
+bool FrmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
 {
     return a1->text() < a2->text();
 }

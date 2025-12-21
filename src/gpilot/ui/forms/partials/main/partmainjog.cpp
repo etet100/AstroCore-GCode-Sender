@@ -1,7 +1,7 @@
 #include "partmainjog.h"
 #include "ui_partmainjog.h"
 
-void partMainJog::updateControls()
+void PartMainJog::updateControls()
 {
     // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
@@ -11,7 +11,7 @@ void partMainJog::updateControls()
     // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 }
 
-partMainJog::partMainJog(QWidget *parent)
+PartMainJog::PartMainJog(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partMainJog)
 {
@@ -25,7 +25,7 @@ partMainJog::partMainJog(QWidget *parent)
     ui->cmdYPlus->setBackColor(backgroundColor);
 }
 
-void partMainJog::configurationUpdated()
+void PartMainJog::configurationUpdated()
 {
     m_storedKeyboardControl = m_configurationJogging->keyboardControl();
 
@@ -76,44 +76,44 @@ void partMainJog::configurationUpdated()
     m_initialized = true;
 }
 
-void partMainJog::restoreKeyboardControl()
+void PartMainJog::restoreKeyboardControl()
 {
     ui->chkKeyboardControl->setChecked(m_storedKeyboardControl);
 }
 
-void partMainJog::initialize(ConfigurationJogging &configurationJogging)
+void PartMainJog::initialize(ConfigurationJogging &configurationJogging)
 {
     m_configurationJogging = &configurationJogging;
 }
 
-partMainJog::~partMainJog()
+PartMainJog::~PartMainJog()
 {
     delete ui;
 }
 
-void partMainJog::storeAndResetKeyboardControl()
+void PartMainJog::storeAndResetKeyboardControl()
 {
     m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
     ui->chkKeyboardControl->setChecked(false);
 }
 
-bool partMainJog::keyboardControl()
+bool PartMainJog::keyboardControl()
 {
     return ui->chkKeyboardControl->isChecked();
 }
 
-void partMainJog::setKeyboardControl(bool value)
+void PartMainJog::setKeyboardControl(bool value)
 {
     ui->chkKeyboardControl->setChecked(value);
 }
 
-void partMainJog::onCmdYPlusPressed()
+void PartMainJog::onCmdYPlusPressed()
 {
     m_jogVector = JoggingVector(0, 1, 0);
     emit this->jog(JoggindDir::YPlus, m_jogVector);
 }
 
-void partMainJog::stopJogging()
+void PartMainJog::stopJogging()
 {
     m_jogVector = QVector3D(0, 0, 0);
     emit stop();
@@ -121,79 +121,79 @@ void partMainJog::stopJogging()
     emit this->command(GRBLCommand::JogStop);
 }
 
-void partMainJog::stopJoggingIfContinuous()
+void PartMainJog::stopJoggingIfContinuous()
 {
     if (m_configurationJogging->feedZ() == JoggingContinuous) {
         stopJogging();
     }
 }
 
-void partMainJog::onCmdYPlusReleased()
+void PartMainJog::onCmdYPlusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdYMinusPressed()
+void PartMainJog::onCmdYMinusPressed()
 {
     m_jogVector = JoggingVector(0, -1, 0);
     emit this->jog(JoggindDir::YMinus, m_jogVector);
 }
 
-void partMainJog::onCmdYMinusReleased()
+void PartMainJog::onCmdYMinusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdXPlusPressed()
+void PartMainJog::onCmdXPlusPressed()
 {
     m_jogVector = JoggingVector(1, 0, 0);
     emit this->jog(JoggindDir::XPlus, m_jogVector);
 }
 
-void partMainJog::onCmdXPlusReleased()
+void PartMainJog::onCmdXPlusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdXMinusPressed()
+void PartMainJog::onCmdXMinusPressed()
 {
     m_jogVector = JoggingVector(-1, 0, 0);
     emit this->jog(JoggindDir::XMinus, m_jogVector);
 }
 
-void partMainJog::onCmdXMinusReleased()
+void PartMainJog::onCmdXMinusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdZPlusPressed()
+void PartMainJog::onCmdZPlusPressed()
 {
     m_jogVector = JoggingVector(0, 0, 1);
     emit this->jog(JoggindDir::ZPlus, m_jogVector);
 }
 
-void partMainJog::onCmdZPlusReleased()
+void PartMainJog::onCmdZPlusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdZMinusPressed()
+void PartMainJog::onCmdZMinusPressed()
 {
     m_jogVector = JoggingVector(-1, 0, 0);
     emit this->jog(JoggindDir::ZMinus, m_jogVector);
 }
 
-void partMainJog::onCmdZMinusReleased()
+void PartMainJog::onCmdZMinusReleased()
 {
     stopJoggingIfContinuous();
 }
 
-void partMainJog::onCmdStopClicked()
+void PartMainJog::onCmdStopClicked()
 {
     stopJogging();
 }
 
-// void partMainJog::onCmdFeedChanged(int index)
+// void PartMainJog::onCmdFeedChanged(int index)
 // {
 //     if (!m_initialized) {
 //         return;
@@ -212,7 +212,7 @@ void partMainJog::onCmdStopClicked()
 //     emit this->parametersChanged(feedRate, m_configurationJogging->step());
 // }
 
-// void partMainJog::onCmdFeedZChanged(int index)
+// void PartMainJog::onCmdFeedZChanged(int index)
 // {
 //     if (!m_initialized) {
 //         return;
@@ -231,7 +231,7 @@ void partMainJog::onCmdStopClicked()
 //     emit this->parametersChanged(feedRate, m_configurationJogging->step());
 // }
 
-// void partMainJog::onCmdStepChanged(int index)
+// void PartMainJog::onCmdStepChanged(int index)
 // {
 //     if (!m_initialized) {
 //         return;
@@ -255,7 +255,7 @@ void partMainJog::onCmdStopClicked()
 //     emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
 // }
 
-void partMainJog::onChkSeparateZFeedToggled(bool checked)
+void PartMainJog::onChkSeparateZFeedToggled(bool checked)
 {
     m_configurationJogging->setSeparateFeedZ(checked);
     ui->jogParameters->setSeparateZFeedrate(checked);

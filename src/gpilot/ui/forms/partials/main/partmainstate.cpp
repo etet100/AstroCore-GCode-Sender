@@ -2,7 +2,7 @@
 #include "partmainstate.h"
 #include "ui_partmainstate.h"
 
-partMainState::partMainState(QWidget *parent)
+PartMainState::PartMainState(QWidget *parent)
     : PartMainStateBase(parent)
     , ui(new Ui::partMainState)
 {
@@ -10,36 +10,36 @@ partMainState::partMainState(QWidget *parent)
     initializeColorsAndCaptions();
 }
 
-partMainState::~partMainState()
+PartMainState::~PartMainState()
 {
     delete ui;
 }
 
-void partMainState::setStatusText(QString status, QString bgColor, QString fgColor)
+void PartMainState::setStatusText(QString status, QString bgColor, QString fgColor)
 {
     ui->txtStatus->setText(status);
     ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor, fgColor));
 }
 
-void partMainState::setState(MachineState state)
+void PartMainState::setState(MachineState state)
 {
 }
 
-void partMainState::setWorkCoordinates(QVector3D pos)
+void PartMainState::setWorkCoordinates(QVector3D pos)
 {
     ui->txtWX->setValue(pos.x());
     ui->txtWY->setValue(pos.y());
     ui->txtWZ->setValue(pos.z());
 }
 
-void partMainState::setMachineCoordinates(QVector3D pos)
+void PartMainState::setMachineCoordinates(QVector3D pos)
 {
     ui->txtMX->setValue(pos.x());
     ui->txtMY->setValue(pos.y());
     ui->txtMZ->setValue(pos.z());
 }
 
-void partMainState::setUnits(Units units)
+void PartMainState::setUnits(Units units)
 {
     int prec = units == Units::Millimeters ? 3 : 4;
     ui->txtMX->setDecimals(prec);

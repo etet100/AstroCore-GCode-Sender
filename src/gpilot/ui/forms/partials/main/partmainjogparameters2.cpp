@@ -7,7 +7,7 @@
 #include <QVariant>
 #include "utils/utils.h"
 
-partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogParametersInterface(parent), ui(new Ui::partMainJogParameters2)
+PartMainJogParameters2::PartMainJogParameters2(QWidget *parent) : PartMainJogParametersInterface(parent), ui(new Ui::partMainJogParameters2)
 {
     ui->setupUi(this);
     ui->sectionFrame->deleteLater();
@@ -27,7 +27,7 @@ partMainJogParameters2::partMainJogParameters2(QWidget *parent) : partMainJogPar
     });
 }
 
-void partMainJogParameters2::setStepSizeOptions(const QStringList& options) {
+void PartMainJogParameters2::setStepSizeOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {1.0f, 0.1f},
@@ -43,7 +43,7 @@ void partMainJogParameters2::setStepSizeOptions(const QStringList& options) {
     rebuildSection(m_stepSection, "STEP SIZE", floatOptions, groups);
 }
 
-void partMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
+void PartMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {10, 1},
@@ -59,7 +59,7 @@ void partMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
     rebuildSection(m_feedXYSection, "FEEDRATE (XY)", floatOptions, groups);
 }
 
-void partMainJogParameters2::setFeedRateZOptions(const QStringList& options) {
+void PartMainJogParameters2::setFeedRateZOptions(const QStringList& options) {
     // max value, multiplier
     QMap<float, float> groups = {
         {10, 1},
@@ -75,40 +75,40 @@ void partMainJogParameters2::setFeedRateZOptions(const QStringList& options) {
     rebuildSection(m_feedZSection, "FEEDRATE (Z)", floatOptions, groups);
 }
 
-void partMainJogParameters2::setStepSize(float value) {
+void PartMainJogParameters2::setStepSize(float value) {
     m_stepSection.currentValue = value;
     updateSectionUiState(m_stepSection);
 }
 
-void partMainJogParameters2::setFeedRateXY(float value) {
+void PartMainJogParameters2::setFeedRateXY(float value) {
     m_feedXYSection.currentValue = value;
     updateSectionUiState(m_feedXYSection);
 }
 
-void partMainJogParameters2::setFeedRateZ(float value) {
+void PartMainJogParameters2::setFeedRateZ(float value) {
     m_feedZSection.currentValue = value;
     updateSectionUiState(m_feedZSection);
 }
 
-void partMainJogParameters2::setSeparateZFeedrate(bool enabled) {
+void PartMainJogParameters2::setSeparateZFeedrate(bool enabled) {
     if (m_feedZSection.mainFrame) {
         m_feedZSection.mainFrame->setVisible(enabled);
     }
 }
 
-float partMainJogParameters2::stepSize() const {
+float PartMainJogParameters2::stepSize() const {
     return m_stepSection.currentValue;
 }
 
-float partMainJogParameters2::feedRateXY() const {
+float PartMainJogParameters2::feedRateXY() const {
     return m_feedXYSection.currentValue;
 }
 
-float partMainJogParameters2::feedRateZ() const {
+float PartMainJogParameters2::feedRateZ() const {
     return m_feedZSection.currentValue;
 }
 
-QMap<float, QList<float>> partMainJogParameters2::groupSelections(const QList<float>& selections, QMap<float, float>& groups)
+QMap<float, QList<float>> PartMainJogParameters2::groupSelections(const QList<float>& selections, QMap<float, float>& groups)
 {
     QMap<float, QList<float>> groupedSelections;
     for (float selection : selections) {
@@ -126,7 +126,7 @@ QMap<float, QList<float>> partMainJogParameters2::groupSelections(const QList<fl
     return groupedSelections;
 }
 
-void partMainJogParameters2::rebuildSection(Section& section, const QString& title, const QList<float>& options, QMap<float, float>& groups)
+void PartMainJogParameters2::rebuildSection(Section& section, const QString& title, const QList<float>& options, QMap<float, float>& groups)
 {
     if (section.mainFrame) {
         ui->mainRowsLayout->removeWidget(section.mainFrame);
@@ -181,7 +181,7 @@ void partMainJogParameters2::rebuildSection(Section& section, const QString& tit
     gridLayout->setRowStretch(2, 2); // buttons
 }
 
-QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& name, QLabel** outValueLabel)
+QFrame* PartMainJogParameters2::createHeader(QWidget* parent, const QString& name, QLabel** outValueLabel)
 {
     QFrame* headFrame = new QFrame(parent);
     headFrame->setObjectName("header");
@@ -207,7 +207,7 @@ QFrame* partMainJogParameters2::createHeader(QWidget* parent, const QString& nam
     return headFrame;
 }
 
-StyledToolButton* partMainJogParameters2::createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section)
+StyledToolButton* PartMainJogParameters2::createButton(QWidget* parent, const QString& text, const QString& tag, float realValue, Section& section)
 {
     StyledToolButton *btn = new StyledToolButton(parent);
 
@@ -248,7 +248,7 @@ StyledToolButton* partMainJogParameters2::createButton(QWidget* parent, const QS
     return btn;
 }
 
-QLabel *partMainJogParameters2::createGrpLabel(QWidget *parent, const QString& text, const QString& tag)
+QLabel *PartMainJogParameters2::createGrpLabel(QWidget *parent, const QString& text, const QString& tag)
 {
     QLabel *btnsGroupLabel = new QLabel(parent);
 
@@ -259,21 +259,21 @@ QLabel *partMainJogParameters2::createGrpLabel(QWidget *parent, const QString& t
     return btnsGroupLabel;
 }
 
-void partMainJogParameters2::updateSectionUiState(Section& section)
+void PartMainJogParameters2::updateSectionUiState(Section& section)
 {
     if (section.valueLabel) {
         section.valueLabel->setText(QString::number(section.currentValue));
     }
 }
 
-bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
+bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() != QEvent::Enter && event->type() != QEvent::Leave) {
-        return partMainJogParametersInterface::eventFilter(watched, event);
+        return PartMainJogParametersInterface::eventFilter(watched, event);
     }
     QPushButton *btn = qobject_cast<QPushButton*>(watched);
     if (!btn) {
-        return partMainJogParametersInterface::eventFilter(watched, event);
+        return PartMainJogParametersInterface::eventFilter(watched, event);
     }
 
     SectionType sectionType = static_cast<SectionType>(btn->property("section").toInt());
@@ -282,7 +282,7 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     else if (sectionType == SectionType::FeedXY) section = &m_feedXYSection;
     else if (sectionType == SectionType::FeedZ) section = &m_feedZSection;
     if (!section || !section->valueLabel) {
-        return partMainJogParametersInterface::eventFilter(watched, event);
+        return PartMainJogParametersInterface::eventFilter(watched, event);
     }
 
     m_updateTimer.stop();
@@ -302,6 +302,6 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     }
     m_updateTimer.start();
 
-    return partMainJogParametersInterface::eventFilter(watched, event);
+    return PartMainJogParametersInterface::eventFilter(watched, event);
 }
 

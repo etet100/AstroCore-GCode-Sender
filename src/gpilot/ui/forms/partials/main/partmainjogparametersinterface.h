@@ -3,13 +3,13 @@
 
 #include <QFrame>
 
-class partMainJogParametersInterface : public QFrame
+class PartMainJogParametersInterface : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit partMainJogParametersInterface(QWidget *parent = nullptr) : QFrame(parent) {}
-    virtual ~partMainJogParametersInterface() = default;
+    explicit PartMainJogParametersInterface(QWidget *parent = nullptr) : QFrame(parent) {}
+    virtual ~PartMainJogParametersInterface() = default;
 
     virtual void setStepSizeOptions(const QStringList& options) = 0;
     virtual void setFeedRateXYOptions(const QStringList& options) = 0;

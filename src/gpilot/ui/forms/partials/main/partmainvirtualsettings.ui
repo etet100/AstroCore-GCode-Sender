@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PartMainVirtualSettings</class>
- <widget class="QWidget" name="PartMainVirtualSettings">
+ <class>partMainVirtualSettings</class>
+ <widget class="QWidget" name="partMainVirtualSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -170,7 +170,7 @@
   <connection>
    <sender>editX</sender>
    <signal>editingFinished()</signal>
-   <receiver>PartMainVirtualSettings</receiver>
+   <receiver>partMainVirtualSettings</receiver>
    <slot>onEditingFinished()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -186,7 +186,7 @@
   <connection>
    <sender>editY</sender>
    <signal>editingFinished()</signal>
-   <receiver>PartMainVirtualSettings</receiver>
+   <receiver>partMainVirtualSettings</receiver>
    <slot>onEditingFinished()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -202,7 +202,7 @@
   <connection>
    <sender>editZ</sender>
    <signal>editingFinished()</signal>
-   <receiver>PartMainVirtualSettings</receiver>
+   <receiver>partMainVirtualSettings</receiver>
    <slot>onEditingFinished()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -218,7 +218,7 @@
   <connection>
    <sender>editProbe</sender>
    <signal>editingFinished()</signal>
-   <receiver>PartMainVirtualSettings</receiver>
+   <receiver>partMainVirtualSettings</receiver>
    <slot>onEditingFinished()</slot>
    <hints>
     <hint type="sourcelabel">

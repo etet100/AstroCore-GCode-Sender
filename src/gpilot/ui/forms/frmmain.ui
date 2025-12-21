@@ -493,7 +493,7 @@ QLabel[overrided=&quot;false&quot;] {
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
-             <widget class="partMainOverride" name="overrides" native="true">
+             <widget class="PartMainOverride" name="overrides" native="true">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1316,7 +1316,7 @@ QLabel[overrided=&quot;false&quot;] {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="partMainStateLcd" name="state" native="true">
+             <widget class="PartMainStateLcd" name="state" native="true">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1360,7 +1360,7 @@ QLabel[overrided=&quot;false&quot;] {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
             <item>
-             <widget class="partMainControl" name="control" native="true">
+             <widget class="PartMainControl" name="control" native="true">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1388,7 +1388,7 @@ QLabel[overrided=&quot;false&quot;] {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
-             <widget class="partMainSpindle" name="spindle" native="true"/>
+             <widget class="PartMainSpindle" name="spindle" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1406,7 +1406,7 @@ QLabel[overrided=&quot;false&quot;] {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
-             <widget class="partMainJog" name="jog" native="true"/>
+             <widget class="PartMainJog" name="jog" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1761,7 +1761,7 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
         <item>
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0">
-           <widget class="partMainConsole" name="console" native="true">
+           <widget class="PartMainConsole" name="console" native="true">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -2208,7 +2208,7 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>partMainOverride</class>
+   <class>PartMainOverride</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainoverride.h</header>
    <container>1</container>

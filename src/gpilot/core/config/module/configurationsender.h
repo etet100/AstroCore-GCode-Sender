@@ -10,7 +10,7 @@
 
 class ConfigurationSender : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(bool useProgramStartCommands MEMBER m_useProgramStartCommands NOTIFY changed)

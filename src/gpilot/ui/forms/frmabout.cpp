@@ -2,11 +2,11 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include <QDesktopServices>
-#include "ui/forms/frmabout.h"
-#include "ui_frmabout.h"
+#include "ui/forms/FrmAbout.h"
+#include "ui_FrmAbout.h"
 #include <QFile>
 
-frmAbout::frmAbout(QWidget *parent) :
+FrmAbout::FrmAbout(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::frmAbout)
 {
@@ -21,17 +21,17 @@ frmAbout::frmAbout(QWidget *parent) :
     }
 }
 
-frmAbout::~frmAbout()
+FrmAbout::~FrmAbout()
 {
     delete ui;
 }
 
-void frmAbout::onCmdOkClicked()
+void FrmAbout::onCmdOkClicked()
 {
     this->hide();
 }
 
-void frmAbout::onLblAboutLinkActivated(const QString &link)
+void FrmAbout::onLblAboutLinkActivated(const QString &link)
 {
     QDesktopServices::openUrl(link);
 }

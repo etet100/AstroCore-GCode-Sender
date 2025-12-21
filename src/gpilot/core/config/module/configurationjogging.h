@@ -10,7 +10,7 @@
 
 class ConfigurationJogging : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(double step MEMBER m_step NOTIFY changed)

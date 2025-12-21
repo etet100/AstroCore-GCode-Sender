@@ -20,7 +20,7 @@
 #include <QDir>
 #include <QLocale>
 
-frmSettings::frmSettings(QWidget *parent, Configuration &configuration) :
+FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
     QDialog(parent),
     ui(new Ui::frmSettings),
     m_configuration(configuration),
@@ -28,12 +28,12 @@ frmSettings::frmSettings(QWidget *parent, Configuration &configuration) :
 {
     ui->setupUi(this);
 
-    connect(ui->cmdOK, &QAbstractButton::clicked, this, &frmSettings::onCmdOKClicked);
-    connect(ui->cmdCancel, &QAbstractButton::clicked, this, &frmSettings::onCmdCancelClicked);
-    connect(ui->cmdDefaults, &QAbstractButton::clicked, this, &frmSettings::onCmdDefaultsClicked);
-    connect(ui->cmdSerialPortsRefresh, &QAbstractButton::clicked, this, &frmSettings::onCmdSerialPortsRefreshClicked);
-    connect(ui->radArcDegreeMode, &QRadioButton::toggled, this, &frmSettings::onArcApproximationModeChanged);
-    connect(ui->radArcLengthMode, &QRadioButton::toggled, this, &frmSettings::onArcApproximationModeChanged);
+    connect(ui->cmdOK, &QAbstractButton::clicked, this, &FrmSettings::onCmdOKClicked);
+    connect(ui->cmdCancel, &QAbstractButton::clicked, this, &FrmSettings::onCmdCancelClicked);
+    connect(ui->cmdDefaults, &QAbstractButton::clicked, this, &FrmSettings::onCmdDefaultsClicked);
+    connect(ui->cmdSerialPortsRefresh, &QAbstractButton::clicked, this, &FrmSettings::onCmdSerialPortsRefreshClicked);
+    connect(ui->radArcDegreeMode, &QRadioButton::toggled, this, &FrmSettings::onArcApproximationModeChanged);
+    connect(ui->radArcLengthMode, &QRadioButton::toggled, this, &FrmSettings::onArcApproximationModeChanged);
     connect(ui->chkOverrideMaxTravel, &QAbstractButton::toggled, [this](bool checked) {
         ui->txtMaxTravelX->setEnabled(checked);
         ui->txtMaxTravelY->setEnabled(checked);
@@ -48,7 +48,7 @@ frmSettings::frmSettings(QWidget *parent, Configuration &configuration) :
     }
 
     ui->listCategories->item(0)->setSelected(true);
-    connect(ui->scrollSettings->verticalScrollBar(), &QAbstractSlider::valueChanged, this, &frmSettings::onScrollBarValueChanged);
+    connect(ui->scrollSettings->verticalScrollBar(), &QAbstractSlider::valueChanged, this, &FrmSettings::onScrollBarValueChanged);
     // connect(this, SIGNAL(settingsSetToDefault()), parent, SIGNAL(settingsSetToDefault()));
 
     searchForSerialPorts();
@@ -70,7 +70,7 @@ frmSettings::frmSettings(QWidget *parent, Configuration &configuration) :
     // Connection mode
     ui->frameConnectionRawSocket->hide();
     ui->frameConnectionSimulator->hide();
-    connect(ui->cboConnectionMode, &QComboBox::currentIndexChanged, this, &frmSettings::onConnectionModeChanged);
+    connect(ui->cboConnectionMode, &QComboBox::currentIndexChanged, this, &FrmSettings::onConnectionModeChanged);
 
     m_animatingScrollBox = false;
     m_scrollingManuallyScrollBox = false;
@@ -81,16 +81,16 @@ frmSettings::frmSettings(QWidget *parent, Configuration &configuration) :
     ui->cboFpsLock->setValidator(&m_intValidator);
     ui->cboFontSize->setValidator(&m_intValidator);
 
-    connect(ui->jogging, &partSettingsJogging::validityChanged, this, &frmSettings::onWidgetValidity);
-    //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &frmSettings::onWidgetValidity);)
+    connect(ui->jogging, &partSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
+    //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &FrmSettings::onWidgetValidity);)
 }
 
-frmSettings::~frmSettings()
+FrmSettings::~FrmSettings()
 {
     delete ui;
 }
 
-void frmSettings::initializeWidgets()
+void FrmSettings::initializeWidgets()
 {
     const ConfigurationConsole &console = m_configuration.consoleModule();
     ui->chkConsoleAutocompletion->setChecked(console.commandAutoCompletion());
@@ -187,7 +187,7 @@ void frmSettings::initializeWidgets()
     ui->jogging->setFeedChoices(jogging.feedChoices());
 }
 
-void frmSettings::applySettings()
+void FrmSettings::applySettings()
 {
     ConfigurationConsole &console = m_configuration.consoleModule();
     console.m_commandAutoCompletion = ui->chkConsoleAutocompletion->isChecked();
@@ -278,7 +278,7 @@ void frmSettings::applySettings()
     jogging.m_feedChoices = ui->jogging->feedChoices();
 }
 
-void frmSettings::widgetValidity(QString widgetName, bool valid)
+void FrmSettings::widgetValidity(QString widgetName, bool valid)
 {
     if (valid) {
         invalidWidgets.removeOne(widgetName);
@@ -288,12 +288,12 @@ void frmSettings::widgetValidity(QString widgetName, bool valid)
     ui->cmdOK->setEnabled(invalidWidgets.empty());
 }
 
-void frmSettings::onWidgetValidity(QString widgetName, bool valid)
+void FrmSettings::onWidgetValidity(QString widgetName, bool valid)
 {
     widgetValidity(widgetName, valid);
 }
 
-int frmSettings::exec()
+int FrmSettings::exec()
 {
     // Store settings to undo
     m_storedValues.clear();
@@ -331,7 +331,7 @@ int frmSettings::exec()
     return result;
 }
 
-void frmSettings::undo()
+void FrmSettings::undo()
 {
     foreach (QAbstractSpinBox* o, this->findChildren<QAbstractSpinBox*>())
         o->setProperty("value", m_storedValues.takeFirst());
@@ -352,7 +352,7 @@ void frmSettings::undo()
         o->setPlainText(m_storedPlainTexts.takeFirst());
 }
 
-void frmSettings::addCustomSettings(QGroupBox *box)
+void FrmSettings::addCustomSettings(QGroupBox *box)
 {
     static_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout())->addWidget(box);
 
@@ -362,7 +362,7 @@ void frmSettings::addCustomSettings(QGroupBox *box)
     m_customSettings.append(box);
 }
 
-void frmSettings::on_listCategories_currentRowChanged(int currentRow)
+void FrmSettings::on_listCategories_currentRowChanged(int currentRow)
 {
     static QPropertyAnimation *animation;
 
@@ -397,7 +397,7 @@ void frmSettings::on_listCategories_currentRowChanged(int currentRow)
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void frmSettings::onScrollBarValueChanged(int value)
+void FrmSettings::onScrollBarValueChanged(int value)
 {
     Q_UNUSED(value)
 
@@ -421,7 +421,7 @@ void frmSettings::onScrollBarValueChanged(int value)
     }
 }
 
-void frmSettings::searchForSerialPorts()
+void FrmSettings::searchForSerialPorts()
 {
     ui->cboSerialPort->clear();
 
@@ -430,37 +430,37 @@ void frmSettings::searchForSerialPorts()
     }
 }
 
-void frmSettings::onCmdSerialPortsRefreshClicked()
+void FrmSettings::onCmdSerialPortsRefreshClicked()
 {
     searchForSerialPorts();
 }
 
-void frmSettings::onCmdOKClicked()
+void FrmSettings::onCmdOKClicked()
 {
     applySettings();
 
     this->accept();
 }
 
-void frmSettings::onCmdCancelClicked()
+void FrmSettings::onCmdCancelClicked()
 {
     this->reject();
 }
 
-void frmSettings::on_cboToolType_currentIndexChanged(int index)
+void FrmSettings::on_cboToolType_currentIndexChanged(int index)
 {
     ui->lblToolAngle->setEnabled(index == 1);
     ui->txtToolAngle->setEnabled(index == 1);
 }
 
-void frmSettings::resetToDefaults()
+void FrmSettings::resetToDefaults()
 {
     m_configuration.setDefaults();
     invalidWidgets.clear();
     initializeWidgets();
 }
 
-void frmSettings::onCmdDefaultsClicked()
+void FrmSettings::onCmdDefaultsClicked()
 {
     if (QMessageBox::warning(this, qApp->applicationDisplayName(), tr("Reset settings to default values?"),
                              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel) != QMessageBox::Yes) return;
@@ -479,7 +479,7 @@ void frmSettings::onCmdDefaultsClicked()
     emit settingsSetToDefault();
 }
 
-void frmSettings::onArcApproximationModeChanged(bool checked)
+void FrmSettings::onArcApproximationModeChanged(bool checked)
 {
     Q_UNUSED(checked);
 
@@ -487,7 +487,7 @@ void frmSettings::onArcApproximationModeChanged(bool checked)
     ui->txtArcDegree->setEnabled(ui->radArcDegreeMode->isChecked());
 }
 
-void frmSettings::onConnectionModeChanged(int mod)
+void FrmSettings::onConnectionModeChanged(int mod)
 {
     ui->frameConnectionRawSocket->hide();
     ui->frameConnectionSerial->hide();
@@ -512,7 +512,7 @@ void frmSettings::onConnectionModeChanged(int mod)
     }
 }
 
-void frmSettings::showEvent(QShowEvent *se)
+void FrmSettings::showEvent(QShowEvent *se)
 {
     QDialog::showEvent(se);
     if (m_firstShow) {
@@ -521,7 +521,7 @@ void frmSettings::showEvent(QShowEvent *se)
     }
 }
 
-void frmSettings::resizeEvent(QResizeEvent *re)
+void FrmSettings::resizeEvent(QResizeEvent *re)
 {
     QDialog::resizeEvent(re);
     if (!m_firstShow) {
@@ -529,7 +529,7 @@ void frmSettings::resizeEvent(QResizeEvent *re)
     }
 }
 
-void frmSettings::changeEvent(QEvent *ce)
+void FrmSettings::changeEvent(QEvent *ce)
 {
     QDialog::changeEvent(ce);
     if (ce->type() == QEvent::WindowStateChange) {
@@ -537,7 +537,7 @@ void frmSettings::changeEvent(QEvent *ce)
     }
 }
 
-void frmSettings::moveEvent(QMoveEvent *me)
+void FrmSettings::moveEvent(QMoveEvent *me)
 {
     QDialog::moveEvent(me);
     if (!m_firstShow) {

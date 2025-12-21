@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
     ThemeManager::instance().initialize(&app, configuration.uiModule().darkTheme());
 
-    frmMain form(configuration);
+    FrmMain form(configuration);
     form.show();
 
     return app.exec();

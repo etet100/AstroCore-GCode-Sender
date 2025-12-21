@@ -11,7 +11,7 @@
 
 class ConfigurationConnection : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(QString serialPort MEMBER m_serialPort NOTIFY changed)

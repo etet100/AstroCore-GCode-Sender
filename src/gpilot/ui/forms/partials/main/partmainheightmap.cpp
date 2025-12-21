@@ -5,14 +5,14 @@
 #include "partmainheightmap.h"
 #include "ui_partmainheightmap.h"
 
-partMainHeightmap::partMainHeightmap(QWidget *parent)
+PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partMainHeightmap)
 {
     ui->setupUi(this);
 }
 
-partMainHeightmap::~partMainHeightmap()
+PartMainHeightmap::~PartMainHeightmap()
 {
     delete ui;
 }

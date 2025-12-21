@@ -2,29 +2,29 @@
 #include "ui_partmaincontrol.h"
 #include <QDebug>
 
-partMainControl::partMainControl(QWidget *parent)
+PartMainControl::PartMainControl(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partMainControl)
 {
     ui->setupUi(this);
 }
 
-partMainControl::~partMainControl()
+PartMainControl::~PartMainControl()
 {
     delete ui;
 }
 
-void partMainControl::enable()
+void PartMainControl::enable()
 {
 
 }
 
-void partMainControl::disable()
+void PartMainControl::disable()
 {
 
 }
 
-void partMainControl::updateControlsState(bool portOpened, bool process)
+void PartMainControl::updateControlsState(bool portOpened, bool process)
 {
     // ui->cmdCheck->setEnabled(portOpened && !process);
     // ui->cmdHome->setEnabled(!process);
@@ -34,7 +34,7 @@ void partMainControl::updateControlsState(bool portOpened, bool process)
     // ui->cmdSleep->setEnabled(!process);
 }
 
-void partMainControl::updateControlsState(SenderState senderState, MachineState machineState)
+void PartMainControl::updateControlsState(SenderState senderState, MachineState machineState)
 {
     ui->cmdCheck->setEnabled(machineState != MachineState::Run && (senderState == SenderState::Stopped));
     ui->cmdCheck->setChecked(machineState == MachineState::Check);
@@ -44,69 +44,69 @@ void partMainControl::updateControlsState(SenderState senderState, MachineState 
     ui->cmdZeroXY->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
 }
 
-bool partMainControl::hold()
+bool PartMainControl::hold()
 {
     return ui->cmdHold->isChecked();
 }
 
-void partMainControl::setFlood(bool state)
+void PartMainControl::setFlood(bool state)
 {
     ui->cmdFlood->setChecked(state);
 }
 
-void partMainControl::onCmdHomeClicked()
+void PartMainControl::onCmdHomeClicked()
 {
     emit this->home();
     emit this->command(GRBLCommand::Home);
 }
 
-void partMainControl::onCmdCheckClicked(bool checked)
+void PartMainControl::onCmdCheckClicked(bool checked)
 {
 
 }
 
-void partMainControl::onCmdResetClicked()
+void PartMainControl::onCmdResetClicked()
 {
     emit this->reset();
     emit this->command(GRBLCommand::Reset);
 }
 
-void partMainControl::onCmdUnlockClicked()
+void PartMainControl::onCmdUnlockClicked()
 {
     emit this->unlock();
     emit this->command(GRBLCommand::Unlock);
 }
 
-void partMainControl::onCmdHoldClicked(bool checked)
+void PartMainControl::onCmdHoldClicked(bool checked)
 {
     qDebug() << "Hold" << checked;
 }
 
-void partMainControl::onCmdSleepClicked()
+void PartMainControl::onCmdSleepClicked()
 {
 }
 
-void partMainControl::onCmdDoorClicked()
+void PartMainControl::onCmdDoorClicked()
 {
 }
 
-void partMainControl::onCmdFloodClicked(bool checked)
+void PartMainControl::onCmdFloodClicked(bool checked)
 {
 }
 
-void partMainControl::onCmdProbeClicked()
+void PartMainControl::onCmdProbeClicked()
 {
     emit this->probe();
     emit this->command(GRBLCommand::Probe);
 }
 
-void partMainControl::onCmdZeroZClicked()
+void PartMainControl::onCmdZeroZClicked()
 {
     emit this->zeroZ();
     emit this->command(GRBLCommand::ZeroZ);
 }
 
-void partMainControl::onCmdZeroXYClicked()
+void PartMainControl::onCmdZeroXYClicked()
 {
     emit this->zeroXY();
     emit this->command(GRBLCommand::ZeroXY);

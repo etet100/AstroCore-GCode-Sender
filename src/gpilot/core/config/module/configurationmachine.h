@@ -11,7 +11,7 @@
 
 class ConfigurationMachine : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(ConfigurationModule::MinMax spindleSpeedRange MEMBER m_spindleSpeedRange NOTIFY changed)

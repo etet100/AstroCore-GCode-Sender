@@ -12,13 +12,13 @@ namespace Ui {
 class partMainControl;
 }
 
-class partMainControl : public QWidget
+class PartMainControl : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit partMainControl(QWidget *parent = nullptr);
-    ~partMainControl();
+    explicit PartMainControl(QWidget *parent = nullptr);
+    ~PartMainControl();
     void enable();
     void disable();
     void updateControlsState(bool portOpened, bool process);

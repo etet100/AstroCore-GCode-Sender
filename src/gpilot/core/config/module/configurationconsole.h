@@ -10,7 +10,7 @@
 
 class ConfigurationConsole : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(bool showProgramCommands MEMBER m_showProgramCommands NOTIFY changed)

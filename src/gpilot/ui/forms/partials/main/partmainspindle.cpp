@@ -5,14 +5,14 @@
 #include "partmainspindle.h"
 #include "ui_partmainspindle.h"
 
-partMainSpindle::partMainSpindle(QWidget *parent)
+PartMainSpindle::PartMainSpindle(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partMainSpindle)
 {
     ui->setupUi(this);
 }
 
-partMainSpindle::~partMainSpindle()
+PartMainSpindle::~PartMainSpindle()
 {
     delete ui;
 }

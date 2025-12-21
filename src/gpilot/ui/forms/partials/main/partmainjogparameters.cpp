@@ -1,8 +1,8 @@
 #include "partmainjogparameters.h"
 #include "ui_partmainjogparameters.h"
 
-partMainJogParameters::partMainJogParameters(QWidget* parent)
-    : partMainJogParametersInterface(parent)
+PartMainJogParameters::PartMainJogParameters(QWidget* parent)
+    : PartMainJogParametersInterface(parent)
     , ui(new Ui::partMainJogParameters)
 {
     ui->setupUi(this);
@@ -33,12 +33,12 @@ partMainJogParameters::partMainJogParameters(QWidget* parent)
     });
 }
 
-partMainJogParameters::~partMainJogParameters()
+PartMainJogParameters::~PartMainJogParameters()
 {
     delete ui;
 }
 
-void partMainJogParameters::updateControls()
+void PartMainJogParameters::updateControls()
 {
     // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
@@ -48,7 +48,7 @@ void partMainJogParameters::updateControls()
     // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 }
 
-// partMainJogParameters::partMainJog(QWidget *parent)
+// PartMainJogParameters::partMainJog(QWidget *parent)
 //     : QWidget(parent)
 //     , ui(new Ui::partMainJog)
 // {
@@ -62,7 +62,7 @@ void partMainJogParameters::updateControls()
 //     ui->cmdYPlus->setBackColor(backgroundColor);
 // }
 
-void partMainJogParameters::configurationUpdated()
+void PartMainJogParameters::configurationUpdated()
 {
     // Sep. feed settings for Z axis
 
@@ -102,12 +102,12 @@ void partMainJogParameters::configurationUpdated()
     m_initialized = true;
 }
 
-void partMainJogParameters::initialize(ConfigurationJogging &configurationJogging)
+void PartMainJogParameters::initialize(ConfigurationJogging &configurationJogging)
 {
     m_configurationJogging = &configurationJogging;
 }
 
-void partMainJogParameters::onCmdFeedChanged(int index)
+void PartMainJogParameters::onCmdFeedChanged(int index)
 {
     if (!m_initialized) {
         return;
@@ -126,7 +126,7 @@ void partMainJogParameters::onCmdFeedChanged(int index)
     emit this->parametersChanged(feedRate, m_configurationJogging->step());
 }
 
-void partMainJogParameters::onCmdFeedZChanged(int index)
+void PartMainJogParameters::onCmdFeedZChanged(int index)
 {
     if (!m_initialized) {
         return;
@@ -145,7 +145,7 @@ void partMainJogParameters::onCmdFeedZChanged(int index)
     emit this->parametersChanged(feedRate, m_configurationJogging->step());
 }
 
-void partMainJogParameters::onCmdStepChanged(int index)
+void PartMainJogParameters::onCmdStepChanged(int index)
 {
     if (!m_initialized) {
         return;
@@ -169,7 +169,7 @@ void partMainJogParameters::onCmdStepChanged(int index)
     emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
 }
 
-void partMainJogParameters::onChkSeparateZFeedToggled(bool checked)
+void PartMainJogParameters::onChkSeparateZFeedToggled(bool checked)
 {
     m_configurationJogging->setSeparateFeedZ(checked);
     ui->middlePartLayout->setRowVisible(2, checked);
@@ -177,46 +177,46 @@ void partMainJogParameters::onChkSeparateZFeedToggled(bool checked)
     qDebug() << "[Jog UI] Separate Z feed toggled" << checked;
 }
 
-void partMainJogParameters::setStepSizeOptions(const QStringList& options) {
+void PartMainJogParameters::setStepSizeOptions(const QStringList& options) {
     ui->cboJogStep->setItems(options);
 }
 
-void partMainJogParameters::setFeedRateXYOptions(const QStringList& options) {
+void PartMainJogParameters::setFeedRateXYOptions(const QStringList& options) {
     ui->cboJogFeed->setItems(options);
 }
 
-void partMainJogParameters::setFeedRateZOptions(const QStringList& options) {
+void PartMainJogParameters::setFeedRateZOptions(const QStringList& options) {
     ui->cboJogFeedZ->setItems(options);
 }
 
-void partMainJogParameters::setStepSize(float value) {
+void PartMainJogParameters::setStepSize(float value) {
     ui->cboJogStep->setCurrentText(QString::number(value));
 }
 
-void partMainJogParameters::setFeedRateXY(float value) {
+void PartMainJogParameters::setFeedRateXY(float value) {
     ui->cboJogFeed->setCurrentText(QString::number(value));
 }
 
-void partMainJogParameters::setFeedRateZ(float value) {
+void PartMainJogParameters::setFeedRateZ(float value) {
     ui->cboJogFeedZ->setCurrentText(QString::number(value));
 }
 
-void partMainJogParameters::setSeparateZFeedrate(bool enabled) {
+void PartMainJogParameters::setSeparateZFeedrate(bool enabled) {
     ui->middlePartLayout->setRowVisible(2, enabled);
 }
 
-// bool partMainJogParameters::isSeparateZFeedrate() const {
+// bool PartMainJogParameters::isSeparateZFeedrate() const {
 //     return ui->cboJogFeedZ->isVisible();
 // }
 
-float partMainJogParameters::stepSize() const {
+float PartMainJogParameters::stepSize() const {
     return ui->cboJogStep->currentText().toFloat();
 }
 
-float partMainJogParameters::feedRateXY() const {
+float PartMainJogParameters::feedRateXY() const {
     return ui->cboJogFeed->currentText().toFloat();
 }
 
-float partMainJogParameters::feedRateZ() const {
+float PartMainJogParameters::feedRateZ() const {
     return ui->cboJogFeedZ->currentText().toFloat();
 }

@@ -10,7 +10,7 @@
 #include <QWidget>
 
 namespace Ui {
-class PartMainVirtualSettings;
+class partMainVirtualSettings;
 }
 
 class PartMainVirtualSettings : public QWidget
@@ -25,7 +25,7 @@ class PartMainVirtualSettings : public QWidget
         void deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
 
     private:
-        Ui::PartMainVirtualSettings *ui;
+        Ui::partMainVirtualSettings *ui;
         HomingDirs m_homingDirs = HomingDirs();
         void set(int val);
         float calcFinalAxisPos(HomingDir homingDir, float currentPos, int val);

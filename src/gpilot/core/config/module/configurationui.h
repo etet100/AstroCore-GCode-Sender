@@ -17,7 +17,7 @@ struct DockableState {
 
 class ConfigurationUI : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(int fontSize MEMBER m_fontSize NOTIFY changed)

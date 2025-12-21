@@ -3,7 +3,7 @@
 #include "ui_partmainstatelcd.h"
 #include <QFontDatabase>
 
-partMainStateLcd::partMainStateLcd(QWidget *parent)
+PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     : PartMainStateBase(parent)
     , ui(new Ui::partMainStateLcd)
 {
@@ -18,23 +18,23 @@ partMainStateLcd::partMainStateLcd(QWidget *parent)
     }
 }
 
-partMainStateLcd::~partMainStateLcd()
+PartMainStateLcd::~PartMainStateLcd()
 {
     delete ui;
 }
 
-void partMainStateLcd::setStatusText(QString status, QString bgColor, QString fgColor)
+void PartMainStateLcd::setStatusText(QString status, QString bgColor, QString fgColor)
 {
     ui->txtStatus->setText(status);
     ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor, fgColor));
 }
 
-void partMainStateLcd::setConName(QString name)
+void PartMainStateLcd::setConName(QString name)
 {
     ui->txtConName->setText(name);
 }
 
-void partMainStateLcd::resizeEvent(QResizeEvent *event)
+void PartMainStateLcd::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
 
@@ -59,31 +59,31 @@ void partMainStateLcd::resizeEvent(QResizeEvent *event)
     ui->txtMZ->setStyleSheet(styleSheet);
 }
 
-void partMainStateLcd::setState(MachineState state)
+void PartMainStateLcd::setState(MachineState state)
 {
     Q_UNUSED(state);
 }
 
-QString partMainStateLcd::formatPos(float val)
+QString PartMainStateLcd::formatPos(float val)
 {
     return QString("%1").arg(val, 0, 'f', 3).rightJustified(6, ' ');
 }
 
-void partMainStateLcd::setWorkCoordinates(QVector3D pos)
+void PartMainStateLcd::setWorkCoordinates(QVector3D pos)
 {
     ui->txtWX->setText(formatPos(pos.x()));
     ui->txtWY->setText(formatPos(pos.y()));
     ui->txtWZ->setText(formatPos(pos.z()));
 }
 
-void partMainStateLcd::setMachineCoordinates(QVector3D pos)
+void PartMainStateLcd::setMachineCoordinates(QVector3D pos)
 {
     ui->txtMX->setText(formatPos(pos.x()));
     ui->txtMY->setText(formatPos(pos.y()));
     ui->txtMZ->setText(formatPos(pos.z()));
 }
 
-void partMainStateLcd::setUnits(Units units)
+void PartMainStateLcd::setUnits(Units units)
 {
     // int prec = units == Units::Millimeters ? 3 : 4;
     // Q_UNUSED(prec);

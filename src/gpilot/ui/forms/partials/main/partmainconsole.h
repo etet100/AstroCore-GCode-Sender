@@ -15,14 +15,14 @@ namespace Ui {
 class partMainConsole;
 }
 
-class partMainConsole : public QWidget
+class PartMainConsole : public QWidget
 {
     Q_OBJECT
 
     public:
-        explicit partMainConsole(QWidget *parent);
+        explicit PartMainConsole(QWidget *parent);
         void initialize(ConfigurationConsole &configurationConsole);
-        ~partMainConsole();
+        ~PartMainConsole();
         void append(QString text);
         void appendSystem(QString text);
         void append(CommandAttributes commandAttributes);

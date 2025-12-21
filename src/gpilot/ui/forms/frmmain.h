@@ -78,13 +78,13 @@ public:
     }
 };
 
-class frmMain : public QMainWindow
+class FrmMain : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit frmMain(Configuration &configuration, QWidget *parent = 0);
-    ~frmMain();
+    explicit FrmMain(Configuration &configuration, QWidget *parent = 0);
+    ~FrmMain();
 
     //void writeConsole(QString command);
     void initializeCommunicator();

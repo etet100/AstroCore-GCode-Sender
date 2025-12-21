@@ -8,7 +8,7 @@
 
 PartMainVirtualSettings::PartMainVirtualSettings(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::PartMainVirtualSettings)
+    , ui(new Ui::partMainVirtualSettings)
 {
     ui->setupUi(this);
 }

@@ -9,7 +9,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
-partMainConsole::partMainConsole(QWidget *parent)
+PartMainConsole::PartMainConsole(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partMainConsole)
 {
@@ -26,7 +26,7 @@ partMainConsole::partMainConsole(QWidget *parent)
     ui->cboCommand->installEventFilter(this);
 }
 
-void partMainConsole::initialize(ConfigurationConsole &configurationConsole)
+void PartMainConsole::initialize(ConfigurationConsole &configurationConsole)
 {
     m_configurationConsole = &configurationConsole;
 
@@ -46,28 +46,28 @@ void partMainConsole::initialize(ConfigurationConsole &configurationConsole)
     }
 }
 
-partMainConsole::~partMainConsole()
+PartMainConsole::~PartMainConsole()
 {
     delete ui;
 }
 
-void partMainConsole::applyDarkBackgroundMode()
+void PartMainConsole::applyDarkBackgroundMode()
 {
     ui->txtConsole->setStyleSheet("QPlainTextEdit { background-color: #000000; color: #FFFFFF; }");
 }
 
-void partMainConsole::append(QString text)
+void PartMainConsole::append(QString text)
 {
     ui->txtConsole->appendPlainText(text);
 }
 
-void partMainConsole::appendSystem(QString text)
+void PartMainConsole::appendSystem(QString text)
 {
     if (!m_configurationConsole->showSystemCommands()) return;
     append(text);
 }
 
-void partMainConsole::append(CommandAttributes commandAttributes)
+void PartMainConsole::append(CommandAttributes commandAttributes)
 {
     append(">> " + commandAttributes.commandLine);
 
@@ -76,7 +76,7 @@ void partMainConsole::append(CommandAttributes commandAttributes)
     block.setUserData(blockData);
 }
 
-void partMainConsole::appendFiltered(CommandAttributes commandAttributes)
+void PartMainConsole::appendFiltered(CommandAttributes commandAttributes)
 {
     switch (commandAttributes.source) {
         case CommandSource::System:
@@ -95,7 +95,7 @@ void partMainConsole::appendFiltered(CommandAttributes commandAttributes)
     append(commandAttributes);
 }
 
-void partMainConsole::appendResponse(CommandAttributes commandAttributes)
+void PartMainConsole::appendResponse(CommandAttributes commandAttributes)
 {
     QTextDocument *document = ui->txtConsole->document();
     QTextBlock block = document->lastBlock();
@@ -129,7 +129,7 @@ void partMainConsole::appendResponse(CommandAttributes commandAttributes)
     } while (block.isValid());
 }
 
-int partMainConsole::appendProgress(QString text)
+int PartMainConsole::appendProgress(QString text)
 {
     ProgressBlockData *blockData = new ProgressBlockData(text, m_index++);
     append(blockData->text(0));
@@ -140,7 +140,7 @@ int partMainConsole::appendProgress(QString text)
     return blockData->index();
 }
 
-void partMainConsole::setProgress(int index, int progress)
+void PartMainConsole::setProgress(int index, int progress)
 {
     QTextDocument *document = ui->txtConsole->document();
     QTextBlock block = document->lastBlock();
@@ -170,12 +170,12 @@ void partMainConsole::setProgress(int index, int progress)
     } while (block.isValid());
 }
 
-void partMainConsole::clear()
+void PartMainConsole::clear()
 {
     ui->txtConsole->clear();
 }
 
-void partMainConsole::send()
+void PartMainConsole::send()
 {
     QString command = ui->cboCommand->currentText().trimmed();
     ui->cboCommand->clearEditText();
@@ -197,35 +197,35 @@ void partMainConsole::send()
     emit newCommand(command, false);
 }
 
-bool partMainConsole::isScrolledToEnd()
+bool PartMainConsole::isScrolledToEnd()
 {
     return ui->txtConsole->verticalScrollBar()->value()
                         == ui->txtConsole->verticalScrollBar()->maximum();
 }
 
-void partMainConsole::scrollToEnd()
+void PartMainConsole::scrollToEnd()
 {
     ui->txtConsole->verticalScrollBar()->setValue(
         ui->txtConsole->verticalScrollBar()->maximum());
 }
 
-QTextBlock partMainConsole::lastBlock()
+QTextBlock PartMainConsole::lastBlock()
 {
     return ui->txtConsole->document()->lastBlock();
 }
 
-void partMainConsole::onClearClicked()
+void PartMainConsole::onClearClicked()
 {
     clear();
     emit consoleCleared();
 }
 
-void partMainConsole::onSendClicked()
+void PartMainConsole::onSendClicked()
 {
     send();
 }
 
-QString partMainConsole::ProgressBlockData::text(int progress)
+QString PartMainConsole::ProgressBlockData::text(int progress)
 {
     return QString("%1 [%2%]").arg(m_text).arg(progress);
 
@@ -237,12 +237,12 @@ QString partMainConsole::ProgressBlockData::text(int progress)
     // return QString("%1 [%2%3]").arg(m_text).arg(QString("#").repeated(scaled)).arg(QString("_").repeated(rest));
 }
 
-void partMainConsole::setInternalCommands(const QStringList& commands)
+void PartMainConsole::setInternalCommands(const QStringList& commands)
 {
     m_internalCommands = commands;
 }
 
-bool partMainConsole::eventFilter(QObject *watched, QEvent *event)
+bool PartMainConsole::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->cboCommand && event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
@@ -278,7 +278,7 @@ bool partMainConsole::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-void partMainConsole::handleAutocomplete()
+void PartMainConsole::handleAutocomplete()
 {
     QString currentText = ui->cboCommand->currentText();
 
@@ -319,7 +319,7 @@ void partMainConsole::handleAutocomplete()
     }
 }
 
-void partMainConsole::cancelAutocomplete()
+void PartMainConsole::cancelAutocomplete()
 {
     if (!m_autocompletePrefix.isEmpty()) {
         QString restoredText = ":" + m_autocompletePrefix;
@@ -333,7 +333,7 @@ void partMainConsole::cancelAutocomplete()
     m_autocompleteMatches.clear();
 }
 
-QStringList partMainConsole::findMatches(const QString& prefix)
+QStringList PartMainConsole::findMatches(const QString& prefix)
 {
     QStringList matches;
     QString lowerPrefix = prefix.toLower();

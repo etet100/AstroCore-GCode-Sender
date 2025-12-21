@@ -81,7 +81,7 @@
     </layout>
    </item>
    <item>
-    <widget class="partMainJogParameters2" name="widget" native="true">
+    <widget class="PartMainJogParameters2" name="widget" native="true">
      <property name="minimumSize">
       <size>
        <width>0</width>

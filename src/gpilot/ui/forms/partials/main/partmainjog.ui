@@ -277,7 +277,7 @@
     </layout>
    </item>
    <item>
-    <widget class="partMainJogParameters2" name="jogParameters" native="true">
+    <widget class="PartMainJogParameters2" name="jogParameters" native="true">
      <property name="enabled">
       <bool>true</bool>
      </property>

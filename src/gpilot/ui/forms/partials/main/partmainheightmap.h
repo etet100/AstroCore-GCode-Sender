@@ -11,13 +11,13 @@ namespace Ui {
 class partMainHeightmap;
 }
 
-class partMainHeightmap : public QWidget
+class PartMainHeightmap : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partMainHeightmap(QWidget *parent = nullptr);
-        ~partMainHeightmap();
+        explicit PartMainHeightmap(QWidget *parent = nullptr);
+        ~PartMainHeightmap();
 
     private:
         Ui::partMainHeightmap *ui;

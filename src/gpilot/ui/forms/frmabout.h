@@ -10,13 +10,13 @@ namespace Ui {
 class frmAbout;
 }
 
-class frmAbout : public QDialog
+class FrmAbout : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit frmAbout(QWidget *parent = 0);
-    ~frmAbout();
+    explicit FrmAbout(QWidget *parent = 0);
+    ~FrmAbout();
 
 private slots:
     void onCmdOkClicked();

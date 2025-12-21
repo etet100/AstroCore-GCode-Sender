@@ -20,13 +20,13 @@ class frmSettings;
 }
 
 // TODO: Add overriding bounds settings
-class frmSettings : public QDialog
+class FrmSettings : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit frmSettings(QWidget *parent, Configuration &configuration);
-    ~frmSettings();
+    explicit FrmSettings(QWidget *parent, Configuration &configuration);
+    ~FrmSettings();
 
     Ui::frmSettings *ui;
 

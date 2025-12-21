@@ -8,12 +8,12 @@ namespace Ui {
 class partMainStateLcd;
 }
 
-class partMainStateLcd : public PartMainStateBase
+class PartMainStateLcd : public PartMainStateBase
 {
     Q_OBJECT
 public:
-    explicit partMainStateLcd(QWidget *parent);
-    ~partMainStateLcd();
+    explicit PartMainStateLcd(QWidget *parent);
+    ~PartMainStateLcd();
     void setState(MachineState) override;
     void setWorkCoordinates(QVector3D) override;
     void setMachineCoordinates(QVector3D) override;

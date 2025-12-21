@@ -11,13 +11,13 @@ namespace Ui {
 class partMainSpindle;
 }
 
-class partMainSpindle : public QWidget
+class PartMainSpindle : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partMainSpindle(QWidget *parent = nullptr);
-        ~partMainSpindle();
+        explicit PartMainSpindle(QWidget *parent = nullptr);
+        ~PartMainSpindle();
 
     private:
         Ui::partMainSpindle *ui;

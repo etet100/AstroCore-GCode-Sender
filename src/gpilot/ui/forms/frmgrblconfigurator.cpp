@@ -257,7 +257,7 @@ std::vector<ConfigGroup> ConfigMap = {
     }
 };
 
-frmGrblConfigurator::frmGrblConfigurator(QWidget *parent, ConfigurationUI &uiConfiguration, Communicator *communicator)
+FrmGrblConfigurator::FrmGrblConfigurator(QWidget *parent, ConfigurationUI &uiConfiguration, Communicator *communicator)
     : QDialog(parent)
     , ui(new Ui::frmGrblConfigurator)
     , m_uiConfiguration(uiConfiguration)
@@ -300,17 +300,17 @@ frmGrblConfigurator::frmGrblConfigurator(QWidget *parent, ConfigurationUI &uiCon
 
     ui->editor->adjustToContents();
 
-    connect(ui->editor, &QTreeWidget::itemChanged, this, &frmGrblConfigurator::itemChanged);
+    connect(ui->editor, &QTreeWidget::itemChanged, this, &FrmGrblConfigurator::itemChanged);
 
     update();
 }
 
-frmGrblConfigurator::~frmGrblConfigurator()
+FrmGrblConfigurator::~FrmGrblConfigurator()
 {
     delete ui;
 }
 
-void frmGrblConfigurator::showEvent(QShowEvent *se)
+void FrmGrblConfigurator::showEvent(QShowEvent *se)
 {
     QDialog::showEvent(se);
     if (m_firstShow) {
@@ -319,7 +319,7 @@ void frmGrblConfigurator::showEvent(QShowEvent *se)
     }
 }
 
-void frmGrblConfigurator::resizeEvent(QResizeEvent *re)
+void FrmGrblConfigurator::resizeEvent(QResizeEvent *re)
 {
     QDialog::resizeEvent(re);
     if (!m_firstShow) {
@@ -327,7 +327,7 @@ void frmGrblConfigurator::resizeEvent(QResizeEvent *re)
     }
 }
 
-void frmGrblConfigurator::changeEvent(QEvent *ce)
+void FrmGrblConfigurator::changeEvent(QEvent *ce)
 {
     QDialog::changeEvent(ce);
     if (ce->type() == QEvent::WindowStateChange) {
@@ -335,7 +335,7 @@ void frmGrblConfigurator::changeEvent(QEvent *ce)
     }
 }
 
-void frmGrblConfigurator::moveEvent(QMoveEvent *me)
+void FrmGrblConfigurator::moveEvent(QMoveEvent *me)
 {
     QDialog::moveEvent(me);
     if (!m_firstShow) {
@@ -343,7 +343,7 @@ void frmGrblConfigurator::moveEvent(QMoveEvent *me)
     }
 }
 
-void frmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration configuration)
+void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration configuration)
 {
     Q_UNUSED(configuration);
 
@@ -353,7 +353,7 @@ void frmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
         m_communicator,
         &Communicator::machineConfigurationReceived,
         this,
-        &frmGrblConfigurator::onConfigurationReceived
+        &FrmGrblConfigurator::onConfigurationReceived
     );
 
     if (m_isSaving) {
@@ -409,12 +409,12 @@ void frmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
     }
 }
 
-void frmGrblConfigurator::onUpdateClicked()
+void FrmGrblConfigurator::onUpdateClicked()
 {
     update();
 }
 
-void frmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
+void FrmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
 {
     Q_UNUSED(column);
 
@@ -440,7 +440,7 @@ void frmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
     }
 }
 
-void frmGrblConfigurator::update()
+void FrmGrblConfigurator::update()
 {
     setInfo("Updating...", Qt::red);
 
@@ -448,20 +448,20 @@ void frmGrblConfigurator::update()
         m_communicator,
         &Communicator::machineConfigurationReceived,
         this,
-        &frmGrblConfigurator::onConfigurationReceived
+        &FrmGrblConfigurator::onConfigurationReceived
     );
     QTimer::singleShot(100, this, [this]() {
         m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
     });
 }
 
-void frmGrblConfigurator::setInfo(QString text, QColor color)
+void FrmGrblConfigurator::setInfo(QString text, QColor color)
 {
     ui->lblInfo->setText(text);
     ui->lblInfo->setStyleSheet(QString("color: %1").arg(color.name()));
 }
 
-QMap<Axis, CBaseProperty*> frmGrblConfigurator::addAxesProperty(CPropertyHeader *header, ConfigEntry entry)
+QMap<Axis, CBaseProperty*> FrmGrblConfigurator::addAxesProperty(CPropertyHeader *header, ConfigEntry entry)
 {
     return {
         {Axis::X, addAxisProperty(header, entry, Axis::X)},
@@ -470,7 +470,7 @@ QMap<Axis, CBaseProperty*> frmGrblConfigurator::addAxesProperty(CPropertyHeader 
     };
 }
 
-CBaseProperty* frmGrblConfigurator::addAxisProperty(CPropertyHeader *header, ConfigEntry entry, Axis axis)
+CBaseProperty* FrmGrblConfigurator::addAxisProperty(CPropertyHeader *header, ConfigEntry entry, Axis axis)
 {
     // @TODO ...
     QMap<Axis, QString> axisNames = {
@@ -493,7 +493,7 @@ CBaseProperty* frmGrblConfigurator::addAxisProperty(CPropertyHeader *header, Con
     return property;
 }
 
-void frmGrblConfigurator::setSettingsBit(int index, int bit, bool bitValue)
+void FrmGrblConfigurator::setSettingsBit(int index, int bit, bool bitValue)
 {
     int value = m_currentSettings[index];
     if (bitValue) {
@@ -504,7 +504,7 @@ void frmGrblConfigurator::setSettingsBit(int index, int bit, bool bitValue)
     m_currentSettings[index] = value;
 }
 
-void frmGrblConfigurator::accept()
+void FrmGrblConfigurator::accept()
 {
     if (QMessageBox::question(this, "Saving settings", "Are you sure you want to update machine settings?") == QMessageBox::No) {
         return;
@@ -514,7 +514,7 @@ void frmGrblConfigurator::accept()
     update();
 }
 
-void frmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)
+void FrmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)
 {
     QMap<int, double> toBeSaved = {};
     for (QMap<int, double>::iterator it = m_currentSettings.begin(); it != m_currentSettings.end(); it++) {
@@ -542,7 +542,7 @@ void frmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)
     QDialog::accept();
 }
 
-CBaseProperty* frmGrblConfigurator::addBooleanProperty(CPropertyHeader *header, ConfigEntry entry)
+CBaseProperty* FrmGrblConfigurator::addBooleanProperty(CPropertyHeader *header, ConfigEntry entry)
 {
     CSwitchProperty* property = new CSwitchProperty(
         header,
@@ -558,7 +558,7 @@ CBaseProperty* frmGrblConfigurator::addBooleanProperty(CPropertyHeader *header, 
     return property;
 }
 
-CBaseProperty* frmGrblConfigurator::addIntegerProperty(CPropertyHeader *header, ConfigEntry entry)
+CBaseProperty* FrmGrblConfigurator::addIntegerProperty(CPropertyHeader *header, ConfigEntry entry)
 {
     CIntegerProperty* property = new CIntegerProperty(
         header,
@@ -574,7 +574,7 @@ CBaseProperty* frmGrblConfigurator::addIntegerProperty(CPropertyHeader *header, 
     return property;
 }
 
-CBaseProperty *frmGrblConfigurator::addDoubleProperty(CPropertyHeader *header, ConfigEntry entry)
+CBaseProperty *FrmGrblConfigurator::addDoubleProperty(CPropertyHeader *header, ConfigEntry entry)
 {
     CDoubleProperty* property = new CDoubleProperty(
         header,

@@ -11,7 +11,7 @@
 
 class ConfigurationVisualizer : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(double lineWidth MEMBER m_lineWidth NOTIFY changed)

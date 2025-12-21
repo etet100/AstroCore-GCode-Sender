@@ -10,7 +10,7 @@
 
 class ConfigurationParser : public ConfigurationModule
 {
-    friend class frmSettings;
+    friend class FrmSettings;
 
     Q_OBJECT
     Q_PROPERTY(double arcApproximationLength MEMBER m_arcApproximationLength NOTIFY changed)

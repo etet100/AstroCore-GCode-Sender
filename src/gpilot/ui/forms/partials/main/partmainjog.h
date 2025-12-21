@@ -9,14 +9,14 @@ namespace Ui {
 class partMainJog;
 }
 
-class partMainJog : public QWidget
+class PartMainJog : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit partMainJog(QWidget *parent = nullptr);
+    explicit PartMainJog(QWidget *parent = nullptr);
     void initialize(ConfigurationJogging &configurationJogging);
-    ~partMainJog();
+    ~PartMainJog();
 
     int feedRate() const { return m_configurationJogging->feed(); };
     int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };

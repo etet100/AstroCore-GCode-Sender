@@ -8,13 +8,13 @@ namespace Ui {
 class partMainOverride;
 }
 
-class partMainOverride : public QWidget
+class PartMainOverride : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit partMainOverride(QWidget *parent = nullptr);
-    ~partMainOverride();
+    explicit PartMainOverride(QWidget *parent = nullptr);
+    ~PartMainOverride();
 
     void applyConfiguration(ConfigurationMachine &machineConfiguration);
     // @TODO make this private

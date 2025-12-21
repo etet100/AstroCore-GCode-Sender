@@ -30,13 +30,13 @@ struct ConfigEntry {
     QMap<Axis, CBaseProperty*> properties = {};
 };
 
-class frmGrblConfigurator : public QDialog
+class FrmGrblConfigurator : public QDialog
 {
     Q_OBJECT
 
     public:
-        explicit frmGrblConfigurator(QWidget *parent, ConfigurationUI &uiConfiguration, Communicator *communicator);
-        ~frmGrblConfigurator();
+        explicit FrmGrblConfigurator(QWidget *parent, ConfigurationUI &uiConfiguration, Communicator *communicator);
+        ~FrmGrblConfigurator();
 
     protected:
         void showEvent(QShowEvent *se) override;
@@ -44,7 +44,7 @@ class frmGrblConfigurator : public QDialog
         void changeEvent(QEvent *ce) override;
         void moveEvent(QMoveEvent *me) override;
 
-    private:        
+    private:
         Ui::frmGrblConfigurator *ui;
         ConfigurationUI &m_uiConfiguration;
         Communicator *m_communicator;

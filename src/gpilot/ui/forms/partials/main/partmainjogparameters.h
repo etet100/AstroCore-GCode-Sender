@@ -10,13 +10,13 @@ namespace Ui {
 class partMainJogParameters;
 }
 
-class partMainJogParameters : public partMainJogParametersInterface
+class PartMainJogParameters : public PartMainJogParametersInterface
 {
         Q_OBJECT
 
     public:
-        explicit partMainJogParameters(QWidget* parent = nullptr);
-        ~partMainJogParameters();
+        explicit PartMainJogParameters(QWidget* parent = nullptr);
+        ~PartMainJogParameters();
 
         // int feedRate() const { return m_configurationJogging->feed(); };
         // int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
@@ -26,7 +26,7 @@ class partMainJogParameters : public partMainJogParametersInterface
 
         void initialize(ConfigurationJogging &configurationJogging);
 
-        // partMainJogParametersInterface implementation
+        // PartMainJogParametersInterface implementation
         void setStepSizeOptions(const QStringList& options) override;
         void setFeedRateXYOptions(const QStringList& options) override;
         void setFeedRateZOptions(const QStringList& options) override;

@@ -13,12 +13,12 @@ namespace Ui {
 class partMainJogParameters2;
 }
 
-class partMainJogParameters2 : public partMainJogParametersInterface
+class PartMainJogParameters2 : public PartMainJogParametersInterface
 {
     Q_OBJECT
 
     public:
-        explicit partMainJogParameters2(QWidget* parent = nullptr);
+        explicit PartMainJogParameters2(QWidget* parent = nullptr);
 
         void setStepSizeOptions(const QStringList& options) override;
         void setFeedRateXYOptions(const QStringList& options) override;
