@@ -8,7 +8,7 @@ OriginDrawer::OriginDrawer()
 void OriginDrawer::setZoom(double zoom)
 {
     m_scale = zoom;
-    qDebug() << "[OriginDrawer] Set zoom to" << m_scale;
+    // qDebug() << "[OriginDrawer] Set zoom to" << m_scale;
     update();
 }
 

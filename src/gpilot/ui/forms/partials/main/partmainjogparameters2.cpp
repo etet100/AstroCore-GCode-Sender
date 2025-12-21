@@ -2,7 +2,6 @@
 #include "ui_partmainjogparameters2.h"
 #include <QStyle>
 #include <QGridLayout>
-#include <QDebug>
 #include <QHBoxLayout>
 #include <QEvent>
 #include <QVariant>
@@ -56,7 +55,6 @@ void partMainJogParameters2::setFeedRateXYOptions(const QStringList& options) {
     for (const QString& opt : options) {
         floatOptions.append(opt.toFloat());
     }
-    qDebug() << "Feedrate XY options:" << floatOptions << groups;
 
     rebuildSection(m_feedXYSection, "FEEDRATE (XY)", floatOptions, groups);
 }
@@ -116,7 +114,6 @@ QMap<float, QList<float>> partMainJogParameters2::groupSelections(const QList<fl
     for (float selection : selections) {
         float multiplier = -1.0f;
         for (auto it = groups.begin(); it != groups.end(); ++it) {
-            qDebug() << "Grouping selection" << selection << "with max" << it.key() << "multiplier" << it.value();
             if (selection < it.key()) {
                 multiplier = it.value();
                 break;
@@ -291,21 +288,17 @@ bool partMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     m_updateTimer.stop();
     float val = btn->property("value").toFloat();
     if (event->type() == QEvent::Enter) {
-        qDebug() << "Hover " << btn->property("value").toString();
         if (abs(section->currentValue - val) > 0.01f) {
-            qDebug() << "Temp";
             // not the current value, show temporary
             section->valueLabel->setText(QString::number(val));
             section->valueLabel->setProperty("tag", "temp_value");
         } else {
-            qDebug() << "Same as current";
             section->valueLabel->setText(QString::number(section->currentValue));
             section->valueLabel->setProperty("tag", "");
         }
     } else {
         section->valueLabel->setText(QString::number(section->currentValue));
         section->valueLabel->setProperty("tag", "");
-        qDebug() << "Hover leave " << btn->property("value").toString();
     }
     m_updateTimer.start();
 
