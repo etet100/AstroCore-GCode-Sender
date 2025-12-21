@@ -389,6 +389,7 @@ private:
     void appendSpacer(DropWidget *dockPanel);
     void addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
     void restoreDockableLayoutState();
+    void initializeFontSizeMenu();
 };
 
 typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;

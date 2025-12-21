@@ -42,6 +42,7 @@ class ConfigurationUI : public ConfigurationModule
         QString getSectionName() override { return "baseui.main"; }
 
         int fontSize() const { return m_fontSize; }
+        void setFontSize(int fontSize) { m_fontSize = fontSize; emit changed(); }
         QString language() const { return m_language; }
         QStringList recentFiles() const { return m_recentFiles; }
         QStringList recentHeightmaps() const { return m_recentHeightmaps; }

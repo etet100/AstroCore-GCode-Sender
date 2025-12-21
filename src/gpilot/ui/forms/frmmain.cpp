@@ -62,9 +62,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 {
     // Loading settings
     m_settingsFileName = qApp->applicationDirPath() + "/settings.ini";
-    preloadSettings();
-
-    initializeCommunicator();
 
     // Initializing variables
 
@@ -89,7 +86,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     ui->setupUi(this);
 
+    initializeFontSizeMenu();
+    preloadSettings();
     Utils::setVisualMode(this, m_configuration.uiModule().darkTheme());
+    initializeCommunicator();
 
     ui->jog->initialize(m_configuration.joggingModule());
 
@@ -2190,6 +2190,9 @@ void FrmMain::preloadSettings()
     ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
 
     ThemeManager::instance().setFontSize(uiConfiguration.fontSize());
+    for (auto action : ui->menuFontSize->actions()) {
+        action->setChecked(action->property("size").toInt() == uiConfiguration.fontSize());
+    }
 
     // Update v-sync in glformat
     // QGLFormat fmt = QGLFormat::defaultFormat();
@@ -2372,6 +2375,34 @@ void FrmMain::restoreDockableLayoutState()
     // Settings form geometry
     // m_settings->restoreGeometry(set.value("formSettingsGeometry").toByteArray());
     // m_settings->ui->splitMain->restoreState(set.value("settingsSplitMain").toByteArray());
+}
+
+void FrmMain::initializeFontSizeMenu()
+{
+    QAction* action;
+    for (int i = 8; i <= 12; i++) {
+        action = ui->menuFontSize->addAction(QString::number(i) + " pt");
+        action->setProperty("size", i);
+        action->setCheckable(true);
+        connect(action, &QAction::triggered, this, [this](bool checked) {
+            QAction* act = qobject_cast<QAction*>(sender());
+            if (checked) {
+                for (auto action : ui->menuFontSize->actions()) {
+                    if (action != sender()) {
+                        action->setChecked(false);
+                    }
+                }
+            } else {
+                // ignore unsetting
+                act->setChecked(true);
+                return;
+            }
+
+            int size = act->property("size").toInt();
+            ThemeManager::instance().setFontSize(size);
+            m_configuration.uiModule().setFontSize(size);
+        });
+    }
 }
 
 void FrmMain::saveSettings()
