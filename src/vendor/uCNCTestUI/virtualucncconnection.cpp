@@ -17,7 +17,7 @@ public:
     }
 
     void run() override {
-        qDebug() << "Starting virtual uCNC, server " << m_serverName;
+        qDebug() << "[uCNC] Starting virtual uCNC, server " << m_serverName;
         uCNC(m_serverName.toStdString().c_str());
     }
 private:
@@ -55,7 +55,7 @@ bool VirtualUCNCConnection::openConnection()
 void VirtualUCNCConnection::flushOutgoingData()
 {
     if (!m_socket) {
-        qDebug() << "No socket connection!";
+        qDebug() << "[uCNC] No socket connection!";
         return;
     }
     if (m_socket->bytesToWrite()) {
@@ -95,7 +95,7 @@ void VirtualUCNCConnection::closeConnection()
 void VirtualUCNCConnection::onNewConnection()
 {
     if (m_socket) {
-        qDebug() << "Virtual uCNC connection already exists!";
+        qDebug() << "[uCNC] Virtual uCNC connection already exists!";
         return;
     }
 
@@ -104,7 +104,7 @@ void VirtualUCNCConnection::onNewConnection()
 
     m_connected = true;
 
-    qDebug() << "Virtual uCNC connection established!";
+    qDebug() << "[uCNC] Virtual uCNC connection established!";
 }
 
 void VirtualUCNCConnection::onReadyRead()

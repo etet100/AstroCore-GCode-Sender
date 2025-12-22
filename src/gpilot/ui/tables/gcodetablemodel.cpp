@@ -190,8 +190,8 @@ void GCodeTableModel::prepareNoCommentFilter()
         m_allRowsToFiltered.append(k);
     }
 
-    qDebug() << m_filteredRows;
-    qDebug() << m_allRowsToFiltered;
+    // qDebug() << m_filteredRows;
+    // qDebug() << m_allRowsToFiltered;
 
     assert(m_data.count() == m_allRowsToFiltered.count());
 

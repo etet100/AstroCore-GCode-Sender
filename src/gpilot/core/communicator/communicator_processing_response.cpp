@@ -517,7 +517,7 @@ bool Communicator::processCommandResponse(QString data)
     static QString response; // Full response string
     static QStringList lines; // Response lines
 
-    qDebug() << "< CMD <" << data;
+    // qDebug() << "< CMD <" << data;
 
     assert(m_commands.length() > 0);
 

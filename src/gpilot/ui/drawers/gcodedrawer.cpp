@@ -4,7 +4,7 @@
 #include "gcodedrawer.h"
 
 GcodeDrawer::GcodeDrawer() : QObject()
-{   
+{
     m_pointSize = 6;
 
     connect(&m_timerVertexUpdate, &QTimer::timeout, this, &GcodeDrawer::onTimerVertexUpdate);
@@ -122,12 +122,12 @@ void GcodeDrawer::generateBounds(GLPalette &palette)
 
 bool GcodeDrawer::prepareVectors(GLPalette &palette)
 {
-    qDebug() << "preparing vectors" << this;
+    qDebug() << "[GcodeDrawer] Preparing vectors";
 
     QList<LineSegment> &list = m_viewParser->getLines();
     VertexData vertex;
 
-    qDebug() << "lines count" << list.count();
+    qDebug() << "[GcodeDrawer] Lines count" << list.count();
 
     // Clear all vertex data
     m_lines.clear();
@@ -293,8 +293,6 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
     //     qDebug() << m_lines.count() << normals.count();
     // }
 
-    qDebug() << m_lines.count();
-
     m_geometryUpdated = true;
     m_indexes.clear();
 
@@ -316,7 +314,7 @@ bool GcodeDrawer::updateVectors(GLPalette &palette)
         if (i < 0 || i > list.count() - 1) continue;
         vertexIndex = list[i].vertexIndex();
         if (vertexIndex >= 0) {
-            // Update vertex array            
+            // Update vertex array
             if (data) {
                 data[vertexIndex].color = getSegmentColor(list[i], palette);
                 data[vertexIndex + 1].color = data[vertexIndex].color;
