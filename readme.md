@@ -1,7 +1,20 @@
 G-Pilot (formerly Candle)
------------
-<img src="screenshots/gpilot_big.jpg" width="200" height="200" align="right">
 What G stands for?
+ 
+Command line options
+-------------------
+
+G-Pilot supports several command line switches:
+
+- `-l` or `--log-to-file` – Enables logging debug info to GPilot.log file.
+- `-t` or `--trim-log` – Clears GPilot.log file at startup (use with log-to-file).
+- `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
+
+Examples:
+
+  G-Pilot.exe --log-to-file --trim-log --config-type json
+
+You can combine options as needed. See main.cpp for details.
 
 - G-code Pilot: G-code is a programming language used to control CNC machines, so "G-Pilot" may suggest that the program is used for piloting or controlling using G-code.
 - Guided Pilot: "G-Pilot" may also suggest that the program provides guidance or leads the user through processes related to CNC machining, similar to how a pilot guides an airplane.

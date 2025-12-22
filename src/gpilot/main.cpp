@@ -73,12 +73,19 @@ int main(int argc, char *argv[])
     QCommandLineOption logToFileOption(QStringList{"l", "log-to-file"}, "Log debug info to `GPilot.log`.");
     parser.addOption(logToFileOption);
 
+    QCommandLineOption trimLogOption(QStringList{"t", "trim-log"}, "Trim existing log file on start.");
+    parser.addOption(trimLogOption);
+
     QCommandLineOption configTypeOption(QStringList{"c", "config-type"}, "Set config type (ini, json).", "type", "ini");
     parser.addOption(configTypeOption);
 
     parser.process(app);
 
     if (parser.isSet(logToFileOption)) {
+        if (parser.isSet(trimLogOption)) {
+            QFile::remove("GPilot.log");
+        }
+
         qInstallMessageHandler(messageHandler);
     }
 
@@ -121,9 +128,15 @@ int main(int argc, char *argv[])
     if (parser.value(configTypeOption) == "json") {
         provider = new JsonProvider(nullptr, configFilePath + "json");
         persister = new JsonPersister(nullptr, configFilePath + "json");
-    } else {
+    } else if (parser.value(configTypeOption) == "ini") {
         provider = new IniProvider(nullptr, configFilePath + "ini");
         persister = new IniPersister(nullptr, configFilePath + "ini");
+    } else if (parser.value(configTypeOption) == "xml") {
+        provider = new XmlProvider(nullptr, configFilePath + "xml");
+        persister = new XmlPersister(nullptr, configFilePath + "xml");
+    } else {
+        qCritical() << "Unknown config type specified:" << parser.value(configTypeOption);
+        return -1;
     }
 
     Configuration configuration(nullptr, persister, provider);
