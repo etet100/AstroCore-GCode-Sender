@@ -118,6 +118,12 @@ jobs:
           del /S /Q *.o
           del /S /Q *.cpp
           del /S /Q *.h
+          del /S /Q *.hpp
+          del /S /Q *.rc
+          del /S /Q *.ui
+          del /S /Q *.qrc
+          del /S /Q *.pro
+          del /S /Q *.pri
           del /Q Makefile*
 
       - name: Package build artifacts
@@ -125,10 +131,11 @@ jobs:
         run: |
           ls build
           mkdir artifacts
-          for /R build %%f in (*.dll) do copy /Y "%%f" artifacts\
-          for /R build %%f in (*.exe) do copy /Y "%%f" artifacts\
-          xcopy gpilot\* artifacts\ /E /I /H /Y
-          powershell Compress-Archive -Path artifacts\* -DestinationPath gpilot.zip
+          for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
+          dir build\gpilot / s
+          # for /R build %%f in (*.exe) do copy /Y "%%f" artifacts\
+          # xcopy gpilot\* artifacts\ /E /I /H /Y
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath gpilot.zip
 
       - name: Create GitHub pre-release with build artifacts
         uses: softprops/action-gh-release@v1
