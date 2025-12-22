@@ -59,6 +59,7 @@
 #include "scripting/scriptvars.h"
 #include "ui/widgets/dropwidget.h"
 #include "ui/utils/windowstaskbar.h"
+#include "ui/widgets/filedropoverlay.h"
 
 namespace Ui {
 class frmMain;
@@ -217,6 +218,7 @@ protected:
     void timerEvent(QTimerEvent *) override;
     void closeEvent(QCloseEvent *ce) override;
     void dragEnterEvent(QDragEnterEvent *dee) override;
+    void dragLeaveEvent(QDragLeaveEvent *dle) override;
     void dropEvent(QDropEvent *de) override;
     void changeEvent(QEvent *ce) override;
     void moveEvent(QMoveEvent *me) override;
@@ -269,6 +271,7 @@ private:
     Communicator *m_communicator;
     GCode m_program;
     GCode *m_currentProgram = &m_program;
+    FileDropOverlay *m_fileDropOverlay = nullptr;
 
     // Table models
     GCodeTableModel m_programModel;

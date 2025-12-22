@@ -194,6 +194,7 @@ SOURCES += main.cpp\
     ui/tables/heightmaptablemodel.cpp \
     ui/utils/thememanager.cpp \
     ui/utils/windowstaskbar.cpp \
+    ui/widgets/filedropoverlay.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
     ui/widgets/comboboxkey.cpp \
@@ -323,6 +324,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/heightmaptablemodel.h \
     ui/utils/thememanager.h \
     ui/utils/windowstaskbar.h \
+    ui/widgets/filedropoverlay.h \
     utils.h \
     utils/interpolation.h \
     utils/utils.h \
@@ -361,7 +363,8 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/frmgrblconfigurator.ui \
     ui/forms/frmsettings.ui \
     ui/forms/frmabout.ui \
-    modules/camera/camera.ui
+    modules/camera/camera.ui \
+    ui/widgets/filedropoverlay.ui
 
 DEFINES += _USE_MATH_DEFINES
 

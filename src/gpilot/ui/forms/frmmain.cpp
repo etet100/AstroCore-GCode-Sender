@@ -551,21 +551,52 @@ void FrmMain::closeEvent(QCloseEvent *ce)
 
 void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
 {
-    if (m_communicator->senderState() != SenderState::Stopped) return;
+    m_fileDropOverlay = new FileDropOverlay(this);
+    m_fileDropOverlay->setGeometry(0, 0, width(), height());
+    m_fileDropOverlay->show();
 
-    if (dee->mimeData()->hasFormat("application/widget")) return;
+    if (m_communicator->senderState() != SenderState::Stopped || dee->mimeData()->hasFormat("application/widget")) {
+        m_fileDropOverlay->showForbidden();
 
-    if (dee->mimeData()->hasFormat("text/plain") && !m_heightmapMode) dee->acceptProposedAction();
-    else if (dee->mimeData()->hasFormat("text/uri-list") && dee->mimeData()->urls().count() == 1) {
+        return;
+    }
+
+    if (dee->mimeData()->hasFormat("text/plain") && !m_heightmapMode) {
+        dee->acceptProposedAction();
+        m_fileDropOverlay->showValid();
+
+        return;
+    } else if (dee->mimeData()->hasFormat("text/uri-list") && dee->mimeData()->urls().count() == 1) {
         QString fileName = dee->mimeData()->urls().at(0).toLocalFile();
 
-        if ((!m_heightmapMode && Utils::isGCodeFile(fileName)) || (m_heightmapMode && Utils::isHeightmapFile(fileName)))
+        if ((!m_heightmapMode && Utils::isGCodeFile(fileName)) || (m_heightmapMode && Utils::isHeightmapFile(fileName))) {
             dee->acceptProposedAction();
+            m_fileDropOverlay->showValid();
+
+            return;
+        }
+    }
+
+    m_fileDropOverlay->showForbidden();
+}
+
+void FrmMain::dragLeaveEvent(QDragLeaveEvent *dle)
+{
+    Q_UNUSED(dle);
+
+    if (m_fileDropOverlay) {
+        delete m_fileDropOverlay;
+        m_fileDropOverlay = nullptr;
     }
 }
 
 void FrmMain::dropEvent(QDropEvent *de)
 {
+    if (m_fileDropOverlay) {
+        delete m_fileDropOverlay;
+        m_fileDropOverlay = nullptr;
+    }
+
     QString fileName = de->mimeData()->urls().at(0).toLocalFile();
 
     if (!m_heightmapMode) {

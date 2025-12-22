@@ -53,5 +53,7 @@
         <file>../images/visualizer_heightmap.png</file>
         <file>../images/handle_horizontal_dark.png</file>
         <file>../images/handle_vertical_dark.png</file>
+        <file>../images/filedrop_valid.png</file>
+        <file>../images/filedrop_invalid.png</file>
     </qresource>
 </RCC>
