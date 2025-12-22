@@ -110,6 +110,7 @@ jobs:
         shell: cmd
         run: |
           windeployqt build\gpilot\gpilot.exe
+          dir build\gpilot / s
 
       - name: Clean build artifacts (remove source files)
         shell: cmd
