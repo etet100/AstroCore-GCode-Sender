@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir build\vendor\uCNC
           cd build\vendor\uCNC
-          qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
@@ -79,7 +79,7 @@ jobs:
         run: |
           mkdir build\vendor\grblHal
           cd build\vendor\grblHal
-          qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+          qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
@@ -106,13 +106,24 @@ jobs:
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
+      - name: Run windeployqt
+        shell: cmd
+        run: |
+          windeployqt build\gpilot\gpilot.exe
+
+      - name: Clean build artifacts (remove source files)
+        shell: cmd
+        run: |
+          cd build\gpilot
+          del /S /Q *.o
+          del /S /Q *.cpp
+          del /Q Makefile*
+
       - name: Package build artifacts
         shell: cmd
         run: |
-          ls build
           mkdir artifacts
-          for /R build %%f in (*.dll) do copy /Y "%%f" artifacts\
-          for /R build %%f in (*.exe) do copy /Y "%%f" artifacts\
+          xcopy build\gpilot\* artifacts\ /E /I /H /Y
           powershell Compress-Archive -Path artifacts\* -DestinationPath build_artifacts.zip
 
       - name: Create GitHub pre-release with build artifacts
