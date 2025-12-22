@@ -22,7 +22,7 @@ jobs:
           host: "windows"
           target: "desktop"
           arch: "win64_mingw"
-          tools: "tools_mingw1310"
+          tools: "tools_mingw1310 tools_ifw"
           modules: "qtmultimedia qtserialport qtimageformats qtshadertools"
           cache: true
 
@@ -106,29 +106,37 @@ jobs:
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
-      - name: Run windeployqt
-        shell: cmd
-        run: |
-          windeployqt build\gpilot\gpilot.exe
-
-      - name: Clean build artifacts (remove source files)
+      - name: Create complete package
         shell: cmd
         run: |
           cd build\gpilot
+          windeployqt gpilot.exe
+          for /R .. %%f in (*.dll) do copy /Y "%%f" .
           del /S /Q *.o
           del /S /Q *.cpp
           del /S /Q *.h
+          del /S /Q *.hpp
+          del /S /Q *.rc
+          del /S /Q *.ui
+          del /S /Q *.qrc
+          del /S /Q *.pro
+          del /S /Q *.pri
           del /Q Makefile*
+
+      - name: Create offline installer
+        shell: cmd
+        run: |
+          xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
+          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller.exe
 
       - name: Package build artifacts
         shell: cmd
         run: |
           ls build
           mkdir artifacts
-          for /R build %%f in (*.dll) do copy /Y "%%f" artifacts\
-          for /R build %%f in (*.exe) do copy /Y "%%f" artifacts\
-          xcopy gpilot\* artifacts\ /E /I /H /Y
-          powershell Compress-Archive -Path artifacts\* -DestinationPath gpilot.zip
+          for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
+          dir build\gpilot / s
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath gpilot.zip
 
       - name: Create GitHub pre-release with build artifacts
         uses: softprops/action-gh-release@v1
@@ -140,6 +148,7 @@ jobs:
           prerelease: true
           body: |
             Automatic build created from commit ${{ github.sha }}.
-            This build contains only DLL and EXE files. This is not a full version of the program!
-            You can use these files by replacing them in the folder of a full release (downloaded from Releases).
-          files: gpilot.zip
+            This is a debug version. Available as a zip file and installer.
+          files: |
+            gpilot.zip
+            GPilotInstaller.exe

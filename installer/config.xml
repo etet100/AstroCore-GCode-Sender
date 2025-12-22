@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>G-Pilot</Name>
+    <Version>1.0.0</Version>
+    <Title>G-Pilot Installer</Title>
+    <Publisher>BTS</Publisher>
+    <StartMenuDir>G-Pilot</StartMenuDir>
+    <TargetDir>@HomeDir@/GPilot</TargetDir>
+    <InstallActionColumnVisible>true</InstallActionColumnVisible>
+    <RemoveTargetDir>true</RemoveTargetDir>
+    <RunProgram>@TargetDir@/GPilot.exe</RunProgram>
+    <RunProgramDescription>Launch G-Pilot</RunProgramDescription>
+    <RunProgramArguments></RunProgramArguments>
+    <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
+    <RepositorySettingsPageVisible>false</RepositorySettingsPageVisible>
+    <WizardStyle>Modern</WizardStyle>
+    <StyleSheet></StyleSheet>
+    <Logo></Logo>
+    <Watermark></Watermark>
+    <Banner></Banner>
+    <Background></Background>
+    <InstallerApplicationIcon>gpilot.ico</InstallerApplicationIcon>
+    <InstallerWindowIcon>gpilot.ico</InstallerWindowIcon>
+    <ProductUrl>https://github.com/etet100/G-Pilot-GCode-Sender</ProductUrl>
+</Installer>

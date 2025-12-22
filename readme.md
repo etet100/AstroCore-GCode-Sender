@@ -1,20 +1,7 @@
-G-Pilot (formerly Candle)
+G-Pilot G-Code Sender
+-----------
+<img src="screenshots/gpilot_big.jpg" width="200" height="200" align="right">
 What G stands for?
- 
-Command line options
--------------------
-
-G-Pilot supports several command line switches:
-
-- `-l` or `--log-to-file` – Enables logging debug info to GPilot.log file.
-- `-t` or `--trim-log` – Clears GPilot.log file at startup (use with log-to-file).
-- `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
-
-Examples:
-
-  G-Pilot.exe --log-to-file --trim-log --config-type json
-
-You can combine options as needed. See main.cpp for details.
 
 - G-code Pilot: G-code is a programming language used to control CNC machines, so "G-Pilot" may suggest that the program is used for piloting or controlling using G-code.
 - Guided Pilot: "G-Pilot" may also suggest that the program provides guidance or leads the user through processes related to CNC machining, similar to how a pilot guides an airplane.
@@ -41,8 +28,18 @@ Supported functions:
 * Customizable interface.
 * uCNC/grblHAL virtual modes (cnc machine simulator).
 
+## Download & Install (prerelease)
+
+Automatic builds are available as a zip file and as an installer (created with Qt Installer Framework).
+
+The latest version is always available here:
+https://github.com/etet100/G-Pilot-GCode-Sender/releases/latest
+
+**Note:** This is a prerelease version. The installer and builds are for testing and preview purposes only. There is still a lot of work to be done, but you can try it out and give feedback!
+
 System requirements for running "G-Pilot":
 -------------------
+
 * Windows 10/Linux x86(not tested att all!)
 * Graphics card with OpenGL 3.0 support
 * 150 MB free storage space
@@ -63,6 +60,21 @@ MSVC compiler is not officially supported and may not work correctly.
 Start with:
 
 git clone --recurse-submodules https://github.com/etet100/G-Pilot-Formerly-Candle
+
+Command line options
+-------------------
+
+G-Pilot supports several command line switches:
+
+- `-l` or `--log-to-file` – Enables logging debug info to GPilot.log file.
+- `-t` or `--trim-log` – Clears GPilot.log file at startup (use with log-to-file).
+- `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
+
+Examples:
+
+  G-Pilot.exe --log-to-file --trim-log --config-type json
+
+You can combine options as needed. See main.cpp for details.
 
 Connection modes:
 -----------------
@@ -353,13 +365,3 @@ Settings:
 GRBL configurator:
 
 ![grbl configurator](/screenshots/screenshot_grbl_configurator.png)
-
----
-
-## Last build (pre-release)
-
-This build contains only DLL and EXE files. You can use these files by replacing them in the folder of a full release (downloaded from Releases). This is not a full version of the program!
-
-[Last build (pre-release)](https://github.com/etet100/Candle/releases/latest)
-
----
