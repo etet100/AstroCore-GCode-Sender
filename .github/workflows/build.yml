@@ -106,13 +106,16 @@ jobs:
           mingw32-make.exe -f Makefile qmake_all
           mingw32-make -j12
 
+      - name: Run windeployqt
+        shell: cmd
+        run: |
+          windeployqt build\gpilot\gpilot.exe
+
       - name: Package build artifacts
         shell: cmd
         run: |
-          ls build
           mkdir artifacts
-          for /R build %%f in (*.dll) do copy /Y "%%f" artifacts\
-          for /R build %%f in (*.exe) do copy /Y "%%f" artifacts\
+          xcopy build\gpilot\* artifacts\ /E /I /H /Y
           powershell Compress-Archive -Path artifacts\* -DestinationPath build_artifacts.zip
 
       - name: Create GitHub pre-release with build artifacts
