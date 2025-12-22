@@ -190,7 +190,7 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
                 // Ensure we don't clip the front of the object with near plane
                 m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
 
-                qDebug() << "Perspective fit (Tight+Depth): projX=" << maxProjX << "projY=" << maxProjY
+                qDebug() << "[GLWidget] Perspective fit (Tight+Depth): projX=" << maxProjX << "projY=" << maxProjY
                          << "dist=" << m_zoomDistance;
             } else {
                 // For orthographic projection
@@ -205,12 +205,12 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
                 // Ensure we don't clip the front of the object with near plane
                 m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
 
-                qDebug() << "Ortho fit (Tight): projX=" << maxProjX << "projY=" << maxProjY
+                qDebug() << "[GLWidget] Ortho fit (Tight): projX=" << maxProjX << "projY=" << maxProjY
                          << "orthoSize=" << m_zoomDistance;
             }
         } else {
             m_zoomDistance = DEFAULT_ZOOM;
-        }        qDebug() << "fitDrawable: center=" << center
+        }        qDebug() << "[GLWidget] FitDrawable: center=" << center
                  << "size=" << m_xSize << m_ySize << m_zSize
                  << "finalZoom=" << m_zoomDistance;
     } else {
@@ -249,7 +249,7 @@ void GLWidget::updateExtremes(ShaderDrawable *drawable)
     m_ySize = m_yMax - m_yMin;
     m_zSize = m_zMax - m_zMin;
 
-    qDebug() << "Extremes updated: "
+    qDebug() << "[GLWidget] Extremes updated: "
              << "X:" << m_xMin << "..." << m_xMax
              << "Y:" << m_yMin << "..." << m_yMax
              << "Z:" << m_zMin << "..." << m_zMax
@@ -551,12 +551,12 @@ void GLWidget::setSpendTime(const QTime &spendTime)
 
 void GLWidget::initializeDebugLogger()
 {
-    qDebug() << "Initialize debug logger";
+    qDebug() << "[GLWidget] Initialize debug logger";
     QString glVersion = QString::fromUtf8((const char *)glGetString(GL_VERSION));
     QString glslVersion = QString::fromUtf8((const char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
     QString glVendor = QString::fromUtf8((const char *)glGetString(GL_VENDOR));
     QString glRenderer = QString::fromUtf8((const char *)glGetString(GL_RENDERER));
-    qDebug() << "OpenGL version: " << glVersion << "GLSL version: " << glslVersion << "Vendor: " << glVendor << "Renderer: " << glRenderer;
+    qDebug() << "[GLWidget] OpenGL version: " << glVersion << "GLSL version: " << glslVersion << "Vendor: " << glVendor << "Renderer: " << glRenderer;
     QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
     logger->initialize();
 }
@@ -567,10 +567,22 @@ void GLWidget::initializeGL()
 
     m_defaultShaderProgram = new QOpenGLShaderProgram();
     if (m_defaultShaderProgram) {
-        m_defaultShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/base_vertex.glsl");
-        m_defaultShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/base_fragment.glsl");
-        if (m_defaultShaderProgram->link()) {
-            qDebug() << "shader program created";
+        if (!m_defaultShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/base_vertex.glsl")) {
+            qWarning() << "[GLWidget] Vertex shader compile error:" << m_defaultShaderProgram->log();
+            m_error = true;
+            return;
+        }
+        if (!m_defaultShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/base_fragment.glsl")) {
+            qWarning() << "[GLWidget] Fragment shader compile error:" << m_defaultShaderProgram->log();
+            m_error = true;
+            return;
+        }
+        if (m_defaultShaderProgram->link() && m_defaultShaderProgram->isLinked()) {
+            qDebug() << "[GLWidget] Base shader program created";
+        } else {
+            qWarning() << "[GLWidget] Base shader program link error:" << m_defaultShaderProgram->log();
+            m_error = true;
+            return;
         }
     }
 
@@ -578,17 +590,26 @@ void GLWidget::initializeGL()
     if (m_gcodeShaderProgram) {
         m_gcodeShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/gcode_vertex.glsl");
         m_gcodeShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/gcode_fragment.glsl");
-        if (m_gcodeShaderProgram->link()) {
-            qDebug() << "gcode shader program created";
+        if (m_gcodeShaderProgram->link() & m_gcodeShaderProgram->isLinked()) {
+            qDebug() << "[GLWidget] GCode shader program created";
+        } else {
+            qWarning() << "[GLWidget] GCode shader program link error:" << m_gcodeShaderProgram->log();
+            m_error = true;
+            return;
         }
     }
 
     m_copyProgram = new QOpenGLShaderProgram();
     m_copyProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/2dcopy_vertex.glsl");
     m_copyProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/2dcopy_fragment.glsl");
-    m_copyProgram->link();
+    if (m_copyProgram->link() & m_copyProgram->isLinked()) {
+        qDebug() << "[GLWidget] 2D Copy shader program created";
+    } else {
+        qWarning() << "[GLWidget] 2D Copy shader program link error:" << m_copyProgram->log();
+        m_error = true;
+        return;
+    }
     m_copyProgram->setUniformValue("u_texture", 0);
-    // m_copyProgram->setUniformValue("u_depthTexture", 1);
 
     m_palette.initialize();
 
@@ -699,9 +720,14 @@ void GLWidget::paintGL() {
 void GLWidget::paintEvent(QPaintEvent *pe) {
     Q_UNUSED(pe)
 #endif
-    //m_zMinMax->getMinMax()
-
     QPainter painter(this);
+
+    if (m_error) {
+        painter.setPen(Qt::red);
+        painter.setFont(QFont("Arial", 16, QFont::Bold));
+        painter.drawText(rect(), Qt::AlignCenter, "OpenGL error. See application log for details.");
+        return;
+    }
 
     // Segment counter
     int vertices = 0;

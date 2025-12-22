@@ -138,6 +138,7 @@ private:
     double m_lineWidth;
     double m_pointSize;
     double m_offset;
+    bool m_error = false;
     bool m_antialiasing;
     bool m_msaa;
     bool m_vsync;
