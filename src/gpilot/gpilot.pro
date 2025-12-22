@@ -7,7 +7,7 @@ equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8) {
     error("Use Qt 6.8 or newer")
 }
 
-QT = core gui opengl serialport uitools network qml
+QT = core gui opengl serialport uitools network qml xml
 QT += multimedia multimediawidgets
 
 VERSION=1.0.0.0

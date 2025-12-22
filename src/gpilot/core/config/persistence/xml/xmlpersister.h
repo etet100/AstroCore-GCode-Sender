@@ -1,8 +1,10 @@
 #ifndef XML_CONFIG_PERSISTER_H
 #define XML_CONFIG_PERSISTER_H
 
-#include <QSettings>
 #include <QObject>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QFile>
 #include "../persister.h"
 
 class XmlPersister : public Persister
@@ -15,10 +17,16 @@ class XmlPersister : public Persister
         bool setString(const QString group, const QString key, const QString value) override;
         bool setDouble(const QString group, const QString key, const double value) override;
         bool setBool(const QString group, const QString key, const bool value) override;
+        bool setStringList(const QString group, const QString key, const QStringList value) override;
+        bool setVariantMap(const QString group, const QString key, const QVariantMap value) override;
+        bool setVariant(const QString group, const QString key, const QVariant value) override;
 
     private:
-        QSettings *m_settings;
+        QDomDocument m_doc;
         QString m_filePath;
+        bool saveDocument();
+        QDomElement getOrCreateGroup(const QString& group);
+        QString variantToString(const QVariant& value);
 };
 
 #endif // XML_CONFIG_PERSISTER_H
