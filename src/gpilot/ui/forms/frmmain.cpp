@@ -31,6 +31,7 @@
 #include "ui_frmmain.h"
 #include "ui_partmainoverride.h"
 #include "ui/widgets/widgetmimedata.h"
+#include "ui/widgets/dockabletitle.h"
 #include "io/connection/connectionmanager.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
@@ -85,6 +86,26 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // m_communicator->m_senderState = SenderUnknown;
 
     ui->setupUi(this);
+
+    ui->dockDevice->setTitleBarWidget(new DockableTitle(ui->dockDevice));
+    ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
+    ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
+    ui->dockUser->setTitleBarWidget(new DockableTitle(ui->dockUser));
+    connect(ui->dockDevice, &QDockWidget::topLevelChanged, [this](bool floating) {
+        if (floating) {
+            // Ustawienia dla pływającego okna
+            // ui->dockDevice->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+            ui->dockDevice->setStyleSheet("QDockWidget { border: 2px solid #555; }");
+            // ui->dockDevice->titleBarWidget()->hide();
+        } else {
+            // Można też przywrócić domyślne flagi, gdy dock jest zadokowany, ale zwykle nie jest to konieczne
+            ui->dockDevice->titleBarWidget()->show();
+            ui->dockDevice->setWindowFlags(Qt::Widget);
+        }
+        ui->dockDevice->show();
+    });
+
+    ui->dockModification->setTitleBarWidget(new DockableTitle(ui->dockModification));
 
     initializeFontSizeMenu();
     preloadSettings();
@@ -2673,11 +2694,12 @@ void FrmMain::appendSpacer(DropWidget *dockPanel)
 
 void FrmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
-    QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
+    QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));    
     dock->setMinimumHeight(200);
     dock->setObjectName("Camera");
     dock->setWidget(window);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
+    dock->setTitleBarWidget(new DockableTitle(dock));
     addDockWidget(area, dock, orientation);
 }
 

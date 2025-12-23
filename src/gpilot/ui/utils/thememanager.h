@@ -38,7 +38,7 @@ private:
     void loadStyleSheets(bool dark);
 
     QApplication *m_app;
-    int m_fontSize;
+    int m_fontSize = -1;
     bool m_darkMode;
 };
 

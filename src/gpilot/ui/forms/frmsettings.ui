@@ -20,39 +20,7 @@
    <string>Settings</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QSpinBox, QDoubleSpinBox {
-	padding-top: 1px;
-	padding-bottom: 1px;
-}
-
-QGroupBox {
-	border: none;
-	padding-top: 16;
-	font-weight: bold;
-}
-
-QSplitter::handle {
-	background-repeat: no-repeat;
-	background-position: center center;
-}
-
-[mode=&quot;light&quot;] QSplitter::handle:vertical {
-        background-image: url(&quot;:/images/handle_horizontal_light.png&quot;);
-}
-
-[mode=&quot;light&quot;] QSplitter::handle:horizontal {
-        background-image: url(&quot;:/images/handle_vertical_light.png&quot;);
-}
-
-[mode=&quot;dark&quot;] QSplitter::handle:vertical {
-        background-image: url(&quot;:/images/handle_horizontal_dark.png&quot;);
-}
-
-[mode=&quot;dark&quot;] QSplitter::handle:horizontal {
-        background-image: url(&quot;:/images/handle_vertical_dark.png&quot;);
-}
-
-</string>
+   <string notr="true"></string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>

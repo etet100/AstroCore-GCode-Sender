@@ -37,6 +37,10 @@ void ThemeManager::setDarkMode(bool dark)
 
     m_darkMode = dark;
     applyTheme(dark);
+    // Re-apply font size after stylesheet change
+    if (m_fontSize > 0) {
+        setFontSize(m_fontSize);
+    }
 
     emit themeChanged(dark);
 }

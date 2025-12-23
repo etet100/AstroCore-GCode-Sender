@@ -356,6 +356,10 @@ Dark mode:
 
 ![main](/screenshots/screenshot_main_dark.png)
 
+New style dark mode - scaled view:
+
+![main](/screenshots/screenshot_main_newstyle_scaled.png)
+
 Heightmap preview:
 
 ![heightmap](/screenshots/screenshot_main_dark_heightmap.png)

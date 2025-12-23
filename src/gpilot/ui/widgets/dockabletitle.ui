@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>dockableTitle</class>
+ <widget class="QWidget" name="dockableTitle">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>563</width>
+    <height>39</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QToolButton {
+    border: none;
+    border-left: 1px solid gray;
+    border-right: 1px solid gray;
+    background-color: #4C4C4C;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+QLabel {
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+QToolButton::hover {
+   background-color: gray;
+}
+
+QWidget#dockableTitle {
+    border-radius: 4px;
+	background-color: #2D2D2D;
+    color: white;
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="lblTitle">
+     <property name="text">
+      <string>Dockable Widget</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnFloating">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/images.qrc">
+       <normaloff>:/images/dockable_undock.png</normaloff>:/images/dockable_undock.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>12</width>
+       <height>12</height>
+      </size>
+     </property>
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnClose">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/images.qrc">
+       <normaloff>:/images/dockable_close.png</normaloff>:/images/dockable_close.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>12</width>
+       <height>12</height>
+      </size>
+     </property>
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../resources/images.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>btnFloating</sender>
+   <signal>clicked()</signal>
+   <receiver>dockableTitle</receiver>
+   <slot>floatingClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>520</x>
+     <y>19</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>500</x>
+     <y>12</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnClose</sender>
+   <signal>clicked()</signal>
+   <receiver>dockableTitle</receiver>
+   <slot>closeClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>543</x>
+     <y>32</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>528</x>
+     <y>29</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>floatingClicked()</slot>
+  <slot>closeClicked()</slot>
+ </slots>
+</ui>

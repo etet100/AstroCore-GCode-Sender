@@ -19,7 +19,44 @@ QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }
 
 QDialog { border: 1px solid palette(mid); }
 
-QDockWidget::close-button, QDockWidget::float-button {
-    border-radius: 2px;
+QSplitter::handle, QMainWindow::separator {
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
+QSlider::horizontal {
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #999999;
+    height: 2px;
+    background: #8f8f91;
+    margin: 2px 0;
+}
+
+QSlider::handle:horizontal {
+    background-image: url(:/images/handle2s.png);
+    border: 0px;
+    width: 16px;
+    margin: -7px 0;
+}
+
+QSlider::handle:horizontal:hover {
+    background-image: url(:/images/handle2sh.png);
+}
+
+QMainWindow::separator {
+    width: 26;
+}
+
+QDockWidget::title {
+    padding: 4px;
+    subcontrol-origin: padding;
+}
+
+QDockWidget[floating="true"] {
+    border: 1px solid palette(highlight);
 }
 

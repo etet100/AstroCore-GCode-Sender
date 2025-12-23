@@ -55,5 +55,8 @@
         <file>../images/handle_vertical_dark.png</file>
         <file>../images/filedrop_valid.png</file>
         <file>../images/filedrop_invalid.png</file>
+        <file>../images/dockable_close.png</file>
+        <file>../images/dockable_undock.png</file>
+        <file>../images/dockable_dock.png</file>
     </qresource>
 </RCC>
