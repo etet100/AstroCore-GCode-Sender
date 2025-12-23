@@ -43,12 +43,28 @@ void ThemeManager::setDarkMode(bool dark)
 
 void ThemeManager::setFontSize(int size)
 {
+    m_fontSize = size;
     m_app->setStyleSheet(QString(m_app->styleSheet()).replace(
         QRegularExpression("/\\* mainfontsize \\*/ font-size:[^;^\\}]+"),
         QString("/* mainfontsize */ font-size: %1pt").arg(size))
     );
 
     emit fontSizeChanged(size);
+}
+
+float ThemeManager::scale()
+{
+    // Mapping font size to scale factor is something to tune later
+    switch (m_fontSize) {
+        case 7: return 0.9f;
+        case 9: return 1.1f;
+        case 10: return 1.2f;
+        case 11: return 1.3f;
+        case 12: return 1.4f;
+        case 8:
+        default:
+            return 1.0f;
+    }
 }
 
 void ThemeManager::applyTheme(bool dark)

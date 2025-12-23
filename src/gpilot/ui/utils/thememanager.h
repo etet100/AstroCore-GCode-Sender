@@ -19,6 +19,9 @@ public:
     void setDarkMode(bool dark);
     bool isDarkMode() const { return m_darkMode; }
     void setFontSize(int);
+    // Scale is deduced from the font size. E.g., 7 = 0.9, 8px = 1.0, 9 = 1.1, 10 = 1.2
+    // Using font size is deprecated
+    float scale();
 
 signals:
     void themeChanged(bool darkMode);
@@ -35,6 +38,7 @@ private:
     void loadStyleSheets(bool dark);
 
     QApplication *m_app;
+    int m_fontSize;
     bool m_darkMode;
 };
 

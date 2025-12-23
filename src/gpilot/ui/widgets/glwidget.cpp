@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QEasingCurve>
 #include <QOpenGLDebugLogger>
+#include "ui/utils/thememanager.h"
 
 #ifdef GLES
 //#include <GLES/gl.h>
@@ -870,34 +871,37 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     painter.setRenderHint(QPainter::TextAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
+    const float scale = ThemeManager::instance().scale();
+    const int lineHeight = 15 * scale;
+    // text base point is at the bottom left corner, so we need to offset by font height
+    const int fontHeight = painter.fontMetrics().height();
+
     // left side
-    pos = QPoint(10, this->height() - 80);
+    pos = QPoint(10, this->height() - 10 - (5 * lineHeight) + fontHeight);
 
     if (!qIsNaN(m_bottomSurfaceCursorPos.x())) {
-        drawText(painter, pos, QString("Cursor: %1, %2").arg(m_bottomSurfaceCursorPos.x(), 0, 'f', 2).arg(m_bottomSurfaceCursorPos.y(), 0, 'f', 2), 15);
+        drawText(painter, pos, QString("Cursor: %1, %2").arg(m_bottomSurfaceCursorPos.x(), 0, 'f', 2).arg(m_bottomSurfaceCursorPos.y(), 0, 'f', 2), lineHeight);
     } else {
-        drawText(painter, pos, "Cursor: ??", 15);
+        drawText(painter, pos, "Cursor: ??", lineHeight);
     }
-    drawText(painter, pos, QString("X: %1 ... %2").arg(m_xMin, 0, 'f', 3).arg(m_xMax, 0, 'f', 3), 15);
-    drawText(painter, pos, QString("Y: %1 ... %2").arg(m_yMin, 0, 'f', 3).arg(m_yMax, 0, 'f', 3), 15);
-    drawText(painter, pos, QString("Z: %1 ... %2").arg(m_zMin, 0, 'f', 3).arg(m_zMax, 0, 'f', 3), 15);
-    drawText(painter, pos, QString("%1 / %2 / %3 / %4").arg(m_xSize, 0, 'f', 3).arg(m_ySize, 0, 'f', 3).arg(m_zSize, 0, 'f', 3).arg(m_perspective ? "p" : "o"), 15);
+    drawText(painter, pos, QString("X: %1 ... %2").arg(m_xMin, 0, 'f', 3).arg(m_xMax, 0, 'f', 3), lineHeight);
+    drawText(painter, pos, QString("Y: %1 ... %2").arg(m_yMin, 0, 'f', 3).arg(m_yMax, 0, 'f', 3), lineHeight);
+    drawText(painter, pos, QString("Z: %1 ... %2").arg(m_zMin, 0, 'f', 3).arg(m_zMax, 0, 'f', 3), lineHeight);
+    drawText(painter, pos, QString("%1 / %2 / %3 / %4").arg(m_xSize, 0, 'f', 3).arg(m_ySize, 0, 'f', 3).arg(m_zSize, 0, 'f', 3).arg(m_perspective ? "p" : "o"), lineHeight);
 
-    QFontMetrics fm(painter.font());
+    pos.setY(this->height() - 10 - (8 * lineHeight) + fontHeight);
 
-    pos.setY(this->height() - 80 - (4*15));
-
-    drawText(painter, pos, m_parserState, 10);
-    drawText(painter, pos, m_speedState, 10);
-    drawText(painter, pos, m_pinState, 10);
+    drawText(painter, pos, m_parserState, lineHeight);
+    drawText(painter, pos, m_speedState, lineHeight);
+    drawText(painter, pos, m_pinState, lineHeight);
 
     // right side
-    pos = QPoint(this->width() - 10, this->height() - 60);
+    pos = QPoint(this->width() - 10, this->height() - 10 - (4 * lineHeight) + fontHeight);
 
-    drawText(painter, pos, m_spendTime.toString("hh:mm:ss") + " / " + m_estimatedTime.toString("hh:mm:ss"), 15, Qt::AlignRight);
+    drawText(painter, pos, m_spendTime.toString("hh:mm:ss") + " / " + m_estimatedTime.toString("hh:mm:ss"), lineHeight, Qt::AlignRight);
     drawText(painter, pos, m_bufferState, 15, Qt::AlignRight);
-    drawText(painter, pos, QString(tr("Vertices: %1")).arg(vertices), 15, Qt::AlignRight);
-    drawText(painter, pos, QString("FPS: %1").arg(m_fps), 15, Qt::AlignRight);
+    drawText(painter, pos, QString(tr("Vertices: %1")).arg(vertices), lineHeight, Qt::AlignRight);
+    drawText(painter, pos, QString("FPS: %1").arg(m_fps), lineHeight, Qt::AlignRight);
 
     m_frames++;
 #ifdef GLES
