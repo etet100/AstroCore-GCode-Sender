@@ -1,4 +1,4 @@
-// This file is a part of "G-Pilot (formerly Candle)" application.
+// This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -27,7 +27,7 @@ class Connection : public QObject
         virtual QString name() = 0;
 
         ConnectionState state() const { return m_state; }
-        bool isConnected() const { return m_state == ConnectionState::Connected; }        
+        bool isConnected() const { return m_state == ConnectionState::Connected; }
 
     protected:
         ConnectionState m_state;

@@ -1,4 +1,4 @@
-// This file is a part of "G-Pilot (formerly Candle)" application.
+// This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -39,7 +39,7 @@ VirtualUCNCConnection::~VirtualUCNCConnection()
 void VirtualUCNCConnection::startLocalServer()
 {
     m_server = new QLocalServer(this);
-    connect(m_server, &QLocalServer::newConnection, this, &VirtualUCNCConnection::onNewConnection);    
+    connect(m_server, &QLocalServer::newConnection, this, &VirtualUCNCConnection::onNewConnection);
     m_server->listen("gpilotucnc_" + QUuid::createUuid().toString());
 }
 

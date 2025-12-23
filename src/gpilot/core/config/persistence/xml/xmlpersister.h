@@ -1,3 +1,7 @@
+// This file is a part of "G-Pilot GCode Sender" application.
+// Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2025 BTS
+
 #ifndef XML_CONFIG_PERSISTER_H
 #define XML_CONFIG_PERSISTER_H
 

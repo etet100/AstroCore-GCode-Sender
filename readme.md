@@ -59,7 +59,7 @@ MSVC compiler is not officially supported and may not work correctly.
 
 Start with:
 
-git clone --recurse-submodules https://github.com/etet100/G-Pilot-Formerly-Candle
+git clone --recurse-submodules https://github.com/etet100/G-Pilot-GCode-Sender
 
 Command line options
 -------------------
@@ -268,8 +268,8 @@ How to build (Windows, Qt, MinGW/LLVM)
 
 1. Clone the repository with submodules:
     ```
-    git clone --recurse-submodules https://github.com/etet100/G-Pilot-Formerly-Candle
-    cd G-Pilot-Formerly-Candle
+    git clone --recurse-submodules https://github.com/etet100/G-Pilot-GCode-Sender
+    cd G-Pilot-GCode-Sender
     git submodule update --init --recursive
     ```
 

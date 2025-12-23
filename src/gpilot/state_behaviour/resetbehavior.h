@@ -1,4 +1,4 @@
-// This file is a part of "G-Pilot (formerly Candle)" application.
+// This file is a part of "G-Pilot GCode Sender" application.
 
 #ifndef RESETBEHAVIOR_H
 #define RESETBEHAVIOR_H

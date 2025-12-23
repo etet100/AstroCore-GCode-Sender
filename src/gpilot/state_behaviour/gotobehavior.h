@@ -1,4 +1,4 @@
-// This file is a part of "G-Pilot (formerly Candle)" application.
+// This file is a part of "G-Pilot GCode Sender" application.
 
 #ifndef F7361A36_9D66_4126_9302_5C7751E1EAC2
 #define F7361A36_9D66_4126_9302_5C7751E1EAC2
