@@ -69,10 +69,12 @@ G-Pilot supports several command line switches:
 - `-l` or `--log-to-file` – Enables logging debug info to GPilot.log file.
 - `-t` or `--trim-log` – Clears GPilot.log file at startup (use with log-to-file).
 - `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
+- `-co` or `--console` - Opens G-Pilot with console window (for debugging purposes). Windows only.
 
 Examples:
 
   G-Pilot.exe --log-to-file --trim-log --config-type json
+  G-Pilot.exe --console
 
 You can combine options as needed. See main.cpp for details.
 

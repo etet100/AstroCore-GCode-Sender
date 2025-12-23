@@ -17,6 +17,9 @@
 #include "ui/forms/frmmain.h"
 #include "ui/utils/thememanager.h"
 #include "core/config/implementations.h"
+#ifdef WINDOWS
+#include <windows.h>
+#endif
 
 void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
@@ -45,6 +48,15 @@ void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & 
     ts << txt << Qt::endl;
     QTextStream(stdout) << txt << Qt::endl;
 }
+
+#ifdef WINDOWS
+void initConsole()
+{
+    AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+}
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -79,6 +91,11 @@ int main(int argc, char *argv[])
     QCommandLineOption configTypeOption(QStringList{"c", "config-type"}, "Set config type (ini, json).", "type", "ini");
     parser.addOption(configTypeOption);
 
+#ifdef WINDOWS
+    QCommandLineOption consoleOption(QStringList{"co", "console"}, "Show console window (Windows only).");
+    parser.addOption(consoleOption);
+#endif
+
     parser.process(app);
 
     if (parser.isSet(logToFileOption)) {
@@ -88,6 +105,12 @@ int main(int argc, char *argv[])
 
         qInstallMessageHandler(messageHandler);
     }
+
+#ifdef WINDOWS
+    if (parser.isSet(consoleOption)) {
+        initConsole();
+    }
+#endif
 
 #ifdef GLES
     QFontDatabase::addApplicationFont(":/fonts/Ubuntu-R.ttf");
