@@ -91,14 +91,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
     ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
     ui->dockUser->setTitleBarWidget(new DockableTitle(ui->dockUser));
+    ui->dockProgram->setTitleBarWidget(new DockableTitle(ui->dockProgram));
     connect(ui->dockDevice, &QDockWidget::topLevelChanged, [this](bool floating) {
         if (floating) {
-            // Ustawienia dla pływającego okna
-            // ui->dockDevice->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
             ui->dockDevice->setStyleSheet("QDockWidget { border: 2px solid #555; }");
             // ui->dockDevice->titleBarWidget()->hide();
         } else {
-            // Można też przywrócić domyślne flagi, gdy dock jest zadokowany, ale zwykle nie jest to konieczne
             ui->dockDevice->titleBarWidget()->show();
             ui->dockDevice->setWindowFlags(Qt::Widget);
         }
@@ -3318,10 +3316,10 @@ void FrmMain::updateControlsState()
     // m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
     m_heightmapInterpolationDrawer.setVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
 
-    ui->grpProgram->setText(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
-    ui->grpProgram->setProperty("overrided", m_heightmapMode);
-    style()->unpolish(ui->grpProgram);
-    ui->grpProgram->ensurePolished();
+    ui->dockProgram->setWindowTitle(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
+    ui->dockProgram->setProperty("overrided", m_heightmapMode);
+    style()->unpolish(ui->dockProgram);
+    ui->dockProgram->ensurePolished();
 
     // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
