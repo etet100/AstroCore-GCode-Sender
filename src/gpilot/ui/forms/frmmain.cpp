@@ -859,7 +859,7 @@ void FrmMain::on_actViewLockWindows_toggled(bool checked)
 void FrmMain::on_actViewDarkMode_toggled(bool checked)
 {
     m_configuration.uiModule().setDarkMode(checked);
-    ThemeManager::instance().setDarkMode(checked);
+    ThemeManager::instance().setDark(checked);
 }
 
 void FrmMain::on_cmdFileOpen_clicked()
@@ -2655,8 +2655,9 @@ void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
     ui->chkAutoScrollGCode->setChecked(uiConfiguration.autoScrollGCode());
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
-    ThemeManager::instance().setFontSize(uiConfiguration.fontSize());
-    ThemeManager::instance().setDarkMode(uiConfiguration.darkTheme());
+    ThemeManager& tm = ThemeManager::instance();
+    tm.setFontSize(uiConfiguration.fontSize());
+    tm.setDark(uiConfiguration.darkTheme());
 }
 
 void FrmMain::applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration)

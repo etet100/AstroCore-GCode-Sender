@@ -11,7 +11,7 @@
 ThemeManager::ThemeManager(QObject *parent)
     : QObject(parent)
     , m_app(nullptr)
-    , m_darkMode(false)
+    , m_dark(false)
 {
 }
 
@@ -25,34 +25,43 @@ ThemeManager& ThemeManager::instance()
 void ThemeManager::initialize(QApplication *app, bool darkMode)
 {
     m_app = app;
-    m_darkMode = darkMode;
+    m_dark = darkMode;
     applyTheme(darkMode);
 }
 
-void ThemeManager::setDarkMode(bool dark)
+void ThemeManager::setDark(bool dark)
 {
-    if (m_darkMode == dark) {
+    if (m_dark == dark) {
         return;
     }
 
-    m_darkMode = dark;
+    m_dark = dark;
     applyTheme(dark);
     // Re-apply font size after stylesheet change
     if (m_fontSize > 0) {
-        setFontSize(m_fontSize);
+        setFontSize(m_fontSize, true);
     }
 
     emit themeChanged(dark);
 }
 
-void ThemeManager::setFontSize(int size)
+void ThemeManager::setFontSize(int size, bool force)
 {
-    m_fontSize = size;
+    if (!force && m_fontSize == size) {
+        return;
+    }
+
     m_app->setStyleSheet(QString(m_app->styleSheet()).replace(
         QRegularExpression("/\\* mainfontsize \\*/ font-size:[^;^\\}]+"),
         QString("/* mainfontsize */ font-size: %1pt").arg(size))
     );
 
+    // Do not emit signal if size did not change, even if forced
+    if (m_fontSize == size) {
+        return;
+    }
+
+    m_fontSize = size;
     emit fontSizeChanged(size);
 }
 
@@ -94,7 +103,7 @@ void ThemeManager::applyTheme(bool dark)
     loadStyleSheets(dark);
 
     // Update app property for legacy code
-    m_app->setProperty("dark", dark);
+    m_app->setProperty("dark", dark ? "true" : "false");
 }
 
 void ThemeManager::loadStyleSheets(bool dark)

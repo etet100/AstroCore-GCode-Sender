@@ -15,16 +15,16 @@ class ThemeManager : public QObject
 public:
     static ThemeManager& instance();
 
-    void initialize(QApplication *app, bool darkMode);
-    void setDarkMode(bool dark);
-    bool isDarkMode() const { return m_darkMode; }
-    void setFontSize(int);
+    void initialize(QApplication *app, bool dark);
+    void setDark(bool dark);
+    bool dark() const { return m_dark; }
+    void setFontSize(int, bool force = false);
     // Scale is deduced from the font size. E.g., 7 = 0.9, 8px = 1.0, 9 = 1.1, 10 = 1.2
     // Using font size is deprecated
     float scale();
 
 signals:
-    void themeChanged(bool darkMode);
+    void themeChanged(bool dark);
     void fontSizeChanged(int size);
 
 private:
@@ -39,7 +39,7 @@ private:
 
     QApplication *m_app;
     int m_fontSize = -1;
-    bool m_darkMode;
+    bool m_dark;
 };
 
 #endif // THEMEMANAGER_H

@@ -2,6 +2,7 @@
 #define DOCKABLETITLE_H
 
 #include <QWidget>
+#include <QDockWidget>
 
 namespace Ui {
 class dockableTitle;
@@ -21,6 +22,8 @@ class DockableTitle : public QWidget
 
     private:
         Ui::dockableTitle* ui;
+        bool m_dark;
+        QDockWidget* m_dockWidgetParent;
 };
 
 #endif // DOCKABLETITLE_H
