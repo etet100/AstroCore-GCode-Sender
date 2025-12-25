@@ -3,7 +3,7 @@
 
 #include "heightmapgriddrawer.h"
 
-HeightMapGridDrawer::HeightMapGridDrawer(Heightmap &model) : m_model(model)
+HeightMapGridDrawer::HeightMapGridDrawer() : m_model(*(new Heightmap()))
 {
     m_pointSize = 4;
 }
@@ -100,6 +100,11 @@ void HeightMapGridDrawer::generateTriangles(int gridPointsY, double min, QPointF
             m_triangles.append(vC);
         }
     }
+}
+
+void HeightMapGridDrawer::setModel(Heightmap &model)
+{
+    m_model = model;
 }
 
 bool HeightMapGridDrawer::updateData(GLPalette &palette)

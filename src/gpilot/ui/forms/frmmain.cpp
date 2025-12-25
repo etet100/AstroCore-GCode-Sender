@@ -50,8 +50,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_taskBar(this),
 #endif
     m_heightmap(),
-    m_heightmapBorderDrawer(m_heightmap),
-    m_heightmapGridDrawer(m_heightmap),
     m_connectionManager(this, configuration.connectionModule()),
     m_connection(nullptr),
     m_program(),
@@ -130,7 +128,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         int tableIndex = m_currentModel->toFilteredIndex(m_program.commandIndex());
         ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex, 1));
 
-        GCodeViewParser *parser = m_codeDrawer->viewParser();
+        GCodeViewParser *parser = &m_viewParser;
         QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
         QList<LineSegment>& list = parser->getLineSegmentList();
         QList<int> indexes;
@@ -153,7 +151,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
 
         if (!indexes.isEmpty()) {
-            m_codeDrawer->update(indexes);
+            ui->visualizer->updateCodeDrawer(indexes);
         }
     });
 
@@ -305,14 +303,11 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
 
-    m_codeDrawer = new GcodeDrawer();
-    // connect(&m_program, &GCode::linesUpdated, m_codeDrawer, &GcodeDrawer::onLinesUpdated);
-    m_codeDrawer->setViewParser(&m_viewParser);
-    m_probeDrawer = new GcodeDrawer();
-    m_probeDrawer->setViewParser(&m_probeParser);
-    m_probeDrawer->setVisible(false);
-    // m_heightmapGridDrawer.setModel(&m_heightmapModel);
-    m_currentDrawer = m_codeDrawer;
+    // ui->visualizer = new PartMainVisualizer(this);
+    // m_program, m_heightmap
+    ui->visualizer->setCodeParser(&m_viewParser);
+    ui->visualizer->setProbeParser(&m_probeParser);
+    ui->visualizer->initDrawables();
 
     m_tableMenu = new QMenu(this);
     m_tableMenu->addAction(tr("&Insert line"), this, SLOT(onTableInsertLine()), QKeySequence(Qt::Key_Insert));
@@ -320,18 +315,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     initializeVisualizer();
 
-    connect(ui->glwVisualizer, &GLContainer::resized, this, &FrmMain::placeVisualizerButtons);
-    connect(ui->glwVisualizer, &GLContainer::cursorPosChanged, this, &FrmMain::onVisualizerCursorPosChanged);
-    connect(ui->glwVisualizer, &GLContainer::entered, this, [this]() {
-        m_cursorDrawer.setVisible(true);
-    });
-    connect(ui->glwVisualizer, &GLContainer::left, this, [this]() {
-        m_cursorDrawer.setVisible(false);
-    });
-    connect(ui->glwVisualizer, &GLContainer::zoomChanged, this, [this](double zoom) {
-        m_originDrawer.setZoom(zoom);
-    });
-    connect(ui->glwVisualizer, &GLContainer::goToCursor, this, [this](QPointF pos) {
+    connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
         m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
     });
     connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
@@ -475,12 +459,7 @@ void FrmMain::initializeCommunicator()
 
 void FrmMain::initializeVisualizer()
 {
-    *ui->glwVisualizer << &m_originDrawer << m_codeDrawer << m_probeDrawer
-                       << &m_cursorDrawer << &m_heightmapBorderDrawer
-                       << &m_heightmapGridDrawer << &m_heightmapInterpolationDrawer
-                       << &m_selectionDrawer << &m_machineBoundsDrawer << &m_toolDrawer;
-
-    ui->glwVisualizer->fitDrawable(m_codeDrawer);
+    ui->visualizer->fitCodeDrawer();
 }
 
 bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -501,8 +480,6 @@ void FrmMain::showEvent(QShowEvent *se)
 {
     Q_UNUSED(se)
 
-    placeVisualizerButtons();
-
     if (m_firstShow) {
         Utils::positionDialog(this, m_configuration.uiModule().mainFormGeometry(), m_configuration.uiModule().mainFormMaximized());
         m_firstShow = false;
@@ -518,7 +495,6 @@ void FrmMain::resizeEvent(QResizeEvent *re)
 {
     QMainWindow::resizeEvent(re);
 
-    placeVisualizerButtons();
     resizeTableHeightmapSections();
 
     if (!m_firstShow) {
@@ -529,9 +505,9 @@ void FrmMain::resizeEvent(QResizeEvent *re)
 void FrmMain::timerEvent(QTimerEvent *te)
 {
     if (te->timerId() == m_timerToolAnimation.timerId()) {
-        // m_toolDrawer.rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
+        // ui->visualizer->toolDrawer()->rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
         //                     / (ui->slbSpindle->maximum()));
-        // m_cursorDrawer.rotate();
+        // ui->visualizer->cursorDrawer()->rotate();
     } else {
         QMainWindow::timerEvent(te);
     }
@@ -998,7 +974,7 @@ void FrmMain::on_cmdFileReset_clicked()
             list[i].setDrawn(false);
             indexes.append(i);
         }
-        m_codeDrawer->update(indexes);
+        ui->visualizer->updateCodeDrawer(indexes);
 
         ui->tblProgram->setUpdatesEnabled(false);
 
@@ -1013,7 +989,7 @@ void FrmMain::on_cmdFileReset_clicked()
         ui->tblProgram->clearSelection();
         ui->tblProgram->selectRow(0);
 
-        ui->glwVisualizer->setSpendTime(QTime(0, 0, 0));
+        ui->visualizer->setSpendTime(QTime(0, 0, 0));
     } else {
         ui->txtHeightMapGridX->setEnabled(true);
         ui->txtHeightMapGridY->setEnabled(true);
@@ -1021,7 +997,7 @@ void FrmMain::on_cmdFileReset_clicked()
         ui->txtHeightMapGridZTop->setEnabled(true);
 
         // delete m_heightmapInterpolationDrawer.data();
-        m_heightmapInterpolationDrawer.setData(NULL);
+        ui->visualizer->updateHeightmapInterpolation(true);
 
         m_heightmapModel.clear();
         updateHeightmapGrid();
@@ -1113,46 +1089,6 @@ void FrmMain::on_cmdSpindle_clicked(bool checked)
     } else {
         // m_communicator->sendCommand(CommandSource::GeneralUI, checked ? QString("M3 S%1").arg(ui->slbSpindle->value()) : "M5", TABLE_INDEX_UI);
     }
-}
-
-void FrmMain::on_cmdTop_clicked()
-{
-    ui->glwVisualizer->setTopView();
-}
-
-void FrmMain::on_cmdFront_clicked()
-{
-    ui->glwVisualizer->setFrontView();
-}
-
-void FrmMain::on_cmdLeft_clicked()
-{
-    ui->glwVisualizer->setLeftView();
-}
-
-void FrmMain::on_cmdIsometric_clicked()
-{
-    ui->glwVisualizer->setIsometricView();
-}
-
-void FrmMain::on_cmdRotationCube_clicked()
-{
-    ui->glwVisualizer->toggleRotationCube();
-}
-
-void FrmMain::on_cmdVisualizerHeightmap_clicked()
-{
-    m_heightmapGridDrawer.toggleVisible();
-}
-
-void FrmMain::on_cmdToggleProjection_clicked()
-{
-    ui->glwVisualizer->toggleProjectionType();
-}
-
-void FrmMain::on_cmdFit_clicked()
-{
-    ui->glwVisualizer->fitDrawable(m_currentDrawer);
 }
 
 void FrmMain::on_grpOverriding_toggled(bool checked)
@@ -1559,7 +1495,7 @@ void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
         ui->tblProgram->setModel(&m_probeModel);
         resizeTableHeightmapSections();
         //updateCurrentModel(&m_programModel);
-        m_currentDrawer = m_probeDrawer;
+        ui->visualizer->useProbeDrawer();
         updateParser();  // Update probe program parser
     } else {
         m_probeParser.reset();
@@ -1570,10 +1506,11 @@ void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
 
             resizeTableHeightmapSections();
             // updateCurrentModel(&m_programModel);
-            m_currentDrawer = m_codeDrawer;
+            ui->visualizer->useCodeDrawer();
 
             if (!ui->chkHeightMapUse->isChecked()) {
-                ui->glwVisualizer->updateExtremes(m_codeDrawer);
+                ui->visualizer->updateGCodeExtremes();
+                // ui->glwVisualizer->updateExtremes(m_codeDrawer);
 //                updateProgramEstimatedTime(m_currentDrawer->viewParser()->getLineSegmentList());
             }
         }
@@ -1589,7 +1526,7 @@ void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
     }
     // Update only vertex color.
     // If chkHeightMapUse was checked codeDrawer updated via updateParser
-    if (!ui->chkHeightMapUse->isChecked()) m_codeDrawer->update(indexes);
+    if (!ui->chkHeightMapUse->isChecked()) ui->visualizer->updateCodeDrawer(indexes);
 
     updateRecentFilesMenu();
     updateControlsState();
@@ -1699,7 +1636,8 @@ void FrmMain::on_menuViewPanels_aboutToShow()
 
 void FrmMain::on_dockVisualizer_visibilityChanged(bool visible)
 {
-    ui->glwVisualizer->setUpdatesEnabled(visible);
+    // Change setUpdatesEnabled2 to something better later
+    ui->visualizer->setUpdatesEnabled2(visible);
 }
 
 void FrmMain::onConnectionError(QString error)
@@ -1751,7 +1689,7 @@ void FrmMain::onMachineStateReceived(MachineState state)
         int elapsed = QDateTime::currentSecsSinceEpoch() - m_startTime;
         QTime time(0, 0, 0);
         time.addSecs(elapsed);
-        ui->glwVisualizer->setSpendTime(time);
+        ui->visualizer->setSpendTime(time);
     }
 
     updateControlsState();
@@ -1785,17 +1723,17 @@ void FrmMain::onFloodStateReceived(bool state)
 
 void FrmMain::onParserStateReceived(QString state)
 {
-    ui->glwVisualizer->setParserState(state);
+    ui->visualizer->setParserState(state);
 }
 
 void FrmMain::onPinStateReceived(QString state)
 {
-    ui->glwVisualizer->setPinState(state);
+    ui->visualizer->setPinState(state);
 }
 
 void FrmMain::onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed)
 {
-    ui->glwVisualizer->setSpeedState((QString(tr("F/S: %1 / %2")).arg(feedRate, spindleSpeed)));
+    ui->visualizer->setSpeedState((QString(tr("F/S: %1 / %2")).arg(feedRate, spindleSpeed)));
 }
 
 void FrmMain::onSpindleSpeedReceived(int spindleSpeed)
@@ -1993,12 +1931,12 @@ void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
     int rowPrevious = qMax(qMin(previousIndex.row(), m_currentProgram->lastCommandIndex()), 0);
 
     // Update toolpath hightlighting
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = ui->visualizer->currentDrawer()->viewParser();
     QList<LineSegment>& list = parser->getLineSegmentList();
     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
 
     // Update linesegments on cell changed
-    if (!m_currentDrawer->geometryUpdated()) {
+    if (!ui->visualizer->currentDrawer()->geometryUpdated()) {
         int lineCurrent = (*m_currentProgram)[rowCurrent].lineNumber;
         for (int i = 0; i < list.count(); i++) {
             list[i].setIsHightlight(list[i].getLineNumber() <= lineCurrent);
@@ -2017,23 +1955,23 @@ void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
             }
         }
 
-        m_selectionDrawer.setEndPosition(indexes.isEmpty() ? QVector3D(sNan, sNan, sNan) :
+        ui->visualizer->setSelectionEndPosition(indexes.isEmpty() ? QVector3D(sNan, sNan, sNan) :
             (m_configuration.visualizerModule().ignoreZ() ? QVector3D(list[indexes.last()].getEnd().x(), list[indexes.last()].getEnd().y(), 0)
                                         : list[indexes.last()].getEnd()));
-        m_selectionDrawer.update();
+        ui->visualizer->updateSelection();
 
-        if (!indexes.isEmpty()) m_currentDrawer->update(indexes);
+        if (!indexes.isEmpty()) ui->visualizer->updateCurrentDrawer(indexes);
     }
 
     // Update selection marker
     int line = (*m_currentProgram)[rowCurrent].lineNumber;
     if (line > 0 && line < lineIndexes.count() && !lineIndexes.at(line).isEmpty()) {
         QVector3D pos = list[lineIndexes.at(line).last()].getEnd();
-        m_selectionDrawer.setEndPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(pos.x(), pos.y(), 0) : pos);
+        ui->visualizer->setSelectionEndPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(pos.x(), pos.y(), 0) : pos);
     } else {
-        m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+        ui->visualizer->setSelectionEndPosition(QVector3D(sNan, sNan, sNan));
     }
-    m_selectionDrawer.update();
+    ui->visualizer->updateSelection();
 }
 
 void FrmMain::onOverridingToggled(bool checked)
@@ -2176,10 +2114,10 @@ void FrmMain::onScroolBarAction(int action)
         ui->chkAutoScrollGCode->setChecked(false);
 }
 
-void FrmMain::onVisualizerCursorPosChanged(QPointF pos)
-{
-    m_cursorDrawer.setPosition(pos);
-}
+// void FrmMain::onVisualizerCursorPosChanged(QPointF pos)
+// {
+//     m_cursorDrawer.setPosition(pos);
+// }
 
 // void FrmMain::onProgramLinesUpdated(int from, int to)
 // {
@@ -2191,7 +2129,7 @@ void FrmMain::updateHeightMapInterpolationDrawer(bool reset)
     if (m_settingsLoading) return;
 
     QRectF borderRect = borderRectFromTextboxes();
-    m_heightmapInterpolationDrawer.setBorderRect(borderRect);
+    // m_heightmapInterpolationDrawer.setBorderRect(borderRect);
 
     QVector<QVector<double>> *interpolationData = new QVector<QVector<double>>;
 
@@ -2216,25 +2154,16 @@ void FrmMain::updateHeightMapInterpolationDrawer(bool reset)
     // if (m_heightmapInterpolationDrawer.data() != NULL) {
     //     delete m_heightmapInterpolationDrawer.data();
     // }
-    m_heightmapInterpolationDrawer.setData(interpolationData);
+    ui->visualizer->setInterpolationData(interpolationData, borderRect);
 
     // Update grid drawer
-    m_heightmapGridDrawer.update();
+    ui->visualizer->updateHeightmapGrid();
 
     // Heightmap changed by table user input
     if (sender() == &m_heightmapModel) m_heightmapChanged = true;
 
     // Reset heightmapped program model
     m_programHeightmapModel.clear();
-}
-
-void FrmMain::placeVisualizerButtons()
-{
-    ui->visualizerButtons->setParent(ui->glwVisualizer);
-    ui->visualizerButtons->move(
-        ui->glwVisualizer->width() - ui->visualizerButtons->width() - 8,
-        8
-    );
 }
 
 void FrmMain::preloadSettings()
@@ -2539,117 +2468,91 @@ void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
     connect(m_connection, SIGNAL(error(QString)), this, SLOT(onConnectionError(QString)));
 }
 
-void FrmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->glwVisualizer->setLineWidth(visualizerConfiguration.lineWidth());
-    ui->glwVisualizer->setAntialiasing(visualizerConfiguration.antialiasing());
-    ui->glwVisualizer->setMsaa(visualizerConfiguration.msaa());
-    ui->glwVisualizer->setZBuffer(visualizerConfiguration.zBuffer());
-    ui->glwVisualizer->setFov(visualizerConfiguration.fieldOfView());
-    ui->glwVisualizer->setNearPlane(visualizerConfiguration.nearPlane());
-    ui->glwVisualizer->setFarPlane(visualizerConfiguration.farPlane());
-    ui->glwVisualizer->setVsync(visualizerConfiguration.vsync());
-    ui->glwVisualizer->setFps(visualizerConfiguration.fpsLock());
-    ui->glwVisualizer->setColorBackground(visualizerConfiguration.backgroundColor());
-    ui->glwVisualizer->setColorText(visualizerConfiguration.textColor());
+// void FrmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
+// {
+//     ui->glwVisualizer->setLineWidth(visualizerConfiguration.lineWidth());
+//     ui->glwVisualizer->setAntialiasing(visualizerConfiguration.antialiasing());
+//     ui->glwVisualizer->setMsaa(visualizerConfiguration.msaa());
+//     ui->glwVisualizer->setZBuffer(visualizerConfiguration.zBuffer());
+//     ui->glwVisualizer->setFov(visualizerConfiguration.fieldOfView());
+//     ui->glwVisualizer->setNearPlane(visualizerConfiguration.nearPlane());
+//     ui->glwVisualizer->setFarPlane(visualizerConfiguration.farPlane());
+//     ui->glwVisualizer->setVsync(visualizerConfiguration.vsync());
+//     ui->glwVisualizer->setFps(visualizerConfiguration.fpsLock());
+//     ui->glwVisualizer->setColorBackground(visualizerConfiguration.backgroundColor());
+//     ui->glwVisualizer->setColorText(visualizerConfiguration.textColor());
 
-    // Adapt visualizer buttons colors
-    const int LIGHTBOUND = 140;
-    const int NORMALSHIFT = 40;
-    const int HIGHLIGHTSHIFT = 80;
+//     // Adapt visualizer buttons colors
+//     const int LIGHTBOUND = 140;
+//     const int NORMALSHIFT = 40;
+//     const int HIGHLIGHTSHIFT = 80;
 
-    QColor base = visualizerConfiguration.backgroundColor();
-    bool light = base.value() > LIGHTBOUND;
+//     QColor base = visualizerConfiguration.backgroundColor();
+//     bool light = base.value() > LIGHTBOUND;
 
-    // Use background color with some transparency for buttons background
-    ui->visualizerButtons->setStyleSheet(
-        ui->visualizerButtons->styleSheet().replace(
-            QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
-                        QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(base.red())
-                                                   .arg(base.green())
-                                                   .arg(base.blue())
-                .arg(std::max(0, base.alpha() - 100))
-            )
-        );
+//     // Use background color with some transparency for buttons background
+//     ui->visualizerButtons->setStyleSheet(
+//         ui->visualizerButtons->styleSheet().replace(
+//             QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
+//                         QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(base.red())
+//                                                    .arg(base.green())
+//                                                    .arg(base.blue())
+//                 .arg(std::max(0, base.alpha() - 100))
+//             )
+//         );
 
-    ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
-    ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
-    ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
-    ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
-    ui->cmdLeft->setIcon(QIcon(":/images/visualizer_left.png"));
-    ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
+//     ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
+//     ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
+//     ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
+//     ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
+//     ui->cmdLeft->setIcon(QIcon(":/images/visualizer_left.png"));
+//     ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
 
-    if (!light) {
-        Utils::invertButtonIconColors(ui->cmdToggleProjection);
-        Utils::invertButtonIconColors(ui->cmdFit);
-        Utils::invertButtonIconColors(ui->cmdIsometric);
-        Utils::invertButtonIconColors(ui->cmdFront);
-        Utils::invertButtonIconColors(ui->cmdLeft);
-        Utils::invertButtonIconColors(ui->cmdTop);
-    }
+//     if (!light) {
+//         Utils::invertButtonIconColors(ui->cmdToggleProjection);
+//         Utils::invertButtonIconColors(ui->cmdFit);
+//         Utils::invertButtonIconColors(ui->cmdIsometric);
+//         Utils::invertButtonIconColors(ui->cmdFront);
+//         Utils::invertButtonIconColors(ui->cmdLeft);
+//         Utils::invertButtonIconColors(ui->cmdTop);
+//     }
 
-    QColor normal, highlight;
+//     QColor normal, highlight;
 
-    normal.setHsv(base.hue(), base.saturation(), base.value() + (light ? -NORMALSHIFT : NORMALSHIFT));
-    highlight.setHsv(base.hue(), base.saturation(), base.value() + (light ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
+//     normal.setHsv(base.hue(), base.saturation(), base.value() + (light ? -NORMALSHIFT : NORMALSHIFT));
+//     highlight.setHsv(base.hue(), base.saturation(), base.value() + (light ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
 
-    ui->glwVisualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
-                background-color: %3} QToolButton:hover {border: 1px solid %2;}")
-                .arg(normal.name()).arg(highlight.name())
-                .arg(base.name()));
+//     ui->glwVisualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
+//                 background-color: %3} QToolButton:hover {border: 1px solid %2;}")
+//                 .arg(normal.name()).arg(highlight.name())
+//                 .arg(base.name()));
 
-    m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
-}
+//     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
+// }
 
 void FrmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_codeDrawer->setLineWidth(visualizerConfiguration.lineWidth());
-    m_codeDrawer->setSimplify(visualizerConfiguration.simplifyGeometry());
-    m_codeDrawer->setSimplifyPrecision(visualizerConfiguration.simplifyGeometryPrecision());
-    m_codeDrawer->setColorNormal(visualizerConfiguration.normalToolpathColor());
-    m_codeDrawer->setColorDrawn(visualizerConfiguration.drawnToolpathColor());
-    m_codeDrawer->setColorHighlight(visualizerConfiguration.hightlightToolpathColor());
-    m_codeDrawer->setColorZMovement(visualizerConfiguration.zMovementColor());
-    m_codeDrawer->setColorRapidMovement(visualizerConfiguration.rapidMovementColor());
-    m_codeDrawer->setColorStart(visualizerConfiguration.startPointColor());
-    m_codeDrawer->setColorEnd(visualizerConfiguration.endPointColor());
-    m_codeDrawer->setIgnoreZ(visualizerConfiguration.ignoreZ());
-    m_codeDrawer->setGrayscaleSegments(visualizerConfiguration.grayscaleSegments());
-    m_codeDrawer->setGrayscaleCode(visualizerConfiguration.grayscaleSegmentsBySCode() ? GcodeDrawer::S : GcodeDrawer::Z);
-    m_codeDrawer->setGrayscaleMin(m_configuration.machineModule().laserPowerRange().min);
-    m_codeDrawer->setGrayscaleMax(m_configuration.machineModule().laserPowerRange().max);
-    m_codeDrawer->update();
+    ui->visualizer->applyCodeDrawerConfiguration(visualizerConfiguration, m_configuration.machineModule());
 }
 
 void FrmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_toolDrawer.setToolDiameter(visualizerConfiguration.toolDiameter());
-    m_toolDrawer.setToolLength(visualizerConfiguration.toolLength());
-    m_toolDrawer.setLineWidth(visualizerConfiguration.lineWidth());
-    m_toolDrawer.setMode(visualizerConfiguration.toolType());
-    m_toolDrawer.setToolAngle(visualizerConfiguration.toolAngle());
-    m_toolDrawer.setColor(visualizerConfiguration.toolColor());
-    m_toolDrawer.update();
+    ui->visualizer->applyToolDrawerConfiguration(visualizerConfiguration);
 }
 
 void FrmMain::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
-    m_cursorDrawer.setColor(visualizerConfiguration.cursorColor());
-    m_cursorDrawer.update();
+    ui->visualizer->applyCursorDrawerConfiguration(visualizerConfiguration);
 }
 
 void FrmMain::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_tableSurfaceDrawer.setGridColor(visualizerConfiguration.tableSurfaceGridColor());
-    m_tableSurfaceDrawer.update();
+    ui->visualizer->applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
 }
 
 void FrmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_heightmapBorderDrawer.setLineWidth(visualizerConfiguration.lineWidth());
-    m_heightmapGridDrawer.setLineWidth(0.1);
-    m_heightmapInterpolationDrawer.setLineWidth(visualizerConfiguration.lineWidth());
+    ui->visualizer->applyHeightmapDrawerConfiguration(visualizerConfiguration);
 }
 
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
@@ -2696,7 +2599,7 @@ void FrmMain::appendSpacer(DropWidget *dockPanel)
 
 void FrmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
-    QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));    
+    QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
     dock->setMinimumHeight(200);
     dock->setObjectName("Camera");
     dock->setWidget(window);
@@ -2713,7 +2616,9 @@ void FrmMain::applySettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
-    m_originDrawer.setLineWidth(visualizerConfiguration.lineWidth());
+    ui->visualizer->applyOriginDrawerConfiguration(visualizerConfiguration);
+    ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration);
+    ui->visualizer->applySelectionDrawerConfiguration(visualizerConfiguration);
 
     // @TODO watch for changes is communicator?
     // m_communicator->stopUpdatingState();
@@ -2722,7 +2627,6 @@ void FrmMain::applySettings()
     applyToolDrawerConfiguration(visualizerConfiguration);
     applyCursorDrawerConfiguration(visualizerConfiguration);
     applyCodeDrawerConfiguration(visualizerConfiguration);
-    applyVisualizerConfiguration(visualizerConfiguration);
     applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
     applyHeightmapConfiguration(heightmapConfiguration);
     applyHeightmapDrawerConfiguration(visualizerConfiguration);
@@ -2731,8 +2635,6 @@ void FrmMain::applySettings()
     applyOverridesConfiguration(machineConfiguration);
     applyUIConfiguration(uiConfiguration);
     applyRecentFilesConfiguration(uiConfiguration);
-
-    m_selectionDrawer.setColor(visualizerConfiguration.hightlightToolpathColor());
 
     if (!m_connection || m_connection->supportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
@@ -2764,7 +2666,7 @@ void FrmMain::updateParser()
 {
     assert(m_communicator->isMachineConfigurationReady());
 
-    GCodeViewParser *viewParse = m_currentDrawer->viewParser();
+    GCodeViewParser *viewParse = ui->visualizer->currentDrawer()->viewParser();
 
     GcodeParser parser;
     parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
@@ -2826,8 +2728,8 @@ void FrmMain::updateParser()
         //     configurationParser.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
         // )
     // );
-    m_currentDrawer->update();
-    ui->glwVisualizer->updateExtremes(m_currentDrawer);
+    ui->visualizer->currentDrawer()->update();
+    ui->visualizer->updateGCodeExtremes();
     updateControlsState();
 
     if (m_currentModel == &m_programModel) m_fileChanged = true;
@@ -2924,10 +2826,10 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_probeParser.reset();
 
     // Reset code drawer
-    m_currentDrawer = m_codeDrawer;
+    ui->visualizer->useCodeDrawer();
     m_viewParser = *data->viewParser;
-    m_codeDrawer->update();
-    ui->glwVisualizer->fitDrawable(m_codeDrawer);
+    ui->visualizer->updateCodeDrawer();
+    ui->visualizer->fitCodeDrawer();
 
     // Update interface
     ui->chkHeightMapUse->setChecked(false);
@@ -2967,8 +2869,8 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->tblProgram->selectRow(0);
 
     //  Update code drawer
-    m_codeDrawer->update();
-    ui->glwVisualizer->fitDrawable(m_codeDrawer);
+    ui->visualizer->updateCodeDrawer();
+    ui->visualizer->fitCodeDrawer();
 
     resetHeightmap();
     updateControlsState();
@@ -2992,9 +2894,9 @@ void FrmMain::loadLines(QList<std::string> data)
     m_probeParser.reset();
 
     // Reset code drawer
-    m_currentDrawer = m_codeDrawer;
-    m_codeDrawer->update();
-    ui->glwVisualizer->fitDrawable(m_codeDrawer);
+    ui->visualizer->useCodeDrawer();
+    ui->visualizer->updateCodeDrawer();
+    ui->visualizer->fitCodeDrawer();
 
     QList<LineSegment> list;
     updateProgramEstimatedTime(list);
@@ -3094,14 +2996,12 @@ void FrmMain::loadLines(QList<std::string> data)
     ui->tblProgram->selectRow(0);
 
     //  Update code drawer
-    m_codeDrawer->update();
-    ui->glwVisualizer->fitDrawable(m_codeDrawer);
-
-    ui->glwVisualizer->updateDrawer(m_codeDrawer);
+    ui->visualizer->updateCodeDrawer();
+    ui->visualizer->fitCodeDrawer();
 
     // m_codeDrawer->update();
     // m_codeDrawer->updateData();
-    VertexDataExporter::exportToJsFile("vertexdata.js", m_codeDrawer->lines());
+    VertexDataExporter::exportToJsFile("vertexdata.js", ui->visualizer->codeDrawer()->lines());
 
     resetHeightmap();
     updateControlsState();
@@ -3162,7 +3062,7 @@ void FrmMain::clearTable()
 void FrmMain::resetHeightmap()
 {
     // delete m_heightmapInterpolationDrawer.data();
-    m_heightmapInterpolationDrawer.setData(nullptr);
+    ui->visualizer->updateHeightmapInterpolation(true);
 
     ui->tblHeightMap->setModel(NULL);
     m_heightmapModel.resize(1, 1);
@@ -3185,9 +3085,7 @@ void FrmMain::newFile()
     m_probeParser.reset();
 
     // Reset code drawer
-    m_codeDrawer->update();
-    m_currentDrawer = m_codeDrawer;
-    ui->glwVisualizer->fitDrawable();
+    ui->visualizer->reset();
 
     QList<LineSegment> list;
     updateProgramEstimatedTime(list);
@@ -3209,10 +3107,6 @@ void FrmMain::newFile()
     // Update tableview
     connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
     ui->tblProgram->selectRow(0);
-
-    // Clear selection marker
-    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
-    m_selectionDrawer.update();
 
     resetHeightmap();
 
@@ -3318,7 +3212,7 @@ void FrmMain::updateControlsState()
     // Heightmap
     // m_heightmapBorderDrawer.setVisible(ui->chkHeightMapBorderShow->isChecked() && m_heightmapMode);
     // m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
-    m_heightmapInterpolationDrawer.setVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
+    ui->visualizer->setInterpolationVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
 
     ui->centralWidgetTitle->setTitle(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
     ui->centralWidgetTitle->setProperty("overrided", m_heightmapMode);
@@ -3344,7 +3238,7 @@ void FrmMain::updateControlsState()
 
     ui->cmdFileSend->menu()->actions().first()->setEnabled(!ui->cmdHeightMapMode->isChecked());
 
-    m_selectionDrawer.setVisible(!ui->cmdHeightMapMode->isChecked());
+    ui->visualizer->setSelectionVisible(!ui->cmdHeightMapMode->isChecked());
 }
 
 void FrmMain::updateLayouts()
@@ -3437,10 +3331,10 @@ QRectF FrmMain::borderRectFromExtremes()
 {
     QRectF rect;
 
-    rect.setX(m_codeDrawer->minimumExtremes().x());
-    rect.setY(m_codeDrawer->minimumExtremes().y());
-    rect.setWidth(m_codeDrawer->sizes().x());
-    rect.setHeight(m_codeDrawer->sizes().y());
+    rect.setX(ui->visualizer->codeDrawer()->minimumExtremes().x());
+    rect.setY(ui->visualizer->codeDrawer()->minimumExtremes().y());
+    rect.setWidth(ui->visualizer->codeDrawer()->sizes().x());
+    rect.setHeight(ui->visualizer->codeDrawer()->sizes().y());
 
     return rect;
 }
@@ -3449,7 +3343,7 @@ void FrmMain::updateHeightmapBorderDrawer()
 {
     if (m_settingsLoading) return;
 
-    m_heightmapBorderDrawer.setBorderRect(borderRectFromTextboxes());
+    ui->visualizer->updateHeightmapBorder(borderRectFromTextboxes());
 }
 
 bool FrmMain::updateHeightmapGrid()
@@ -3469,10 +3363,10 @@ bool FrmMain::updateHeightmapGrid()
 
     // Update grid drawer
     QRectF borderRect = borderRectFromTextboxes();
-    // m_heightmapGridDrawer.setBorderRect(borderRect);
-    // m_heightmapGridDrawer.setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
-    // m_heightmapGridDrawer.setZBottom(ui->txtHeightMapGridZBottom->value());
-    // m_heightmapGridDrawer.setZTop(ui->txtHeightMapGridZTop->value());
+    // ui->visualizer->heightmapGridDrawer()->setBorderRect(borderRect);
+    // ui->visualizer->heightmapGridDrawer()->setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
+    // ui->visualizer->heightmapGridDrawer()->setZBottom(ui->txtHeightMapGridZBottom->value());
+    // ui->visualizer->heightmapGridDrawer()->setZTop(ui->txtHeightMapGridZTop->value());
 
     // Reset model
     int gridPointsX = ui->txtHeightMapGridX->value();
@@ -3484,7 +3378,7 @@ bool FrmMain::updateHeightmapGrid()
     resizeTableHeightmapSections();
 
     // Update interpolation
-    updateHeightMapInterpolationDrawer(true);
+    ui->visualizer->updateHeightmapInterpolation(true);
 
     // Generate probe program
     double gridStepX = gridPointsX > 1 ? borderRect.width() / (gridPointsX - 1) : 0;
@@ -3519,7 +3413,7 @@ bool FrmMain::updateHeightmapGrid()
 
     m_programLoading = false;
 
-    if (m_currentDrawer == m_probeDrawer) updateParser();
+    if (ui->visualizer->currentDrawer() == ui->visualizer->probeDrawer()) updateParser();
 
     m_heightmapChanged = true;
     return true;
@@ -3535,7 +3429,7 @@ void FrmMain::updateHeightmapGrid(double arg1)
 void FrmMain::resizeTableHeightmapSections()
 {
     if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize()
-            * ui->tblHeightMap->horizontalHeader()->count() < ui->glwVisualizer->width())
+            * ui->tblHeightMap->horizontalHeader()->count() < ui->visualizer->width())
         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); else {
         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     }
@@ -3607,7 +3501,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 
     // Visualizer updates
     if (obj == this && event->type() == QEvent::WindowStateChange) {
-        ui->glwVisualizer->setUpdatesEnabled(!isMinimized() && ui->dockVisualizer->isVisible());
+        ui->visualizer->setUpdatesEnabled2(!isMinimized() && ui->dockVisualizer->isVisible());
     }
 
     // Drag & drop panels
@@ -3671,13 +3565,13 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 // during active program execution (excluding check mode)
 void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
-    m_toolDrawer.setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
+    ui->visualizer->setToolPosition(m_configuration.visualizerModule().ignoreZ() ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
     SenderState senderState = m_communicator->senderState();
     MachineState deviceState = m_communicator->machineState();
     if (((senderState == SenderState::Transferring) || (senderState == SenderState::Stopping)
          || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused)) && deviceState != MachineState::Check) {
-        GCodeViewParser *parser = m_currentDrawer->viewParser();
+        GCodeViewParser *parser = ui->visualizer->currentDrawer()->viewParser();
 
         bool toolOntoolpath = false;
 
@@ -3701,7 +3595,7 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
             foreach (int i, drawnLines) {
                 list[i].setDrawn(true);
             }
-            if (!drawnLines.isEmpty()) m_currentDrawer->update(drawnLines);
+            if (!drawnLines.isEmpty()) ui->visualizer->updateCurrentDrawer(drawnLines);
         }
     }
 }
@@ -3771,8 +3665,8 @@ QTime FrmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
     t.setHMS(0, 0, 0);
     t = t.addSecs(time);
 
-    ui->glwVisualizer->setSpendTime(QTime(0, 0, 0));
-    ui->glwVisualizer->setEstimatedTime(t);
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+    ui->visualizer->setEstimatedTime(t);
 
     return t;
 }
@@ -3834,11 +3728,11 @@ QList<LineSegment*> FrmMain::subdivideSegment(LineSegment* segment)
 void FrmMain::onTransferCompleted()
 {
     // Shadow last segment
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = ui->visualizer->currentDrawer()->viewParser();
     QList<LineSegment> list = parser->getLineSegmentList();
     if (m_lastDrawnLineIndex < list.count()) {
         list[m_lastDrawnLineIndex].setDrawn(true);
-        m_currentDrawer->update(QList<int>() << m_lastDrawnLineIndex);
+        ui->visualizer->updateCurrentDrawer(QList<int>() << m_lastDrawnLineIndex);
     }
 
     // Update state
@@ -3851,7 +3745,7 @@ void FrmMain::onTransferCompleted()
     // m_timerConnection.stop();
 
     QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
-                                .arg(ui->glwVisualizer->spendTime().toString("hh:mm:ss")));
+                                .arg(ui->visualizer->spendTime().toString("hh:mm:ss")));
 
     // m_timerConnection.start();
     // m_communicator->startUpdatingState();
@@ -3861,7 +3755,7 @@ QString FrmMain::getLineInitCommands(int row)
 {
     int commandIndex = row;
 
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = ui->visualizer->currentDrawer()->viewParser();
     QList<LineSegment>& list = parser->getLineSegmentList();
     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
     QString commands;

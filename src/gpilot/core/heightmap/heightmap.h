@@ -10,8 +10,6 @@
 
 class Heightmap
 {
-    Q_DISABLE_COPY(Heightmap)
-
     public:
         Heightmap();
         Heightmap(QSize size);

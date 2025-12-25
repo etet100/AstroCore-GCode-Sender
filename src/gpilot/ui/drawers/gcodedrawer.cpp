@@ -122,6 +122,8 @@ void GcodeDrawer::generateBounds(GLPalette &palette)
 
 bool GcodeDrawer::prepareVectors(GLPalette &palette)
 {
+    assert(m_viewParser != nullptr);
+
     qDebug() << "[GcodeDrawer] Preparing vectors";
 
     QList<LineSegment> &list = m_viewParser->getLines();

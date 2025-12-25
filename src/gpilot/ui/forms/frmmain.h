@@ -24,8 +24,6 @@
 #include "io/connection/connection.h"
 #include "core/communicator/communicator.h"
 #include "io/connection/connectionmanager.h"
-#include "ui/drawers/cursordrawer.h"
-#include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/forms/partials/main/partmainvirtualsettings.h"
 #include "core/gcode/gcode.h"
 #include "core/globals.h"
@@ -35,18 +33,9 @@
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmainstate.h"
 #include "ui/forms/partials/main/partmainconsole.h"
+#include "ui/forms/partials/main/partmainvisualizer.h"
 #include "ui/forms/frmgrblconfigurator.h"
 #include "core/gcode/parser/gcodeviewparser.h"
-
-#include "ui/drawers/origindrawer.h"
-#include "ui/drawers/gcodedrawer.h"
-#include "ui/drawers/tooldrawer.h"
-#include "ui/drawers/heightmapborderdrawer.h"
-#include "ui/drawers/heightmapgriddrawer.h"
-#include "ui/drawers/heightmapinterpolationdrawer.h"
-#include "ui/drawers/shaderdrawable.h"
-#include "ui/drawers/selectiondrawer.h"
-#include "ui/drawers/machineboundsdrawer.h"
 
 #include "ui/tables/gcodetablemodel.h"
 #include "ui/tables/heightmaptablemodel.h"
@@ -131,14 +120,6 @@ private slots:
     void on_cmdFileReset_clicked();
     // void on_cmdSpindle_toggled(bool checked);
     void on_cmdSpindle_clicked(bool checked);
-    void on_cmdTop_clicked();
-    void on_cmdFront_clicked();
-    void on_cmdLeft_clicked();
-    void on_cmdIsometric_clicked();
-    void on_cmdRotationCube_clicked();
-    void on_cmdToggleProjection_clicked();
-    void on_cmdFit_clicked();
-    void on_cmdVisualizerHeightmap_clicked();
     void on_grpOverriding_toggled(bool checked);
     void on_grpSpindle_toggled(bool checked);
     void on_grpJog_toggled(bool checked);
@@ -205,10 +186,9 @@ private slots:
 //    void onCboCommandReturnPressed();
     void onDockTopLevelChanged(bool topLevel);
     void onScroolBarAction(int action);
-    void onVisualizerCursorPosChanged(QPointF);
+    // void onVisualizerCursorPosChanged(QPointF);
     // void onProgramLinesUpdated(int from, int to);
     void updateHeightMapInterpolationDrawer(bool reset = false);
-    void placeVisualizerButtons();
 
 protected:
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -247,21 +227,6 @@ private:
     // Heightmap
     bool m_heightmapMode;
     Heightmap m_heightmap;
-
-    // Visualizer drawers
-    // TODO: Add machine table visualizer
-    TableSurfaceDrawer m_tableSurfaceDrawer;
-    OriginDrawer m_originDrawer;
-    GcodeDrawer *m_codeDrawer;
-    GcodeDrawer *m_probeDrawer;
-    GcodeDrawer *m_currentDrawer;
-    ToolDrawer m_toolDrawer;
-    CursorDrawer m_cursorDrawer;
-    HeightMapBorderDrawer m_heightmapBorderDrawer;
-    HeightMapGridDrawer m_heightmapGridDrawer;
-    HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
-    SelectionDrawer m_selectionDrawer;
-    MachineBoundsDrawer m_machineBoundsDrawer;
 
     bool m_firstShow = true;
 
@@ -380,7 +345,6 @@ private:
     void applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration);
     void applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfiguration);
     void applyOverridesConfiguration(ConfigurationMachine &machineConfiguration);
-    void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);

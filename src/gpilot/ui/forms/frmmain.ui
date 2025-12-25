@@ -416,7 +416,7 @@ QSlider::handle:horizontal:hover {
           <x>0</x>
           <y>0</y>
           <width>222</width>
-          <height>878</height>
+          <height>897</height>
          </rect>
         </property>
         <property name="acceptDrops">
@@ -1236,7 +1236,7 @@ QSlider::handle:horizontal:hover {
           <x>0</x>
           <y>0</y>
           <width>105</width>
-          <height>521</height>
+          <height>525</height>
          </rect>
         </property>
         <property name="acceptDrops">
@@ -1384,21 +1384,34 @@ QSlider::handle:horizontal:hover {
     <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockVisualizerContents">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
+    <property name="styleSheet">
+     <string notr="true">border: 1px solid silver;
+border-top: none;</string>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
       <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>1</number>
      </property>
      <property name="topMargin">
       <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="bottomMargin">
-      <number>0</number>
+      <number>1</number>
      </property>
      <item>
-      <widget class="QFrame" name="fraVisualizer">
+      <widget class="PartMainVisualizer" name="visualizer" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>0</width>
@@ -1406,272 +1419,8 @@ QSlider::handle:horizontal:hover {
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">border: 1px solid silver;
-border-top: 0;</string>
+        <string notr="true"/>
        </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Shadow::Raised</enum>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_8">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="GLContainer" name="glwVisualizer" native="true"/>
-        </item>
-        <item>
-         <widget class="QWidget" name="visualizerButtons" native="true">
-          <property name="maximumSize">
-           <size>
-            <width>71</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">#visualizerButtons { border: none; }
-
-/* this color will be replaced in runtime */
-QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
-
-</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <property name="horizontalSpacing">
-            <number>2</number>
-           </property>
-           <property name="verticalSpacing">
-            <number>5</number>
-           </property>
-           <item row="0" column="0">
-            <widget class="QToolButton" name="cmdTop">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Top view</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_top.png</normaloff>:/images/visualizer_top.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0">
-            <widget class="QToolButton" name="cmdRotationCube">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Rotation cube</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/rotation_cube.png</normaloff>:/images/rotation_cube.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QToolButton" name="cmdIsometric">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Isometric view</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QToolButton" name="cmdFit">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Fit</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QToolButton" name="cmdFront">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Front view</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_front.png</normaloff>:/images/visualizer_front.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QToolButton" name="cmdLeft">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Left view</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="1">
-            <widget class="QToolButton" name="cmdVisualizerHeightmap">
-             <property name="toolTip">
-              <string>Toggle heightmap visibility</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QToolButton" name="cmdToggleProjection">
-             <property name="minimumSize">
-              <size>
-               <width>30</width>
-               <height>30</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Toggle perspective/orthographic projection</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources/images.qrc">
-               <normaloff>:/images/visualizer_toggle_view_mode.png</normaloff>:/images/visualizer_toggle_view_mode.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
       </widget>
      </item>
     </layout>
@@ -1688,49 +1437,30 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QVBoxLayout" name="verticalLayout_24">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
       <number>0</number>
      </property>
      <property name="rightMargin">
       <number>0</number>
      </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
      <item>
-      <widget class="QFrame" name="frame">
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
+      <widget class="PartMainConsole" name="console" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Shadow::Plain</enum>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_14">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="0">
-           <widget class="PartMainConsole" name="console" native="true">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>50</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
       </widget>
      </item>
     </layout>
@@ -1837,7 +1567,7 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <x>0</x>
           <y>0</y>
           <width>105</width>
-          <height>320</height>
+          <height>335</height>
          </rect>
         </property>
         <property name="acceptDrops">
@@ -2167,12 +1897,6 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
    <header>ui/widgets/qpushbuttonwithmenu.h</header>
   </customwidget>
   <customwidget>
-   <class>GLContainer</class>
-   <extends>QWidget</extends>
-   <header>ui/widgets/glcontainer.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PartMainStateLcd</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainstatelcd.h</header>
@@ -2201,6 +1925,12 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
    <class>DockableTitle</class>
    <extends>QWidget</extends>
    <header>ui/widgets/dockabletitle.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PartMainVisualizer</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/main/partmainvisualizer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

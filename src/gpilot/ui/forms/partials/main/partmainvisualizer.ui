@@ -6,12 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>402</width>
     <height>300</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -30,21 +39,39 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="GLContainer" name="gl" native="true"/>
+    <widget class="GLContainer" name="visualizer" native="true"/>
    </item>
    <item>
     <widget class="QWidget" name="buttons" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>70</width>
+       <height>140</height>
+      </size>
+     </property>
      <property name="maximumSize">
       <size>
-       <width>71</width>
-       <height>16777215</height>
+       <width>70</width>
+       <height>140</height>
+      </size>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>70</width>
+       <height>140</height>
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">#visualizerButtons { border: none; }
+      <string notr="true">#buttons { border: none; }
 
 /* this color will be replaced in runtime */
-StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
+QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
 
 </string>
      </property>
@@ -67,86 +94,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
       <property name="verticalSpacing">
        <number>5</number>
       </property>
-      <item row="0" column="0">
-       <widget class="StyledToolButton" name="cmdTop">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Top view</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_top.png</normaloff>:/images/visualizer_top.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="StyledToolButton" name="cmdRotationCube">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Rotation cube</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/rotation_cube.png</normaloff>:/images/rotation_cube.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="StyledToolButton" name="cmdIsometric">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Isometric view</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
-       <widget class="StyledToolButton" name="cmdFit">
+       <widget class="QToolButton" name="cmdFit">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -172,7 +121,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="StyledToolButton" name="cmdFront">
+       <widget class="QToolButton" name="cmdFront">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -197,8 +146,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="StyledToolButton" name="cmdLeft">
+      <item row="5" column="0">
+       <widget class="QToolButton" name="cmdIsometric">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -206,7 +155,33 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
          </size>
         </property>
         <property name="toolTip">
-         <string>Left view</string>
+         <string>3D View</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QToolButton" name="cmdRight">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Right view</string>
         </property>
         <property name="text">
          <string/>
@@ -223,17 +198,23 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="StyledToolButton" name="cmdVisualizerHeightmap">
+      <item row="8" column="0">
+       <widget class="QToolButton" name="cmdRotationCube">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="toolTip">
-         <string>Toggle heightmap visibility</string>
+         <string>Rotation cube</string>
         </property>
         <property name="text">
-         <string>...</string>
+         <string/>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
+          <normaloff>:/images/rotation_cube.png</normaloff>:/images/rotation_cube.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -244,7 +225,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="StyledToolButton" name="cmdToggleProjection">
+       <widget class="QToolButton" name="cmdToggleProjection">
         <property name="minimumSize">
          <size>
           <width>30</width>
@@ -269,6 +250,52 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
         </property>
        </widget>
       </item>
+      <item row="8" column="1">
+       <widget class="QToolButton" name="cmdVisualizerHeightmap">
+        <property name="toolTip">
+         <string>Toggle heightmap visibility</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QToolButton" name="cmdTop">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Top view</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_top.png</normaloff>:/images/visualizer_top.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -281,14 +308,149 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
    <header>ui/widgets/glcontainer.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>StyledToolButton</class>
-   <extends>StyledToolButton</extends>
-   <header>styledtoolbutton.h</header>
-  </customwidget>
  </customwidgets>
  <resources>
   <include location="../../../resources/images.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cmdFront</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>frontClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>177</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>129</x>
+     <y>214</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdTop</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>topClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>13</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>116</x>
+     <y>179</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdVisualizerHeightmap</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>heightmapClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>46</x>
+     <y>284</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdRotationCube</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>rotationCubeClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>8</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>95</x>
+     <y>275</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdIsometric</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>isometricClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>6</x>
+     <y>245</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>101</x>
+     <y>247</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdToggleProjection</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>toggleProjectionClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>56</x>
+     <y>240</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>253</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdFit</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>fitClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>18</x>
+     <y>203</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>92</x>
+     <y>204</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdRight</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>rightClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>47</x>
+     <y>217</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>259</x>
+     <y>210</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>fitClicked()</slot>
+  <slot>topClicked()</slot>
+  <slot>frontClicked()</slot>
+  <slot>leftClicked()</slot>
+  <slot>isometricClicked()</slot>
+  <slot>rotationCubeClicked()</slot>
+  <slot>heightmapClicked()</slot>
+  <slot>toggleProjectionClicked()</slot>
+  <slot>rightClicked()</slot>
+ </slots>
 </ui>

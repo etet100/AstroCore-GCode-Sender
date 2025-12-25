@@ -85,7 +85,16 @@ class Utils
         static void refreshStyle(QWidget* widget)
         {
             widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
             widget->ensurePolished();
+        }
+
+        static void refreshStyle(QList<QWidget*> widgets)
+        {
+            for (QWidget* widget : widgets)
+            {
+                refreshStyle(widget);
+            }
         }
 };
 

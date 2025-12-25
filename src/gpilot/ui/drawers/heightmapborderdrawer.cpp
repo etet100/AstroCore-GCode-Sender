@@ -3,7 +3,7 @@
 
 #include "heightmapborderdrawer.h"
 
-HeightMapBorderDrawer::HeightMapBorderDrawer(Heightmap &model) : m_model(model)
+HeightMapBorderDrawer::HeightMapBorderDrawer() : m_model(*(new Heightmap()))
 {
 }
 
@@ -16,6 +16,11 @@ void HeightMapBorderDrawer::setBorderRect(const QRectF &borderRect)
 {
     m_borderRect = borderRect;
     update();
+}
+
+void HeightMapBorderDrawer::setModel(Heightmap &model)
+{
+    m_model = model;
 }
 
 bool HeightMapBorderDrawer::updateData(GLPalette &palette)

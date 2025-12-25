@@ -51,7 +51,7 @@ DockableTitle[dark=&quot;false&quot;] QToolButton {
    background-color: silver;
 }
 
-QWidget#dockableTitle[dark=&quot;false&quot;] QToolButton::hover, DockableTitle[dark=&quot;false&quot;] QToolButton::hover {
+DockableTitle[dark=&quot;false&quot;] QToolButton::hover {
    background-color: rgb(150, 150, 150);
 }</string>
   </property>

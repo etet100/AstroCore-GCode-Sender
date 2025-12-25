@@ -12,6 +12,10 @@
 #include "ui/drawers/machineboundsdrawer.h"
 #include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/drawers/cursordrawer.h"
+#include "core/gcode/parser/gcodeviewparser.h"
+
+class ConfigurationVisualizer;
+class ConfigurationMachine;
 
 namespace Ui {
 class partMainVisualizer;
@@ -19,25 +23,92 @@ class partMainVisualizer;
 
 class PartMainVisualizer : public QWidget
 {
-        Q_OBJECT
+    Q_OBJECT
 
     public:
         explicit PartMainVisualizer(
-            GCode& m_program,
-            Heightmap& m_heightmap,
             QWidget* parent = nullptr
         );
         ~PartMainVisualizer();
+        void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
+        void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyOriginDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applySelectionDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void updateGCodeExtremes();
+        void fitDrawable();
+        void fitCodeDrawer();
+
+        void initDrawables();
+        void setCodeParser(GCodeViewParser* parser);
+        void setProbeParser(GCodeViewParser* parser);
+
+        void updateCodeDrawer(const QList<int>& indexes);
+        void updateCodeDrawer();
+        void updateCurrentDrawer(const QList<int>& indexes);
+
+        void setToolPosition(QVector3D pos);
+
+        void setEstimatedTime(QTime t);
+        void setSpendTime(QTime t);
+        QTime spendTime() const;
+
+        void setParserState(QString state);
+        void setPinState(QString state);
+        void setSpeedState(QString state);
+
+        void reset();
+
+        void setSelectionEndPosition(QVector3D pos);
+        void updateSelection();
+
+        void setHeightmapMode(bool enabled);
+        void updateHeightmapBorder(QRectF rect);
+        void updateHeightmapGrid();
+        // void updateHeightmapGrid(QRectF rect, int x, int y, double zBottom, double zTop);
+        void updateHeightmapInterpolation(bool reset = false);
+        void setInterpolationData(QVector<QVector<double>> *data, QRectF borderRect);
+        void setInterpolationVisible(bool visible);
+        void setSelectionVisible(bool visible);
+        // method has the same name as QWidget::setUpdatesEnabled!
+        void setUpdatesEnabled2(bool updatesEnabled);
+
+        GcodeDrawer* codeDrawer() { return m_codeDrawer; }
+        GcodeDrawer* probeDrawer() { return m_probeDrawer; }
+        GcodeDrawer* currentDrawer() { return m_currentDrawer; }
+        ToolDrawer* toolDrawer() { return &m_toolDrawer; }
+        CursorDrawer* cursorDrawer() { return &m_cursorDrawer; }
+        HeightMapBorderDrawer* heightmapBorderDrawer() { return &m_heightmapBorderDrawer; }
+        HeightMapGridDrawer* heightmapGridDrawer() { return &m_heightmapGridDrawer; }
+        HeightMapInterpolationDrawer* heightmapInterpolationDrawer() { return &m_heightmapInterpolationDrawer; }
+
+        void useCodeDrawer();
+        void useProbeDrawer();
+
+    protected:
+        void resizeEvent(QResizeEvent* event) override;
+
+    signals:
+        void goToCursor(QPointF pos);
 
     private slots:
-        void placeVisualizerButtons();
-        void onVisualizerCursorPosChanged(QPointF);
+        void cursorPosChanged(QPointF);
+        void topClicked();
+        void frontClicked();
+        void leftClicked();
+        void rightClicked();
+        void isometricClicked();
+        void rotationCubeClicked();
+        void heightmapClicked();
+        void toggleProjectionClicked();
+        void fitClicked();
 
     private:
         Ui::partMainVisualizer* ui;
-        void addDrawables();
 
-        // Visualizer drawers
         // TODO: Add machine table visualizer
         TableSurfaceDrawer m_tableSurfaceDrawer;
         OriginDrawer m_originDrawer;
@@ -51,9 +122,10 @@ class PartMainVisualizer : public QWidget
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
-
         Heightmap& m_heightmap;
         GCode& m_program;
+
+        void placeVisualizerButtons();
 };
 
 #endif // PARTMAINVISUALIZER_H

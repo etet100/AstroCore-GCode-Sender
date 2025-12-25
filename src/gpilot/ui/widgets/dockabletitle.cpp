@@ -41,6 +41,7 @@ DockableTitle::DockableTitle(QWidget* parent)
         Utils::invertButtonIconColors(ui->btnFloating);
     }
     this->setProperty("dark", m_dark ? "true" : "false");
+    Utils::refreshStyle(this);
 
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
         if (m_dark != dark) {
@@ -48,11 +49,9 @@ DockableTitle::DockableTitle(QWidget* parent)
             Utils::invertButtonIconColors(ui->btnClose);
             Utils::invertButtonIconColors(ui->btnFloating);
             this->setProperty("dark", m_dark ? "true" : "false");
-            Utils::refreshStyle(this);
+            Utils::refreshStyle({this, ui->btnClose, ui->btnFloating});
         }
     });
-
-    Utils::refreshStyle(this);
 }
 
 DockableTitle::~DockableTitle()

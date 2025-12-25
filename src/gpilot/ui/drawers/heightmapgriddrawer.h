@@ -10,16 +10,17 @@
 
 class HeightMapGridDrawer : public ShaderDrawable
 {
-public:
-    HeightMapGridDrawer(Heightmap &model);
+    public:
+        explicit HeightMapGridDrawer();
+        void setModel(Heightmap &model);
 
-protected:
-    bool updateData(GLPalette &palette) override;
+    protected:
+        bool updateData(GLPalette &palette) override;
 
-private:
-    Heightmap &m_model;
-    void generateLines(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
-    void generateTriangles(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
+    private:
+        Heightmap &m_model;
+        void generateLines(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
+        void generateTriangles(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H

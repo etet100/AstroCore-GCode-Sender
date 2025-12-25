@@ -11,17 +11,18 @@
 class HeightMapBorderDrawer : public ShaderDrawable
 {
 public:
-    HeightMapBorderDrawer(Heightmap &model);
+    HeightMapBorderDrawer();
 
     QRectF borderRect() const;
     void setBorderRect(const QRectF &borderRect);
+    void setModel(Heightmap &model);
 
 protected:
     bool updateData(GLPalette &palette) override;
 
 private:
     QRectF m_borderRect;
-    Heightmap &m_model;
+    Heightmap& m_model;
 };
 
 #endif // HEIGHTMAPBORDERDRAWER_H
