@@ -25,6 +25,11 @@ DockableTitle::DockableTitle(QWidget* parent)
         }
     });
 
+    connect(m_dockWidgetParent, &QDockWidget::featuresChanged, this, [this]() {
+        ui->btnClose->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetClosable);
+        ui->btnFloating->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetFloatable);
+    });
+
     m_dark = ThemeManager::instance().dark();
     if (m_dark) {
         Utils::invertButtonIconColors(ui->btnClose);
