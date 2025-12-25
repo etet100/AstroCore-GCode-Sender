@@ -15,6 +15,7 @@ class DockableTitle : public QWidget
     public:
         explicit DockableTitle(QWidget* parent = nullptr);
         ~DockableTitle();
+        void setTitle(const QString& title);
 
     private slots:
         void closeClicked();

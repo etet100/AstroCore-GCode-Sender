@@ -35,7 +35,7 @@ QToolButton::hover {
    background-color: gray;
 }
 
-QWidget#dockableTitle {
+DockableTitle {
    border-top-left-radius: 4px;
    border-top-right-radius: 4px;
    border-bottom-left-radius: 0;
@@ -43,15 +43,15 @@ QWidget#dockableTitle {
    background-color: #2D2D2D;
 }
 
-QWidget#dockableTitle[dark=&quot;false&quot;] {
+DockableTitle[dark=&quot;false&quot;] {
    background-color: rgb(181, 181, 181);
 }
 
-QWidget#dockableTitle[dark=&quot;false&quot;] QToolButton {
+DockableTitle[dark=&quot;false&quot;] QToolButton {
    background-color: silver;
 }
 
-QWidget#dockableTitle[dark=&quot;false&quot;] QToolButton::hover {
+QWidget#dockableTitle[dark=&quot;false&quot;] QToolButton::hover, DockableTitle[dark=&quot;false&quot;] QToolButton::hover {
    background-color: rgb(150, 150, 150);
 }</string>
   </property>

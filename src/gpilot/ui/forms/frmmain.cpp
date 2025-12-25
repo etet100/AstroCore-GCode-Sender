@@ -3319,10 +3319,8 @@ void FrmMain::updateControlsState()
     // m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
     m_heightmapInterpolationDrawer.setVisible(ui->chkHeightMapInterpolationShow->isChecked() && m_heightmapMode);
 
-    ui->grpProgram->setText(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
-    ui->grpProgram->setProperty("overrided", m_heightmapMode);
-    style()->unpolish(ui->grpProgram);
-    ui->grpProgram->ensurePolished();
+    ui->centralWidgetTitle->setTitle(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
+    ui->centralWidgetTitle->setProperty("overrided", m_heightmapMode);
 
     // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());

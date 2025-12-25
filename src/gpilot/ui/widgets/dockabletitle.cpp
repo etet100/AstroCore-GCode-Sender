@@ -8,7 +8,6 @@ DockableTitle::DockableTitle(QWidget* parent)
     , ui(new Ui::dockableTitle)
 {
     m_dockWidgetParent = qobject_cast<QDockWidget*>(parent);
-    assert(m_dockWidgetParent != nullptr);
 
     ui->setupUi(this);
 
@@ -17,18 +16,24 @@ DockableTitle::DockableTitle(QWidget* parent)
     ui->lblTitle->setText(parent->windowTitle());
     connect(parent, &QWidget::windowTitleChanged, this, [this](const QString& title) {
         ui->lblTitle->setText(title);
-    });    
-    connect(m_dockWidgetParent, &QDockWidget::topLevelChanged, this, [this](bool floating) {
-        ui->btnFloating->setIcon(QIcon(QString(":/images/dockable_%1dock.png").arg(floating ? "" : "un")));
-        if (m_dark) {
-            Utils::invertButtonIconColors(ui->btnFloating);
-        }
     });
+    if (m_dockWidgetParent) {
+        connect(m_dockWidgetParent, &QDockWidget::topLevelChanged, this, [this](bool floating) {
+            ui->btnFloating->setIcon(QIcon(QString(":/images/dockable_%1dock.png").arg(floating ? "" : "un")));
+            if (m_dark) {
+                Utils::invertButtonIconColors(ui->btnFloating);
+            }
+        });
 
-    connect(m_dockWidgetParent, &QDockWidget::featuresChanged, this, [this]() {
-        ui->btnClose->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetClosable);
-        ui->btnFloating->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetFloatable);
-    });
+        connect(m_dockWidgetParent, &QDockWidget::featuresChanged, this, [this]() {
+            ui->btnClose->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetClosable);
+            ui->btnFloating->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetFloatable);
+        });
+    } else {
+        // An exception for central widget title, no closing or detaching allowed
+        ui->btnClose->hide();
+        ui->btnFloating->hide();
+    }
 
     m_dark = ThemeManager::instance().dark();
     if (m_dark) {
@@ -53,6 +58,11 @@ DockableTitle::DockableTitle(QWidget* parent)
 DockableTitle::~DockableTitle()
 {
     delete ui;
+}
+
+void DockableTitle::setTitle(const QString &title)
+{
+    ui->lblTitle->setText(title);
 }
 
 void DockableTitle::closeClicked()

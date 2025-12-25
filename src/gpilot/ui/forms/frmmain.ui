@@ -122,31 +122,34 @@ QSlider::handle:horizontal:hover {
      <number>0</number>
     </property>
     <item>
-     <widget class="QLabel" name="grpProgram">
-      <property name="styleSheet">
-       <string notr="true">QLabel {
-	padding: 5 0 5 11;
-	background-color: palette(window);
-	border: 1px solid lightgray;
-}
-
-QLabel[overrided=&quot;true&quot;] {
-	color: red;
-}
-
-QLabel[overrided=&quot;false&quot;] {
-	color: palette(windowtext);
-}</string>
+     <widget class="DockableTitle" name="centralWidgetTitle" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="text">
-       <string>Program</string>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>15</height>
+       </size>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QWidget" name="widgetProgram" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_17">
        <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
         <number>0</number>
        </property>
        <property name="rightMargin">
@@ -2193,6 +2196,12 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
    <class>PartMainConsole</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainconsole.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DockableTitle</class>
+   <extends>QWidget</extends>
+   <header>ui/widgets/dockabletitle.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
