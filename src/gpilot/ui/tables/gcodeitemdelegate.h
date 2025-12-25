@@ -8,6 +8,7 @@
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include "core/gcode/gcode.h"
 
 class GCodeItemDelegate : public QStyledItemDelegate
 {
@@ -15,6 +16,27 @@ class GCodeItemDelegate : public QStyledItemDelegate
         using QStyledItemDelegate::QStyledItemDelegate;
         void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
         GCodeItemDelegate();
+
+    private:
+        inline static QMap<GCodeItem::States, QColor> m_stateColorsLight = {
+            {GCodeItem::States::InQueue, QColor("#eef5ff")},
+            {GCodeItem::States::Sent, QColor("#fff4e5")},
+            {GCodeItem::States::Processed, QColor("#e6ffed")},
+            {GCodeItem::States::Error, QColor("#ffe6e6")},
+            {GCodeItem::States::Skipped, QColor("#f0f0f0")},
+            {GCodeItem::States::Comment, QColor("#f9f9f9")}
+        };
+
+        inline static QMap<GCodeItem::States, QColor> m_stateColorsDark = {
+            {GCodeItem::States::InQueue, QColor("#2a3b4e")},
+            {GCodeItem::States::Sent, QColor("#4e3b2a")},
+            {GCodeItem::States::Processed, QColor("#2a4e36")},
+            {GCodeItem::States::Error, QColor("#4e2a2a")},
+            {GCodeItem::States::Skipped, QColor("#3a3a3a")},
+            {GCodeItem::States::Comment, QColor("#3e3e3e")}
+        };
+
+        bool m_dark;
 };
 
 #endif // GCODEITEMDELEGATE_H

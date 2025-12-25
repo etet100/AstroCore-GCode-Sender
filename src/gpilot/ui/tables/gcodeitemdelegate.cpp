@@ -3,14 +3,18 @@
 // Copyright 2025 BTS
 
 #include "gcodeitemdelegate.h"
-#include "gcodetablemodel.h"
-#include "core/gcode/gcode.h"
-
-GCodeItemDelegate::GCodeItemDelegate() {}
-
+#include "ui/utils/thememanager.h"
+#include "utils/utils.h"
 #include <QApplication>
 #include <QTableView>
 #include <QPainter>
+
+GCodeItemDelegate::GCodeItemDelegate() {
+    m_dark = ThemeManager::instance().dark();
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
+        m_dark = dark;
+    });
+}
 
 void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -23,26 +27,11 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     if (opt.state & QStyle::State_Selected) {
         painter->fillRect(opt.rect, opt.palette.highlight());
     } else {
-        index.data(Qt::UserRole + 2).toInt();
-        switch (index.data(Qt::UserRole + 2).toInt()) {
-            case GCodeItem::States::InQueue:
-                painter->fillRect(opt.rect, QColor("#eef5ff"));
-                break;
-            case GCodeItem::States::Sent:
-                painter->fillRect(opt.rect, QColor("#fff4e5"));
-                break;
-            case GCodeItem::States::Processed:
-                painter->fillRect(opt.rect, QColor("#e6ffed"));
-                break;
-            case GCodeItem::States::Error:
-                painter->fillRect(opt.rect, QColor("#ffe6e6"));
-                break;
-            case GCodeItem::States::Skipped:
-                painter->fillRect(opt.rect, QColor("#f0f0f0"));
-                break;
-            case GCodeItem::States::Comment:
-                painter->fillRect(opt.rect, QColor("#f9f9f9"));
-                break;
+        GCodeItem::States state = (GCodeItem::States)index.data(Qt::UserRole + 2).toInt();
+        if (m_dark) {
+            painter->fillRect(opt.rect, m_stateColorsDark[state]);
+        } else {
+            painter->fillRect(opt.rect, m_stateColorsLight[state]);
         }
     }
 
@@ -54,7 +43,7 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
     QColor textColor = (opt.state & QStyle::State_Selected)
                            ? opt.palette.highlightedText().color()
-                           : QColor(Qt::black);
+                           : opt.palette.text().color();
     QRect r = opt.rect.adjusted(5, 0, -5, 0);
 
     painter->setPen(textColor);
@@ -62,7 +51,7 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 
     if (comment.length()) {
         textColor = (opt.state & QStyle::State_Selected)
-            ? opt.palette.highlightedText().color().lighter(130)
+            ? m_dark ? opt.palette.highlightedText().color().darker(130) : opt.palette.highlightedText().color().lighter(130)
             : QColor(Qt::gray);
 
         // Calculate width of main text to position comment correctly
