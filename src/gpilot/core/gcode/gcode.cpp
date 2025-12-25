@@ -9,6 +9,7 @@ GCode::GCode(QObject *parent) : QObject(parent) {
 
     m_linesUpdatedTimer.setInterval(100);
     m_linesUpdatedTimer.start();
+
     connect(&m_linesUpdatedTimer, &QTimer::timeout, this, &GCode::onLinesUpdatedTimer);
 }
 
@@ -16,6 +17,20 @@ void GCode::reset(int commandIndex)
 {
     m_commandIndex = commandIndex;
     m_processedCommandIndex = commandIndex;
+
+    if (m_data.empty()) {
+        return;
+    }
+
+    for (auto& item : m_data) {
+        // Is it good idea to rely on group here?
+        item.state = item.group == GCodeItemGroup::Comment ? GCodeItem::Comment : GCodeItem::InQueue;
+        item.response.clear();
+    }
+
+    // Notify that all lines have been updated
+    addUpdatedRange(0);
+    addUpdatedRange(m_data.count() - 1);
 }
 
 void GCode::resetProcessed(int commandIndex)

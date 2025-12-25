@@ -1002,10 +1002,11 @@ void FrmMain::on_cmdFileReset_clicked()
 
         ui->tblProgram->setUpdatesEnabled(false);
 
-        for (int i = 0; i < m_currentProgram->count() - 1; i++) {
-            (*m_currentProgram)[i].state = GCodeItem::InQueue;
-            (*m_currentProgram)[i].response = QString();
-        }
+        // It should be done in `m_program.reset()`
+        // for (int i = 0; i < m_currentProgram->count() - 1; i++) {
+        //     (*m_currentProgram)[i].state = GCodeItem::InQueue;
+        //     (*m_currentProgram)[i].response = QString();
+        // }
         ui->tblProgram->setUpdatesEnabled(true);
 
         ui->tblProgram->scrollTo(m_currentModel->index(0, 0));
