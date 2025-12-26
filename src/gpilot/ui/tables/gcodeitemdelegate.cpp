@@ -9,7 +9,8 @@
 #include <QTableView>
 #include <QPainter>
 
-GCodeItemDelegate::GCodeItemDelegate() {
+GCodeItemDelegate::GCodeItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
+{
     m_dark = ThemeManager::instance().dark();
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
         m_dark = dark;

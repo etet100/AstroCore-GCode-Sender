@@ -15,7 +15,7 @@ class GCodeItemDelegate : public QStyledItemDelegate
     public:
         using QStyledItemDelegate::QStyledItemDelegate;
         void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-        GCodeItemDelegate();
+        GCodeItemDelegate(QObject *parent = nullptr);
 
     private:
         inline static QMap<GCodeItem::States, QColor> m_stateColorsLight = {

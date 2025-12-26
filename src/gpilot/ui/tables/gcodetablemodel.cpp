@@ -65,7 +65,12 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    return "";
+    // Without returning valid QVariant here, initStyleOption displays Invalid description
+    if (role == Qt::FontRole) {
+        return QVariant();
+    }
+
+    return QVariant();
 }
 
 bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
