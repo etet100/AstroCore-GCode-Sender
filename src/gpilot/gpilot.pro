@@ -137,6 +137,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmainjogparameters.cpp \
     ui/forms/partials/main/partmainjogparameters2.cpp \
     ui/forms/partials/main/partmainoverride.cpp \
+    ui/forms/partials/main/partmainprogram.cpp \
     ui/forms/partials/main/partmainspindle.cpp \
     ui/forms/partials/main/partmainstate.cpp \
     ui/forms/partials/main/partmainstatebase.cpp \
@@ -267,6 +268,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmainjogparameters2.h \
     ui/forms/partials/main/partmainjogparametersinterface.h \
     ui/forms/partials/main/partmainoverride.h \
+    ui/forms/partials/main/partmainprogram.h \
     ui/forms/partials/main/partmainspindle.h \
     ui/forms/partials/main/partmainstate.h \
     ui/forms/partials/main/partmainstatebase.h \
@@ -351,6 +353,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/main/partmainjogparameters.ui \
     ui/forms/partials/main/partmainjogparameters2.ui \
     ui/forms/partials/main/partmainoverride.ui \
+    ui/forms/partials/main/partmainprogram.ui \
     ui/forms/partials/main/partmainspindle.ui \
     ui/forms/partials/main/partmainstate.ui \
     ui/forms/partials/main/partmainstatelcd.ui \

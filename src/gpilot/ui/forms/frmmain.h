@@ -31,6 +31,7 @@
 
 #include "io/connection/connection.h"
 #include "ui/forms/partials/main/partmainjog.h"
+#include "ui/forms/partials/main/partmainprogram.h"
 #include "ui/forms/partials/main/partmainstate.h"
 #include "ui/forms/partials/main/partmainconsole.h"
 #include "ui/forms/partials/main/partmainvisualizer.h"
@@ -113,11 +114,11 @@ private slots:
     void on_actSpindleSpeedMinus_triggered();
     void on_actViewLockWindows_toggled(bool checked);
     void on_actViewDarkMode_toggled(bool checked);
-    void on_cmdFileOpen_clicked();
-    void on_cmdFileSend_clicked();
-    void on_cmdFilePause_clicked(bool checked);
-    void on_cmdFileAbort_clicked();
-    void on_cmdFileReset_clicked();
+    void onFileOpen();
+    void onFileSend();
+    void onFilePause(bool checked);
+    void onFileAbort();
+    void onFileReset();
     // void on_cmdSpindle_toggled(bool checked);
     void on_cmdSpindle_clicked(bool checked);
     void on_grpOverriding_toggled(bool checked);
@@ -143,7 +144,7 @@ private slots:
     void on_cmdHeightMapCreate_clicked();
     void on_cmdHeightMapLoad_clicked();
     void on_cmdHeightMapBorderAuto_clicked();
-    void on_tblProgram_customContextMenuRequested(const QPoint &pos);
+    void onProgramTableContextMenuRequested(const QPoint &pos);
     void on_menuViewWindows_aboutToShow();
     void on_menuViewPanels_aboutToShow();
     void on_dockVisualizer_visibilityChanged(bool visible);
@@ -185,7 +186,6 @@ private slots:
     void onSlbSpindleValueChanged();
 //    void onCboCommandReturnPressed();
     void onDockTopLevelChanged(bool topLevel);
-    void onScroolBarAction(int action);
     // void onVisualizerCursorPosChanged(QPointF);
     // void onProgramLinesUpdated(int from, int to);
     void updateHeightMapInterpolationDrawer(bool reset = false);

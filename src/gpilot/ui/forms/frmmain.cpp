@@ -121,12 +121,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         Q_UNUSED(fromLine);
         Q_UNUSED(toLine);
 
-        if (!ui->chkAutoScrollGCode->isChecked()) {
+        if (!ui->program->isAutoScroll()) {
             return;
         }
 
         int tableIndex = m_currentModel->toFilteredIndex(m_program.commandIndex());
-        ui->tblProgram->setCurrentIndex(m_currentModel->index(tableIndex, 1));
+        ui->program->scrollToCurrentIndex(m_currentModel->index(tableIndex, 1));
 
         GCodeViewParser *parser = &m_viewParser;
         QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
@@ -155,8 +155,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
-    connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {
-        m_programModel.setCommentsVisible(state != Qt::Checked);
+    connect(ui->program, &PartMainProgram::hideCommentsChanged, this, [this](bool checked) {
+        m_programModel.setCommentsVisible(!checked);
     });
 
     connect(ui->control, &PartMainControl::unlock, this, [this]() {
@@ -289,15 +289,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // connect(ui->cboJogStep, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
     // connect(ui->cboJogFeed, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
 
-    QMenu *menu;
-
     // Prepare Open and Send menus
-    menu = ui->cmdFileOpen->menu();
-    menu->addAction(tr("Open G-Code file"), this, SLOT(on_cmdFileOpen_clicked()));
-    menu->addAction(tr("Open Heightmap file"), this, SLOT(on_cmdHeightMapLoad_clicked()));
-
-    menu = ui->cmdFileSend->menu();
-    menu->addAction(tr("Send from current line"), this, SLOT(onActSendFromLineTriggered()));
+    ui->program->setupFileOpenMenu(this, SLOT(onFileOpen()), SLOT(on_cmdHeightMapLoad_clicked()));
+    ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
 
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
@@ -324,12 +318,21 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(&m_heightmapModel, SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
     // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
 
-    ui->tblProgram->setModel(&m_programModel);
-    ui->tblProgram->setItemDelegate(&m_programItemDelegate);
-    ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    connect(ui->tblProgram->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, &FrmMain::onScroolBarAction);
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    ui->program->setProgramModel(&m_programModel);
+    ui->program->setProgramItemDelegate(&m_programItemDelegate);
+    connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
+        if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping))
+            ui->program->setAutoScroll(false);
+    });
+    connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
     clearTable();
+
+    connect(ui->program, &PartMainProgram::open, this, &FrmMain::onFileOpen);
+    connect(ui->program, &PartMainProgram::start, this, &FrmMain::onFileSend);
+    connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
+    connect(ui->program, &PartMainProgram::abort, this, &FrmMain::onFileAbort);
+    connect(ui->program, &PartMainProgram::reset, this, &FrmMain::onFileReset);
+    connect(ui->program, &PartMainProgram::customContextMenuRequested, this, &FrmMain::onProgramTableContextMenuRequested);
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
                                        QMessageBox::Ignore | QMessageBox::Abort, this);
@@ -337,8 +340,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     // Loading settings
     loadSettings();
-    ui->tblProgram->hideColumn(4);
-    ui->tblProgram->hideColumn(5);
 
     updateControlsState();
 
@@ -663,7 +664,7 @@ void FrmMain::on_actFileNew_triggered()
 
 void FrmMain::on_actFileOpen_triggered()
 {
-    on_cmdFileOpen_clicked();
+    onFileOpen();
 }
 
 void FrmMain::on_actFileSave_triggered()
@@ -838,7 +839,7 @@ void FrmMain::on_actViewDarkMode_toggled(bool checked)
     ThemeManager::instance().setDark(checked);
 }
 
-void FrmMain::on_cmdFileOpen_clicked()
+void FrmMain::onFileOpen()
 {
     if (!m_communicator->isMachineConfigurationReady()) {
         qWarning() << "[UI] Machine configuration is not ready";
@@ -875,14 +876,14 @@ void FrmMain::on_cmdFileOpen_clicked()
     }
 }
 
-void FrmMain::on_cmdFileSend_clicked()
+void FrmMain::onFileSend()
 {
     m_program.reset();
     m_communicator->sb()->action(RunAction(m_program));
 
 //     if (m_currentModel->rowCount() == 1) return;
 
-//     on_cmdFileReset_clicked();
+//     onFileReset();
 
 //     m_startTime = QDateTime::currentSecsSinceEpoch();
 
@@ -915,7 +916,7 @@ void FrmMain::on_cmdFileSend_clicked()
 //     m_communicator->sendStreamerCommandsUntilBufferIsFull();
 }
 
-void FrmMain::on_cmdFilePause_clicked(bool checked)
+void FrmMain::onFilePause(bool checked)
 {
     static SenderState s;
 
@@ -942,25 +943,25 @@ void FrmMain::on_cmdFilePause_clicked(bool checked)
     if (checked) {
         Action action(Action::Pause);
         if (m_communicator->stateBehavior()->action(action)) {
-            ui->cmdFilePause->setText(tr("Resume"));
+            ui->program->setPauseButtonText(tr("Resume"));
         }
     } else {
         Action action(Action::Resume);
         if (m_communicator->stateBehavior()->action(action)) {
-            ui->cmdFilePause->setText(tr("Pause"));
+            ui->program->setPauseButtonText(tr("Pause"));
         }
     }
 }
 
 
 
-void FrmMain::on_cmdFileAbort_clicked()
+void FrmMain::onFileAbort()
 {
-    ui->cmdFileAbort->setEnabled(false);
+    ui->program->setAbortButtonEnabled(false);
     m_communicator->abort();
 }
 
-void FrmMain::on_cmdFileReset_clicked()
+void FrmMain::onFileReset()
 {
     m_program.reset();
     m_lastDrawnLineIndex = 0;
@@ -976,18 +977,16 @@ void FrmMain::on_cmdFileReset_clicked()
         }
         ui->visualizer->updateCodeDrawer(indexes);
 
-        ui->tblProgram->setUpdatesEnabled(false);
+        ui->program->setTableUpdatesEnabled(false);
 
         // It should be done in `m_program.reset()`
         // for (int i = 0; i < m_currentProgram->count() - 1; i++) {
         //     (*m_currentProgram)[i].state = GCodeItem::InQueue;
         //     (*m_currentProgram)[i].response = QString();
         // }
-        ui->tblProgram->setUpdatesEnabled(true);
+        ui->program->setTableUpdatesEnabled(true);
 
-        ui->tblProgram->scrollTo(m_currentModel->index(0, 0));
-        ui->tblProgram->clearSelection();
-        ui->tblProgram->selectRow(0);
+        ui->program->resetToFirstRow();
 
         ui->visualizer->setSpendTime(QTime(0, 0, 0));
     } else {
@@ -1492,7 +1491,7 @@ void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
     }
 
     if (checked) {
-        ui->tblProgram->setModel(&m_probeModel);
+        ui->program->setProgramModel(&m_probeModel);
         resizeTableHeightmapSections();
         //updateCurrentModel(&m_programModel);
         ui->visualizer->useProbeDrawer();
@@ -1500,9 +1499,9 @@ void FrmMain::on_cmdHeightMapMode_toggled(bool checked)
     } else {
         m_probeParser.reset();
         if (!ui->chkHeightMapUse->isChecked()) {
-            ui->tblProgram->setModel(&m_programModel);
-            connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
-            ui->tblProgram->selectRow(0);
+            ui->program->setProgramModel(&m_programModel);
+            // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
+            ui->program->selectFirstRow();
 
             resizeTableHeightmapSections();
             // updateCurrentModel(&m_programModel);
@@ -1575,18 +1574,14 @@ void FrmMain::on_cmdHeightMapBorderAuto_clicked()
     }
 }
 
-void FrmMain::on_tblProgram_customContextMenuRequested(const QPoint &pos)
+void FrmMain::onProgramTableContextMenuRequested(const QPoint &pos)
 {
     if (m_communicator->senderState() != SenderState::Stopped) return;
 
-    if (ui->tblProgram->selectionModel()->selectedRows().count() > 0) {
-        m_tableMenu->actions().at(0)->setEnabled(true);
-        m_tableMenu->actions().at(1)->setEnabled(ui->tblProgram->selectionModel()->selectedRows()[0].row() != m_currentModel->rowCount() - 1);
-    } else {
-        m_tableMenu->actions().at(0)->setEnabled(false);
-        m_tableMenu->actions().at(1)->setEnabled(false);
-    }
-    m_tableMenu->popup(ui->tblProgram->viewport()->mapToGlobal(pos));
+    QModelIndexList selectedRows = ui->program->getSelectedRows();
+    bool hasSelection = !selectedRows.isEmpty();
+    int selectedRow = hasSelection ? selectedRows[0].row() : -1;
+    ui->program->showTableContextMenu(pos, m_tableMenu, hasSelection, selectedRow, m_currentModel->rowCount());
 }
 
 void FrmMain::on_menuViewWindows_aboutToShow()
@@ -1854,28 +1849,30 @@ void FrmMain::onTimerConnection()
 
 void FrmMain::onTableInsertLine()
 {
-    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
+    QModelIndexList selectedRows = ui->program->getSelectedRows();
+    if (selectedRows.count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) return;
 
-    int row = ui->tblProgram->selectionModel()->selectedRows()[0].row();
+    int row = selectedRows[0].row();
 
     m_currentModel->insertRow(row);
     m_currentModel->setData(m_currentModel->index(row, 2), GCodeItem::InQueue);
 
     updateParser();
 
-    ui->tblProgram->selectRow(row);
+    ui->program->selectRow(row);
 }
 
 void FrmMain::onTableDeleteLines()
 {
-    if (ui->tblProgram->selectionModel()->selectedRows().count() == 0 ||
+    QModelIndexList selectedRows = ui->program->getSelectedRows();
+    if (selectedRows.count() == 0 ||
         (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping) ||
         QMessageBox::warning(this, this->windowTitle(), tr("Delete lines?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return;
 
-    QModelIndex firstRow = ui->tblProgram->selectionModel()->selectedRows()[0];
-    int rowsCount = ui->tblProgram->selectionModel()->selectedRows().count();
-    if (ui->tblProgram->selectionModel()->selectedRows().last().row() == m_currentModel->rowCount() - 1) rowsCount--;
+    QModelIndex firstRow = selectedRows[0];
+    int rowsCount = selectedRows.count();
+    if (selectedRows.last().row() == m_currentModel->rowCount() - 1) rowsCount--;
 
     if (firstRow.row() != m_currentModel->rowCount() - 1) {
         m_currentModel->removeRows(firstRow.row(), rowsCount);
@@ -1886,7 +1883,7 @@ void FrmMain::onTableDeleteLines()
 
     updateParser();
 
-    ui->tblProgram->selectRow(firstRow.row());
+    ui->program->selectRow(firstRow.row());
 }
 
 void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
@@ -1900,7 +1897,7 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
     if (i1.row() == (model->rowCount() - 1) && model->data(model->index(i1.row(), 1)).toString() != "") {
         model->setData(model->index(model->rowCount() - 1, 2), GCodeItem::InQueue);
         model->insertRow(model->rowCount());
-        if (!m_programLoading) ui->tblProgram->setCurrentIndex(model->index(i1.row() + 1, 1));
+        if (!m_programLoading) ui->program->setCurrentIndex(model->index(i1.row() + 1, 1));
     }
 
     if (!m_programLoading) {
@@ -2106,14 +2103,6 @@ void FrmMain::onDockTopLevelChanged(bool topLevel)
     static_cast<QWidget*>(sender())->setStyleSheet("");
 }
 
-void FrmMain::onScroolBarAction(int action)
-{
-    Q_UNUSED(action)
-
-    if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping))
-        ui->chkAutoScrollGCode->setChecked(false);
-}
-
 // void FrmMain::onVisualizerCursorPosChanged(QPointF pos)
 // {
 //     m_cursorDrawer.setPosition(pos);
@@ -2289,7 +2278,7 @@ void FrmMain::restoreDockableLayoutState()
 {
     QSettings set(m_settingsFileName, QSettings::IniFormat);
 
-    ui->tblProgram->horizontalHeader()->restoreState(set.value("header", QByteArray()).toByteArray());
+    ui->program->restoreHeaderState(set.value("header", QByteArray()).toByteArray());
 
     // Restore last commands list
     // ui->cboCommand->addItems(set.value("recentCommands", QStringList()).toStringList());
@@ -2397,9 +2386,9 @@ void FrmMain::saveSettings()
     // ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
     // m_configuration.machineModule().setSpindleSpeed(ui->slbSpindle->value());
-    uiConfiguration.setAutoScrollGCode(ui->chkAutoScrollGCode->isChecked());
+    uiConfiguration.setAutoScrollGCode(ui->program->isAutoScroll());
 
-    set.setValue("header", ui->tblProgram->horizontalHeader()->saveState());
+    set.setValue("header", ui->program->saveHeaderState());
 //    set.setValue("settingsSplitMain", m_settings->ui->splitMain->saveState());
 //    set.setValue("formGeometry", this->saveGeometry());
 //    set.setValue("formSettingsGeometry", m_settings->saveGeometry());
@@ -2557,7 +2546,7 @@ void FrmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visuali
 
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
-    ui->chkAutoScrollGCode->setChecked(uiConfiguration.autoScrollGCode());
+    ui->program->setAutoScroll(uiConfiguration.autoScrollGCode());
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
     ThemeManager& tm = ThemeManager::instance();
     tm.setFontSize(uiConfiguration.fontSize());
@@ -2674,7 +2663,7 @@ void FrmMain::updateParser()
         parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
     }
 
-    ui->tblProgram->setUpdatesEnabled(false);
+    ui->program->setTableUpdatesEnabled(false);
 
     QString stripped;
     QList<QString> args;
@@ -2715,7 +2704,7 @@ void FrmMain::updateParser()
     }
     progress.close();
 
-    ui->tblProgram->setUpdatesEnabled(true);
+    ui->program->setTableUpdatesEnabled(true);
 
     viewParse->reset();
 
@@ -2838,8 +2827,8 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->grpHeightMap->ensurePolished();
 
     // Reset tableview
-    QByteArray headerState = ui->tblProgram->horizontalHeader()->saveState();
-    ui->tblProgram->setModel(NULL);
+    QByteArray headerState = ui->program->saveProgramHeaderState();
+    ui->program->setProgramTableModel(NULL);
 
     // // Prepare parser
     // GcodeParser parser;
@@ -2861,12 +2850,12 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_programLoading = false;
 
     // Set table model
-    ui->tblProgram->setModel(&m_programModel);
-    ui->tblProgram->horizontalHeader()->restoreState(headerState);
+    ui->program->setProgramModel(&m_programModel);
+    ui->program->restoreHeaderState(headerState);
 
     // Update tableview
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    ui->tblProgram->selectRow(0);
+    // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    ui->program->selectFirstRow();
 
     //  Update code drawer
     ui->visualizer->updateCodeDrawer();
@@ -2908,8 +2897,8 @@ void FrmMain::loadLines(QList<std::string> data)
     ui->grpHeightMap->ensurePolished();
 
     // Reset tableview
-    QByteArray headerState = ui->tblProgram->horizontalHeader()->saveState();
-    ui->tblProgram->setModel(NULL);
+    QByteArray headerState = ui->program->saveProgramHeaderState();
+    ui->program->setProgramTableModel(NULL);
 
     // Prepare parser
     GcodeParser parser;
@@ -2988,12 +2977,12 @@ void FrmMain::loadLines(QList<std::string> data)
     m_programLoading = false;
 
     // Set table model
-    ui->tblProgram->setModel(&m_programModel);
-    ui->tblProgram->horizontalHeader()->restoreState(headerState);
+    ui->program->setProgramModel(&m_programModel);
+    ui->program->restoreHeaderState(headerState);
 
     // Update tableview
-    connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    ui->tblProgram->selectRow(0);
+    // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    ui->program->selectFirstRow();
 
     //  Update code drawer
     ui->visualizer->updateCodeDrawer();
@@ -3064,7 +3053,7 @@ void FrmMain::resetHeightmap()
     // delete m_heightmapInterpolationDrawer.data();
     ui->visualizer->updateHeightmapInterpolation(true);
 
-    ui->tblHeightMap->setModel(NULL);
+    ui->program->setHeightMapModel(NULL);
     m_heightmapModel.resize(1, 1);
 
     ui->txtHeightMap->clear();
@@ -3097,16 +3086,16 @@ void FrmMain::newFile()
     ui->grpHeightMap->ensurePolished();
 
     // Reset tableview
-    QByteArray headerState = ui->tblProgram->horizontalHeader()->saveState();
-    ui->tblProgram->setModel(NULL);
+    QByteArray headerState = ui->program->saveHeaderState();
+    ui->program->setProgramModel(NULL);
 
     // Set table model
-    ui->tblProgram->setModel(&m_programModel);
-    ui->tblProgram->horizontalHeader()->restoreState(headerState);
+    ui->program->setProgramModel(&m_programModel);
+    ui->program->restoreHeaderState(headerState);
 
     // Update tableview
-    connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
-    ui->tblProgram->selectRow(0);
+    // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
+    ui->program->selectFirstRow();
 
     resetHeightmap();
 
@@ -3116,7 +3105,7 @@ void FrmMain::newFile()
 void FrmMain::newHeightmap()
 {
     m_heightmapModel.clear();
-    on_cmdFileReset_clicked();
+    onFileReset();
     ui->txtHeightMap->setText(tr("Untitled"));
     m_heightmapFileName.clear();
 
@@ -3151,9 +3140,9 @@ void FrmMain::updateControlsState()
 
     ui->actFileNew->setEnabled(senderState == SenderState::Stopped);
     ui->actFileOpen->setEnabled(senderState == SenderState::Stopped);
-    ui->cmdFileOpen->setEnabled(senderState == SenderState::Stopped);
-    ui->cmdFileReset->setEnabled((senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
-    ui->cmdFileSend->setEnabled(portOpened && (senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
+    ui->program->setOpenButtonEnabled(senderState == SenderState::Stopped);
+    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
+    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -3169,7 +3158,7 @@ void FrmMain::updateControlsState()
     // }
     // ui->cmdFilePause->setEnabled(true);//portOpened && (process || paused) && (senderState != SenderState::Pausing) && (senderState != SenderState::Pausing2));
     // ui->cmdFilePause->setChecked(paused);
-    ui->cmdFileAbort->setEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
+    ui->program->setAbortButtonEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
     ui->menuRecent->setEnabled(
         (senderState == SenderState::Stopped) &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
@@ -3177,7 +3166,7 @@ void FrmMain::updateControlsState()
     ui->actFileSave->setEnabled(m_programModel.rowCount() > 1);
     ui->actFileSaveAs->setEnabled(m_programModel.rowCount() > 1);
 
-    ui->tblProgram->setEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
+    ui->program->setProgramTableEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
         QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
 
@@ -3198,16 +3187,7 @@ void FrmMain::updateControlsState()
     // }
 #endif
 
-    style()->unpolish(ui->cmdFileOpen);
-    style()->unpolish(ui->cmdFileReset);
-    style()->unpolish(ui->cmdFileSend);
-    style()->unpolish(ui->cmdFilePause);
-    style()->unpolish(ui->cmdFileAbort);
-    ui->cmdFileOpen->ensurePolished();
-    ui->cmdFileReset->ensurePolished();
-    ui->cmdFileSend->ensurePolished();
-    ui->cmdFilePause->ensurePolished();
-    ui->cmdFileAbort->ensurePolished();
+    ui->program->updateButtonStyles();
 
     // Heightmap
     // m_heightmapBorderDrawer.setVisible(ui->chkHeightMapBorderShow->isChecked() && m_heightmapMode);
@@ -3224,19 +3204,19 @@ void FrmMain::updateControlsState()
     // ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
     // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 
-    ui->tblHeightMap->setVisible(m_heightmapMode);
-    ui->tblProgram->setVisible(!m_heightmapMode);
+    ui->program->setHeightMapVisible(m_heightmapMode);
+    ui->program->setProgramVisible(!m_heightmapMode);
 
     ui->widgetHeightMap->setEnabled(!process && m_programModel.rowCount() > 1);
     ui->cmdHeightMapMode->setEnabled(!ui->txtHeightMap->text().isEmpty());
 
-    ui->cmdFileSend->setText(m_heightmapMode ? tr("Probe") : tr("Send"));
+    ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
     ui->chkHeightMapUse->setEnabled(!m_heightmapMode && !ui->txtHeightMap->text().isEmpty());
 
     ui->actFileSaveTransformedAs->setVisible(ui->chkHeightMapUse->isChecked());
 
-    ui->cmdFileSend->menu()->actions().first()->setEnabled(!ui->cmdHeightMapMode->isChecked());
+    ui->program->setSendMenuFirstActionEnabled(!ui->cmdHeightMapMode->isChecked());
 
     ui->visualizer->setSelectionVisible(!ui->cmdHeightMapMode->isChecked());
 }
@@ -3250,7 +3230,7 @@ void FrmMain::updateLayouts()
 void FrmMain::updateRecentFilesMenu()
 {
     ui->menuRecent->clear();
-    QMenu *fileOpenMenu = ui->cmdFileOpen->menu();
+    QMenu *fileOpenMenu = ui->program->getFileOpenMenu();
     fileOpenMenu->clear();
 
     QStringList files = !m_heightmapMode ? m_configuration.uiModule().recentFiles() : m_configuration.uiModule().recentHeightmaps();
@@ -3373,8 +3353,8 @@ bool FrmMain::updateHeightmapGrid()
     int gridPointsY = ui->txtHeightMapGridY->value();
 
     m_heightmapModel.resize(gridPointsX, gridPointsY);
-    ui->tblHeightMap->setModel(NULL);
-    ui->tblHeightMap->setModel(&m_heightmapModel);
+    ui->program->setHeightMapModel(NULL);
+    ui->program->setHeightMapModel(&m_heightmapModel);
     resizeTableHeightmapSections();
 
     // Update interpolation
@@ -3428,11 +3408,7 @@ void FrmMain::updateHeightmapGrid(double arg1)
 
 void FrmMain::resizeTableHeightmapSections()
 {
-    if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize()
-            * ui->tblHeightMap->horizontalHeader()->count() < ui->visualizer->width())
-        ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); else {
-        ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    }
+    ui->program->resizeHeightMapSections();
 }
 
 bool FrmMain::eventFilter(QObject *obj, QEvent *event)
@@ -3490,12 +3466,6 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
             //         }
             //     }
             // }
-        }
-    } else if (obj == ui->tblProgram && ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping))) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_PageDown || keyEvent->key() == Qt::Key_PageUp
-                    || keyEvent->key() == Qt::Key_Down || keyEvent->key() == Qt::Key_Up) {
-            ui->chkAutoScrollGCode->setChecked(false);
         }
     }
 
