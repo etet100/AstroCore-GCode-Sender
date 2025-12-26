@@ -381,9 +381,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     initializeCentralWidgets();
 
     // Camera
-    addWindow(
+    addDockableWindow(
         "Camera",
-        new Camera(),
+        new Camera(this),
         Qt::TopDockWidgetArea,
         Qt::Horizontal
     );
@@ -1588,15 +1588,15 @@ void FrmMain::onProgramTableContextMenuRequested(const QPoint &pos)
 
 void FrmMain::on_menuViewWindows_aboutToShow()
 {
-    QAction *a;
+    QAction *action;
     QList<QAction*> al;
 
-    foreach (QDockWidget *d, findChildren<QDockWidget*>()) {
-        a = new QAction(d->windowTitle(), ui->menuViewWindows);
-        a->setCheckable(true);
-        a->setChecked(d->isVisible());
-        connect(a, &QAction::triggered, d, &QDockWidget::setVisible);
-        al.append(a);
+    foreach (QDockWidget *dock, findChildren<QDockWidget*>()) {
+        action = new QAction(dock->windowTitle(), ui->menuViewWindows);
+        action->setCheckable(true);
+        action->setChecked(dock->isVisible());
+        connect(action, &QAction::triggered, dock, &QDockWidget::setVisible);
+        al.append(action);
     }
 
     std::sort(al.begin(), al.end(), FrmMain::actionTextLessThan);
@@ -2540,15 +2540,29 @@ void FrmMain::appendSpacer(DropWidget *dockPanel)
     layout->setStretchFactor(grp, 1);
 }
 
-void FrmMain::addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation)
+void FrmMain::addDockableWindow(const QString title, QWidget *widget, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
     dock->setMinimumHeight(200);
-    dock->setObjectName("Camera");
-    dock->setWidget(window);
+    dock->setWidget(widget);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
     dock->setTitleBarWidget(new DockableTitle(dock));
     addDockWidget(area, dock, orientation);
+
+    QAction* action = new QAction(title, ui->menuCentralWidget);
+    action->setCheckable(true);
+    action->setChecked(false);
+    connect(action, &QAction::triggered, this, [this, action]() {
+        switchCentralWidget(action);
+    });
+    ui->menuCentralWidget->addAction(action);
+
+    m_centralWidgets.append({
+        widget,
+        dock,
+        action,
+        title
+    });
 }
 
 void FrmMain::applySettings()

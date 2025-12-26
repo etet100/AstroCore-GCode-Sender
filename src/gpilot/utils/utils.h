@@ -96,6 +96,18 @@ class Utils
                 refreshStyle(widget);
             }
         }
+
+        // Converts a space delimited string to CamelCase format
+        static QString camelCase(QString str)
+        {
+            QStringList parts = str.toLower().split(' ', Qt::SkipEmptyParts);
+            for (int i = 0; i < parts.size(); ++i)
+            {
+                parts[i].replace(0, 1, parts[i].at(0).toUpper());
+            }
+
+            return parts.join("");
+        }
 };
 
 #endif // UTIL

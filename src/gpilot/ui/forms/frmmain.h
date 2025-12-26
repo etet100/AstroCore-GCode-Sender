@@ -364,7 +364,7 @@ private:
     void applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration);
     void appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel);
     void appendSpacer(DropWidget *dockPanel);
-    void addWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
+    void addDockableWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
     void restoreDockableLayoutState();
     void initializeFontSizeMenu();
 };
