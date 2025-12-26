@@ -224,6 +224,13 @@ QSlider::handle:horizontal:hover {
       <string>Font size</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuCentralWidget">
+     <property name="title">
+      <string>Central widget</string>
+     </property>
+     <addaction name="actViewCentralProgram"/>
+     <addaction name="actViewCentralVisualizer"/>
+    </widget>
     <addaction name="menuViewWindows"/>
     <addaction name="menuViewPanels"/>
     <addaction name="separator"/>
@@ -232,6 +239,7 @@ QSlider::handle:horizontal:hover {
     <addaction name="separator"/>
     <addaction name="actViewDarkMode"/>
     <addaction name="menuFontSize"/>
+    <addaction name="menuCentralWidget"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -1280,6 +1288,15 @@ border-top: none;</string>
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockProgram">
+   <property name="windowTitle">
+    <string>Program</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockProgramContents"/>
+  </widget>
   <widget class="QDockWidget" name="dockConsole">
    <property name="features">
     <set>QDockWidget::DockWidgetFeature::DockWidgetClosable|QDockWidget::DockWidgetFeature::DockWidgetFloatable</set>
@@ -1724,6 +1741,30 @@ border-top: none;</string>
    </property>
    <property name="shortcut">
     <string>Return</string>
+   </property>
+  </action>
+  <action name="actViewCentralProgram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Program</string>
+   </property>
+  </action>
+  <action name="actViewCentralVisualizer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Visualizer</string>
+   </property>
+  </action>
+  <action name="actionCamera">
+   <property name="text">
+    <string>Camera</string>
    </property>
   </action>
  </widget>

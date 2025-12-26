@@ -89,20 +89,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
     ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
     ui->dockUser->setTitleBarWidget(new DockableTitle(ui->dockUser));
-    connect(ui->dockDevice, &QDockWidget::topLevelChanged, [this](bool floating) {
-        if (floating) {
-            // Ustawienia dla pływającego okna
-            // ui->dockDevice->setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-            ui->dockDevice->setStyleSheet("QDockWidget { border: 2px solid #555; }");
-            // ui->dockDevice->titleBarWidget()->hide();
-        } else {
-            // Można też przywrócić domyślne flagi, gdy dock jest zadokowany, ale zwykle nie jest to konieczne
-            ui->dockDevice->titleBarWidget()->show();
-            ui->dockDevice->setWindowFlags(Qt::Widget);
-        }
-        ui->dockDevice->show();
-    });
-
+    ui->dockProgram->setTitleBarWidget(new DockableTitle(ui->dockProgram));
     ui->dockModification->setTitleBarWidget(new DockableTitle(ui->dockModification));
 
     initializeFontSizeMenu();
@@ -389,6 +376,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     );
 
     updateLayouts();
+
+    // Initialize central widget management
+    initializeCentralWidgets();
 
     // Camera
     addWindow(
@@ -836,6 +826,19 @@ void FrmMain::on_actViewDarkMode_toggled(bool checked)
 {
     m_configuration.uiModule().setDarkMode(checked);
     ThemeManager::instance().setDark(checked);
+}
+
+void FrmMain::on_actViewCentralProgram_toggled(bool checked)
+{
+    Q_UNUSED(checked);
+    switchCentralWidget(ui->actViewCentralProgram);
+}
+
+// Visualiser in central widget, program docked, hide empty visualizer dock
+void FrmMain::on_actViewCentralVisualizer_toggled(bool checked)
+{
+    Q_UNUSED(checked);
+    switchCentralWidget(ui->actViewCentralVisualizer);
 }
 
 void FrmMain::onFileOpen()
@@ -3678,4 +3681,74 @@ bool FrmMain::actionLessThan(const QAction *a1, const QAction *a2)
 bool FrmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
 {
     return a1->text() < a2->text();
+}
+
+void FrmMain::initializeCentralWidgets()
+{
+    m_centralWidgets = {
+        {ui->program, ui->dockProgram, ui->actViewCentralProgram, "G-code program"},
+        {ui->visualizer, ui->dockVisualizer, ui->actViewCentralVisualizer, "Visualizer"}
+    };
+}
+
+void FrmMain::switchCentralWidget(QAction* action)
+{
+    // If action is being unchecked, re-check it and return
+    if (!action->isChecked()) {
+        const QSignalBlocker blocker(action);
+        action->setChecked(true);
+        return;
+    }
+
+    // Find requested widget config
+    CentralWidgetConfig* requestedConfig = nullptr;
+    for (auto& config : m_centralWidgets) {
+        if (config.action == action) {
+            requestedConfig = &config;
+            break;
+        }
+    }
+
+    if (!requestedConfig) {
+        return;
+    }
+
+    // Find and undock current central widget
+    CentralWidgetConfig* currentConfig = nullptr;
+    for (auto& config : m_centralWidgets) {
+        if (config.widget->parentWidget() == ui->centralWidget) {
+            currentConfig = &config;
+            break;
+        }
+    }
+
+    if (!currentConfig || currentConfig == requestedConfig) {
+        return;
+    }
+
+    // Uncheck all other actions
+    for (auto& config : m_centralWidgets) {
+        if (config.action != action) {
+            const QSignalBlocker blocker(config.action);
+            config.action->setChecked(false);
+        }
+    }
+
+    // Remember visibility state of requested dock
+    bool dockWasVisible = requestedConfig->dock->isVisible();
+
+    // Undock requested widget
+    requestedConfig->widget->setParent(nullptr);
+    requestedConfig->dock->hide();
+
+    // Remove current widget from central
+    ui->centralWidget->layout()->removeWidget(currentConfig->widget);
+
+    // Dock current widget
+    currentConfig->dock->setWidget(currentConfig->widget);
+    currentConfig->dock->setVisible(dockWasVisible);
+
+    // Add requested widget to central
+    ui->centralWidget->layout()->addWidget(requestedConfig->widget);
+    ui->centralWidgetTitle->setTitle(requestedConfig->title);
 }

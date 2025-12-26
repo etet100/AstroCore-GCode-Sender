@@ -69,6 +69,13 @@ public:
     }
 };
 
+struct CentralWidgetConfig {
+    QWidget* widget;
+    QDockWidget* dock;
+    QAction* action;
+    QString title;
+};
+
 class FrmMain : public QMainWindow
 {
     Q_OBJECT
@@ -114,6 +121,8 @@ private slots:
     void on_actSpindleSpeedMinus_triggered();
     void on_actViewLockWindows_toggled(bool checked);
     void on_actViewDarkMode_toggled(bool checked);
+    void on_actViewCentralProgram_toggled(bool checked);
+    void on_actViewCentralVisualizer_toggled(bool checked);
     void onFileOpen();
     void onFileSend();
     void onFilePause(bool checked);
@@ -274,6 +283,11 @@ private:
 
     Configuration &m_configuration;
     ScriptVars m_scriptVars;
+
+    // Central widget management
+    QList<CentralWidgetConfig> m_centralWidgets;
+    void initializeCentralWidgets();
+    void switchCentralWidget(QAction* action);
 
     // Settings
     void preloadSettings();
