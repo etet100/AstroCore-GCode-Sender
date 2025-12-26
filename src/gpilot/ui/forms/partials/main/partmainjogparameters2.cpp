@@ -159,7 +159,7 @@ void PartMainJogParameters2::rebuildSection(Section& section, const QString& tit
         QList<float> labels = it.value();
 
         // Group header
-        QLabel *btnsGroupLabel = createGrpLabel(section.mainFrame, QString::number(multiplier), QString("_%1").arg(groupIndex));
+        QLabel *btnsGroupLabel = createGrpLabel(section.mainFrame, "<small>x</small>" + QString::number(multiplier), QString("_%1").arg(groupIndex));
         gridLayout->addWidget(btnsGroupLabel, 1, col, 1, labels.size());
 
         // Buttons
