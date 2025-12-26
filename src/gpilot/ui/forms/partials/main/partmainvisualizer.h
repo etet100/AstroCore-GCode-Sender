@@ -62,11 +62,7 @@ class PartMainVisualizer : public QWidget
 
         void reset();
 
-        void setSelectionEndPosition(QVector3D pos);
-        void updateSelection();
-
         void setHeightmapMode(bool enabled);
-        void updateHeightmapBorder(QRectF rect);
         void updateHeightmapGrid();
         // void updateHeightmapGrid(QRectF rect, int x, int y, double zBottom, double zTop);
         void updateHeightmapInterpolation(bool reset = false);
@@ -76,17 +72,40 @@ class PartMainVisualizer : public QWidget
         // method has the same name as QWidget::setUpdatesEnabled!
         void setUpdatesEnabled2(bool updatesEnabled);
 
-        GcodeDrawer* codeDrawer() { return m_codeDrawer; }
-        GcodeDrawer* probeDrawer() { return m_probeDrawer; }
-        GcodeDrawer* currentDrawer() { return m_currentDrawer; }
-        ToolDrawer* toolDrawer() { return &m_toolDrawer; }
-        CursorDrawer* cursorDrawer() { return &m_cursorDrawer; }
-        HeightMapBorderDrawer* heightmapBorderDrawer() { return &m_heightmapBorderDrawer; }
-        HeightMapGridDrawer* heightmapGridDrawer() { return &m_heightmapGridDrawer; }
-        HeightMapInterpolationDrawer* heightmapInterpolationDrawer() { return &m_heightmapInterpolationDrawer; }
-
         void useCodeDrawer();
         void useProbeDrawer();
+
+        // High-level API for program operations
+        void loadNewProgram();
+        void resetVisualization();
+        void updateToolpathHighlighting(int currentRow, int previousRow, GCode& program);
+        void updateToolTracking(QVector3D toolPosition, int processedLineIndex, GCode& program);
+        void resetLastDrawnLine();
+        void finalizeTransfer();
+
+        // High-level API for heightmap operations
+        void setHeightmapBorderRect(QRectF rect);
+        QRectF getCodeDrawerBounds() const;
+
+        // Configuration
+        bool isIgnoreZ() const;
+
+        // Parser operations
+        GCodeViewParser* getCurrentParser();
+        bool isCurrentDrawerProbeMode() const;
+        void updateCurrentDrawerGeometry();
+
+        // Export/Debug
+        void exportCodeDrawerToFile(const QString& filename);
+
+        // Line commands generation helper
+        struct SegmentInfo {
+            LineSegment* firstSegment;
+            LineSegment* lastSegment;
+            LineSegment* feedSegment;
+            LineSegment* plungeSegment;
+        };
+        SegmentInfo getSegmentInfoForLine(int lineNumber);
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
@@ -125,7 +144,14 @@ class PartMainVisualizer : public QWidget
         Heightmap& m_heightmap;
         GCode& m_program;
 
+        bool m_ignoreZ;
+        int m_lastDrawnLineIndex;
+
         void placeVisualizerButtons();
+
+        // Internal selection management
+        void setSelectionEndPosition(QVector3D pos);
+        void updateSelection();
 };
 
 #endif // PARTMAINVISUALIZER_H

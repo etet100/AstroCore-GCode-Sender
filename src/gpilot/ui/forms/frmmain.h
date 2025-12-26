@@ -268,10 +268,6 @@ private:
     // bool m_updateSpindleSpeed;
     // bool m_updateParserStatus;
 
-
-    // Current values
-    int m_lastDrawnLineIndex;
-
     // Keyboard
     bool m_absoluteCoordinates;
     //bool m_storedKeyboardControl;

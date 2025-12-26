@@ -4,6 +4,7 @@
 #include "core/config/module/configurationvisualizer.h"
 #include "core/config/module/configurationmachine.h"
 #include "core//gcode/gcode.h"
+#include "ui/drawers/vertexdataexporter.h"
 #include <QRegularExpression>
 
 PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
@@ -12,6 +13,8 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , m_heightmapGridDrawer()
     , m_heightmap(*new Heightmap())
     , m_program(*new GCode())
+    , m_ignoreZ(false)
+    , m_lastDrawnLineIndex(0)
 {
     ui->setupUi(this);
 
@@ -69,6 +72,8 @@ void PartMainVisualizer::initDrawables()
 
 void PartMainVisualizer::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
+    m_ignoreZ = visualizerConfiguration.ignoreZ();
+
     ui->visualizer->setLineWidth(visualizerConfiguration.lineWidth());
     ui->visualizer->setAntialiasing(visualizerConfiguration.antialiasing());
     ui->visualizer->setMsaa(visualizerConfiguration.msaa());
@@ -219,11 +224,6 @@ void PartMainVisualizer::setHeightmapMode(bool enabled)
     // m_heightmapGridDrawer.setVisible(ui->visualizer->property("showGrid").toBool() && enabled);
 
     m_selectionDrawer.setVisible(!enabled);
-}
-
-void PartMainVisualizer::updateHeightmapBorder(QRectF rect)
-{
-    m_heightmapBorderDrawer.setBorderRect(rect);
 }
 
 void PartMainVisualizer::updateHeightmapGrid()
@@ -396,5 +396,209 @@ void PartMainVisualizer::setSpeedState(QString state)
     ui->visualizer->setSpeedState(state);
 }
 
+bool PartMainVisualizer::isIgnoreZ() const
+{
+    return m_ignoreZ;
+}
 
+void PartMainVisualizer::loadNewProgram()
+{
+    m_lastDrawnLineIndex = 0;
+    m_codeDrawer->update();
+    m_currentDrawer = m_codeDrawer;
+    ui->visualizer->fitDrawable(m_codeDrawer);
 
+    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    m_selectionDrawer.update();
+}
+
+void PartMainVisualizer::resetVisualization()
+{
+    m_lastDrawnLineIndex = 0;
+    m_codeDrawer->update();
+    m_currentDrawer = m_codeDrawer;
+    ui->visualizer->fitDrawable();
+
+    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    m_selectionDrawer.update();
+}
+
+void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previousRow, GCode& program)
+{
+    if (program.empty()) {
+        return;
+    }
+
+    int rowCurrent = qMin(currentRow, program.lastCommandIndex());
+    int rowPrevious = qMax(qMin(previousRow, program.lastCommandIndex()), 0);
+
+    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    QList<LineSegment>& list = parser->getLineSegmentList();
+    QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+
+    // Update linesegments on cell changed
+    if (!m_currentDrawer->geometryUpdated()) {
+        int lineCurrent = program[rowCurrent].lineNumber;
+        for (int i = 0; i < list.count(); i++) {
+            list[i].setIsHightlight(list[i].getLineNumber() <= lineCurrent);
+        }
+    } else {
+        // Update vertices on current cell changed
+        int lineCurrent = program[rowCurrent].lineNumber;
+        int linePrevious = program[rowPrevious].lineNumber;
+        if (linePrevious < lineCurrent) qSwap(linePrevious, lineCurrent);
+
+        QList<int> indexes;
+        for (int i = lineCurrent + 1; i <= linePrevious; i++) {
+            foreach (int l, lineIndexes.at(i)) {
+                list[l].setIsHightlight(rowCurrent > rowPrevious);
+                indexes.append(l);
+            }
+        }
+
+        m_selectionDrawer.setEndPosition(indexes.isEmpty() ? QVector3D(sNan, sNan, sNan) :
+            (m_ignoreZ ? QVector3D(list[indexes.last()].getEnd().x(), list[indexes.last()].getEnd().y(), 0)
+                       : list[indexes.last()].getEnd()));
+        m_selectionDrawer.update();
+
+        if (!indexes.isEmpty()) {
+            m_currentDrawer->update(indexes);
+        }
+    }
+
+    // Update selection marker
+    int line = program[rowCurrent].lineNumber;
+    if (line > 0 && line < lineIndexes.count() && !lineIndexes.at(line).isEmpty()) {
+        QVector3D pos = list[lineIndexes.at(line).last()].getEnd();
+        m_selectionDrawer.setEndPosition(m_ignoreZ ? QVector3D(pos.x(), pos.y(), 0) : pos);
+    } else {
+        m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    }
+    m_selectionDrawer.update();
+}
+
+void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processedLineIndex, GCode& program)
+{
+    m_toolDrawer.setToolPosition(m_ignoreZ ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
+
+    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    bool toolOntoolpath = false;
+
+    QList<int> drawnLines;
+    QList<LineSegment>& list = parser->getLineSegmentList();
+
+    for (
+        int i = m_lastDrawnLineIndex;
+        i < list.count() && list[i].getLineNumber() <= (processedLineIndex + 1);
+        i++
+    ) {
+        if (list[i].contains(toolPosition)) {
+            toolOntoolpath = true;
+            m_lastDrawnLineIndex = i;
+            break;
+        }
+        drawnLines << i;
+    }
+
+    if (toolOntoolpath) {
+        foreach (int i, drawnLines) {
+            list[i].setDrawn(true);
+        }
+        if (!drawnLines.isEmpty()) {
+            m_currentDrawer->update(drawnLines);
+            ui->visualizer->update();
+        }
+    }
+}
+
+void PartMainVisualizer::setHeightmapBorderRect(QRectF rect)
+{
+    m_heightmapBorderDrawer.setBorderRect(rect);
+}
+
+QRectF PartMainVisualizer::getCodeDrawerBounds() const
+{
+    QRectF rect;
+    rect.setX(m_codeDrawer->minimumExtremes().x());
+    rect.setY(m_codeDrawer->minimumExtremes().y());
+    rect.setWidth(m_codeDrawer->sizes().x());
+    rect.setHeight(m_codeDrawer->sizes().y());
+    return rect;
+}
+
+void PartMainVisualizer::resetLastDrawnLine()
+{
+    m_lastDrawnLineIndex = 0;
+}
+
+void PartMainVisualizer::finalizeTransfer()
+{
+    // Shadow last segment
+    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    QList<LineSegment>& list = parser->getLineSegmentList();
+
+    if (m_lastDrawnLineIndex < list.count()) {
+        list[m_lastDrawnLineIndex].setDrawn(true);
+        m_currentDrawer->update(QList<int>() << m_lastDrawnLineIndex);
+        ui->visualizer->update();
+    }
+
+    m_lastDrawnLineIndex = 0;
+}
+
+GCodeViewParser* PartMainVisualizer::getCurrentParser()
+{
+    return m_currentDrawer->viewParser();
+}
+
+bool PartMainVisualizer::isCurrentDrawerProbeMode() const
+{
+    return m_currentDrawer == m_probeDrawer;
+}
+
+void PartMainVisualizer::updateCurrentDrawerGeometry()
+{
+    m_currentDrawer->update();
+    ui->visualizer->update();
+}
+
+void PartMainVisualizer::exportCodeDrawerToFile(const QString& filename)
+{
+    VertexDataExporter::exportToJsFile(filename, m_codeDrawer->lines());
+}
+
+PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int lineNumber)
+{
+    SegmentInfo info = {nullptr, nullptr, nullptr, nullptr};
+
+    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    QList<LineSegment>& list = parser->getLineSegmentList();
+    QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+
+    if (lineNumber == -1 || lineNumber >= lineIndexes.count()) {
+        return info;
+    }
+
+    if (lineIndexes.at(lineNumber).isEmpty()) {
+        return info;
+    }
+
+    int firstIdx = lineIndexes.at(lineNumber).first();
+    int lastIdx = lineIndexes.at(lineNumber).last();
+
+    info.firstSegment = &list[firstIdx];
+    info.lastSegment = &list[lastIdx];
+    info.feedSegment = info.lastSegment;
+    info.plungeSegment = info.lastSegment;
+
+    int segmentIndex = list.indexOf(*info.feedSegment);
+    while (info.feedSegment->isFastTraverse() && (segmentIndex > 0)) {
+        info.feedSegment = &list[--segmentIndex];
+    }
+
+    while (!(info.plungeSegment->isZMovement() && !info.plungeSegment->isFastTraverse()) && (segmentIndex > 0)) {
+        info.plungeSegment = &list[--segmentIndex];
+    }
+
+    return info;
+}
