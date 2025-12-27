@@ -117,15 +117,6 @@ void PartMainVisualizer::applyVisualizerConfiguration(
     ui->cmdRight->setIcon(QIcon(":/images/visualizer_left.png"));
     ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
 
-    if (!light) {
-        Utils::invertButtonIconColors(ui->cmdToggleProjection);
-        Utils::invertButtonIconColors(ui->cmdFit);
-        Utils::invertButtonIconColors(ui->cmdIsometric);
-        Utils::invertButtonIconColors(ui->cmdFront);
-        Utils::invertButtonIconColors(ui->cmdRight);
-        Utils::invertButtonIconColors(ui->cmdTop);
-    }
-
     QColor normal, highlight;
 
     normal.setHsv(base.hue(), base.saturation(), base.value() + (light ? -NORMALSHIFT : NORMALSHIFT));
