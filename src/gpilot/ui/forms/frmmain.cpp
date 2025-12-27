@@ -2556,7 +2556,7 @@ void FrmMain::applySettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
-    ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration);
+    ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration, machineConfiguration);
 
     // @TODO watch for changes is communicator?
     // m_communicator->stopUpdatingState();

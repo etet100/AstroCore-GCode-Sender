@@ -73,8 +73,10 @@ void PartMainVisualizer::initDrawables()
     ui->visualizer->fitDrawable(m_codeDrawer);
 }
 
-void PartMainVisualizer::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
+void PartMainVisualizer::applyVisualizerConfiguration(
+    ConfigurationVisualizer& visualizerConfiguration,
+    ConfigurationMachine& machineConfiguration
+) {
     m_ignoreZ = visualizerConfiguration.ignoreZ();
 
     ui->visualizer->setLineWidth(visualizerConfiguration.lineWidth());
@@ -141,6 +143,8 @@ void PartMainVisualizer::applyVisualizerConfiguration(ConfigurationVisualizer &v
     applyHeightmapDrawerConfiguration(visualizerConfiguration);
     applyOriginDrawerConfiguration(visualizerConfiguration);
     applySelectionDrawerConfiguration(visualizerConfiguration);
+    applyToolDrawerConfiguration(visualizerConfiguration);
+    applyCodeDrawerConfiguration(visualizerConfiguration, machineConfiguration);
 
     switch (visualizerConfiguration.viewMode()) {
         case ConfigurationVisualizer::ViewMode::Perspective:

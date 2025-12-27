@@ -31,7 +31,7 @@ class PartMainVisualizer : public QWidget
             QWidget* parent = nullptr
         );
         ~PartMainVisualizer();
-        void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
         void updateGCodeExtremes();
         void fitDrawable();
         void fitCodeDrawer();
