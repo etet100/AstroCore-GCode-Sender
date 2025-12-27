@@ -25,6 +25,8 @@ class Communicator : public QObject
             Connection *connection,
             Configuration *configuration
         );
+        ~Communicator();
+        void deinit();
         SendCommandResult sendCommand(CommandSource source, QString commandLine, int tableIndex = TABLE_INDEX_UI, bool wait = false, CommandCallback callback = nullptr);
         void sendRealtimeCommand(QString command);
         void sendRealtimeCommand(int command);

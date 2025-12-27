@@ -524,14 +524,8 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     }
 
     m_timerConnection.stop();
+    m_communicator->deinit();
     m_connection->close();
-
-    m_communicator->clearCommandsAndQueue();
-    // moved to communicator
-    // if (m_communicator->m_queue.length() > 0) {
-    //     m_communicator->m_commands.clear();
-    //     m_communicator->m_queue.clear();
-    // }
 
     saveSettings();
 }
@@ -2518,6 +2512,7 @@ void FrmMain::appendSpacer(DropWidget *dockPanel)
 void FrmMain::addDockableWindow(const QString title, QWidget *widget, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
+    dock->setObjectName(title);
     dock->setMinimumHeight(200);
     dock->setWidget(widget);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
@@ -3468,6 +3463,8 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
          && deviceState != MachineState::Check) {
         int lineIndex = m_currentModel->data(m_currentModel->index(m_program.processedCommandIndex(), 4)).toInt();
         ui->visualizer->updateToolTracking(toolPosition, lineIndex, m_program);
+    } else {
+        ui->visualizer->setToolPosition(toolPosition);
     }
 }
 

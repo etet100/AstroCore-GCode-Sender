@@ -183,7 +183,7 @@ bool ResetBehavior::dataIsReset(QString data)
     } else if (data.contains("uCNC")) {
         logSignal("Detected uCNC device.");
     } else if (data.contains("Grbl")) {
-        logSignal("Detected Grbl device.");
+        logSignal("Detected GRBL device.");
     } else {
         logSignal("Detected unknown device: " + data);
     }

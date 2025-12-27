@@ -58,6 +58,17 @@ Communicator::Communicator(
     // m_timerQueryState.start();
 }
 
+Communicator::~Communicator()
+{
+    stopQueryingMachineState();
+}
+
+void Communicator::deinit()
+{
+    stopQueryingMachineState();
+    clearCommandsAndQueue();
+}
+
 void Communicator::resetStateVariables()
 {
     m_machineState = MachineState::Unknown;
@@ -693,6 +704,7 @@ void Communicator::startQueryingMachineState()
 void Communicator::stopQueryingMachineState()
 {
     if (m_queryMachineStateTimer) {
+        qDebug() << "[Communicator] Stopping machine state querying timer";
         m_queryMachineStateTimer->stop();
         m_queryMachineStateTimer->deleteLater();
         m_queryMachineStateTimer = nullptr;
