@@ -271,7 +271,7 @@ bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     if (event->type() != QEvent::Enter && event->type() != QEvent::Leave) {
         return PartMainJogParametersInterface::eventFilter(watched, event);
     }
-    QPushButton *btn = qobject_cast<QPushButton*>(watched);
+    StyledToolButton *btn = qobject_cast<StyledToolButton*>(watched);
     if (!btn) {
         return PartMainJogParametersInterface::eventFilter(watched, event);
     }

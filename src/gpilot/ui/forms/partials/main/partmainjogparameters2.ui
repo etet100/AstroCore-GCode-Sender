@@ -21,9 +21,13 @@
 	background-color: rgb(20, 20, 20);
 }
 
-QPushButton, QLabel, QFrame#header {
+QLabel, QFrame#header {
 	border: none;
 	border-radius: 4px;
+}
+
+StyledToolButton {
+	color: white;
 }
 
 *[mode=&quot;light&quot;] QPushButton, *[mode=&quot;light&quot;] QLabel {
@@ -42,7 +46,7 @@ QFrame#sectionFrame {
     border-radius: 5px;
 }
 
-QPushButton:hover {
+StyledToolButton:hover {
 	border: 1px solid rgb(14, 49, 95);
 }
 

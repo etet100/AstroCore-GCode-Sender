@@ -18,7 +18,9 @@ class CUSTOMWIDGETS_DLLSPEC StyledToolButton : public QToolButton
     Q_PROPERTY(QColor backgroundColor READ backColor WRITE setBackColor)
     Q_PROPERTY(QColor foregroundColor READ foreColor WRITE setForeColor)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
-    
+    Q_PROPERTY(bool invertedDartThemeIconColors MEMBER m_invertedDartThemeIconColors)
+    Q_PROPERTY(bool customColors MEMBER m_useCustomColors)
+
 public:
     explicit StyledToolButton(QWidget *parent = 0);
 
@@ -33,6 +35,9 @@ public:
     QColor highlightColor() const;
     void setHighlightColor(const QColor &highlightColor);
 
+    bool useCustomColors() const;
+    void setUseCustomColors(bool use);
+
 protected:
     void enterEvent(QEnterEvent *) override;
     void leaveEvent(QEvent *) override;
@@ -43,6 +48,8 @@ private:
     void paintEvent(QPaintEvent *e) override;
 
     bool m_hovered = false;
+    bool m_useCustomColors = false;
+    bool m_invertedDartThemeIconColors = true;
     QColor m_backColor;
     QColor m_foreColor;
     QColor m_highlightColor;

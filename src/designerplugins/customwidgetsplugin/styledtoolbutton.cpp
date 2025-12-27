@@ -11,9 +11,10 @@ StyledToolButton::StyledToolButton(QWidget *parent) : QToolButton(parent)
 {
     if (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
         invertIconColors();
+        m_backColor = palette().color(QPalette::Button).darker(120);
+    } else {
+        m_backColor = palette().color(QPalette::Button);
     }
-
-    m_backColor = palette().color(QPalette::Button);
     m_foreColor = palette().color(QPalette::ButtonText);
     m_highlightColor = QColor(127, 211, 255).darker(120);
 }
@@ -44,35 +45,39 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
     const int borderWidth = 4;
     const int borderRadius = 5;
 
-    // QStyleOptionToolButton opt;
-    // initStyleOption(&opt);
-    // QColor effectiveColor = opt.palette.color(QPalette::Text);
-    // qDebug() << effectiveColor;
-
     QPainter painter(this);
 
     painter.setRenderHint(QPainter::Antialiasing);
-    //painter.setRenderHint(QPainter::HighQualityAntialiasing);
 
     // Highlight
     QPen highlightPen;
 
-    if ((!this->isEnabled() && !this->isChecked()) || (!this->isDown() && !this->isChecked() && !this->isHover())) {
-        highlightPen.setColor(Qt::white);
-    } else if (this->isDown() || this->isChecked()) {
-        highlightPen.setColor(m_highlightColor);
-    } else if (this->isHover()) {
-        highlightPen.setColor(m_highlightColor.lighter(120));
+    QColor highlightColor;
+    if (m_useCustomColors) {
+        highlightColor = m_highlightColor;
+    } else {
+        QColor baseColor = palette().color(QPalette::Button);
+        if (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
+            highlightColor = baseColor.lighter(150);
+        } else {
+            highlightColor = baseColor.darker(150);
+        }
     }
 
-    highlightPen.setWidth(2);
-    painter.setPen(highlightPen);
-    painter.drawRoundedRect(1, 1, this->width() - 2, this->height() - 2, borderRadius - 1, borderRadius - 1);
+    if (this->isHover() && !this->isDown() && !this->isChecked()) {
+        highlightPen.setColor(highlightColor.lighter(110));
+    } else {
+        highlightPen.setColor(highlightColor);
+    }
+
+    // Internal - secondary border
+    // painter.setPen(highlightPen);
+    // painter.drawRoundedRect(1, 1, this->width() - 2, this->height() - 2, borderRadius - 1, borderRadius - 1);
 
     // Border
     QPen pen(this->isEnabled() ? palette().color(QPalette::Shadow) : palette().color(QPalette::Mid));
 
-    if ((this->isDown() || this->isChecked()) && this->isEnabled()) pen.setColor(Qt::black);
+    if ((this->isDown() || this->isChecked()) && this->isEnabled()) pen.setColor(palette().color(QPalette::Dark));
 
     pen.setWidth(2);
     pen.setCapStyle(Qt::SquareCap);
@@ -91,16 +96,25 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
     painter.drawArc(width() - borderRadius * 2, height() - borderRadius * 2, borderRadius * 2, borderRadius * 2, 270 * 16, 90 * 16);
 
     // Background border
+    QColor backColor;
+    if (m_useCustomColors) {
+        backColor = m_backColor;
+    } else {
+        backColor = palette().color(QPalette::Button);
+        if (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
+            backColor = backColor.darker(120);
+        }
+    }
     QLinearGradient backGradient(width() / 2, height() / 2, width() / 2, height());
-    backGradient.setColorAt(0, this->isEnabled() ? m_backColor : palette().color(QPalette::Button));
-    backGradient.setColorAt(1, this->isEnabled() ? m_backColor.darker(130) : palette().color(QPalette::Button).darker(130));
+    backGradient.setColorAt(0, this->isEnabled() ? backColor : palette().color(QPalette::Button));
+    backGradient.setColorAt(1, this->isEnabled() ? backColor.darker(130) : palette().color(QPalette::Button).darker(130));
     QBrush backBrush(backGradient);
     painter.setBrush(backBrush);
     painter.setPen(Qt::NoPen);
     painter.drawRoundedRect(borderWidth - 1, borderWidth - 1, width() - borderWidth * 2 + 2, height() - borderWidth * 2 + 2, 2, 2);
 
     // Background
-    painter.setBrush(this->isEnabled() ? m_backColor : palette().color(QPalette::Button));
+    painter.setBrush(this->isEnabled() ? backColor : palette().color(QPalette::Button));
     painter.setPen(Qt::NoPen);
     painter.drawRect(borderWidth, borderWidth, width() - borderWidth * 2, height() - borderWidth * 2);
 
@@ -116,15 +130,10 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
         QIcon icon = this->icon();
         QSize iconSize = this->iconSize();
         QImage img = icon.pixmap(icon.actualSize(iconSize), this->isEnabled() ? QIcon::Normal : QIcon::Disabled).toImage();
-        if (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
+        if (m_invertedDartThemeIconColors && QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark) {
             img.invertPixels();
         }
 
-        // QSize iconSize = this->icon().actualSize(this->iconSize());
-        // painter.drawPixmap(QRect(innerRect.x() + (innerRect.width() - iconSize.width()) / 2,
-        //                          innerRect.y() + (innerRect.height() - iconSize.height()) / 2,
-        //                          iconSize.width(), iconSize.height()),
-        //                    this->icon().pixmap(iconSize, this->isEnabled() ? QIcon::Normal : QIcon::Disabled));
         painter.drawImage(
             QRect(
                 innerRect.x() + (innerRect.width() - iconSize.width()) / 2,
@@ -136,7 +145,8 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
         );
     } else {
         // Text
-        painter.setPen(this->isEnabled() ? m_foreColor : palette().color(QPalette::ButtonText));
+        QColor textColor = m_useCustomColors ? m_foreColor : palette().color(QPalette::ButtonText);
+        painter.setPen(this->isEnabled() ? textColor : palette().color(QPalette::ButtonText));
         painter.drawText(innerRect, Qt::AlignCenter, this->text());
     }
 }
@@ -148,6 +158,16 @@ QColor StyledToolButton::highlightColor() const
 void StyledToolButton::setHighlightColor(const QColor &highlightColor)
 {
     m_highlightColor = highlightColor;
+}
+
+bool StyledToolButton::useCustomColors() const
+{
+    return m_useCustomColors;
+}
+
+void StyledToolButton::setUseCustomColors(bool use)
+{
+    m_useCustomColors = use;
 }
 
 QColor StyledToolButton::foreColor() const

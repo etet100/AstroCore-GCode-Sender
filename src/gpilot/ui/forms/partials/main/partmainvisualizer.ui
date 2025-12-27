@@ -71,7 +71,7 @@
       <string notr="true">#buttons { border: none; }
 
 /* this color will be replaced in runtime */
-QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
+StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
 
 </string>
      </property>
@@ -94,34 +94,8 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
       <property name="verticalSpacing">
        <number>5</number>
       </property>
-      <item row="1" column="0">
-       <widget class="QToolButton" name="cmdFit">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Fit</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
-       <widget class="QToolButton" name="cmdFront">
+       <widget class="StyledToolButton" name="cmdFront">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -144,62 +118,13 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <height>24</height>
          </size>
         </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QToolButton" name="cmdIsometric">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>3D View</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QToolButton" name="cmdRight">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Right view</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QToolButton" name="cmdRotationCube">
+      <item row="9" column="0">
+       <widget class="StyledToolButton" name="cmdRotationCube">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -222,36 +147,42 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <height>24</height>
          </size>
         </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QToolButton" name="cmdToggleProjection">
+      <item row="2" column="0">
+       <widget class="StyledToolButton" name="cmdFit">
         <property name="minimumSize">
          <size>
-          <width>30</width>
-          <height>30</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
         <property name="toolTip">
-         <string>Toggle perspective/orthographic projection</string>
+         <string>Fit</string>
         </property>
         <property name="text">
          <string/>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_toggle_view_mode.png</normaloff>:/images/visualizer_toggle_view_mode.png</iconset>
+          <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
         </property>
         <property name="iconSize">
          <size>
-          <width>20</width>
-          <height>20</height>
+          <width>24</width>
+          <height>24</height>
          </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QToolButton" name="cmdVisualizerHeightmap">
+      <item row="9" column="1">
+       <widget class="StyledToolButton" name="cmdVisualizerHeightmap">
         <property name="toolTip">
          <string>Toggle heightmap visibility</string>
         </property>
@@ -268,10 +199,13 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <height>24</height>
          </size>
         </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QToolButton" name="cmdTop">
+       <widget class="StyledToolButton" name="cmdTop">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -294,6 +228,96 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
           <height>24</height>
          </size>
         </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="StyledToolButton" name="cmdIsometric">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>3D View</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="StyledToolButton" name="cmdRight">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Right view</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="StyledToolButton" name="cmdToggleProjection">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle perspective/orthographic projection</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_toggle_view_mode.png</normaloff>:/images/visualizer_toggle_view_mode.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -302,6 +326,11 @@ QToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0) }
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>StyledToolButton</class>
+   <extends>QToolButton</extends>
+   <header>styledtoolbutton.h</header>
+  </customwidget>
   <customwidget>
    <class>GLContainer</class>
    <extends>QWidget</extends>
