@@ -172,6 +172,21 @@ bool ResetBehavior::dataIsReset(QString data)
     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
     // Gcarvin ?? https://github.com/inventables/gCarvin
     static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+    if (!data.contains(re)) {
+        return false;
+    }
 
-    return data.contains(re);
+    if (data.contains("GrblHAL")) {
+        logSignal("Detected GrblHAL device.");
+    } else if (data.contains("GCARVIN")) {
+        logSignal("Detected gCarvin device.");
+    } else if (data.contains("uCNC")) {
+        logSignal("Detected uCNC device.");
+    } else if (data.contains("Grbl")) {
+        logSignal("Detected Grbl device.");
+    } else {
+        logSignal("Detected unknown device: " + data);
+    }
+
+    return true;
 }

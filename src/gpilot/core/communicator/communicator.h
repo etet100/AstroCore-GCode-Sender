@@ -145,10 +145,11 @@ class Communicator : public QObject
         void processOverrides(QString line);
         void processWorkOffset(QString line);
         void processMachinePosition(QString line);
+        void processWorkPosition(QString line);
         void processMachineState(QString state);
         void processPinsState(QString line);
         void processSpindleState(QString line);
-        void processNewToolPosition();        
+        void processNewToolPosition();
         void processWelcomeMessageDetected(QString message);
         void storeParserState();
         void restoreParserState();

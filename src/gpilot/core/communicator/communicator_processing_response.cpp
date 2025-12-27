@@ -180,6 +180,34 @@ void Communicator::processMachinePosition(QString line)
     }
 }
 
+// WPos (work position), unlike WCO (Work Coordinate Offset) is an absolute value
+// not relative to machine pos, this must be considered when calculating
+// work position and possible offset
+void Communicator::processWorkPosition(QString line)
+{
+    static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
+
+    QRegularExpressionMatch match = wpx.match(line);
+    if (match.hasMatch()) {
+        QVector3D workPos = QVector3D(
+            match.captured(1).toDouble(),
+            match.captured(2).toDouble(),
+            match.captured(3).toDouble()
+        );
+
+        QVector3D workOffset = QVector3D(
+            m_machinePos.x() - workPos.x(),
+            m_machinePos.y() - workPos.y(),
+            m_machinePos.z() - workPos.z()
+        );
+
+        if (workOffset != m_workOffset) {
+            m_workOffset = workOffset;
+            m_storedVars.setCoords("W", m_workOffset);
+        }
+    }
+}
+
 void Communicator::processWorkOffset(QString line)
 {
     static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
@@ -244,6 +272,8 @@ void Communicator::processStatus(QString line)
         line = section;
         if (line.startsWith("MPos:")) {
             processMachinePosition(line.remove(0, 5));
+        } else if (line.startsWith("WPos:")) {
+            processWorkPosition(line.remove(0, 5));
         } else if (line.startsWith("WCO:")) {
             processWorkOffset(line.remove(0, 4));
         } else if (line.startsWith("Ov:")) {
