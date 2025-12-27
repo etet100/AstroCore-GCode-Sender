@@ -53,7 +53,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     m_lookAt = QVector3D(0, 0, 0);
     m_eye = QVector3D(0, 0, -50);
 
-    m_perspective = true;
+    m_mode = ViewMode::Perspective;
 
     m_fov = 30;
     m_near = 0.5;
@@ -113,7 +113,7 @@ GLWidget& GLWidget::operator<<(ShaderDrawable *drawable)
 
 void GLWidget::emitZoomChanged()
 {
-    if (m_perspective) {
+    if (m_mode == ViewMode::Perspective) {
         // distance between eye and origin (0,0,0)
         emit zoomChanged(m_eye.length() / 100.0);
     } else {
@@ -171,7 +171,7 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
         float maxProjZ = qAbs(dx * camZ.x()) + qAbs(dy * camZ.y()) + qAbs(dz * camZ.z());
 
         if (maxProjX > 0.0f || maxProjY > 0.0f) {
-            if (m_perspective) {
+            if (m_mode == ViewMode::Perspective) {
                 float aspectRatio = width() / float(height() ? height() : 1);
                 float fovRad = qDegreesToRadians((float)m_fov);
 
@@ -471,9 +471,18 @@ int GLWidget::fps()
 }
 
 void GLWidget::toggleProjectionType() {
-    m_perspective = !m_perspective;
+    switch (m_mode) {
+        case ViewMode::View2D:
+        case ViewMode::Perspective:
+            m_mode = ViewMode::Orthogonal;
+            break;
+        case ViewMode::Orthogonal:
+            m_mode = ViewMode::Perspective;
+            break;
+    }
     updateProjection();
     updateView();
+    emit viewModeChanged(m_mode);
 }
 
 void GLWidget::toggleRotationCube()
@@ -483,11 +492,12 @@ void GLWidget::toggleRotationCube()
 
 void GLWidget::setIsometricView()
 {
-    m_perspective = false;
+    m_mode = ViewMode::Orthogonal;
     updateProjection();
     m_xRotTarget = 35.264;
     m_yRotTarget = m_yRot > 180 ? 405 : 45;
     animate();
+    emit viewModeChanged(m_mode);
 }
 
 void GLWidget::animate()
@@ -501,6 +511,30 @@ void GLWidget::animate()
 void GLWidget::stopAnimation()
 {
     m_animateView = false;
+}
+
+GLWidget::ViewMode GLWidget::viewMode() const
+{
+    return m_mode;
+}
+
+void GLWidget::setViewMode(ViewMode mode)
+{
+    m_mode = mode;
+    if (m_mode == ViewMode::View2D) {
+        set2DView();
+    }
+    updateProjection();
+    updateView();
+    emit viewModeChanged(m_mode);
+}
+
+void GLWidget::set2DView()
+{
+    // Lock rotation to top view
+    m_xRotTarget = 90;
+    m_yRotTarget = m_yRot > 180 ? 360 : 0;
+    animate();
 }
 
 QColor GLWidget::colorText() const
@@ -632,9 +666,10 @@ void GLWidget::updateProjection()
     double aspectRatio = (double)width() / height();
 
     // perspective / orthographic projection
-    if (m_perspective) {
+    if (m_mode == ViewMode::Perspective) {
         m_projectionMatrix.perspective(m_fov, aspectRatio, m_near, m_far);
     } else {
+        // Orthogonal and View2D use orthographic projection
         double orthoSize = m_zoomDistance;// * tan((m_fov * 0.0174533) / 2.0);
         m_projectionMatrix.ortho(-orthoSize * aspectRatio, orthoSize * aspectRatio, -orthoSize, orthoSize, -m_far/2.0, m_far/2.0);
     }
@@ -847,7 +882,8 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram = nullptr;
     }
 
-    if (m_rotationCube) {
+    // Don't show rotation cube in 2D mode
+    if (m_rotationCube && m_mode != ViewMode::View2D) {
         glDisable(GL_DEPTH_TEST);
         m_cubeDrawer.draw(QRect(0, height() - 100, 100, 100), m_palette);
 
@@ -887,7 +923,8 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     drawText(painter, pos, QString("X: %1 ... %2").arg(m_xMin, 0, 'f', 3).arg(m_xMax, 0, 'f', 3), lineHeight);
     drawText(painter, pos, QString("Y: %1 ... %2").arg(m_yMin, 0, 'f', 3).arg(m_yMax, 0, 'f', 3), lineHeight);
     drawText(painter, pos, QString("Z: %1 ... %2").arg(m_zMin, 0, 'f', 3).arg(m_zMax, 0, 'f', 3), lineHeight);
-    drawText(painter, pos, QString("%1 / %2 / %3 / %4").arg(m_xSize, 0, 'f', 3).arg(m_ySize, 0, 'f', 3).arg(m_zSize, 0, 'f', 3).arg(m_perspective ? "p" : "o"), lineHeight);
+    QString modeStr = m_mode == ViewMode::Perspective ? "p" : (m_mode == ViewMode::View2D ? "2d" : "o");
+    drawText(painter, pos, QString("%1 / %2 / %3 / %4").arg(m_xSize, 0, 'f', 3).arg(m_ySize, 0, 'f', 3).arg(m_zSize, 0, 'f', 3).arg(modeStr), lineHeight);
 
     pos.setY(this->height() - 10 - (8 * lineHeight) + fontHeight);
 
@@ -912,7 +949,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
-    if (pos.x() < 100 && pos.y() < 100) {
+
+    // Block rotation cube clicks in 2D mode
+    if (pos.x() < 100 && pos.y() < 100 && m_mode != ViewMode::View2D) {
         CubeClickableFace face = m_cubeDrawer.faceAtPos(pos);
         switch (face) {
             case CubeClickableFace::Front:
@@ -1003,8 +1042,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         emit cursorPosChanged(m_bottomSurfaceCursorPos);
     }
 
-    if ((event->buttons() & Qt::MiddleButton && !(event->modifiers() & Qt::ShiftModifier))
-        || (event->buttons() & Qt::LeftButton && !(event->modifiers() & Qt::ShiftModifier))) {
+    // Rotation: Middle button or Left button without Shift (but not in 2D mode)
+    if (m_mode != ViewMode::View2D &&
+        ((event->buttons() & Qt::MiddleButton && !(event->modifiers() & Qt::ShiftModifier))
+        || (event->buttons() & Qt::LeftButton && !(event->modifiers() & Qt::ShiftModifier)))) {
 
         stopAnimation();
 
@@ -1018,9 +1059,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         emit rotationChanged();
     }
 
+    // Panning: Right button, Shift+Middle, Shift+Left, or Left button in 2D mode
     if ((event->buttons() & Qt::MiddleButton && event->modifiers() & Qt::ShiftModifier)
         || event->buttons() & Qt::RightButton
-        || (event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier)))
+        || (event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier))
+        || (m_mode == ViewMode::View2D && event->buttons() & Qt::LeftButton))
     {
     #if NAV_MODE == 1
         // Get world to clip
@@ -1135,7 +1178,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
         m_zoomDistance *= ZOOMSTEP;
     }
 
-    if (!m_perspective) {
+    if (m_mode != ViewMode::Perspective) {
         updateProjection();
     } else {
         updateView();
@@ -1143,7 +1186,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
 #endif
 #if NAV_MODE == 2
     double zoomStep = (delta > 0) ? ZOOMSTEP : 1.0 / ZOOMSTEP;
-    if (m_perspective) {
+    if (m_mode == ViewMode::Perspective) {
         // Move the camera and lookAt point along the view direction
         QVector3D viewDir = (m_lookAt - m_eye).normalized();
         double moveDist = m_zoomDistance * (zoomStep - 1.0);
@@ -1151,7 +1194,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
         m_lookAt += viewDir * moveDist;
         m_zoomDistance = qBound(MIN_ZOOM, (m_eye - m_lookAt).length(), MAX_ZOOM);
     } else {
-        // Ortho: scale only
+        // Ortho and View2D: scale only
         m_zoomDistance *= zoomStep;
         m_zoomDistance = qBound(MIN_ZOOM, m_zoomDistance, MAX_ZOOM);
     }

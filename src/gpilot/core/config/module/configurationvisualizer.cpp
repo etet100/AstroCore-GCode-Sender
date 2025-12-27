@@ -36,6 +36,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"toolType", ConfigurationVisualizer::ToolType::Modern},
     {"toolAngle", 15.0},
     {"show3dCursor", false},
+    {"viewMode", ConfigurationVisualizer::ViewMode::Perspective},
 };
 
 ConfigurationVisualizer::ConfigurationVisualizer(QObject *parent) : ConfigurationModule(parent, DEFAULTS)

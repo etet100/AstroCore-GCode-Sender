@@ -13,6 +13,7 @@
 #include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/drawers/cursordrawer.h"
 #include "core/gcode/parser/gcodeviewparser.h"
+#include "ui/widgets/glwidget.h"
 
 class ConfigurationVisualizer;
 class ConfigurationMachine;
@@ -105,6 +106,7 @@ class PartMainVisualizer : public QWidget
 
     signals:
         void goToCursor(QPointF pos);
+        void viewModeChanged(GLWidget::ViewMode mode);
 
     private slots:
         void cursorPosChanged(QPointF);
@@ -117,6 +119,7 @@ class PartMainVisualizer : public QWidget
         void heightmapClicked();
         void toggleProjectionClicked();
         void fitClicked();
+        void _2dClicked();
 
     private:
         Ui::partMainVisualizer* ui;

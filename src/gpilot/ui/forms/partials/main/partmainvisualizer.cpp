@@ -35,6 +35,9 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
         m_originDrawer.setZoom(zoom);
     });
     connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
+    connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
+        emit viewModeChanged(mode);
+    });
 }
 
 PartMainVisualizer::~PartMainVisualizer()
@@ -138,6 +141,21 @@ void PartMainVisualizer::applyVisualizerConfiguration(ConfigurationVisualizer &v
     applyHeightmapDrawerConfiguration(visualizerConfiguration);
     applyOriginDrawerConfiguration(visualizerConfiguration);
     applySelectionDrawerConfiguration(visualizerConfiguration);
+
+    switch (visualizerConfiguration.viewMode()) {
+        case ConfigurationVisualizer::ViewMode::Perspective:
+            ui->visualizer->setViewMode(GLWidget::ViewMode::Perspective);
+            break;
+        case ConfigurationVisualizer::ViewMode::Orthogonal:
+            ui->visualizer->setViewMode(GLWidget::ViewMode::Orthogonal);
+            break;
+        case ConfigurationVisualizer::ViewMode::View2D:
+            ui->visualizer->setViewMode(GLWidget::ViewMode::View2D);
+            break;
+        default:
+            qWarning() << "[PartMainVisualizer] Unknown view mode in visualizer configuration" << visualizerConfiguration.viewMode();
+            break;
+    }
 }
 
 void PartMainVisualizer::updateGCodeExtremes()
@@ -319,6 +337,11 @@ void PartMainVisualizer::toggleProjectionClicked()
 void PartMainVisualizer::fitClicked()
 {
     ui->visualizer->fitDrawable(m_currentDrawer);
+}
+
+void PartMainVisualizer::_2dClicked()
+{
+    ui->visualizer->setViewMode(GLWidget::ViewMode::View2D);
 }
 
 void PartMainVisualizer::setUpdatesEnabled2(bool updatesEnabled)

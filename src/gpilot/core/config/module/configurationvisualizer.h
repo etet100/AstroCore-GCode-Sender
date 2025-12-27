@@ -45,6 +45,7 @@ class ConfigurationVisualizer : public ConfigurationModule
     Q_PROPERTY(ToolType toolType MEMBER m_toolType NOTIFY changed)
     Q_PROPERTY(double toolAngle MEMBER m_toolAngle NOTIFY changed)
     Q_PROPERTY(bool show3dCursor MEMBER m_show3dCursor NOTIFY changed)
+    Q_PROPERTY(ViewMode viewMode MEMBER m_viewMode NOTIFY changed)
 
     public:
         explicit ConfigurationVisualizer(QObject *parent);
@@ -57,6 +58,13 @@ class ConfigurationVisualizer : public ConfigurationModule
             Conic
         };
         Q_ENUM(ToolType);
+
+        enum ViewMode {
+            Perspective,
+            Orthogonal,
+            View2D
+        };
+        Q_ENUM(ViewMode);
 
         double lineWidth() const { return m_lineWidth; }
         int fpsLock() const { return m_fpsLock; }
@@ -73,6 +81,10 @@ class ConfigurationVisualizer : public ConfigurationModule
         double fieldOfView() const { return m_fieldOfView; }
         double nearPlane() const { return m_nearPlane; }
         double farPlane() const { return m_farPlane; }
+        ViewMode viewMode() const {
+            return m_viewMode;
+        }
+        void setViewMode(ViewMode mode) { m_viewMode = mode; }
         // colors
         QColor backgroundColor() const { return m_backgroundColor; }
         QColor toolColor() const { return m_toolColor; }
@@ -109,6 +121,7 @@ class ConfigurationVisualizer : public ConfigurationModule
         double m_nearPlane;
         double m_farPlane;
         bool m_show3dCursor;
+        ViewMode m_viewMode;
         // colors
         QColor m_backgroundColor;
         QColor m_toolColor;

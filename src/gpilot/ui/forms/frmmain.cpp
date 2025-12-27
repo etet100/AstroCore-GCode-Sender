@@ -450,6 +450,19 @@ void FrmMain::initializeCommunicator()
 void FrmMain::initializeVisualizer()
 {
     ui->visualizer->fitCodeDrawer();
+    connect(ui->visualizer, &PartMainVisualizer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
+        switch (mode) {
+            case GLWidget::ViewMode::Perspective:
+                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::Perspective);
+                break;
+            case GLWidget::ViewMode::Orthogonal:
+                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::Orthogonal);
+                break;
+            case GLWidget::ViewMode::View2D:
+                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::View2D);
+                break;
+        }
+    });
 }
 
 bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)

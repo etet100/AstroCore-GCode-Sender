@@ -35,6 +35,12 @@ public:
     explicit GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
+    enum class ViewMode {
+        Perspective,
+        Orthogonal,
+        View2D
+    };
+
     void addDrawable(ShaderDrawable *drawable);
     GLWidget &operator<<(ShaderDrawable *drawable);
 
@@ -61,6 +67,10 @@ public:
     void setRightView();
     void toggleProjectionType();
     void toggleRotationCube();
+
+    ViewMode viewMode() const;
+    void setViewMode(ViewMode mode);
+    void set2DView();
 
     int fps();
     void setFps(int fps);
@@ -121,6 +131,7 @@ signals:
     void left();
     void goToCursor(QPointF);
     void zoomChanged(double);
+    void viewModeChanged(ViewMode mode);
 
 private slots:
     void onFramesTimer();
@@ -130,7 +141,7 @@ private:
     double m_xRot, m_yRot, m_xLastRot, m_yLastRot;
     QVector3D m_lookAt;
     QVector3D m_eye;
-    bool m_perspective;
+    ViewMode m_mode;
     QPoint m_lastPos;
     double m_zoomDistance;
     double m_fov, m_near, m_far;
