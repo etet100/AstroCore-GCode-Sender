@@ -31,13 +31,6 @@ class PartMainVisualizer : public QWidget
         );
         ~PartMainVisualizer();
         void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
-        void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applyOriginDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-        void applySelectionDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
         void updateGCodeExtremes();
         void fitDrawable();
         void fitCodeDrawer();
@@ -143,13 +136,17 @@ class PartMainVisualizer : public QWidget
         MachineBoundsDrawer m_machineBoundsDrawer;
         Heightmap& m_heightmap;
         GCode& m_program;
-
         bool m_ignoreZ;
         int m_lastDrawnLineIndex;
 
         void placeVisualizerButtons();
-
-        // Internal selection management
+        void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
+        void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applyOriginDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
+        void applySelectionDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
         void setSelectionEndPosition(QVector3D pos);
         void updateSelection();
 };

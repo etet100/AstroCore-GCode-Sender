@@ -355,11 +355,6 @@ private:
     void applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration);
     void applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfiguration);
     void applyOverridesConfiguration(ConfigurationMachine &machineConfiguration);
-    void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-    void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-    void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-    void applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
-    void applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
     void applyUIConfiguration(ConfigurationUI &uiConfiguration);
     void applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration);
     void appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel);

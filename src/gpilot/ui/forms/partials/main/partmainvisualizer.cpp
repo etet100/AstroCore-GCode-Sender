@@ -132,6 +132,12 @@ void PartMainVisualizer::applyVisualizerConfiguration(ConfigurationVisualizer &v
                 .arg(base.name()));
 
     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
+
+    applyCursorDrawerConfiguration(visualizerConfiguration);
+    applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
+    applyHeightmapDrawerConfiguration(visualizerConfiguration);
+    applyOriginDrawerConfiguration(visualizerConfiguration);
+    applySelectionDrawerConfiguration(visualizerConfiguration);
 }
 
 void PartMainVisualizer::updateGCodeExtremes()

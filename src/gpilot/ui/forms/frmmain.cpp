@@ -2473,31 +2473,6 @@ void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
 //     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
 // }
 
-void FrmMain::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->visualizer->applyCodeDrawerConfiguration(visualizerConfiguration, m_configuration.machineModule());
-}
-
-void FrmMain::applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->visualizer->applyToolDrawerConfiguration(visualizerConfiguration);
-}
-
-void FrmMain::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->visualizer->applyCursorDrawerConfiguration(visualizerConfiguration);
-}
-
-void FrmMain::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->visualizer->applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
-}
-
-void FrmMain::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-{
-    ui->visualizer->applyHeightmapDrawerConfiguration(visualizerConfiguration);
-}
-
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
     ui->program->setAutoScroll(uiConfiguration.autoScrollGCode());
@@ -2573,20 +2548,12 @@ void FrmMain::applySettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
-    ui->visualizer->applyOriginDrawerConfiguration(visualizerConfiguration);
     ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration);
-    ui->visualizer->applySelectionDrawerConfiguration(visualizerConfiguration);
 
     // @TODO watch for changes is communicator?
     // m_communicator->stopUpdatingState();
     // m_communicator->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
 
-    applyToolDrawerConfiguration(visualizerConfiguration);
-    applyCursorDrawerConfiguration(visualizerConfiguration);
-    applyCodeDrawerConfiguration(visualizerConfiguration);
-    applyTableSurfaceDrawerConfiguration(visualizerConfiguration);
-    applyHeightmapConfiguration(heightmapConfiguration);
-    applyHeightmapDrawerConfiguration(visualizerConfiguration);
     applySpindleConfiguration(machineConfiguration);
     applyJoggingConfiguration(joggingConfiguration);
     applyOverridesConfiguration(machineConfiguration);
