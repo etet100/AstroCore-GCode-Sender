@@ -21,9 +21,8 @@ PartMainOverride::PartMainOverride(QWidget *parent)
     ui->slbFeed->setCurrentValue(100);
     ui->slbFeed->setTitle(tr("Feed rate:"));
     ui->slbFeed->setSuffix("%");
-    // connect(ui->slbFeed, SIGNAL(toggled(bool)), this, SLOT(onOverridingToggled(bool)));
-    connect(ui->slbFeed, &SliderBox::toggled, this, &PartMainOverride::onOverrideChanged);
-    connect(ui->slbFeed, &SliderBox::valueChanged, this, &PartMainOverride::onOverrideChanged);
+    connect(ui->slbFeed, &SliderBox::toggled, this, &PartMainOverride::onOverridingToggled);
+    connect(ui->slbFeed, &SliderBox::valueChanged, this, &PartMainOverride::onValueChanged);
 
     ui->slbRapid->setRatio(50);
     ui->slbRapid->setMinimum(25);
@@ -31,9 +30,8 @@ PartMainOverride::PartMainOverride(QWidget *parent)
     ui->slbRapid->setCurrentValue(100);
     ui->slbRapid->setTitle(tr("Rapid speed:"));
     ui->slbRapid->setSuffix("%");
-    connect(ui->slbRapid, SIGNAL(toggled(bool)), this, SLOT(onOverridingToggled(bool)));
-    connect(ui->slbRapid, &SliderBox::toggled, this, &PartMainOverride::onOverrideChanged);
-    connect(ui->slbRapid, &SliderBox::valueChanged, this, &PartMainOverride::onOverrideChanged);
+    connect(ui->slbRapid, &SliderBox::toggled, this, &PartMainOverride::onOverridingToggled);
+    connect(ui->slbRapid, &SliderBox::valueChanged, this, &PartMainOverride::onValueChanged);
 
     ui->slbSpindle->setRatio(1);
     ui->slbSpindle->setMinimum(50);
@@ -41,7 +39,7 @@ PartMainOverride::PartMainOverride(QWidget *parent)
     ui->slbSpindle->setCurrentValue(100);
     ui->slbSpindle->setTitle(tr("Spindle speed:"));
     ui->slbSpindle->setSuffix("%");
-    connect(ui->slbSpindle, SIGNAL(toggled(bool)), this, SLOT(onOverridingToggled(bool)));
+    connect(ui->slbSpindle, &SliderBox::toggled, this, &PartMainOverride::onOverridingToggled);
 }
 
 PartMainOverride::~PartMainOverride()
@@ -113,7 +111,12 @@ void PartMainOverride::onActOverrideSpindleMinusTriggered()
     ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() - 1);
 }
 
-void PartMainOverride::onOverrideChanged()
+void PartMainOverride::onOverridingToggled(bool state)
 {
+    Q_UNUSED(state);
     emit overrideChanged();
+}
+
+void PartMainOverride::onValueChanged()
+{
 }

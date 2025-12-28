@@ -34,6 +34,7 @@ public:
     Overrides overrides();
 
     void setRapid(int);
+
 signals:
     void overrideChanged();
 
@@ -45,7 +46,8 @@ private slots:
     void onActOverrideRapidMinusTriggered();
     void onActOverrideSpindlePlusTriggered();
     void onActOverrideSpindleMinusTriggered();
-    void onOverrideChanged();
+    void onOverridingToggled(bool state);
+    void onValueChanged();
 };
 
 #endif // PARTMAINOVERRIDE_H
