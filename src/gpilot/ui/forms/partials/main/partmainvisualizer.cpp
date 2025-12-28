@@ -225,6 +225,14 @@ void PartMainVisualizer::reset()
     m_selectionDrawer.update();
 }
 
+void PartMainVisualizer::setHeightmap(Heightmap heightmap)
+{
+    m_heightmap = heightmap;
+    m_heightmapBorderDrawer.setModel(m_heightmap);
+    m_heightmapGridDrawer.setModel(m_heightmap);
+    // m_heightmapInterpolationDrawer.setModel(m_heightmap);
+}
+
 void PartMainVisualizer::setSelectionEndPosition(QVector3D pos)
 {
     m_selectionDrawer.setEndPosition(pos);

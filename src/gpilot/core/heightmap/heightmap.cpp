@@ -10,12 +10,33 @@ Heightmap::Heightmap() : Heightmap(QSize(100, 100))
 {
 }
 
+Heightmap::Heightmap(const Heightmap &other)
+{
+    m_size = other.m_size;
+    m_startPos = other.m_startPos;
+    m_stepSize = other.m_stepSize;
+    m_endPos = other.m_endPos;
+    m_data = other.m_data;
+}
+
+Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data)
+{
+    m_size = size;
+    m_startPos = startPos;
+    m_stepSize = stepSize;
+    m_endPos = QPointF(startPos.x() + stepSize.width() * (size.width() - 1),
+                      startPos.y() + stepSize.height() * (size.height() - 1));
+    m_data = data;
+}
+
 Heightmap::Heightmap(QSize size) : m_size(size)
 {
     m_startPos = QPointF(0.0, 0.0);
     m_endPos = QPointF(0.0, 0.0);
-    m_stepSize = QSize(1, 1);
-    m_data = nullptr;
+    m_stepSize = QSize(5, 5);
+    m_data.resize(m_size.width() * m_size.height());
+
+    generateRandom();
 }
 
 QSize Heightmap::gridSize() const
@@ -48,8 +69,40 @@ QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const {
 
 double Heightmap::valueAt(QPoint pt) const
 {
-    // return (rand() % 100) / 10.0;
-    return sin(0.1 * pt.x()) * cos(0.1 * pt.y()) * 3.0;
+    // row, col
+    return at(pt.y(), pt.x());
+}
 
- //   return m_data[pt.x()][pt.y()];
+double& Heightmap::at(int row, int col)
+{
+    return m_data[row * m_size.width() + col];
+}
+
+double Heightmap::at(int row, int col) const
+{
+    return m_data[row * m_size.width() + col];
+}
+
+void Heightmap::setSize(QSize size)
+{
+    m_size = size;
+    m_data.resize(m_size.width() * m_size.height());
+}
+
+void Heightmap::generateRandom()
+{
+    for (int i = 0; i < m_size.height(); i++) {
+        for (int j = 0; j < m_size.width(); j++) {
+            at(i, j) = (rand() % 300 / 30.0) - 5.0;
+        }
+    }
+}
+
+void Heightmap::generateSinCos()
+{
+    for (int i = 0; i < m_size.height(); i++) {
+        for (int j = 0; j < m_size.width(); j++) {
+            at(i, j) = sin(0.1 * i) * cos(0.1 * j) * 3.0;
+        }
+    }
 }

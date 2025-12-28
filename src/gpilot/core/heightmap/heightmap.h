@@ -1,18 +1,21 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
+// Copyright 2025 BTS
 
 #ifndef HEIGHTMAP_H
 #define HEIGHTMAP_H
 
 #include <QSize>
 #include <QPointF>
+#include <QList>
 
 class Heightmap
 {
     public:
         Heightmap();
+        Heightmap(const Heightmap& other);
         Heightmap(QSize size);
+        Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data);
 
         // Size of the heightmap grid, not a physical size
         QSize gridSize() const;
@@ -26,14 +29,22 @@ class Heightmap
         double stepHeight() const { return m_stepSize.height(); }
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
         double valueAt(QPoint pt) const;
+        double& at(int row, int col);
+        double at(int row, int col) const;
 
-    private :
+    private:
         QSize m_size;
         QPointF m_startPos;
         QPointF m_endPos;
         QSizeF m_stepSize;
-        // m_size.x * m_size.y of z values
-        double** m_data;
+        // array m_size.x * m_size.y
+        // row-major order: rows -> cols = [height][width]
+        QList<double> m_data;
+
+        void setSize(QSize size);
+        // just for testing
+        void generateRandom();
+        void generateSinCos();
 };
 
 #endif // HEIGHTMAP_H

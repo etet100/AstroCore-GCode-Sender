@@ -5,10 +5,15 @@
 #ifndef HEIGHTMAPEXPORTER_H
 #define HEIGHTMAPEXPORTER_H
 
+#include <QString>
+#include "core/heightmap/heightmap.h"
+
 class HeightmapExporter
 {
     public:
         HeightmapExporter();
+
+        static void exportToFile(const Heightmap heightmap, const QString fileName);
 };
 
 #endif // HEIGHTMAPEXPORTER_H

@@ -5,10 +5,15 @@
 #ifndef HEIGHTMAPLOADER_H
 #define HEIGHTMAPLOADER_H
 
+#include <QString>
+#include "core/heightmap/heightmap.h"
+
 class HeightmapLoader
 {
     public:
         HeightmapLoader();
+
+        static Heightmap loadFromFile(const QString fileName);
 };
 
 #endif // HEIGHTMAPLOADER_H

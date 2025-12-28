@@ -108,6 +108,8 @@ private slots:
     void on_actFileSave_triggered();
     void on_actFileSaveAs_triggered();
     void on_actFileSaveTransformedAs_triggered();
+    void on_actHeightmapOpen2_triggered();
+    void on_actHeightmapSave_triggered();
     void onActRecentClearTriggered();
     void on_actFileExit_triggered();
     void on_actServiceSettings_triggered();
@@ -336,7 +338,6 @@ private:
     QString lastWorkingDirectory();
 
     // Utility
-    int bufferLength();
     QTime updateProgramEstimatedTime(QList<LineSegment> &lines);
     QList<LineSegment *> subdivideSegment(LineSegment *segment);
     // void jogStep(QVector3D vector);

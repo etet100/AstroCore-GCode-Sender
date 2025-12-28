@@ -105,6 +105,7 @@ void HeightMapGridDrawer::generateTriangles(int gridPointsY, double min, QPointF
 void HeightMapGridDrawer::setModel(Heightmap &model)
 {
     m_model = model;
+    update();
 }
 
 bool HeightMapGridDrawer::updateData(GLPalette &palette)

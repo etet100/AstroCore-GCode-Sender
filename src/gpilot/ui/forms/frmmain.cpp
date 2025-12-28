@@ -35,6 +35,8 @@
 #include "io/connection/connectionmanager.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
+#include "core/heightmap/loader/heightmaploader.h"
+#include "core/heightmap/exporter/heightmapexporter.h"
 #include "state_behaviour/action.h"
 #include "state_behaviour/joggingbehavior.h"
 #include "state_behaviour/gotobehavior.h"
@@ -714,6 +716,43 @@ void FrmMain::on_actFileSaveTransformedAs_triggered()
     if (!fileName.isEmpty()) {
 //        saveProgramToFile(fileName, &m_programHeightmapModel);
     }
+}
+
+void FrmMain::on_actHeightmapOpen2_triggered()
+{
+    QString fileName = (QFileDialog::getOpenFileName(this, tr("Open heightmap"), lastWorkingDirectory(), tr("Heightmap files (*.map)")));
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    try {
+        m_heightmap = HeightmapLoader::loadFromFile(fileName);
+    } catch (std::runtime_error &err) {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load heightmap: %1").arg(err.what()));
+        return;
+    }
+
+    ui->console->append(tr("Heightmap %1x%2loaded from %3").arg(m_heightmap.gridWidth()).arg(m_heightmap.gridHeight())
+                                  .arg(fileName));
+
+    ui->visualizer->setHeightmap(m_heightmap);
+}
+
+void FrmMain::on_actHeightmapSave_triggered()
+{
+    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastWorkingDirectory(), tr("Heightmap files (*.map)")));
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    try {
+        HeightmapExporter::exportToFile(m_heightmap, fileName);
+    } catch (std::runtime_error &err) {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
+        return;
+    }
+
+    ui->console->append(tr("Heightmap saved to %1").arg(fileName));
 }
 
 void FrmMain::onActRecentClearTriggered()

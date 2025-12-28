@@ -241,7 +241,15 @@ QSlider::handle:horizontal:hover {
     <addaction name="menuFontSize"/>
     <addaction name="menuCentralWidget"/>
    </widget>
+   <widget class="QMenu" name="menuHeightmap">
+    <property name="title">
+     <string>Heightmap</string>
+    </property>
+    <addaction name="actHeightmapOpen2"/>
+    <addaction name="actHeightmapSave"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHeightmap"/>
    <addaction name="menuView"/>
    <addaction name="menuService"/>
    <addaction name="menuHelp"/>
@@ -1765,6 +1773,16 @@ border-top: none;</string>
   <action name="actionCamera">
    <property name="text">
     <string>Camera</string>
+   </property>
+  </action>
+  <action name="actHeightmapOpen2">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actHeightmapSave">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

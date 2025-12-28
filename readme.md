@@ -371,3 +371,64 @@ Settings:
 GRBL configurator:
 
 ![grbl configurator](/screenshots/screenshot_grbl_configurator.png)
+
+Heightmap
+-------------------
+
+G-Pilot uses a custom text-based format for storing table surface height measurements. This format allows for compensation of uneven work surfaces during machining operations.
+
+### File Structure (.map)
+
+The heightmap file consists of three main sections:
+
+1. **Version** - File format version identifier
+2. **Parameters** - Grid configuration and measurement settings
+3. **Data** - Height measurements organized in rows
+
+### Format Specification
+
+```
+# g-pilot heightmap
+version: 1
+
+# params
+size: <cols> <rows>
+startPos: <x> <y>
+stepSize: <dx> <dy>
+
+# data (row = Y, col = X)
+row: <z1> <z2> <z3> ... <zn>
+row: <z1> <z2> <z3> ... <zn>
+...
+```
+
+**Parameters:**
+- `version` - Format version number (currently 1)
+- `size` - Number of columns and rows in the measurement grid
+- `startPos` - Starting position coordinates (X, Y) in millimeters
+- `stepSize` - Distance between measurement points (X, Y) in millimeters
+
+**Data:**
+- Each `row:` line contains height (Z) values for all columns in that row
+- Values are space-separated floating-point numbers in millimeters
+- Rows are ordered from Y=0 to Y=max
+- Within each row, columns are ordered from X=0 to X=max
+
+### Example
+
+```
+# g-pilot heightmap
+version: 1
+
+# params
+size: 10 10
+startPos: 0 0
+stepSize: 5 5
+
+# data (row = Y, col = X)
+row: -3.63 0.57 -3.87 -1.67 3.97 -0.87 -2.4 3.6 3.73 0.47
+row: -3.9 2.17 -0.37 3.6 1.8 -4.0 0.9 1.87 0.77 1.2
+...
+```
+
+This example defines a 10×10 grid starting at position (0, 0) with 5mm spacing between measurement points.

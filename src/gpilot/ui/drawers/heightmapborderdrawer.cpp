@@ -21,6 +21,7 @@ void HeightMapBorderDrawer::setBorderRect(const QRectF &borderRect)
 void HeightMapBorderDrawer::setModel(Heightmap &model)
 {
     m_model = model;
+    update();
 }
 
 bool HeightMapBorderDrawer::updateData(GLPalette &palette)

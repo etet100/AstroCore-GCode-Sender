@@ -56,10 +56,12 @@ class PartMainVisualizer : public QWidget
 
         void reset();
 
+        void setHeightmap(Heightmap heightmap);
         void setHeightmapMode(bool enabled);
         void updateHeightmapGrid();
         // void updateHeightmapGrid(QRectF rect, int x, int y, double zBottom, double zTop);
         void updateHeightmapInterpolation(bool reset = false);
+
         void setInterpolationData(QVector<QVector<double>> *data, QRectF borderRect);
         void setInterpolationVisible(bool visible);
         void setSelectionVisible(bool visible);
