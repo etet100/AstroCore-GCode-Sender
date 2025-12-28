@@ -58,7 +58,7 @@
      <item>
       <widget class="QLabel" name="lblAbout">
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;G-Pilot&lt;br/&gt;Version: %1&lt;br/&gt;License: GNU GENERAL PUBLIC LICENSE&lt;br/&gt;Visit: &lt;a href=&quot;https://github.com/etet100/G-Pilot-GCode-Sender&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/etet100/G-Pilot-GCode-Sender&lt;br/&gt;&lt;/span&gt;&lt;/a&gt;© 2015-2021 Hayrullin Denis Ravilevich&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;G-Pilot&lt;br/&gt;Version: %1&lt;br/&gt;License: GNU GENERAL PUBLIC LICENSE&lt;br/&gt;Visit: &lt;a href=&quot;https://github.com/etet100/G-Pilot-GCode-Sender&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/etet100/G-Pilot-GCode-Sender&lt;br/&gt;&lt;/span&gt;&lt;/a&gt;© 2015-2021 Hayrullin Denis Ravilevich&lt;br/&gt;© 2024-2025 etet100&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -81,16 +81,6 @@
     </layout>
    </item>
    <item>
-    <widget class="PartMainJogParameters2" name="widget" native="true">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>150</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The program is provided AS IS without any guarantees or warranty. Use at your own risk.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -109,26 +99,6 @@
      </property>
      <property name="readOnly">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="XSwitchButton" name="xSwitchButton_2">
-     <property name="minimumSize">
-      <size>
-       <width>50</width>
-       <height>30</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="XSwitchButton" name="xSwitchButton">
-     <property name="minimumSize">
-      <size>
-       <width>50</width>
-       <height>30</height>
-      </size>
      </property>
     </widget>
    </item>
@@ -158,19 +128,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>XSwitchButton</class>
-   <extends>QWidget</extends>
-   <header>xswitchbutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>partMainJogParameters2</class>
-   <extends>QWidget</extends>
-   <header>ui/forms/partials/main/partmainjogparameters2.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>
