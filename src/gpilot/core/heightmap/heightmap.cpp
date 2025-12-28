@@ -17,6 +17,7 @@ Heightmap::Heightmap(const Heightmap &other)
     m_stepSize = other.m_stepSize;
     m_endPos = other.m_endPos;
     m_data = other.m_data;
+    m_minMax = other.m_minMax;
 }
 
 Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data)
@@ -27,6 +28,7 @@ Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<
     m_endPos = QPointF(startPos.x() + stepSize.width() * (size.width() - 1),
                       startPos.y() + stepSize.height() * (size.height() - 1));
     m_data = data;
+    updateMinMax();
 }
 
 Heightmap::Heightmap(QSize size) : m_size(size)
@@ -35,8 +37,8 @@ Heightmap::Heightmap(QSize size) : m_size(size)
     m_endPos = QPointF(0.0, 0.0);
     m_stepSize = QSize(5, 5);
     m_data.resize(m_size.width() * m_size.height());
-
     generateRandom();
+    updateMinMax();
 }
 
 QSize Heightmap::gridSize() const
@@ -103,6 +105,19 @@ void Heightmap::generateSinCos()
     for (int i = 0; i < m_size.height(); i++) {
         for (int j = 0; j < m_size.width(); j++) {
             at(i, j) = sin(0.1 * i) * cos(0.1 * j) * 3.0;
+        }
+    }
+}
+
+void Heightmap::updateMinMax()
+{
+    m_minMax = {NAN, NAN};
+    for (auto& value : m_data) {
+        if (qIsNaN(m_minMax.min) || value < m_minMax.min) {
+            m_minMax.min = value;
+        }
+        if (qIsNaN(m_minMax.max) || value > m_minMax.max) {
+            m_minMax.max = value;
         }
     }
 }

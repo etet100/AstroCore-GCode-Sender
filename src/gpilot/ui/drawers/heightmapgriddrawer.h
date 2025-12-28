@@ -19,8 +19,8 @@ class HeightMapGridDrawer : public ShaderDrawable
 
     private:
         Heightmap &m_model;
-        void generateLines(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
-        void generateTriangles(int gridPointsY, double min, QPointF startPos, double gridStepX, VertexData vertex, double max, GLPalette &palette, int gridPointsX, double gridStepY);
+        void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
+        void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H

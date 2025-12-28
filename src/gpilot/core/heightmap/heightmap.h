@@ -17,6 +17,11 @@ class Heightmap
         Heightmap(QSize size);
         Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data);
 
+        struct MinMax {
+            double min;
+            double max;
+        };
+
         // Size of the heightmap grid, not a physical size
         QSize gridSize() const;
         int gridWidth() const;
@@ -27,6 +32,7 @@ class Heightmap
         QSizeF stepSize() const { return m_stepSize; }
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
+        MinMax minMax() const { return m_minMax; }
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
         double valueAt(QPoint pt) const;
         double& at(int row, int col);
@@ -37,6 +43,7 @@ class Heightmap
         QPointF m_startPos;
         QPointF m_endPos;
         QSizeF m_stepSize;
+        MinMax m_minMax = {NAN, NAN};
         // array m_size.x * m_size.y
         // row-major order: rows -> cols = [height][width]
         QList<double> m_data;
@@ -45,6 +52,7 @@ class Heightmap
         // just for testing
         void generateRandom();
         void generateSinCos();
+        void updateMinMax();
 };
 
 #endif // HEIGHTMAP_H
