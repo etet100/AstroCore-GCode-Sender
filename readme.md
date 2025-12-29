@@ -30,7 +30,7 @@ Supported functions:
 
 ## Download & Install (prerelease)
 
-Automatic builds are available as a zip file and as an installer (created with Qt Installer Framework).
+Automatic builds are available as a zip (portable) file and as an installer (created with Qt Installer Framework).
 
 The latest version is always available here:
 https://github.com/etet100/G-Pilot-GCode-Sender/releases/latest

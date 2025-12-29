@@ -136,7 +136,7 @@ jobs:
           mkdir artifacts
           for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
           dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath gpilot.zip
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath GPilotPortable.zip
 
       - name: Create GitHub pre-release with build artifacts
         uses: softprops/action-gh-release@v1
@@ -148,7 +148,7 @@ jobs:
           prerelease: true
           body: |
             Automatic build created from commit ${{ github.sha }}.
-            This is a debug version. Available as a zip file and installer.
+            This is a debug version. Available as a portable zip file and installer.
           files: |
-            gpilot.zip
+            GPilotPortable.zip
             GPilotInstaller.exe
