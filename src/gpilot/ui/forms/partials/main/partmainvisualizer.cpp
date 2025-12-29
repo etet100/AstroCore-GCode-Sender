@@ -1,11 +1,12 @@
 #include "partmainvisualizer.h"
 #include "ui_partmainvisualizer.h"
-#include "utils/utils.h"
 #include "core/config/module/configurationvisualizer.h"
 #include "core/config/module/configurationmachine.h"
-#include "core//gcode/gcode.h"
+#include "core/gcode/gcode.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include <QRegularExpression>
+#include <QGraphicsOpacityEffect>
+#include "styledtoolbutton.h"
 
 PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , ui(new Ui::partMainVisualizer)
@@ -38,22 +39,45 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         emit viewModeChanged(mode);
     });
+
+    initializeButtons();
+    initializeInfoBar();
 }
 
 PartMainVisualizer::~PartMainVisualizer()
 {
+    delete m_infoAnimation;
+    delete m_infoOpacityEffect;
     delete m_codeDrawer;
     delete m_probeDrawer;
     delete ui;
 }
 
-void PartMainVisualizer::placeVisualizerButtons()
+void PartMainVisualizer::initializeInfoBar()
+{
+    ui->info->setParent(ui->visualizer);
+    ui->info->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    m_infoOpacityEffect = new QGraphicsOpacityEffect(ui->lblInfo);
+    m_infoOpacityEffect->setOpacity(0);
+    ui->lblInfo->setGraphicsEffect(m_infoOpacityEffect);
+
+    m_infoAnimation = new QPropertyAnimation(m_infoOpacityEffect, "opacity");
+    m_infoAnimation->setDuration(100);
+}
+
+void PartMainVisualizer::initializeButtons()
 {
     ui->buttons->setParent(ui->visualizer);
-    ui->buttons->move(
-        width() - ui->buttons->width() - 8,
-        8
-    );
+
+    for (auto& button : ui->buttons->findChildren<StyledToolButton*>(Qt::FindDirectChildrenOnly)) {
+        connect(button, &StyledToolButton::hoverChanged, this, &PartMainVisualizer::showButtonInfo);
+    }
+}
+
+void PartMainVisualizer::placeVisualizerButtons()
+{
+    ui->buttons->move(width() - ui->buttons->width() - 8, 8);
 }
 
 void PartMainVisualizer::cursorPosChanged(QPointF pos)
@@ -244,6 +268,11 @@ void PartMainVisualizer::updateSelection()
     m_selectionDrawer.update();
 }
 
+void PartMainVisualizer::placeInfoBar()
+{
+    ui->info->setGeometry(QRect(0, 8, width(), ui->info->height()));
+}
+
 void PartMainVisualizer::setHeightmapMode(bool enabled)
 {
     m_heightmapInterpolationDrawer.setVisible(ui->visualizer->property("showInterpolation").toBool() && enabled);
@@ -270,7 +299,7 @@ void PartMainVisualizer::setInterpolationData(QVector<QVector<double>> *data, QR
     m_heightmapInterpolationDrawer.setData(data);
 }
 
-void PartMainVisualizer::setInterpolationVisible(bool visible)
+void PartMainVisualizer::setHeightmapInterpolationVisible(bool visible)
 {
     m_heightmapInterpolationDrawer.setVisible(visible);
 }
@@ -295,6 +324,7 @@ void PartMainVisualizer::resizeEvent(QResizeEvent *event)
     Q_UNUSED(event);
 
     placeVisualizerButtons();
+    placeInfoBar();
 }
 
 void PartMainVisualizer::topClicked()
@@ -345,6 +375,16 @@ void PartMainVisualizer::fitClicked()
 void PartMainVisualizer::_2dClicked()
 {
     ui->visualizer->setViewMode(GLWidget::ViewMode::View2D);
+}
+
+void PartMainVisualizer::showButtonInfo(bool hovered)
+{
+    m_infoAnimation->stop();
+    StyledToolButton* button = qobject_cast<StyledToolButton*>(sender());
+    ui->lblInfo->setText(button->toolTip());
+    m_infoAnimation->setStartValue(m_infoOpacityEffect->opacity());
+    m_infoAnimation->setEndValue(hovered ? 1.0 : 0.0);
+    m_infoAnimation->start();
 }
 
 void PartMainVisualizer::setUpdatesEnabled2(bool updatesEnabled)

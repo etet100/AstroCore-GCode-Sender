@@ -2,6 +2,7 @@
 #define PARTMAINVISUALIZER_H
 
 #include <QWidget>
+#include <QGraphicsOpacityEffect>
 #include "ui/drawers/origindrawer.h"
 #include "ui/drawers/gcodedrawer.h"
 #include "ui/drawers/tooldrawer.h"
@@ -63,7 +64,7 @@ class PartMainVisualizer : public QWidget
         void updateHeightmapInterpolation(bool reset = false);
 
         void setInterpolationData(QVector<QVector<double>> *data, QRectF borderRect);
-        void setInterpolationVisible(bool visible);
+        void setHeightmapInterpolationVisible(bool visible);
         void setSelectionVisible(bool visible);
         // method has the same name as QWidget::setUpdatesEnabled!
         void setUpdatesEnabled2(bool updatesEnabled);
@@ -122,6 +123,7 @@ class PartMainVisualizer : public QWidget
         void toggleProjectionClicked();
         void fitClicked();
         void _2dClicked();
+        void showButtonInfo(bool hovered);
 
     private:
         Ui::partMainVisualizer* ui;
@@ -144,6 +146,9 @@ class PartMainVisualizer : public QWidget
         bool m_ignoreZ;
         int m_lastDrawnLineIndex;
 
+        QGraphicsOpacityEffect* m_infoOpacityEffect;
+        QPropertyAnimation* m_infoAnimation;
+
         void placeVisualizerButtons();
         void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
         void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
@@ -154,6 +159,9 @@ class PartMainVisualizer : public QWidget
         void applySelectionDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
         void setSelectionEndPosition(QVector3D pos);
         void updateSelection();
+        void placeInfoBar();
+        void initializeInfoBar();
+        void initializeButtons();
 };
 
 #endif // PARTMAINVISUALIZER_H

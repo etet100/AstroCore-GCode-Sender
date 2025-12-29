@@ -38,6 +38,9 @@ public:
     bool useCustomColors() const;
     void setUseCustomColors(bool use);
 
+signals:
+    void hoverChanged(bool hovered);
+
 protected:
     void enterEvent(QEnterEvent *) override;
     void leaveEvent(QEvent *) override;
