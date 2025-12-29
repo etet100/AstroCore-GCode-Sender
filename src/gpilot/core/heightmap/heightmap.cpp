@@ -17,7 +17,7 @@ Heightmap::Heightmap(const Heightmap &other)
     m_stepSize = other.m_stepSize;
     m_endPos = other.m_endPos;
     m_data = other.m_data;
-    m_minMax = other.m_minMax;
+    m_valuesMinMax = other.m_valuesMinMax;
 }
 
 Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data)
@@ -111,13 +111,13 @@ void Heightmap::generateSinCos()
 
 void Heightmap::updateMinMax()
 {
-    m_minMax = {NAN, NAN};
+    m_valuesMinMax = {NAN, NAN};
     for (auto& value : m_data) {
-        if (qIsNaN(m_minMax.min) || value < m_minMax.min) {
-            m_minMax.min = value;
+        if (qIsNaN(m_valuesMinMax.min) || value < m_valuesMinMax.min) {
+            m_valuesMinMax.min = value;
         }
-        if (qIsNaN(m_minMax.max) || value > m_minMax.max) {
-            m_minMax.max = value;
+        if (qIsNaN(m_valuesMinMax.max) || value > m_valuesMinMax.max) {
+            m_valuesMinMax.max = value;
         }
     }
 }

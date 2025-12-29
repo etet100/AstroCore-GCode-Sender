@@ -95,6 +95,11 @@ class PartMainVisualizer : public QWidget
         // Export/Debug
         void exportCodeDrawerToFile(const QString& filename);
 
+        // Heighmap drawers manipulation
+        void showHeightmapBorder(bool show);
+        void showHeightmapProbeGrid(bool show);
+        void showHeightmapInterpolationGrid(bool show);
+
         // Line commands generation helper
         struct SegmentInfo {
             LineSegment* firstSegment;

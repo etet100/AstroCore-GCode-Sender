@@ -151,8 +151,8 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 //         }
 //     }
 
-    generateTriangles(m_model.gridSize(), m_model.minMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
-    generateLines(m_model.gridSize(), m_model.minMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+    generateTriangles(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+    generateLines(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
 
     return true;
 }

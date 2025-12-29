@@ -639,6 +639,21 @@ void PartMainVisualizer::exportCodeDrawerToFile(const QString& filename)
     VertexDataExporter::exportToJsFile(filename, m_codeDrawer->lines());
 }
 
+void PartMainVisualizer::showHeightmapBorder(bool show)
+{
+    m_heightmapBorderDrawer.setVisible(show);
+}
+
+void PartMainVisualizer::showHeightmapProbeGrid(bool show)
+{
+    m_heightmapGridDrawer.setVisible(show);
+}
+
+void PartMainVisualizer::showHeightmapInterpolationGrid(bool show)
+{
+    m_heightmapInterpolationDrawer.setVisible(show);
+}
+
 PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int lineNumber)
 {
     SegmentInfo info = {nullptr, nullptr, nullptr, nullptr};

@@ -7,6 +7,8 @@
 
 #include <QSize>
 #include <QPointF>
+#include <QSizeF>
+#include <QRectF>
 #include <QList>
 
 class Heightmap
@@ -22,6 +24,11 @@ class Heightmap
             double max;
         };
 
+        struct BottomTop {
+            double bottom;
+            double top;
+        };
+
         // Size of the heightmap grid, not a physical size
         QSize gridSize() const;
         int gridWidth() const;
@@ -32,7 +39,11 @@ class Heightmap
         QSizeF stepSize() const { return m_stepSize; }
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
-        MinMax minMax() const { return m_minMax; }
+        QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
+        QRectF mapBorder() const { return m_mapBorder; }
+        MinMax valuesMinMax() const { return m_valuesMinMax; }
+        BottomTop zBottomTop() const { return m_zBottomTop; }
+        int probeFeed() const { return m_probeFeed; }
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
         double valueAt(QPoint pt) const;
         double& at(int row, int col);
@@ -43,7 +54,11 @@ class Heightmap
         QPointF m_startPos;
         QPointF m_endPos;
         QSizeF m_stepSize;
-        MinMax m_minMax = {NAN, NAN};
+        QSizeF m_interpolationStepSize;
+        QRectF m_mapBorder;
+        BottomTop m_zBottomTop = {NAN, NAN};
+        MinMax m_valuesMinMax = {NAN, NAN};
+        int m_probeFeed = 100;
         // array m_size.x * m_size.y
         // row-major order: rows -> cols = [height][width]
         QList<double> m_data;
