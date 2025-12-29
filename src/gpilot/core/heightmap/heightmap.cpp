@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(100, 100))
+Heightmap::Heightmap() : Heightmap(QSize(10, 10))
 {
 }
 
@@ -25,8 +25,7 @@ Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<
     m_size = size;
     m_startPos = startPos;
     m_stepSize = stepSize;
-    m_endPos = QPointF(startPos.x() + stepSize.width() * (size.width() - 1),
-                      startPos.y() + stepSize.height() * (size.height() - 1));
+    updateEndPos();
     m_data = data;
     updateMinMax();
 }
@@ -34,11 +33,16 @@ Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<
 Heightmap::Heightmap(QSize size) : m_size(size)
 {
     m_startPos = QPointF(0.0, 0.0);
-    m_endPos = QPointF(0.0, 0.0);
-    m_stepSize = QSize(5, 5);
+    m_stepSize = QSize(50, 50);
     m_data.resize(m_size.width() * m_size.height());
+    updateEndPos();
     generateRandom();
     updateMinMax();
+}
+
+void Heightmap::updateEndPos()
+{
+    m_endPos = m_startPos + QPointF(m_stepSize.width() * (m_size.width() - 1), m_stepSize.height() * (m_size.height() - 1));
 }
 
 QSize Heightmap::gridSize() const
@@ -89,6 +93,7 @@ void Heightmap::setSize(QSize size)
 {
     m_size = size;
     m_data.resize(m_size.width() * m_size.height());
+    updateEndPos();
 }
 
 void Heightmap::generateRandom()

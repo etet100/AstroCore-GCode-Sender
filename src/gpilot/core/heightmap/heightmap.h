@@ -33,9 +33,9 @@ class Heightmap
         QSize gridSize() const;
         int gridWidth() const;
         int gridHeight() const;
-
         bool isInside(QPointF ptMM) const;
         QPointF startPos() const { return m_startPos; }
+        QPointF endPos() const { return m_endPos; }
         QSizeF stepSize() const { return m_stepSize; }
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
@@ -62,8 +62,8 @@ class Heightmap
         // array m_size.x * m_size.y
         // row-major order: rows -> cols = [height][width]
         QList<double> m_data;
-
         void setSize(QSize size);
+        void updateEndPos();
         // just for testing
         void generateRandom();
         void generateSinCos();

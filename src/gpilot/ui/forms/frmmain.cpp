@@ -2982,7 +2982,8 @@ void FrmMain::newHeightmap()
     ui->heightmap->setOpenFile(tr("Untitled"));
     m_heightmapFileName.clear();
 
-    updateHeightmapBorderDrawer();
+    //TODO heightmap
+    // updateHeightmapBorderDrawer();
     updateHeightmapGrid();
 
     m_heightmapChanged = false;
@@ -3168,17 +3169,13 @@ void FrmMain::addRecentHeightmap(QString fileName)
     m_configuration.save();
 }
 
-// QRectF FrmMain::borderRectFromExtremes()
+//TODO heightmap
+// void FrmMain::updateHeightmapBorderDrawer()
 // {
-//     return ui->visualizer->getCodeDrawerBounds();
+//     if (m_settingsLoading) return;
+
+//     ui->visualizer->setHeightmapBorderRect(ui->heightmap->borderRectFromTextboxes());
 // }
-
-void FrmMain::updateHeightmapBorderDrawer()
-{
-    if (m_settingsLoading) return;
-
-    ui->visualizer->setHeightmapBorderRect(ui->heightmap->borderRectFromTextboxes());
-}
 
 bool FrmMain::updateHeightmapGrid()
 {
