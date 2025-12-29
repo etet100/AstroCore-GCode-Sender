@@ -64,12 +64,13 @@ public:
     enum class ProgramType {
         Default,
         GCode,
+        Billboard,
     };
 
     explicit ShaderDrawable();
     ~ShaderDrawable();
     void update();
-    void draw(QOpenGLShaderProgram *shaderProgram);
+    virtual void draw(QOpenGLShaderProgram *shaderProgram);
 
     bool needsUpdateGeometry() const;
     virtual void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette);
@@ -100,6 +101,7 @@ protected:
     double m_lineWidth;
     double m_pointSize;
     bool m_visible;
+    bool m_needsUpdateGeometry;
 
     QVector<VertexData> m_lines;
     QVector<VertexData> m_points;
@@ -110,10 +112,6 @@ protected:
 
     void init();
     virtual void bindAttributes(QOpenGLShaderProgram *&shaderProgram);
-
-private:
-
-    bool m_needsUpdateGeometry;
 };
 
 #endif // SHADERDRAWABLE_H

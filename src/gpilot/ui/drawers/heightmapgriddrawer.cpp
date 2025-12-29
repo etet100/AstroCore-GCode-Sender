@@ -153,7 +153,57 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 
     generateTriangles(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
     generateLines(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+    generatePlates(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+
+    // Update billboard drawable
+    if (m_billboardDrawable.needsUpdateGeometry()) {
+        m_billboardDrawable.updateData(palette);
+    }
 
     return true;
 }
 
+void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette)
+{
+    vertex.color = palette.color(QColor::fromString("yellow"));
+
+    // Clear billboards from previous generation
+    m_billboardDrawable.clearBillboards();
+
+    for (int j = 0; j < gridSize.height(); j++) {
+        double y = startPos.y() + stepSize.height() * j;
+        double x = startPos.x();
+        for (int i = 1; i < gridSize.width(); i++) {
+            double value = m_model.valueAt(QPoint(i, j));
+
+            if (qIsNaN(value)) {
+                x += stepSize.width();
+                continue;
+            }
+
+            // Draw vertical line from surface to label position
+            vertex.position = QVector3D(x, y, value);
+            m_lines.append(vertex);
+
+            vertex.position = QVector3D(x, y, value + 20.0);
+            m_lines.append(vertex);
+
+            // Add billboard label at elevated position
+            QString labelText = QString("x:%1 y:%2\n%3")
+                .arg(i).arg(j).arg(value, 0, 'f', 2);
+
+            m_billboardDrawable.addBillboard(
+                QVector3D(x, y, value + 20.0),
+                labelText,
+                Qt::yellow,
+                30.0f  // Billboard size in pixels
+            );
+
+            if (i == 1 && j == 0) {
+                qDebug() << "[HeightMapGridDrawer] First billboard added at" << QVector3D(x, y, value + 20.0) << "label:" << labelText;
+            }
+
+            x += stepSize.width();
+        }
+    }
+}
