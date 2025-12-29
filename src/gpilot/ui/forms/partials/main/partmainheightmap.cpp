@@ -85,7 +85,7 @@ void PartMainHeightmap::resetUseHeighmap()
 
 void PartMainHeightmap::updateControlsState(bool mainState, bool heightmapMode)
 {
-    setEnabled(mainState);
+    //setEnabled(mainState);
     ui->cmdHeightMapMode->setEnabled(!ui->txtHeightMapName->text().isEmpty());
     ui->chkUseHeightmap->setEnabled(!heightmapMode && !ui->txtHeightMapName->text().isEmpty());
 }
@@ -114,64 +114,72 @@ void PartMainHeightmap::setHeightmapBorderRect(QRectF rect)
 
 void PartMainHeightmap::on_txtBorderX_valueChanged(double arg1)
 {
+    Q_UNUSED(arg1)
+
     emitBorderChanged();
-    // emit updateHeightmapBorderDrawer();
-    // updateHeightmapGrid(arg1);
 }
 
 void PartMainHeightmap::on_txtBorderWidth_valueChanged(double arg1)
 {
+    Q_UNUSED(arg1)
+
     emitBorderChanged();
-    // emit updateHeightmapBorderDrawer();
-    // updateHeightmapGrid(arg1);
 }
 
 void PartMainHeightmap::on_txtBorderY_valueChanged(double arg1)
 {
+    Q_UNUSED(arg1)
+
     emitBorderChanged();
-    // emit updateHeightmapBorderDrawer();
-    // updateHeightmapGrid(arg1);
 }
 
 void PartMainHeightmap::on_txtBorderHeight_valueChanged(double arg1)
 {
+    Q_UNUSED(arg1)
+
     emitBorderChanged();
-    // emit updateHeightmapBorderDrawer();
-    // updateHeightmapGrid(arg1);
 }
 
 void PartMainHeightmap::on_txtGridX_valueChanged(double arg1)
 {
-    updateHeightmapGrid(arg1);
+    Q_UNUSED(arg1)
+
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::on_txtGridY_valueChanged(double arg1)
 {
-    updateHeightmapGrid(arg1);
+    Q_UNUSED(arg1)
+
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::on_txtGridZBottom_valueChanged(double arg1)
 {
-    updateHeightmapGrid(arg1);
+    Q_UNUSED(arg1)
+
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::on_txtGridZTop_valueChanged(double arg1)
 {
-    updateHeightmapGrid(arg1);
+    Q_UNUSED(arg1)
+
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::on_txtInterpolationStepX_valueChanged(double arg1)
 {
     Q_UNUSED(arg1)
 
-    emit updateHeightMapInterpolationDrawer();
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::on_txtInterpolationStepY_valueChanged(double arg1)
 {
     Q_UNUSED(arg1)
 
-    emit updateHeightMapInterpolationDrawer();
+    emitGridParametersChanged();
 }
 
 void PartMainHeightmap::updateHeightmapGrid(double arg1)
@@ -195,6 +203,16 @@ void PartMainHeightmap::emitShowVisualizationChanged()
             ui->chkShowProbeGrid->isChecked(),
             ui->chkShowInterpolation->isChecked()
         }
+    );
+}
+
+void PartMainHeightmap::emitGridParametersChanged()
+{
+    emit gridParametersChanged(
+        QPoint(ui->txtGridX->value(), ui->txtGridY->value()),
+        { ui->txtGridZBottom->value(), ui->txtGridZTop->value() },
+        ui->txtProbeFeed->value(),
+        QPoint(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
     );
 }
 
@@ -222,7 +240,6 @@ void PartMainHeightmap::on_chkShowBorder_toggled(bool checked)
     Q_UNUSED(checked)
 
     emitShowVisualizationChanged();
-
 }
 
 void PartMainHeightmap::on_chkShowInterpolation_toggled(bool checked)

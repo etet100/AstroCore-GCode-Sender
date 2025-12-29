@@ -285,7 +285,7 @@ QSlider::handle:horizontal:hover {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>204</width>
+          <width>108</width>
           <height>897</height>
          </rect>
         </property>
@@ -393,20 +393,6 @@ QSlider::handle:horizontal:hover {
                <property name="bottomMargin">
                 <number>0</number>
                </property>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_22">
-                 <item>
-                  <widget class="QLabel" name="label_15">
-                   <property name="text">
-                    <string>Map:</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_21"/>
-               </item>
               </layout>
              </widget>
             </item>
@@ -484,7 +470,7 @@ QSlider::handle:horizontal:hover {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>167</width>
+          <width>105</width>
           <height>525</height>
          </rect>
         </property>
@@ -826,7 +812,7 @@ QSlider::handle:horizontal:hover {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>167</width>
+          <width>105</width>
           <height>335</height>
          </rect>
         </property>

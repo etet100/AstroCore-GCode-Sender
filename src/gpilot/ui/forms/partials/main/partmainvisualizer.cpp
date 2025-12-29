@@ -583,11 +583,6 @@ void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processe
     }
 }
 
-void PartMainVisualizer::setHeightmapBorderRect(QRectF rect)
-{
-    m_heightmapBorderDrawer.setBorderRect(rect);
-}
-
 QRectF PartMainVisualizer::getCodeDrawerBounds() const
 {
     QRectF rect;
