@@ -111,6 +111,18 @@ void HeightMapGridDrawer::setModel(Heightmap &model)
     update();
 }
 
+void HeightMapGridDrawer::setVisible(bool visible)
+{
+    ShaderDrawable::setVisible(visible);
+    m_billboardDrawable.setVisible(visible);
+}
+
+void HeightMapGridDrawer::toggleVisible()
+{
+    ShaderDrawable::toggleVisible();
+    m_billboardDrawable.setVisible(m_visible);
+}
+
 bool HeightMapGridDrawer::updateData(GLPalette &palette)
 {
     // Clear data
@@ -186,7 +198,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             vertex.position = QVector3D(x, y, value);
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(x, y, value + 20.0);
+            vertex.position = QVector3D(x, y, value + 10.0);
             m_lines.append(vertex);
 
             // Add billboard label at elevated position
@@ -194,9 +206,9 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
                 .arg(i).arg(j).arg(value, 0, 'f', 2);
 
             m_billboardDrawable.addBillboard(
-                QVector3D(x, y, value + 20.0),
+                QVector3D(x, y, value + 13.0),
                 new HeightMapGridBillboardContentData(labelText, QColor(11, 22, 17, 200), Qt::white),
-                25.0f  // Billboard size in pixels
+                35.0f  // Billboard size in pixels
             );
 
             x += stepSize.width();

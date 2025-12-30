@@ -446,6 +446,7 @@ void PartMainVisualizer::applyTableSurfaceDrawerConfiguration(ConfigurationVisua
 void PartMainVisualizer::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_heightmapBorderDrawer.setLineWidth(visualizerConfiguration.lineWidth());
+    m_heightmapBorderDrawer.setVisible(false);
     m_heightmapGridDrawer.setLineWidth(0.1);
     m_heightmapInterpolationDrawer.setLineWidth(visualizerConfiguration.lineWidth());
 }

@@ -39,6 +39,8 @@ class HeightMapGridDrawer : public ShaderDrawable
         explicit HeightMapGridDrawer();
         void setModel(Heightmap &model);
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
+        void setVisible(bool visible);
+        void toggleVisible();
 
     protected:
         bool updateData(GLPalette &palette) override;
