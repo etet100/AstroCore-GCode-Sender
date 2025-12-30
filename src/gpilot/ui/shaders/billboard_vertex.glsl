@@ -37,10 +37,10 @@ void main()
 
     // Different handling based on scaleWithDistance setting
     if (u_scaleWithDistance == 1) {
-        // Scale with distance: no w multiplication, larger base scale
-        gl_Position.xy += offset * 0.3;
-    } else {
-        // Constant screen size: multiply by w
+        // Scale with distance: multiply by w (objects farther away appear smaller)
         gl_Position.xy += offset * 0.003 * gl_Position.w;
+    } else {
+        // Constant screen size: no w multiplication
+        gl_Position.xy += offset * 0.3;
     }
 }
