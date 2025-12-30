@@ -29,9 +29,9 @@ bool OriginDrawer::updateData(GLPalette &palette)
     m_billboardDrawable.setGlobalScale(1.0f);
     m_billboardDrawable.clearBillboards();
 
-    m_billboardDrawable.addBillboard((QVector3D(10, 0, 0) + QVector3D(5, 0, 0)) * m_scale, new OriginBillboardContentData("X", cx), "X", cx, 12.5f);
-    m_billboardDrawable.addBillboard((QVector3D(0, 10, 0) + QVector3D(0, 5, 0)) * m_scale, new OriginBillboardContentData("Y", cy), "Y", cy, 12.5f);
-    m_billboardDrawable.addBillboard((QVector3D(0, 0, 10) + QVector3D(0, 0, 5)) * m_scale, new OriginBillboardContentData("Z", cz), "Z", cz, 12.5f);
+    m_billboardDrawable.addBillboard((QVector3D(10, 0, 0) + QVector3D(5, 0, 0)) * m_scale, new OriginBillboardContentData("X", cx), 12.5f);
+    m_billboardDrawable.addBillboard((QVector3D(0, 10, 0) + QVector3D(0, 5, 0)) * m_scale, new OriginBillboardContentData("Y", cy), 12.5f);
+    m_billboardDrawable.addBillboard((QVector3D(0, 0, 10) + QVector3D(0, 0, 5)) * m_scale, new OriginBillboardContentData("Z", cz), 12.5f);
 
     // Axis lines
     m_lines = QVector<VertexData>()

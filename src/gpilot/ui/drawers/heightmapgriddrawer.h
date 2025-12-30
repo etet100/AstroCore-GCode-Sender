@@ -28,7 +28,9 @@ class HeightMapGridBillboardDrawer : public BillboardDrawable
         explicit HeightMapGridBillboardDrawer();
 
     protected:
-        void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor) override;
+        void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data) override;
+        QSize measureBillboard(const BillboardContentData *data) override;
+        QString buildCacheKey(const BillboardContentData *data) override;
 };
 
 class HeightMapGridDrawer : public ShaderDrawable

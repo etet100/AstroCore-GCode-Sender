@@ -25,9 +25,9 @@ BillboardDrawable::~BillboardDrawable()
     }
 }
 
-void BillboardDrawable::addBillboard(const QVector3D &position, BillboardContentData* cdata, const QString &text, const QColor &color, float pixelSize)
+void BillboardDrawable::addBillboard(const QVector3D &position, BillboardContentData* cdata, float pixelSize)
 {
-    m_billboards.append(BillboardData(position, cdata, text, color, pixelSize));
+    m_billboards.append(BillboardData(position, cdata, pixelSize));
     m_needsUpdateGeometry = true;
 }
 
@@ -56,63 +56,32 @@ void BillboardDrawable::init()
     m_vbo.release();
 }
 
-QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data, const QString &text, const QColor &textColor, const QFont &font)
+QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data)
 {
-    // Create cache key from text and color
-    QString cacheKey = text + "_" + textColor.name();
-
+    QString cacheKey = buildCacheKey(data.contentData.data());
     if (m_textCache.contains(cacheKey)) {
         return m_textCache[cacheKey];
     }
 
-    // Split text into two lines
-    QStringList lines = text.split('\n');
-    if (lines.isEmpty()) {
-        return QRectF(0, 0, 0, 0);
-    }
-
-    // Two fonts: smaller for coordinates, larger for value
-    QFont smallFont;
-    smallFont.setPointSize(20);
-    QFont largeFont;
-    largeFont.setPointSize(28);
-
-    QFontMetrics fmSmall(smallFont);
-    QFontMetrics fmLarge(largeFont);
-
-    // Calculate dimensions
-    int maxWidth = 0;
-    int totalHeight = 0;
-
-    if (lines.size() > 0) {
-        maxWidth = qMax(maxWidth, fmSmall.horizontalAdvance(lines[0]));
-        totalHeight += fmSmall.height();
-    }
-    if (lines.size() > 1) {
-        maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
-        totalHeight += fmLarge.height();
-    }
-
-    int textWidth = maxWidth + 8;
-    int textHeight = totalHeight + 8;
+    QSize size = measureBillboard(data.contentData.data());
 
     // Check if we need to move to next row
-    if (m_atlasX + textWidth > m_atlasImage.width()) {
+    if (m_atlasX + size.width() > m_atlasImage.width()) {
         m_atlasX = 0;
         m_atlasY += m_atlasRowHeight;
         m_atlasRowHeight = 0;
     }
 
     // Check if we have space
-    if (m_atlasY + textHeight > m_atlasImage.height()) {
+    if (m_atlasY + size.height() > m_atlasImage.height()) {
         qWarning() << "Billboard atlas full!";
         return QRectF(0, 0, 0, 0);
     }
 
     // Draw billboard to atlas using virtual method
     QPainter painter(&m_atlasImage);
-    QRect rect(m_atlasX, m_atlasY, textWidth, textHeight);
-    drawBillboard(painter, rect, data.contentData.data(), text, textColor);
+    QRect rect(m_atlasX, m_atlasY, size.width(), size.height());
+    drawBillboard(painter, rect, data.contentData.data());
     painter.end();
 
     // Store texture coordinates (normalized) - width/height in texRect are normalized but we need pixel ratio
@@ -120,19 +89,19 @@ QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data, const Q
     QRectF texRect(
         (float)m_atlasX / m_atlasImage.width(),
         (float)m_atlasY / m_atlasImage.height(),
-        (float)textWidth,  // Store actual pixel width
-        (float)textHeight  // Store actual pixel height
+        (float)size.width(),  // Store actual pixel width
+        (float)size.height()  // Store actual pixel height
     );
 
     m_textCache[cacheKey] = texRect;
 
-    m_atlasX += textWidth;
-    m_atlasRowHeight = qMax(m_atlasRowHeight, textHeight);
+    m_atlasX += size.width();
+    m_atlasRowHeight = qMax(m_atlasRowHeight, size.height());
 
     return texRect;
 }
 
-void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, const QRectF& texRect, GLuint color)
+void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, const QRectF& texRect)
 {
     // texRect contains: x,y = normalized coords, width/height = pixel dimensions
     float pixelWidth = texRect.width();
@@ -191,21 +160,12 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     m_billboardVertices.reserve(m_billboards.size() * 4);
 
     for (const BillboardData &billboard : m_billboards) {
-        QRectF texRect = addBillboardToAtlas(billboard, billboard.text, billboard.color, font);
+        QRectF texRect = addBillboardToAtlas(billboard);
 
         if (texRect.width() == 0) continue; // Skip if atlas is full
 
-        GLuint color = palette.color(billboard.color);
-
         // Add geometry for this billboard
-        addBillboardGeometry(billboard, texRect, color);
-
-        // if (m_billboardVertices.size() == 4) {
-        //     qDebug() << "[BillboardDrawable] First billboard:"
-        //              << "text=" << billboard.text
-        //              << "position=" << billboard.position
-        //              << "pixelSize=" << billboard.pixelSize;
-        // }
+        addBillboardGeometry(billboard, texRect);
     }
 
     // Update texture

@@ -196,8 +196,6 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             m_billboardDrawable.addBillboard(
                 QVector3D(x, y, value + 20.0),
                 new HeightMapGridBillboardContentData(labelText, QColor(0, 0, 0, 100), Qt::white),
-                labelText,
-                Qt::white,
                 25.0f  // Billboard size in pixels
             );
 
@@ -210,7 +208,51 @@ HeightMapGridBillboardDrawer::HeightMapGridBillboardDrawer() : BillboardDrawable
 {
 }
 
-void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect &rect, const BillboardContentData *data_, const QString &text, const QColor &textColor)
+QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData *data_)
+{
+    HeightMapGridBillboardContentData const* data = dynamic_cast<HeightMapGridBillboardContentData const*>(data_);
+    assert(data != nullptr);
+
+    // Split text into two lines
+    QStringList lines = data->text.split('\n');
+    if (lines.isEmpty()) {
+        return QSize(0, 0);
+    }
+
+    // Two fonts: smaller for coordinates, larger for value
+    QFont smallFont;
+    smallFont.setPointSize(20);
+    QFont largeFont;
+    largeFont.setPointSize(28);
+
+    QFontMetrics fmSmall(smallFont);
+    QFontMetrics fmLarge(largeFont);
+
+    // Calculate dimensions
+    int maxWidth = 0;
+    int totalHeight = 0;
+
+    if (lines.size() > 0) {
+        maxWidth = qMax(maxWidth, fmSmall.horizontalAdvance(lines[0]));
+        totalHeight += fmSmall.height();
+    }
+    if (lines.size() > 1) {
+        maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
+        totalHeight += fmLarge.height();
+    }
+
+    return QSize(maxWidth + 8, totalHeight + 8);
+}
+
+QString HeightMapGridBillboardDrawer::buildCacheKey(const BillboardContentData *data)
+{
+    HeightMapGridBillboardContentData const* cdata = dynamic_cast<HeightMapGridBillboardContentData const*>(data);
+    assert(cdata != nullptr);
+
+    return cdata->text + "_" + cdata->bgColor.name() + "_" + cdata->textColor.name();
+}
+
+void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect &rect, const BillboardContentData *data_)
 {
     HeightMapGridBillboardContentData const* data = dynamic_cast<HeightMapGridBillboardContentData const*>(data_);
     assert(data != nullptr);

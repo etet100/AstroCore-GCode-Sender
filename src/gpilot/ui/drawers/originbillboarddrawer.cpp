@@ -6,7 +6,28 @@ OriginBillboardDrawer::OriginBillboardDrawer() : BillboardDrawable()
     m_depthTestEnabled = false;
 }
 
-void OriginBillboardDrawer::drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data_, const QString& text, const QColor& textColor)
+QSize OriginBillboardDrawer::measureBillboard(const BillboardContentData *data_)
+{
+    const OriginBillboardContentData* data = dynamic_cast<const OriginBillboardContentData*>(data_);
+    assert(data != nullptr);
+
+    QFont font;
+    font.setPointSize(28);
+
+    QFontMetrics fm(font);
+
+    return QSize(fm.horizontalAdvance(data->axis), fm.height());
+}
+
+QString OriginBillboardDrawer::buildCacheKey(const BillboardContentData *data_)
+{
+    const OriginBillboardContentData* data = dynamic_cast<const OriginBillboardContentData*>(data_);
+    assert(data != nullptr);
+
+    return data->axis;
+}
+
+void OriginBillboardDrawer::drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data_)
 {
     const OriginBillboardContentData* data = dynamic_cast<const OriginBillboardContentData*>(data_);
     assert(data != nullptr);
