@@ -2,6 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmapgriddrawer.h"
+#include <QPainter>
 
 HeightMapGridDrawer::HeightMapGridDrawer() : m_model(*(new Heightmap()))
 {
@@ -110,6 +111,18 @@ void HeightMapGridDrawer::setModel(Heightmap &model)
     update();
 }
 
+void HeightMapGridDrawer::setVisible(bool visible)
+{
+    ShaderDrawable::setVisible(visible);
+    m_billboardDrawable.setVisible(visible);
+}
+
+void HeightMapGridDrawer::toggleVisible()
+{
+    ShaderDrawable::toggleVisible();
+    m_billboardDrawable.setVisible(m_visible);
+}
+
 bool HeightMapGridDrawer::updateData(GLPalette &palette)
 {
     // Clear data
@@ -153,7 +166,138 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 
     generateTriangles(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
     generateLines(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+    generatePlates(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+
+    // Update billboard drawable
+    if (m_billboardDrawable.needsUpdateGeometry()) {
+        m_billboardDrawable.updateData(palette);
+    }
 
     return true;
 }
 
+void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette)
+{
+    vertex.color = palette.color(QColor::fromString("yellow"));
+
+    // Clear billboards from previous generation
+    m_billboardDrawable.clearBillboards();
+
+    for (int j = 0; j < gridSize.height(); j++) {
+        double y = startPos.y() + stepSize.height() * j;
+        double x = startPos.x();
+        for (int i = 0; i < gridSize.width(); i++) {
+            double value = m_model.valueAt(QPoint(j, i));
+
+            if (qIsNaN(value)) {
+                x += stepSize.width();
+                continue;
+            }
+
+            // Draw vertical line from surface to label position
+            vertex.position = QVector3D(x, y, value);
+            m_lines.append(vertex);
+
+            vertex.position = QVector3D(x, y, value + 10.0);
+            m_lines.append(vertex);
+
+            // Add billboard label at elevated position
+            QString labelText = QString("%1, %2\n%3")
+                .arg(i).arg(j).arg(value, 0, 'f', 2);
+
+            m_billboardDrawable.addBillboard(
+                QVector3D(x, y, value + 13.0),
+                new HeightMapGridBillboardContentData(labelText, QColor(11, 22, 17, 200), Qt::white),
+                35.0f  // Billboard size in pixels
+            );
+
+            x += stepSize.width();
+        }
+    }
+}
+
+HeightMapGridBillboardDrawer::HeightMapGridBillboardDrawer() : BillboardDrawable()
+{
+}
+
+QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData *data_)
+{
+    HeightMapGridBillboardContentData const* data = dynamic_cast<HeightMapGridBillboardContentData const*>(data_);
+    assert(data != nullptr);
+
+    // Split text into two lines
+    QStringList lines = data->text.split('\n');
+    if (lines.size() != 2) {
+       return QSize(0, 0);
+    }
+
+    // Two fonts: smaller for coordinates, larger for value
+    QFont smallFont;
+    smallFont.setPointSize(14);
+    QFont largeFont;
+    largeFont.setPointSize(24);
+
+    QFontMetrics fmSmall(smallFont);
+    QFontMetrics fmLarge(largeFont);
+
+    // Calculate dimensions
+    int maxWidth = 0;
+    int totalHeight = 0;
+
+    // Line 1
+    maxWidth = qMax(maxWidth, fmSmall.horizontalAdvance(lines[0]));
+    totalHeight += fmSmall.height() * 0.8;
+    // Line 2
+    maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
+    totalHeight += fmLarge.height() * 0.8;
+
+    return QSize(maxWidth + 8, totalHeight);
+}
+
+QString HeightMapGridBillboardDrawer::buildCacheKey(const BillboardContentData *data)
+{
+    HeightMapGridBillboardContentData const* cdata = dynamic_cast<HeightMapGridBillboardContentData const*>(data);
+    assert(cdata != nullptr);
+
+    return cdata->text + "_" + cdata->bgColor.name() + "_" + cdata->textColor.name();
+}
+
+void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect &rect, const BillboardContentData *data_)
+{
+    HeightMapGridBillboardContentData const* data = dynamic_cast<HeightMapGridBillboardContentData const*>(data_);
+    assert(data != nullptr);
+
+    // Split text into lines
+    QStringList lines = data->text.split('\n');
+    if (lines.size() != 2) {
+        return;
+    }
+
+    // Two fonts: smaller for coordinates, larger for value
+    QFont smallFont;
+    smallFont.setPointSize(14);
+    QFont largeFont;
+    largeFont.setPointSize(22);
+
+    QFontMetrics fmSmall(smallFont);
+    QFontMetrics fmLarge(largeFont);
+
+    painter.setPen(data->textColor);
+    painter.setBrush(data->bgColor);
+    painter.drawRoundedRect(rect, 5, 5);
+
+    // Draw text centered
+    int yPos = rect.y() - 2;
+
+    // Line 1
+    painter.setPen(data->textColor.darker(200));
+    painter.setFont(smallFont);
+    int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
+    painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
+    yPos += fmSmall.height() * 0.7;
+    // Line 2
+    painter.setPen(data->textColor);
+    painter.setFont(largeFont);
+    xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
+    painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
+}

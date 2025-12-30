@@ -38,9 +38,12 @@ class PartMainHeightmap : public QWidget
             bool interpolation;
         };
 
+        struct MinMax {
+            double min;
+            double max;
+        };
+
     signals:
-        void updateHeightmapBorderDrawer();
-        void updateHeightMapInterpolationDrawer();
         void extremesRequired();
         void borderChanged(QRectF);
         void showVisualizationChanged(VisualizationDrawers drawers);
@@ -48,6 +51,7 @@ class PartMainHeightmap : public QWidget
         void loadHeightmapRequested();
         void useHeightmapToggled(bool checked);
         void heightmapModeToggled(bool checked);
+        void gridParametersChanged(QPoint gridStart, MinMax zMinMax, int probeFeed, QPoint interpolationStep);
 
     private slots:
         void on_chkShowBorder_toggled(bool checked);
@@ -74,6 +78,7 @@ class PartMainHeightmap : public QWidget
         void updateControlsState();
         void emitBorderChanged();
         void emitShowVisualizationChanged();
+        void emitGridParametersChanged();
 };
 
 #endif // PARTMAINHEIGHTMAP_H

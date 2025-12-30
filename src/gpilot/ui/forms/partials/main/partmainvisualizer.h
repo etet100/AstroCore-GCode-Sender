@@ -81,7 +81,6 @@ class PartMainVisualizer : public QWidget
         void finalizeTransfer();
 
         // High-level API for heightmap operations
-        void setHeightmapBorderRect(QRectF rect);
         QRectF getCodeDrawerBounds() const;
 
         // Configuration
