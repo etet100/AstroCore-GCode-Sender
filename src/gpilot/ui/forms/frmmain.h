@@ -135,7 +135,7 @@ private slots:
     void on_grpOverriding_toggled(bool checked);
     void on_grpSpindle_toggled(bool checked);
     void on_grpJog_toggled(bool checked);
-    void on_grpHeightMap_toggled(bool arg1);
+    void on_grpHeightmap_toggled(bool checked);
     void on_chkKeyboardControl_toggled(bool checked);
     void onProgramTableContextMenuRequested(const QPoint &pos);
     void on_menuViewWindows_aboutToShow();

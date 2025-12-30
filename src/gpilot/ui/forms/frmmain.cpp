@@ -258,7 +258,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-    ui->heightmap->setVisible(false);
     connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
         ui->heightmap->setHeightmapBorderRect(ui->visualizer->getCodeDrawerBounds());
     });
@@ -1187,9 +1186,9 @@ void FrmMain::on_grpJog_toggled(bool checked)
     ui->jog->setVisible(checked);
 }
 
-void FrmMain::on_grpHeightMap_toggled(bool arg1)
+void FrmMain::on_grpHeightmap_toggled(bool checked)
 {
-    ui->heightmap->setVisible(arg1);
+    ui->heightmap->setVisible(checked);
 }
 
 void FrmMain::on_chkKeyboardControl_toggled(bool checked)
@@ -2698,9 +2697,9 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     // Update interface
     ui->heightmap->resetUseHeighmap();
-    ui->grpHeightMap->setProperty("overrided", false);
-    style()->unpolish(ui->grpHeightMap);
-    ui->grpHeightMap->ensurePolished();
+    ui->grpHeightmap->setProperty("overrided", false);
+    style()->unpolish(ui->grpHeightmap);
+    ui->grpHeightmap->ensurePolished();
 
     // Reset tableview
     QByteArray headerState = ui->program->saveProgramHeaderState();
@@ -2766,9 +2765,9 @@ void FrmMain::loadLines(QList<std::string> data)
 
     // Update interface
     ui->heightmap->resetUseHeighmap();
-    ui->grpHeightMap->setProperty("overrided", false);
-    style()->unpolish(ui->grpHeightMap);
-    ui->grpHeightMap->ensurePolished();
+    ui->grpHeightmap->setProperty("overrided", false);
+    style()->unpolish(ui->grpHeightmap);
+    ui->grpHeightmap->ensurePolished();
 
     // Reset tableview
     QByteArray headerState = ui->program->saveProgramHeaderState();
