@@ -51,6 +51,12 @@ public:
 
     QOpenGLTexture* texture() { return m_texture; }
 
+    // Billboard rendering options
+    void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
+    bool scaleWithDistance() const { return m_scaleWithDistance; }
+    void setGlobalScale(float scale) { m_globalScale = scale; }
+    float globalScale() const { return m_globalScale; }
+
     ProgramType programType() override { return ProgramType::Billboard; }
     bool updateData(GLPalette &palette) override;
     void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette) override;
@@ -71,8 +77,16 @@ private:
     int m_atlasY;
     int m_atlasRowHeight;
 
+    // Rendering options
+    bool m_scaleWithDistance;  // true = scale with distance (perspective), false = constant screen size
+    float m_globalScale;       // Global scale multiplier (default 1.0)
+
     void rebuildAtlas(GLPalette &palette);
     QRectF addTextToAtlas(const QString &text, const QFont &font);
+    void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
+    
+    // Virtual method for customizing billboard appearance
+    virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text);
 };
 
 #endif // BILLBOARDDRAWABLE_H

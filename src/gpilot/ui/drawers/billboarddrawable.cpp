@@ -8,6 +8,8 @@ BillboardDrawable::BillboardDrawable()
     , m_atlasX(0)
     , m_atlasY(0)
     , m_atlasRowHeight(0)
+    , m_scaleWithDistance(false)  // Default: constant screen size
+    , m_globalScale(1.0f)          // Default: no additional scaling
 {
     m_indexBuffer = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 }
@@ -104,30 +106,10 @@ QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QFont &font)
         return QRectF(0, 0, 0, 0);
     }
 
-    // Draw text to atlas
+    // Draw billboard to atlas using virtual method
     QPainter painter(&m_atlasImage);
-    // No antialiasing for sharp text
-
-    // Draw semi-transparent background
-    painter.fillRect(m_atlasX, m_atlasY, textWidth, textHeight, QColor(0, 0, 0, 180));
-
-    // Draw text centered
-    painter.setPen(Qt::white);
-    int yPos = m_atlasY + 4;
-
-    if (lines.size() > 0) {
-        painter.setFont(smallFont);
-        int xPos = m_atlasX + (textWidth - fmSmall.horizontalAdvance(lines[0])) / 2;
-        painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
-        yPos += fmSmall.height();
-    }
-
-    if (lines.size() > 1) {
-        painter.setFont(largeFont);
-        int xPos = m_atlasX + (textWidth - fmLarge.horizontalAdvance(lines[1])) / 2;
-        painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
-    }
-
+    QRect rect(m_atlasX, m_atlasY, textWidth, textHeight);
+    drawBillboard(painter, rect, text);
     painter.end();
 
     // Store texture coordinates (normalized) - width/height in texRect are normalized but we need pixel ratio
@@ -145,6 +127,80 @@ QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QFont &font)
     m_atlasRowHeight = qMax(m_atlasRowHeight, textHeight);
 
     return texRect;
+}
+
+void BillboardDrawable::addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color)
+{
+    // texRect contains: x,y = normalized coords, width/height = pixel dimensions
+    float pixelWidth = texRect.width();
+    float pixelHeight = texRect.height();
+
+    // Scale billboard to maintain text proportions while being reasonably sized
+    // Use pixelSize as a base scale factor for the larger dimension
+    float maxDimension = qMax(pixelWidth, pixelHeight);
+    float scale = billboard.pixelSize / maxDimension;
+    QVector2D size(pixelWidth * scale, pixelHeight * scale * 2.5f);  // 2.5x taller to fix aspect ratio
+
+    // Normalize texRect coordinates for texture sampling
+    float normalizedLeft = texRect.x();
+    float normalizedTop = texRect.y();
+    float normalizedWidth = pixelWidth / m_atlasImage.width();
+    float normalizedHeight = pixelHeight / m_atlasImage.height();
+    float normalizedRight = normalizedLeft + normalizedWidth;
+    float normalizedBottom = normalizedTop + normalizedHeight;
+
+    // Four corners of billboard quad with texture coordinates
+    // Swap top/bottom because OpenGL Y goes bottom-to-top, Qt Y goes top-to-bottom
+    m_billboardVertices.append(BillboardVertex(
+        billboard.position, size, QVector2D(0.0, 0.0),
+        QVector2D(normalizedLeft, normalizedBottom), color));
+
+    m_billboardVertices.append(BillboardVertex(
+        billboard.position, size, QVector2D(1.0, 0.0),
+        QVector2D(normalizedRight, normalizedBottom), color));
+
+    m_billboardVertices.append(BillboardVertex(
+        billboard.position, size, QVector2D(1.0, 1.0),
+        QVector2D(normalizedRight, normalizedTop), color));
+
+    m_billboardVertices.append(BillboardVertex(
+        billboard.position, size, QVector2D(0.0, 1.0),
+        QVector2D(normalizedLeft, normalizedTop), color));
+}
+
+void BillboardDrawable::drawBillboard(QPainter &painter, const QRect &rect, const QString &text)
+{
+    // Split text into lines
+    QStringList lines = text.split('\n');
+    
+    // Two fonts: smaller for coordinates, larger for value
+    QFont smallFont;
+    smallFont.setPointSize(20);
+    QFont largeFont;
+    largeFont.setPointSize(28);
+    
+    QFontMetrics fmSmall(smallFont);
+    QFontMetrics fmLarge(largeFont);
+
+    // Draw semi-transparent background
+    painter.fillRect(rect, QColor(0, 0, 0, 180));
+
+    // Draw text centered
+    painter.setPen(Qt::white);
+    int yPos = rect.y() + 4;
+
+    if (lines.size() > 0) {
+        painter.setFont(smallFont);
+        int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
+        painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
+        yPos += fmSmall.height();
+    }
+
+    if (lines.size() > 1) {
+        painter.setFont(largeFont);
+        int xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
+        painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
+    }
 }
 
 void BillboardDrawable::rebuildAtlas(GLPalette &palette)
@@ -171,51 +227,16 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
         if (texRect.width() == 0) continue; // Skip if atlas is full
 
         GLuint color = palette.color(billboard.color);
+        
+        // Add geometry for this billboard
+        addBillboardGeometry(billboard, texRect, color);
 
-        // texRect now contains: x,y = normalized coords, width/height = pixel dimensions
-        float pixelWidth = texRect.width();
-        float pixelHeight = texRect.height();
-
-        // Scale billboard to maintain text proportions while being reasonably sized
-        // Use pixelSize as a base scale factor for the larger dimension
-        float maxDimension = qMax(pixelWidth, pixelHeight);
-        float scale = billboard.pixelSize / maxDimension;
-        QVector2D size(pixelWidth * scale, pixelHeight * scale * 2.5f);  // 2.5x taller to fix aspect ratio
-
-        // Normalize texRect coordinates for texture sampling
-        float normalizedLeft = texRect.x();
-        float normalizedTop = texRect.y();
-        float normalizedWidth = pixelWidth / m_atlasImage.width();
-        float normalizedHeight = pixelHeight / m_atlasImage.height();
-        float normalizedRight = normalizedLeft + normalizedWidth;
-        float normalizedBottom = normalizedTop + normalizedHeight;
-
-        if (m_billboardVertices.isEmpty()) {
+        if (m_billboardVertices.size() == 4) {
             qDebug() << "[BillboardDrawable] First billboard:"
                      << "text=" << billboard.text
-                     << "pixelSize=" << QSizeF(pixelWidth, pixelHeight)
-                     << "normalized=" << QRectF(normalizedLeft, normalizedTop, normalizedWidth, normalizedHeight)
-                     << "scale=" << scale
-                     << "size=" << size;
+                     << "position=" << billboard.position
+                     << "pixelSize=" << billboard.pixelSize;
         }
-
-        // Four corners of billboard quad with texture coordinates
-        // Swap top/bottom because OpenGL Y goes bottom-to-top, Qt Y goes top-to-bottom
-        m_billboardVertices.append(BillboardVertex(
-            billboard.position, size, QVector2D(0.0, 0.0),
-            QVector2D(normalizedLeft, normalizedBottom), color));
-
-        m_billboardVertices.append(BillboardVertex(
-            billboard.position, size, QVector2D(1.0, 0.0),
-            QVector2D(normalizedRight, normalizedBottom), color));
-
-        m_billboardVertices.append(BillboardVertex(
-            billboard.position, size, QVector2D(1.0, 1.0),
-            QVector2D(normalizedRight, normalizedTop), color));
-
-        m_billboardVertices.append(BillboardVertex(
-            billboard.position, size, QVector2D(0.0, 1.0),
-            QVector2D(normalizedLeft, normalizedTop), color));
     }
 
     // Update texture
@@ -256,6 +277,10 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     if (!m_visible || m_billboardVertices.isEmpty() || !m_texture) {
         return;
     }
+
+    // Set billboard-specific uniforms
+    shaderProgram->setUniformValue("u_scaleWithDistance", m_scaleWithDistance ? 1 : 0);
+    shaderProgram->setUniformValue("u_globalScale", m_globalScale);
 
     // Initialize buffers if needed
     if (!m_vao.isCreated() || !m_vbo.isCreated()) {

@@ -7,6 +7,8 @@ precision mediump float;
 
 uniform mat4 u_mvp_matrix;
 uniform sampler2D u_palette;
+uniform int u_scaleWithDistance;  // 1 = scale with distance, 0 = constant screen size
+uniform float u_globalScale;      // Global scale multiplier
 
 attribute vec3 a_position;        // Billboard center in world space
 attribute vec2 a_billboardSize;   // Size in pixels
@@ -35,6 +37,15 @@ void main()
     // This makes the quad always face the camera
     vec2 offset = (a_corner - vec2(0.5, 0.5)) * a_billboardSize;
 
-    // Scale by w for perspective-correct size
-    gl_Position.xy += offset * 0.003 * gl_Position.w;
+    // Apply global scale
+    offset *= u_globalScale;
+
+    // Different handling based on scaleWithDistance setting
+    if (u_scaleWithDistance == 1) {
+        // Scale with distance: no w multiplication, larger base scale
+        gl_Position.xy += offset * 0.3;
+    } else {
+        // Constant screen size: multiply by w
+        gl_Position.xy += offset * 0.003 * gl_Position.w;
+    }
 }
