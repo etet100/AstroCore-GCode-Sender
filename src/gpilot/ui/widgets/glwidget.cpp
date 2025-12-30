@@ -862,6 +862,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         if (!drawable->visible()) {
             continue;
         }
+
         QOpenGLShaderProgram *newProgram;
         switch (drawable->programType()) {
             case ShaderDrawable::ProgramType::GCode: {

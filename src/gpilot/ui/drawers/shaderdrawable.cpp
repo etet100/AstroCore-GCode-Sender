@@ -3,7 +3,7 @@
 #include "shaderdrawable.h"
 
 #ifdef GLES
-//#include <GLES/gl.h>
+// #include <GLES/gl.h>
 #endif
 
 ShaderDrawable::ShaderDrawable()
@@ -12,7 +12,7 @@ ShaderDrawable::ShaderDrawable()
     m_visible = true;
     m_lineWidth = 1.0;
     m_pointSize = 1.0;
-    //m_texture = NULL;
+    m_depthTestEnabled = true;  // Default: use depth testing
 }
 
 ShaderDrawable::~ShaderDrawable()
@@ -158,6 +158,12 @@ void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
         bindAttributes(shaderProgram);
     }
 
+    if (m_depthTestEnabled) {
+        glEnable(GL_DEPTH_TEST);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+    }
+
     // Temporary solution for z-fighting in heightmap visualization
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1.0f, 1.0f);
@@ -224,6 +230,16 @@ void ShaderDrawable::toggleVisible()
 {
     m_visible = !m_visible;
 }
+
+// bool ShaderDrawable::depthTestEnabled() const
+// {
+//     return m_depthTestEnabled;
+// }
+
+// void ShaderDrawable::setDepthTestEnabled(bool enabled)
+// {
+//     m_depthTestEnabled = enabled;
+// }
 
 double ShaderDrawable::pointSize() const
 {

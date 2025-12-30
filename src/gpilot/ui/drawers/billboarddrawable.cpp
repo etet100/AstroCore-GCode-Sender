@@ -186,7 +186,7 @@ void BillboardDrawable::drawBillboard(QPainter &painter, const QRect &rect, cons
     QFontMetrics fmLarge(largeFont);
 
     // Draw semi-transparent background
-    painter.fillRect(rect, QColor(0, 0, 0, 180));
+    painter.fillRect(rect, QColor(0, 0, 0, 210));
 
     // Draw text centered
     painter.setPen(Qt::white);
@@ -281,11 +281,9 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
         return;
     }
 
-    // Set billboard-specific uniforms
     shaderProgram->setUniformValue("u_scaleWithDistance", m_scaleWithDistance ? 1 : 0);
     shaderProgram->setUniformValue("u_globalScale", m_globalScale);
 
-    // Initialize buffers if needed
     if (!m_vao.isCreated() || !m_vbo.isCreated()) {
         init();
     }
@@ -297,11 +295,9 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     m_vao.bind();
     m_vbo.bind();
 
-    // Upload vertex data
     m_vbo.allocate(m_billboardVertices.constData(),
                    m_billboardVertices.count() * sizeof(BillboardVertex));
 
-    // Bind attributes
     quintptr offset = 0;
     int pos;
 
@@ -339,7 +335,6 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 1, sizeof(BillboardVertex));
     }
 
-    // Bind texture
     glActiveTexture(GL_TEXTURE1);
     m_texture->bind();
 
@@ -359,20 +354,22 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     m_indexBuffer.bind();
     m_indexBuffer.allocate(indices.constData(), indices.size() * sizeof(GLushort));
 
-    // Enable depth test and blending
-    glEnable(GL_DEPTH_TEST);
+    if (m_depthTestEnabled) {
+        glEnable(GL_DEPTH_TEST);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+    }
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Also draw triangles
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, 0);
 
-    // Cleanup
     m_indexBuffer.release();
     m_texture->release();
     m_vbo.release();
     m_vao.release();
 
-    // Restore texture unit 0 for other drawables
+    // Restore texture unit 0 for other drawables!
     glActiveTexture(GL_TEXTURE0);
 }

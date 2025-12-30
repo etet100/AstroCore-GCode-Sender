@@ -2,7 +2,7 @@
 #define ORIGINDRAWER_H
 
 #include "shaderdrawable.h"
-#include "originbillboarddrawable.h"
+#include "originbillboarddrawer.h"
 
 class OriginDrawer : public ShaderDrawable
 {
@@ -11,14 +11,14 @@ public:
 
     void setZoom(double);
 
-    OriginBillboardDrawable &billboardDrawable() { return m_billboardDrawable; }
+    OriginBillboardDrawer &billboardDrawable() { return m_billboardDrawable; }
 
 protected:
     bool updateData(GLPalette &palette) override;
 
 private:
     double m_scale;
-    OriginBillboardDrawable m_billboardDrawable;
+    OriginBillboardDrawer m_billboardDrawable;
 };
 
 #endif // ORIGINDRAWER_H

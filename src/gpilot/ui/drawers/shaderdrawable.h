@@ -87,6 +87,9 @@ public:
     void setVisible(bool visible);
     void toggleVisible();
 
+    // bool depthTestEnabled() const;
+    // void setDepthTestEnabled(bool enabled);
+
     double pointSize() const;
     void setPointSize(double pointSize);
 
@@ -102,6 +105,7 @@ protected:
     double m_pointSize;
     bool m_visible;
     bool m_needsUpdateGeometry;
+    bool m_depthTestEnabled;
 
     QVector<VertexData> m_lines;
     QVector<VertexData> m_points;

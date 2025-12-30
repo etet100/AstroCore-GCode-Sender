@@ -42,51 +42,51 @@ struct BillboardVertex
 
 class BillboardDrawable : public ShaderDrawable
 {
-public:
-    explicit BillboardDrawable();
-    ~BillboardDrawable();
+    public:
+        explicit BillboardDrawable();
+        ~BillboardDrawable();
 
-    void addBillboard(const QVector3D &position, const QString &text, const QColor &color = Qt::white, float pixelSize = 10.0f);
-    void clearBillboards();
+        void addBillboard(const QVector3D &position, const QString &text, const QColor &color = Qt::white, float pixelSize = 10.0f);
+        void clearBillboards();
 
-    QOpenGLTexture* texture() { return m_texture; }
+        QOpenGLTexture* texture() { return m_texture; }
 
-    // Billboard rendering options
-    void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
-    bool scaleWithDistance() const { return m_scaleWithDistance; }
-    void setGlobalScale(float scale) { m_globalScale = scale; }
-    float globalScale() const { return m_globalScale; }
+        // Billboard rendering options
+        void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
+        bool scaleWithDistance() const { return m_scaleWithDistance; }
+        void setGlobalScale(float scale) { m_globalScale = scale; }
+        float globalScale() const { return m_globalScale; }
 
-    ProgramType programType() override { return ProgramType::Billboard; }
-    bool updateData(GLPalette &palette) override;
-    void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette) override;
+        ProgramType programType() override { return ProgramType::Billboard; }
+        bool updateData(GLPalette &palette) override;
+        void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette) override;
 
-    void draw(QOpenGLShaderProgram *shaderProgram) override;
+        void draw(QOpenGLShaderProgram *shaderProgram) override;
 
-    void init();  // Not virtual in base class, so no override
+        void init();  // Not virtual in base class, so no override
 
-private:
-    QVector<BillboardData> m_billboards;
-    QVector<BillboardVertex> m_billboardVertices;
-    QOpenGLTexture *m_texture;
-    QOpenGLBuffer m_indexBuffer;
+    private:
+        QVector<BillboardData> m_billboards;
+        QVector<BillboardVertex> m_billboardVertices;
+        QOpenGLTexture *m_texture;
+        QOpenGLBuffer m_indexBuffer;
 
-    QMap<QString, QRectF> m_textCache;
-    QImage m_atlasImage;
-    int m_atlasX;
-    int m_atlasY;
-    int m_atlasRowHeight;
+        QMap<QString, QRectF> m_textCache;
+        QImage m_atlasImage;
+        int m_atlasX;
+        int m_atlasY;
+        int m_atlasRowHeight;
 
-    // Rendering options
-    bool m_scaleWithDistance;  // true = scale with distance (perspective), false = constant screen size
-    float m_globalScale;       // Global scale multiplier (default 1.0)
+        // Rendering options
+        bool m_scaleWithDistance;  // true = scale with distance (perspective), false = constant screen size
+        float m_globalScale;       // Global scale multiplier (default 1.0)
 
-    void rebuildAtlas(GLPalette &palette);
-    QRectF addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font);
-    void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
+        void rebuildAtlas(GLPalette &palette);
+        QRectF addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font);
+        void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
 
-    // Virtual method for customizing billboard appearance
-    virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor);
+        // Virtual method for customizing billboard appearance
+        virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor);
 };
 
 #endif // BILLBOARDDRAWABLE_H
