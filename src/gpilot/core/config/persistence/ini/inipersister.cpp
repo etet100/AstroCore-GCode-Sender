@@ -78,9 +78,11 @@ bool IniPersister::setStringList(const QString group, const QString key, const Q
         return false;
     }
 
-    QStringList list = value;
-
-    m_settings->setValue(group + "/" + key, list);//.replaceInStrings(",", "\\,").join(","));
+    if (value.empty()) {
+        m_settings->setValue(group + "/" + key, "");
+    } else {
+        m_settings->setValue(group + "/" + key, value);
+    }
 
     return true;
 }

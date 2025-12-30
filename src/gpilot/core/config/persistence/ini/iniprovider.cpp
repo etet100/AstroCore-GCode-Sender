@@ -61,7 +61,12 @@ QVariant IniProvider::getVariant(const QString group, const QString key, QVarian
 
 QStringList IniProvider::getStringList(const QString group, const QString key, QStringList defaultValue)
 {
-    return getVariant(group, key, defaultValue).toStringList();
+    QVariant var = getVariant(group, key, defaultValue);
+    if (var.toString().isEmpty()) {
+        return QStringList();
+    }
+
+    return var.toStringList();
 }
 
 QVariantMap IniProvider::getVariantMap(const QString group, const QString key, QVariantMap mapWithDefaultValues)
@@ -72,8 +77,6 @@ QVariantMap IniProvider::getVariantMap(const QString group, const QString key, Q
         it.next();
         result[it.key()] = m_settings->value(group + "/" + key + "." + it.key(), it.value());
     }
-
-    //qDebug() << "abc" << group << key << mapWithDefaultValues << result;
 
     return result;
 }
