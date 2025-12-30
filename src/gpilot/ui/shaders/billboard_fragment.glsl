@@ -19,6 +19,6 @@ void main()
         discard;
     }
 
-    // Combine texture with color from palette
-    gl_FragColor = texColor * v_color;
+    // Use texture color directly (white text from atlas)
+    gl_FragColor = texColor;
 }

@@ -36,6 +36,5 @@ void main()
     vec2 offset = (a_corner - vec2(0.5, 0.5)) * a_billboardSize;
 
     // Scale by w for perspective-correct size
-    // Increased scale factor for better visibility (0.003 = ~300px reference)
     gl_Position.xy += offset * 0.003 * gl_Position.w;
 }

@@ -189,14 +189,14 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             m_lines.append(vertex);
 
             // Add billboard label at elevated position
-            QString labelText = QString("x:%1 y:%2\n%3")
+            QString labelText = QString("%1, %2\n%3")
                 .arg(i).arg(j).arg(value, 0, 'f', 2);
 
             m_billboardDrawable.addBillboard(
                 QVector3D(x, y, value + 20.0),
                 labelText,
-                Qt::yellow,
-                30.0f  // Billboard size in pixels
+                Qt::white,
+                25.0f  // Billboard size in pixels
             );
 
             if (i == 1 && j == 0) {
