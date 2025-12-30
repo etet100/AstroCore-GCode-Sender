@@ -174,8 +174,8 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
     for (int j = 0; j < gridSize.height(); j++) {
         double y = startPos.y() + stepSize.height() * j;
         double x = startPos.x();
-        for (int i = 1; i < gridSize.width(); i++) {
-            double value = m_model.valueAt(QPoint(i, j));
+        for (int i = 0; i < gridSize.width(); i++) {
+            double value = m_model.valueAt(QPoint(j, i));
 
             if (qIsNaN(value)) {
                 x += stepSize.width();
@@ -195,7 +195,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
 
             m_billboardDrawable.addBillboard(
                 QVector3D(x, y, value + 20.0),
-                new HeightMapGridBillboardContentData(labelText, QColor(0, 0, 0, 100), Qt::white),
+                new HeightMapGridBillboardContentData(labelText, QColor(11, 22, 17, 200), Qt::white),
                 25.0f  // Billboard size in pixels
             );
 
@@ -215,15 +215,15 @@ QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData 
 
     // Split text into two lines
     QStringList lines = data->text.split('\n');
-    if (lines.isEmpty()) {
-        return QSize(0, 0);
+    if (lines.size() != 2) {
+       return QSize(0, 0);
     }
 
     // Two fonts: smaller for coordinates, larger for value
     QFont smallFont;
-    smallFont.setPointSize(20);
+    smallFont.setPointSize(14);
     QFont largeFont;
-    largeFont.setPointSize(28);
+    largeFont.setPointSize(24);
 
     QFontMetrics fmSmall(smallFont);
     QFontMetrics fmLarge(largeFont);
@@ -232,16 +232,14 @@ QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData 
     int maxWidth = 0;
     int totalHeight = 0;
 
-    if (lines.size() > 0) {
-        maxWidth = qMax(maxWidth, fmSmall.horizontalAdvance(lines[0]));
-        totalHeight += fmSmall.height();
-    }
-    if (lines.size() > 1) {
-        maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
-        totalHeight += fmLarge.height();
-    }
+    // Line 1
+    maxWidth = qMax(maxWidth, fmSmall.horizontalAdvance(lines[0]));
+    totalHeight += fmSmall.height() * 0.8;
+    // Line 2
+    maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
+    totalHeight += fmLarge.height() * 0.8;
 
-    return QSize(maxWidth + 8, totalHeight + 8);
+    return QSize(maxWidth + 8, totalHeight);
 }
 
 QString HeightMapGridBillboardDrawer::buildCacheKey(const BillboardContentData *data)
@@ -259,32 +257,35 @@ void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect 
 
     // Split text into lines
     QStringList lines = data->text.split('\n');
+    if (lines.size() != 2) {
+        return;
+    }
 
     // Two fonts: smaller for coordinates, larger for value
     QFont smallFont;
-    smallFont.setPointSize(20);
+    smallFont.setPointSize(14);
     QFont largeFont;
-    largeFont.setPointSize(28);
+    largeFont.setPointSize(22);
 
     QFontMetrics fmSmall(smallFont);
     QFontMetrics fmLarge(largeFont);
 
-    painter.fillRect(rect, data->bgColor);
+    painter.setPen(data->textColor);
+    painter.setBrush(data->bgColor);
+    painter.drawRoundedRect(rect, 5, 5);
 
     // Draw text centered
+    int yPos = rect.y() - 2;
+
+    // Line 1
+    painter.setPen(data->textColor.darker(200));
+    painter.setFont(smallFont);
+    int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
+    painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
+    yPos += fmSmall.height() * 0.7;
+    // Line 2
     painter.setPen(data->textColor);
-    int yPos = rect.y() + 4;
-
-    if (lines.size() > 0) {
-        painter.setFont(smallFont);
-        int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
-        painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
-        yPos += fmSmall.height();
-    }
-
-    if (lines.size() > 1) {
-        painter.setFont(largeFont);
-        int xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
-        painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
-    }
+    painter.setFont(largeFont);
+    xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
+    painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
 }

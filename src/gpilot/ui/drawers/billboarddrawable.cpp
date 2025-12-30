@@ -8,7 +8,6 @@ BillboardDrawable::BillboardDrawable()
     , m_atlasX(0)
     , m_atlasY(0)
     , m_atlasRowHeight(0)
-    , m_scaleWithDistance(false)  // Default: constant screen size
     , m_globalScale(1.0f)          // Default: no additional scaling
 {
     m_indexBuffer = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);

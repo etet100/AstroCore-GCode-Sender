@@ -60,8 +60,8 @@ class BillboardDrawable : public ShaderDrawable
 
         QOpenGLTexture* texture() { return m_texture; }
 
-        void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
-        bool scaleWithDistance() const { return m_scaleWithDistance; }
+        // void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
+        // bool scaleWithDistance() const { return m_scaleWithDistance; }
         void setGlobalScale(float scale) { m_globalScale = scale; }
         float globalScale() const { return m_globalScale; }
 
@@ -72,6 +72,8 @@ class BillboardDrawable : public ShaderDrawable
         void init();
 
     protected:
+        bool m_scaleWithDistance = true;
+
         virtual QSize measureBillboard(const BillboardContentData* data) = 0;
         virtual QString buildCacheKey(const BillboardContentData* data) = 0;
         virtual void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data) = 0;
@@ -88,7 +90,6 @@ class BillboardDrawable : public ShaderDrawable
         int m_atlasY;
         int m_atlasRowHeight;
 
-        bool m_scaleWithDistance;
         float m_globalScale;
 
         void rebuildAtlas(GLPalette &palette);

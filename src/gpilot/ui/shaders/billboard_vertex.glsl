@@ -9,6 +9,7 @@ uniform mat4 u_mvp_matrix;
 uniform sampler2D u_palette;
 uniform int u_scaleWithDistance;  // 1 = scale with distance, 0 = constant screen size
 uniform float u_globalScale;      // Global scale multiplier
+uniform int u_isOrthographic;     // 1 = orthographic projection, 0 = perspective
 
 attribute vec3 a_position;        // Billboard center in world space
 attribute vec2 a_billboardSize;   // Size in pixels
@@ -35,12 +36,18 @@ void main()
     // Apply global scale
     offset *= u_globalScale;
 
-    // Different handling based on scaleWithDistance setting
-    if (u_scaleWithDistance == 1) {
-        // Scale with distance: multiply by w (objects farther away appear smaller)
-        gl_Position.xy += offset * 0.003 * gl_Position.w;
+    // Different handling based on scaleWithDistance setting and projection mode
+    if (u_isOrthographic == 1) {
+        // Orthographic projection: w = 1.0, need smaller multiplier
+        gl_Position.xy += offset * 0.001;
     } else {
-        // Constant screen size: no w multiplication
-        gl_Position.xy += offset * 0.3;
+        // Perspective projection
+        if (u_scaleWithDistance == 1) {
+            // Scale with distance: no w multiplication (farther = smaller after perspective divide)
+            gl_Position.xy += offset * 0.3;
+        } else {
+            // Constant screen size: multiply by w (compensates for perspective divide)
+            gl_Position.xy += offset * 0.004 * gl_Position.w;
+        }
     }
 }

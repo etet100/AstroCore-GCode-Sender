@@ -902,6 +902,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
             // Set billboard-specific uniforms
             currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
             currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
+            currentProgram->setUniformValue("u_isOrthographic", (m_mode != ViewMode::Perspective) ? 1 : 0);
             m_palette.bind();
             drawable->draw(currentProgram);
             m_palette.release();

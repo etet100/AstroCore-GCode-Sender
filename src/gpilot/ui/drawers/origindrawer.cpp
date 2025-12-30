@@ -25,7 +25,7 @@ bool OriginDrawer::updateData(GLPalette &palette)
     int crect = cxint;
 
     // Axis labels
-    m_billboardDrawable.setScaleWithDistance(false);
+    // m_billboardDrawable.setScaleWithDistance(false);
     m_billboardDrawable.setGlobalScale(1.0f);
     m_billboardDrawable.clearBillboards();
 

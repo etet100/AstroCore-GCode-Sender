@@ -4,6 +4,7 @@
 OriginBillboardDrawer::OriginBillboardDrawer() : BillboardDrawable()
 {
     m_depthTestEnabled = false;
+    m_scaleWithDistance = false;
 }
 
 QSize OriginBillboardDrawer::measureBillboard(const BillboardContentData *data_)
