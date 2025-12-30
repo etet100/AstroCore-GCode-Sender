@@ -8,5 +8,7 @@
         <file>../shaders/2dcopy_fragment.glsl</file>
         <file>../shaders/gcode_fragment.glsl</file>
         <file>../shaders/gcode_vertex.glsl</file>
+        <file>../shaders/billboard_vertex.glsl</file>
+        <file>../shaders/billboard_fragment.glsl</file>
     </qresource>
 </RCC>

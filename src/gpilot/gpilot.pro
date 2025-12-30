@@ -126,8 +126,10 @@ SOURCES += main.cpp\
     state_behaviour/gotobehavior.cpp \
     state_behaviour/reconnectingbehavior.cpp \
     state_behaviour/resetbehavior.cpp \
+    ui/drawers/billboarddrawable.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
+    ui/drawers/originbillboarddrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
     ui/forms/partials/main/partmainconsole.cpp \
@@ -255,9 +257,11 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/gotobehavior.h \
     state_behaviour/reconnectingbehavior.h \
     state_behaviour/resetbehavior.h \
+    ui/drawers/billboarddrawable.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \
+    ui/drawers/originbillboarddrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
     ui/forms/partials/main/partmainconsole.h \

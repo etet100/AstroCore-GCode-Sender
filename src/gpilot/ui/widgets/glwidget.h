@@ -179,6 +179,7 @@ private:
     QList<ShaderDrawable*> m_shaderDrawables;
     QOpenGLShaderProgram *m_defaultShaderProgram;
     QOpenGLShaderProgram *m_gcodeShaderProgram;
+    QOpenGLShaderProgram *m_billboardShaderProgram;
     QOpenGLShaderProgram *m_copyProgram;
     QMatrix4x4 m_projectionMatrix;
     QMatrix4x4 m_viewMatrix;

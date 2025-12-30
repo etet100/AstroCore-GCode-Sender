@@ -646,6 +646,28 @@ void GLWidget::initializeGL()
     }
     m_copyProgram->setUniformValue("u_texture", 0);
 
+    m_billboardShaderProgram = new QOpenGLShaderProgram();
+    if (m_billboardShaderProgram) {
+        if (!m_billboardShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/billboard_vertex.glsl")) {
+            qWarning() << "[GLWidget] Billboard vertex shader compile error:" << m_billboardShaderProgram->log();
+            m_error = true;
+            return;
+        }
+        if (!m_billboardShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/billboard_fragment.glsl")) {
+            qWarning() << "[GLWidget] Billboard fragment shader compile error:" << m_billboardShaderProgram->log();
+            m_error = true;
+            return;
+        }
+        if (m_billboardShaderProgram->link() && m_billboardShaderProgram->isLinked()) {
+            qDebug() << "[GLWidget] Billboard shader program created";
+            m_billboardShaderProgram->setUniformValue("u_billboardTexture", 1);
+        } else {
+            qWarning() << "[GLWidget] Billboard shader program link error:" << m_billboardShaderProgram->log();
+            m_error = true;
+            return;
+        }
+    }
+
     m_palette.initialize();
 
     initializeDebugLogger();
@@ -824,10 +846,23 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->setUniformValue("u_light_position", lightPos);
     }
 
+    if (m_billboardShaderProgram) {
+        if (currentProgram && currentProgram != m_billboardShaderProgram) {
+            currentProgram->release();
+        }
+        currentProgram = m_billboardShaderProgram;
+        currentProgram->bind();
+        currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
+        currentProgram->release();
+        currentProgram = m_defaultShaderProgram;
+        if (currentProgram) currentProgram->bind();
+    }
+
     foreach (ShaderDrawable *drawable, m_shaderDrawables) {
         if (!drawable->visible()) {
             continue;
         }
+
         QOpenGLShaderProgram *newProgram;
         switch (drawable->programType()) {
             case ShaderDrawable::ProgramType::GCode: {
@@ -837,6 +872,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
                 newProgram = m_gcodeShaderProgram;
                 break;
             }
+            case ShaderDrawable::ProgramType::Billboard:
+                newProgram = m_billboardShaderProgram;
+                break;
             default:
                 newProgram = m_defaultShaderProgram;
                 break;
@@ -855,16 +893,20 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
         switch (drawable->programType()) {
         case ShaderDrawable::ProgramType::GCode: {
-            currentProgram = m_gcodeShaderProgram;
-            currentProgram->bind();
-
             m_palette.bind();
             drawable->draw(currentProgram);
             m_palette.release();
-
-            currentProgram->release();
             break;
         }
+        case ShaderDrawable::ProgramType::Billboard:
+            // Set billboard-specific uniforms
+            currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
+            currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
+            currentProgram->setUniformValue("u_isOrthographic", (m_mode != ViewMode::Perspective) ? 1 : 0);
+            m_palette.bind();
+            drawable->draw(currentProgram);
+            m_palette.release();
+            break;
         case ShaderDrawable::ProgramType::Default:
             m_palette.bind();
             if (drawable->sort(m_viewMatrix)) {
@@ -877,9 +919,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         vertices += drawable->getVertexCount();
     }
 
+    // Release current program before cube (cube uses its own shader)
     if (currentProgram != nullptr) {
         currentProgram->release();
-        currentProgram = nullptr;
     }
 
     // Don't show rotation cube in 2D mode

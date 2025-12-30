@@ -89,10 +89,17 @@ void PartMainVisualizer::cursorPosChanged(QPointF pos)
 // (setCodeParser, setProbeParser)
 void PartMainVisualizer::initDrawables()
 {
-    *ui->visualizer << &m_originDrawer << m_codeDrawer << m_probeDrawer
-                       << &m_cursorDrawer << &m_heightmapBorderDrawer
-                       << &m_heightmapGridDrawer << &m_heightmapInterpolationDrawer
-                       << &m_selectionDrawer << &m_machineBoundsDrawer << &m_toolDrawer;
+    *ui->visualizer << m_codeDrawer << m_probeDrawer
+                    << &m_cursorDrawer << &m_heightmapBorderDrawer
+                    << &m_heightmapGridDrawer
+                    << &m_heightmapInterpolationDrawer
+                    << m_heightmapGridDrawer.billboardDrawable()
+                    << &m_selectionDrawer
+                    << &m_machineBoundsDrawer
+                    << &m_toolDrawer
+                    << &m_originDrawer
+                    << &m_originDrawer.billboardDrawable()
+    ;
 
     ui->visualizer->fitDrawable(m_codeDrawer);
 }
@@ -439,6 +446,7 @@ void PartMainVisualizer::applyTableSurfaceDrawerConfiguration(ConfigurationVisua
 void PartMainVisualizer::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_heightmapBorderDrawer.setLineWidth(visualizerConfiguration.lineWidth());
+    m_heightmapBorderDrawer.setVisible(false);
     m_heightmapGridDrawer.setLineWidth(0.1);
     m_heightmapInterpolationDrawer.setLineWidth(visualizerConfiguration.lineWidth());
 }
