@@ -19,6 +19,33 @@ bool OriginDrawer::updateData(GLPalette &palette)
     int cz = palette.color(0.0, 0.0, 1.0);
     int crect = cx;
 
+    // Setup billboards for axis labels (no distance scaling)
+    m_billboardDrawable.setScaleWithDistance(false);
+    m_billboardDrawable.setGlobalScale(1.0f);
+    m_billboardDrawable.clearBillboards();
+
+    // Add billboards at the end of each axis, shifted 5mm along the axis
+    m_billboardDrawable.addBillboard(
+        (QVector3D(10, 0, 0) + QVector3D(5, 0, 0)) * m_scale,
+        "X",
+        QColor(255, 0, 0),  // Red
+        12.5f
+    );
+
+    m_billboardDrawable.addBillboard(
+        (QVector3D(0, 10, 0) + QVector3D(0, 5, 0)) * m_scale,
+        "Y",
+        QColor(0, 255, 0),  // Green
+        12.5f
+    );
+
+    m_billboardDrawable.addBillboard(
+        (QVector3D(0, 0, 10) + QVector3D(0, 0, 5)) * m_scale,
+        "Z",
+        QColor(0, 0, 255),  // Blue
+        12.5f
+    );
+
     m_lines = QVector<VertexData>()
         // X-axis
         << VertexData(QVector3D(0, 0, 0) * m_scale, cx)

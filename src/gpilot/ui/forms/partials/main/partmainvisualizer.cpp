@@ -91,8 +91,10 @@ void PartMainVisualizer::initDrawables()
 {
     *ui->visualizer << &m_originDrawer << m_codeDrawer << m_probeDrawer
                        << &m_cursorDrawer << &m_heightmapBorderDrawer
-                       << &m_heightmapGridDrawer << &m_heightmapInterpolationDrawer
+                       << &m_heightmapGridDrawer
+                        << &m_heightmapInterpolationDrawer
                        << m_heightmapGridDrawer.billboardDrawable()
+                       << &m_originDrawer.billboardDrawable()
                        << &m_selectionDrawer << &m_machineBoundsDrawer << &m_toolDrawer;
 
     ui->visualizer->fitDrawable(m_codeDrawer);

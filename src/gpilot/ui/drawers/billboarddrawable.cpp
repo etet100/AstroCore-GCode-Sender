@@ -56,10 +56,13 @@ void BillboardDrawable::init()
     m_vbo.release();
 }
 
-QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QFont &font)
+QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font)
 {
-    if (m_textCache.contains(text)) {
-        return m_textCache[text];
+    // Create cache key from text and color
+    QString cacheKey = text + "_" + textColor.name();
+
+    if (m_textCache.contains(cacheKey)) {
+        return m_textCache[cacheKey];
     }
 
     // Split text into two lines
@@ -109,7 +112,7 @@ QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QFont &font)
     // Draw billboard to atlas using virtual method
     QPainter painter(&m_atlasImage);
     QRect rect(m_atlasX, m_atlasY, textWidth, textHeight);
-    drawBillboard(painter, rect, text);
+    drawBillboard(painter, rect, text, textColor);
     painter.end();
 
     // Store texture coordinates (normalized) - width/height in texRect are normalized but we need pixel ratio
@@ -121,7 +124,7 @@ QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QFont &font)
         (float)textHeight  // Store actual pixel height
     );
 
-    m_textCache[text] = texRect;
+    m_textCache[cacheKey] = texRect;
 
     m_atlasX += textWidth;
     m_atlasRowHeight = qMax(m_atlasRowHeight, textHeight);
@@ -168,17 +171,17 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData &billboard, con
         QVector2D(normalizedLeft, normalizedTop), color));
 }
 
-void BillboardDrawable::drawBillboard(QPainter &painter, const QRect &rect, const QString &text)
+void BillboardDrawable::drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor)
 {
     // Split text into lines
     QStringList lines = text.split('\n');
-    
+
     // Two fonts: smaller for coordinates, larger for value
     QFont smallFont;
     smallFont.setPointSize(20);
     QFont largeFont;
     largeFont.setPointSize(28);
-    
+
     QFontMetrics fmSmall(smallFont);
     QFontMetrics fmLarge(largeFont);
 
@@ -222,12 +225,12 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     m_billboardVertices.reserve(m_billboards.size() * 4);
 
     for (const BillboardData &billboard : m_billboards) {
-        QRectF texRect = addTextToAtlas(billboard.text, font);
+        QRectF texRect = addTextToAtlas(billboard.text, billboard.color, font);
 
         if (texRect.width() == 0) continue; // Skip if atlas is full
 
         GLuint color = palette.color(billboard.color);
-        
+
         // Add geometry for this billboard
         addBillboardGeometry(billboard, texRect, color);
 

@@ -82,11 +82,11 @@ private:
     float m_globalScale;       // Global scale multiplier (default 1.0)
 
     void rebuildAtlas(GLPalette &palette);
-    QRectF addTextToAtlas(const QString &text, const QFont &font);
+    QRectF addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font);
     void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
-    
+
     // Virtual method for customizing billboard appearance
-    virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text);
+    virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor);
 };
 
 #endif // BILLBOARDDRAWABLE_H
