@@ -9,6 +9,28 @@
 #include "billboarddrawable.h"
 #include "core/heightmap/heightmap.h"
 
+struct HeightMapGridBillboardContentData : public BillboardContentData
+{
+        HeightMapGridBillboardContentData(const QString& text, const QColor& bgColor, const QColor& textColor)
+            : text(text)
+            , textColor(textColor)
+            , bgColor(bgColor)
+        {}
+
+        QString text;
+        QColor textColor;
+        QColor bgColor;
+};
+
+class HeightMapGridBillboardDrawer : public BillboardDrawable
+{
+    public:
+        explicit HeightMapGridBillboardDrawer();
+
+    protected:
+        void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor) override;
+};
+
 class HeightMapGridDrawer : public ShaderDrawable
 {
     public:
@@ -21,7 +43,7 @@ class HeightMapGridDrawer : public ShaderDrawable
 
     private:
         Heightmap &m_model;
-        BillboardDrawable m_billboardDrawable;
+        HeightMapGridBillboardDrawer m_billboardDrawable;
         void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
         void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
         void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);

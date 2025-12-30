@@ -99,7 +99,7 @@ class BillboardDrawable : public ShaderDrawable
         void addBillboardGeometry(const BillboardData& data, const QRectF& texRect, GLuint color);
 
         // Virtual method for customizing billboard appearance
-        virtual void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor);
+        virtual void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor) = 0;
 };
 
 #endif // BILLBOARDDRAWABLE_H

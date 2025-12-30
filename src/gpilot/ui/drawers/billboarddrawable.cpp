@@ -171,40 +171,6 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, con
         QVector2D(normalizedLeft, normalizedTop)));
 }
 
-void BillboardDrawable::drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor)
-{
-    // Split text into lines
-    QStringList lines = text.split('\n');
-
-    // Two fonts: smaller for coordinates, larger for value
-    QFont smallFont;
-    smallFont.setPointSize(20);
-    QFont largeFont;
-    largeFont.setPointSize(28);
-
-    QFontMetrics fmSmall(smallFont);
-    QFontMetrics fmLarge(largeFont);
-
-    // Draw semi-transparent background
-    painter.fillRect(rect, QColor(0, 0, 0, 210));
-
-    // Draw text centered
-    painter.setPen(Qt::white);
-    int yPos = rect.y() + 4;
-
-    if (lines.size() > 0) {
-        painter.setFont(smallFont);
-        int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
-        painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
-        yPos += fmSmall.height();
-    }
-
-    if (lines.size() > 1) {
-        painter.setFont(largeFont);
-        int xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
-        painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
-    }
-}
 
 void BillboardDrawable::rebuildAtlas(GLPalette &palette)
 {

@@ -2,6 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmapgriddrawer.h"
+#include <QPainter>
 
 HeightMapGridDrawer::HeightMapGridDrawer() : m_model(*(new Heightmap()))
 {
@@ -192,18 +193,56 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             QString labelText = QString("%1, %2\n%3")
                 .arg(i).arg(j).arg(value, 0, 'f', 2);
 
-            // m_billboardDrawable.addBillboard(
-            //     QVector3D(x, y, value + 20.0),
-            //     labelText,
-            //     Qt::white,
-            //     25.0f  // Billboard size in pixels
-            // );
-
-            if (i == 1 && j == 0) {
-                qDebug() << "[HeightMapGridDrawer] First billboard added at" << QVector3D(x, y, value + 20.0) << "label:" << labelText;
-            }
+            m_billboardDrawable.addBillboard(
+                QVector3D(x, y, value + 20.0),
+                new HeightMapGridBillboardContentData(labelText, QColor(0, 0, 0, 100), Qt::white),
+                labelText,
+                Qt::white,
+                25.0f  // Billboard size in pixels
+            );
 
             x += stepSize.width();
         }
+    }
+}
+
+HeightMapGridBillboardDrawer::HeightMapGridBillboardDrawer() : BillboardDrawable()
+{
+}
+
+void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect &rect, const BillboardContentData *data_, const QString &text, const QColor &textColor)
+{
+    HeightMapGridBillboardContentData const* data = dynamic_cast<HeightMapGridBillboardContentData const*>(data_);
+    assert(data != nullptr);
+
+    // Split text into lines
+    QStringList lines = data->text.split('\n');
+
+    // Two fonts: smaller for coordinates, larger for value
+    QFont smallFont;
+    smallFont.setPointSize(20);
+    QFont largeFont;
+    largeFont.setPointSize(28);
+
+    QFontMetrics fmSmall(smallFont);
+    QFontMetrics fmLarge(largeFont);
+
+    painter.fillRect(rect, data->bgColor);
+
+    // Draw text centered
+    painter.setPen(data->textColor);
+    int yPos = rect.y() + 4;
+
+    if (lines.size() > 0) {
+        painter.setFont(smallFont);
+        int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
+        painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
+        yPos += fmSmall.height();
+    }
+
+    if (lines.size() > 1) {
+        painter.setFont(largeFont);
+        int xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
+        painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
     }
 }
