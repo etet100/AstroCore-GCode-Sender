@@ -364,6 +364,10 @@ Heightmap preview:
 
 ![heightmap](/screenshots/screenshot_main_dark_heightmap.png)
 
+Heightmap with height markers:
+
+![heigmtmap markers](/screenshots/screenshot_main_heightmap_markers.png)
+
 Settings:
 
 ![settings](/screenshots/screenshot_settings.png)
