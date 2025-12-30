@@ -56,7 +56,7 @@ void BillboardDrawable::init()
     m_vbo.release();
 }
 
-QRectF BillboardDrawable::addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font)
+QRectF BillboardDrawable::addBillboardToAtlas(const QString &text, const QColor &textColor, const QFont &font)
 {
     // Create cache key from text and color
     QString cacheKey = text + "_" + textColor.name();
@@ -156,19 +156,19 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData &billboard, con
     // Swap top/bottom because OpenGL Y goes bottom-to-top, Qt Y goes top-to-bottom
     m_billboardVertices.append(BillboardVertex(
         billboard.position, size, QVector2D(0.0, 0.0),
-        QVector2D(normalizedLeft, normalizedBottom), color));
+        QVector2D(normalizedLeft, normalizedBottom)));
 
     m_billboardVertices.append(BillboardVertex(
         billboard.position, size, QVector2D(1.0, 0.0),
-        QVector2D(normalizedRight, normalizedBottom), color));
+        QVector2D(normalizedRight, normalizedBottom)));
 
     m_billboardVertices.append(BillboardVertex(
         billboard.position, size, QVector2D(1.0, 1.0),
-        QVector2D(normalizedRight, normalizedTop), color));
+        QVector2D(normalizedRight, normalizedTop)));
 
     m_billboardVertices.append(BillboardVertex(
         billboard.position, size, QVector2D(0.0, 1.0),
-        QVector2D(normalizedLeft, normalizedTop), color));
+        QVector2D(normalizedLeft, normalizedTop)));
 }
 
 void BillboardDrawable::drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor)
@@ -225,7 +225,7 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     m_billboardVertices.reserve(m_billboards.size() * 4);
 
     for (const BillboardData &billboard : m_billboards) {
-        QRectF texRect = addTextToAtlas(billboard.text, billboard.color, font);
+        QRectF texRect = addBillboardToAtlas(billboard.text, billboard.color, font);
 
         if (texRect.width() == 0) continue; // Skip if atlas is full
 
@@ -234,12 +234,12 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
         // Add geometry for this billboard
         addBillboardGeometry(billboard, texRect, color);
 
-        if (m_billboardVertices.size() == 4) {
-            qDebug() << "[BillboardDrawable] First billboard:"
-                     << "text=" << billboard.text
-                     << "position=" << billboard.position
-                     << "pixelSize=" << billboard.pixelSize;
-        }
+        // if (m_billboardVertices.size() == 4) {
+        //     qDebug() << "[BillboardDrawable] First billboard:"
+        //              << "text=" << billboard.text
+        //              << "position=" << billboard.position
+        //              << "pixelSize=" << billboard.pixelSize;
+        // }
     }
 
     // Update texture

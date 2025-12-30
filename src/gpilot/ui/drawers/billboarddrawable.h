@@ -25,19 +25,17 @@ struct BillboardData
 struct BillboardVertex
 {
     BillboardVertex() {}
-    BillboardVertex(QVector3D pos, QVector2D size, QVector2D corner, QVector2D tex, GLuint col) {
+    BillboardVertex(QVector3D pos, QVector2D size, QVector2D corner, QVector2D tex) {
         position = pos;
         billboardSize = size;
         cornerPos = corner;
         texCoord = tex;
-        color = col;
     }
 
     QVector3D position;
     QVector2D billboardSize;
     QVector2D cornerPos;      // Which corner: (0,0), (1,0), (1,1), (0,1)
     QVector2D texCoord;
-    GLuint color;
 };
 
 class BillboardDrawable : public ShaderDrawable
@@ -51,7 +49,6 @@ class BillboardDrawable : public ShaderDrawable
 
         QOpenGLTexture* texture() { return m_texture; }
 
-        // Billboard rendering options
         void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
         bool scaleWithDistance() const { return m_scaleWithDistance; }
         void setGlobalScale(float scale) { m_globalScale = scale; }
@@ -63,7 +60,7 @@ class BillboardDrawable : public ShaderDrawable
 
         void draw(QOpenGLShaderProgram *shaderProgram) override;
 
-        void init();  // Not virtual in base class, so no override
+        void init();
 
     private:
         QVector<BillboardData> m_billboards;
@@ -77,12 +74,11 @@ class BillboardDrawable : public ShaderDrawable
         int m_atlasY;
         int m_atlasRowHeight;
 
-        // Rendering options
-        bool m_scaleWithDistance;  // true = scale with distance (perspective), false = constant screen size
-        float m_globalScale;       // Global scale multiplier (default 1.0)
+        bool m_scaleWithDistance;
+        float m_globalScale;
 
         void rebuildAtlas(GLPalette &palette);
-        QRectF addTextToAtlas(const QString &text, const QColor &textColor, const QFont &font);
+        QRectF addBillboardToAtlas(const QString &text, const QColor &textColor, const QFont &font);
         void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
 
         // Virtual method for customizing billboard appearance

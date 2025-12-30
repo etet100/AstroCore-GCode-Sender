@@ -14,17 +14,12 @@ attribute vec3 a_position;        // Billboard center in world space
 attribute vec2 a_billboardSize;   // Size in pixels
 attribute vec2 a_corner;          // Corner position: (0,0), (1,0), (1,1), (0,1)
 attribute vec2 a_texCoord;        // Texture coordinates from atlas
-attribute float a_color;          // Color index
 
-varying vec4 v_color;
 varying vec2 v_texCoord;
 varying vec2 v_corner; // For debugging
 
 void main()
 {
-    // Get color from palette
-    v_color = texture2D(u_palette, vec2(a_color * (1.0 / 100.0) + (1.0 / 200.0), 0.0));
-
     // Pass texture coordinates to fragment shader
     v_texCoord = a_texCoord;
     v_corner = a_corner;
