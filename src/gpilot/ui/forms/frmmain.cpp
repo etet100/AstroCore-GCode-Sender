@@ -2208,21 +2208,23 @@ void FrmMain::restoreDockableLayoutState()
         // connect(w, &QDockWidget::topLevelChanged, this, &FrmMain::onDockTopLevelChanged);
     }
 
-    // Panels
-    ui->scrollContentsDevice->restoreState(this, set.value("panelsDevice").toStringList());
-    ui->scrollContentsModification->restoreState(this, set.value("panelsModification").toStringList());
-    ui->scrollContentsUser->restoreState(this, set.value("panelsUser").toStringList());
+    ConfigurationUI& uiConfiguration = m_configuration.uiModule();
 
-    QStringList hiddenPanels = set.value("hiddenPanels").toStringList();
+    // Panels
+    ui->scrollContentsDevice->restoreState(this, uiConfiguration.panelDeviceState());
+    ui->scrollContentsModification->restoreState(this, uiConfiguration.panelModificationState());
+    ui->scrollContentsUser->restoreState(this, uiConfiguration.panelUserState());
+
+    QStringList hiddenPanels = uiConfiguration.hiddenPanels();
     foreach (QString s, hiddenPanels) {
         QGroupBox *b = findChild<QGroupBox*>(s);
-        if (b) b->setHidden(true);
+        if (b) { b->setHidden(true); }
     }
 
-    QStringList collapsedPanels = set.value("collapsedPanels").toStringList();
+    QStringList collapsedPanels = uiConfiguration.collapsedPanels();
     foreach (QString s, collapsedPanels) {
         QGroupBox *b = findChild<QGroupBox*>(s);
-        if (b) b->setChecked(false);
+        if (b) { b->setChecked(false); }
     }
 
     // Normal window state
@@ -2314,9 +2316,10 @@ void FrmMain::saveSettings()
     set.setValue("shortcuts", ba);
 
     // Panels
-    set.setValue("panelsDevice", QVariant::fromValue(ui->scrollContentsDevice->saveState()));
-    set.setValue("panelsModification", QVariant::fromValue(ui->scrollContentsModification->saveState()));
-    set.setValue("panelsUser", QVariant::fromValue(ui->scrollContentsUser->saveState()));
+    uiConfiguration.setPanelModificationState(ui->scrollContentsModification->saveState());
+    uiConfiguration.setPanelDeviceState(ui->scrollContentsDevice->saveState());
+    uiConfiguration.setPanelUserState(ui->scrollContentsUser->saveState());
+    qDebug() << "Saving panels state:" << ui->scrollContentsUser->saveState();
 
     QStringList panels;
     QStringList hiddenPanels;
@@ -2329,12 +2332,10 @@ void FrmMain::saveSettings()
         if (b && b->isHidden()) hiddenPanels << s;
         if (b && b->isCheckable() && !b->isChecked()) collapsedPanels << s;
     }
-    set.setValue("hiddenPanels", hiddenPanels);
-    set.setValue("collapsedPanels", collapsedPanels);
+    uiConfiguration.setHiddenPanels(hiddenPanels);
+    uiConfiguration.setCollapsedPanels(collapsedPanels);
 
     // Menu
-    // set.setValue("lockWindows", ui->actViewLockWindows->isChecked());
-    // set.setValue("lockPanels", ui->actViewLockPanels->isChecked());
     uiConfiguration.setLockPanels(ui->actViewLockPanels->isChecked());
     uiConfiguration.setLockWindows(ui->actViewLockWindows->isChecked());
 

@@ -36,6 +36,11 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(bool mainFormMaximized MEMBER m_mainFormMaximized NOTIFY changed)
     Q_PROPERTY(QList<int> settingsFormSlicerSizes MEMBER m_settingsFormSlicerSizes NOTIFY changed)
     Q_PROPERTY(bool darkMode MEMBER m_darkMode NOTIFY changed)
+    Q_PROPERTY(QStringList panelModificationState MEMBER m_panelModificationState NOTIFY changed)
+    Q_PROPERTY(QStringList panelDeviceState MEMBER m_panelDeviceState NOTIFY changed)
+    Q_PROPERTY(QStringList panelUserState MEMBER m_panelUserState NOTIFY changed)
+    Q_PROPERTY(QStringList hiddenPanels MEMBER m_hiddenPanels NOTIFY changed)
+    Q_PROPERTY(QStringList collapsedPanels MEMBER m_collapsedPanels NOTIFY changed)
 
     public:
         explicit ConfigurationUI(QObject *parent);
@@ -73,6 +78,16 @@ class ConfigurationUI : public ConfigurationModule
         void setSettingsFormSlicerSizes(QList<int> sizes) { m_settingsFormSlicerSizes = sizes; emit changed(); }
         bool darkTheme() const { return m_darkMode; }
         void setDarkMode(bool darkMode) { m_darkMode = darkMode; emit changed(); }
+        QStringList panelModificationState() const { return m_panelModificationState; }
+        void setPanelModificationState(const QStringList &state) { m_panelModificationState = state; emit changed(); }
+        QStringList panelDeviceState() const { return m_panelDeviceState; }
+        void setPanelDeviceState(const QStringList &state) { m_panelDeviceState = state; emit changed(); }
+        QStringList panelUserState() const { return m_panelUserState; }
+        void setPanelUserState(const QStringList &state) { m_panelUserState = state; qDebug() << m_panelUserState; emit changed(); }
+        QStringList hiddenPanels() const { return m_hiddenPanels; }
+        void setHiddenPanels(const QStringList &panels) { m_hiddenPanels = panels; emit changed(); }
+        QStringList collapsedPanels() const { return m_collapsedPanels; }
+        void setCollapsedPanels(const QStringList &panels) { m_collapsedPanels = panels; emit changed(); }
 
     private:
         static const int MAX_RECENT_FILES = 10;
@@ -80,6 +95,11 @@ class ConfigurationUI : public ConfigurationModule
         QString m_language;
         QStringList m_recentFiles;
         QStringList m_recentHeightmaps;
+        QStringList m_panelModificationState;
+        QStringList m_panelDeviceState;
+        QStringList m_panelUserState;
+        QStringList m_hiddenPanels;
+        QStringList m_collapsedPanels;
         bool m_autoScrollGCode;
         QString m_currentWorkingDirectory;
         bool m_lockWindows;
