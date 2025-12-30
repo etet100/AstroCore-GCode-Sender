@@ -192,12 +192,12 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             QString labelText = QString("%1, %2\n%3")
                 .arg(i).arg(j).arg(value, 0, 'f', 2);
 
-            m_billboardDrawable.addBillboard(
-                QVector3D(x, y, value + 20.0),
-                labelText,
-                Qt::white,
-                25.0f  // Billboard size in pixels
-            );
+            // m_billboardDrawable.addBillboard(
+            //     QVector3D(x, y, value + 20.0),
+            //     labelText,
+            //     Qt::white,
+            //     25.0f  // Billboard size in pixels
+            // );
 
             if (i == 1 && j == 0) {
                 qDebug() << "[HeightMapGridDrawer] First billboard added at" << QVector3D(x, y, value + 20.0) << "label:" << labelText;

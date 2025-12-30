@@ -5,20 +5,37 @@
 #include <QOpenGLTexture>
 #include <QImage>
 #include <QMap>
+#include <QSharedPointer>
+
+struct BillboardContentData {
+    virtual ~BillboardContentData() = default;
+};
 
 struct BillboardData
 {
     BillboardData() {}
-    BillboardData(QVector3D pos, QString txt, QColor col = Qt::white, float size = 10.0f) {
+    BillboardData(const QVector3D& pos, QSharedPointer<BillboardContentData> cdata, const QString& txt, const QColor& col = Qt::white, float size = 10.0f) {
         position = pos;
         text = txt;
         color = col;
         pixelSize = size;
+        contentData = cdata;
+    }
+
+    // Convenience constructor that accepts raw pointer and wraps it in QSharedPointer
+    BillboardData(const QVector3D& pos, BillboardContentData* cdata, const QString& txt, const QColor& col = Qt::white, float size = 10.0f) {
+        position = pos;
+        text = txt;
+        color = col;
+        pixelSize = size;
+        contentData = QSharedPointer<BillboardContentData>(cdata);
     }
 
     QVector3D position;
     QString text;
     QColor color;
+    // QSharedPointer to allow polymorphic content data, this way we can extend BillboardContentData for different billboard types
+    QSharedPointer<BillboardContentData> contentData;
     float pixelSize;
 };
 
@@ -44,7 +61,7 @@ class BillboardDrawable : public ShaderDrawable
         explicit BillboardDrawable();
         ~BillboardDrawable();
 
-        void addBillboard(const QVector3D &position, const QString &text, const QColor &color = Qt::white, float pixelSize = 10.0f);
+        void addBillboard(const QVector3D& position, BillboardContentData* cdata, const QString& text, const QColor& color = Qt::white, float pixelSize = 10.0f);
         void clearBillboards();
 
         QOpenGLTexture* texture() { return m_texture; }
@@ -55,10 +72,10 @@ class BillboardDrawable : public ShaderDrawable
         float globalScale() const { return m_globalScale; }
 
         ProgramType programType() override { return ProgramType::Billboard; }
-        bool updateData(GLPalette &palette) override;
-        void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette) override;
+        bool updateData(GLPalette& palette) override;
+        void updateGeometry(QOpenGLShaderProgram* shaderProgram, GLPalette& palette) override;
 
-        void draw(QOpenGLShaderProgram *shaderProgram) override;
+        void draw(QOpenGLShaderProgram* shaderProgram) override;
 
         void init();
 
@@ -78,11 +95,11 @@ class BillboardDrawable : public ShaderDrawable
         float m_globalScale;
 
         void rebuildAtlas(GLPalette &palette);
-        QRectF addBillboardToAtlas(const QString &text, const QColor &textColor, const QFont &font);
-        void addBillboardGeometry(const BillboardData &billboard, const QRectF &texRect, GLuint color);
+        QRectF addBillboardToAtlas(const BillboardData& data, const QString& text, const QColor& textColor, const QFont& font);
+        void addBillboardGeometry(const BillboardData& data, const QRectF& texRect, GLuint color);
 
         // Virtual method for customizing billboard appearance
-        virtual void drawBillboard(QPainter &painter, const QRect &rect, const QString &text, const QColor &textColor);
+        virtual void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data, const QString& text, const QColor& textColor);
 };
 
 #endif // BILLBOARDDRAWABLE_H

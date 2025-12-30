@@ -10,7 +10,6 @@ public:
     OriginDrawer();
 
     void setZoom(double);
-
     OriginBillboardDrawer &billboardDrawable() { return m_billboardDrawable; }
 
 protected:

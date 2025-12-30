@@ -14,7 +14,6 @@ class HeightMapGridDrawer : public ShaderDrawable
     public:
         explicit HeightMapGridDrawer();
         void setModel(Heightmap &model);
-
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
 
     protected:
