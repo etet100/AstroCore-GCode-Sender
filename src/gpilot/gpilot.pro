@@ -113,6 +113,7 @@ SOURCES += main.cpp\
     core/jogger/jogger.cpp \
     core/machine/physicalmachineconfiguration.cpp \
     core/machine/physicalmachineconfigurationparser.cpp \
+    core/utils/filesmanager.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
@@ -244,6 +245,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/jogger/jogger.h \
     core/machine/physicalmachineconfiguration.h \
     core/machine/physicalmachineconfigurationparser.h \
+    core/utils/filesmanager.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \

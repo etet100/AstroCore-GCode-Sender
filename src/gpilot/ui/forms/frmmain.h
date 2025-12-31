@@ -247,8 +247,6 @@ private:
 
     // Filenames
     QString m_settingsFileName;
-    QString m_programFileName;
-    QString m_heightmapFileName;
 
     // Timers
     QTimer m_timerConnection;
@@ -290,7 +288,7 @@ private:
     void updateParser();
 
     // Files/models
-    void loadFile(QString fileName);
+    void loadFile(QString filePath);
     void loadLines(QList<std::string> data);
     void applyLoaderGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
