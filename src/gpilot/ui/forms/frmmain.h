@@ -115,10 +115,6 @@ private slots:
     void on_actServiceSettings_triggered();
     void on_actServiceConfigureGRBL_triggered();
     void on_actAbout_triggered();
-    // void on_actJogStepNext_triggered();
-    // void on_actJogStepPrevious_triggered();
-    // void on_actJogFeedNext_triggered();
-    // void on_actJogFeedPrevious_triggered();
     void on_actSpindleSpeedPlus_triggered();
     void on_actSpindleSpeedMinus_triggered();
     void on_actViewLockWindows_toggled(bool checked);
@@ -211,8 +207,6 @@ private:
     QMessageBox* m_senderErrorBox;
 #ifdef WINDOWS
     UINT m_taskbarButtonCreatedMessageId;
-    // QWinTaskbarButton *m_taskBarButton;
-    // QWinTaskbarProgress *m_taskBarProgress;
     WindowsTaskbar m_taskBar;
 #endif
 

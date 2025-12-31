@@ -241,20 +241,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         this->setWindowTitle(!opened ? qApp->applicationDisplayName() : fm.gcodeFileName() + " - " + qApp->applicationDisplayName());
     });
 
-#ifdef WINDOWS
-    // m_taskBar.setMin(0);
-    // m_taskBar.setMax(100);
-    // m_taskBar.setValue(50);
-    // m_taskBar.setVisible(true);
-
-    // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-    //     m_taskBarButton = NULL;
-    //     m_taskBarProgress = NULL;
-    // }
-#endif
-
-//    ui->scrollArea->updateMinimumWidth();
-
     m_heightmapMode = false;
     m_program.resetProcessed();
     m_programLoading = false;
@@ -279,23 +265,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
     });
 
-    // ui->cmdToggleProjection->setParent(ui->glwVisualizer);
-    // ui->cmdFit->setParent(ui->glwVisualizer);
-    // ui->cmdIsometric->setParent(ui->glwVisualizer);
-    // ui->cmdTop->setParent(ui->glwVisualizer);
-    // ui->cmdFront->setParent(ui->glwVisualizer);
-    // ui->cmdLeft->setParent(ui->glwVisualizer);
-    // ui->cmdRotationCube->setParent(ui->glwVisualizer);
-
     // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
     // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
     // ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
     // ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-
-    // ui->cboJogStep->setValidator(new QDoubleValidator(0, 10000, 2));
-    // ui->cboJogFeed->setValidator(new QIntValidator(0, 100000));
-    // connect(ui->cboJogStep, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
-    // connect(ui->cboJogFeed, &ComboBoxKey::currentTextChanged, this, &FrmMain::updateJogTitle);
 
     // Prepare Open and Send menus
     ui->program->setupFileOpenMenu(this, SLOT(onFileOpen()), SLOT(on_cmdHeightMapLoad_clicked()));
@@ -969,15 +942,10 @@ void FrmMain::onFileSend()
 
 //     m_communicator->storeParserState();
 
-// #ifdef WINDOWS
-//     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-//     //     if (m_taskBarProgress) {
-//     //         m_taskBarProgress->setMaximum(m_currentModel->rowCount() - 2);
-//     //         m_taskBarProgress->setValue(0);
-//     //         m_taskBarProgress->show();
-//     //     }
-//     // }
-// #endif
+#ifdef WINDOWS
+    m_taskBar.setProgress(0, m_program.count() - 1);
+    m_taskBar.show();
+#endif
 
 //     updateControlsState();
 //     ui->cmdFilePause->setFocus();
@@ -2030,11 +1998,6 @@ void FrmMain::onDockTopLevelChanged(bool topLevel)
     static_cast<QWidget*>(sender())->setStyleSheet("");
 }
 
-// void FrmMain::onVisualizerCursorPosChanged(QPointF pos)
-// {
-//     m_cursorDrawer.setPosition(pos);
-// }
-
 // void FrmMain::onProgramLinesUpdated(int from, int to)
 // {
 //     qDebug() << "FrmMain::onProgramLinesUpdated from" << from << "to" << to;
@@ -2527,19 +2490,6 @@ void FrmMain::applySettings()
         }
     }
 }
-
-// void FrmMain::openPortIfNeeded()
-// {
-//     assert(m_communicator != nullptr);
-
-//     if (m_connection->state() == ConnectionState::Connecting || m_connection->state() == ConnectionState::Connected) {
-//         return;
-//     }
-
-//     if (m_connection->open()) {
-//         ui->state->setStatusText(tr("Port opened"), "palette(button)", "palette(text)");
-//     }
-// }
 
 void FrmMain::updateParser()
 {
@@ -3046,10 +2996,10 @@ void FrmMain::updateControlsState()
     if (!process) ui->jog->restoreKeyboardControl();
 
 #ifdef WINDOWS
-    // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7 && m_taskBarProgress) {
-    //     m_taskBarProgress->setPaused(paused);
-    //     if (m_communicator->senderState() == SenderStopped) m_taskBarProgress->hide();
-    // }
+    m_taskBar.setPaused(paused);
+    if (m_communicator->senderState() == SenderState::Stopped) {
+        m_taskBar.hide();
+    }
 #endif
 
     ui->program->updateButtonStyles();
@@ -3506,13 +3456,6 @@ QTime FrmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
 //     }
 
 //     return list;
-// }
-
-
-
-// int FrmMain::buttonSize()
-// {
-//     return ui->cmdHome->minimumWidth();
 // }
 
 void FrmMain::onTransferCompleted()

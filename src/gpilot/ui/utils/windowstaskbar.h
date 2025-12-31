@@ -18,7 +18,9 @@ class WindowsTaskbar : public QObject
         ~WindowsTaskbar();
         void init();
         void setProgress(int value, int total);
-
+        void setPaused(bool);
+        void hide();
+        void show();
     private:
         QPropertyAnimation *m_animator;
         QWidget *m_widget;

@@ -26,7 +26,30 @@ void WindowsTaskbar::init()
 
 void WindowsTaskbar::setProgress(int value, int total)
 {
-    m_pTaskbar->SetProgressValue(hwnd(), value, total);
+    if (m_pTaskbar) {
+        m_pTaskbar->SetProgressValue(hwnd(), value, total);
+    }
+}
+
+void WindowsTaskbar::setPaused(bool)
+{
+    if (m_pTaskbar) {
+        m_pTaskbar->SetProgressState(hwnd(), TBPF_PAUSED);
+    }
+}
+
+void WindowsTaskbar::hide()
+{
+    if (m_pTaskbar) {
+        m_pTaskbar->SetProgressState(hwnd(), TBPF_NOPROGRESS);
+    }
+}
+
+void WindowsTaskbar::show()
+{
+    if (m_pTaskbar) {
+        m_pTaskbar->SetProgressState(hwnd(), TBPF_NORMAL);
+    }
 }
 
 HWND WindowsTaskbar::hwnd()
