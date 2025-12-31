@@ -218,6 +218,8 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
 
 HeightMapGridBillboardDrawer::HeightMapGridBillboardDrawer() : BillboardDrawable()
 {
+    m_scaleWithDistance = false;
+    m_globalScale = 1.6;
 }
 
 QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData *data_)

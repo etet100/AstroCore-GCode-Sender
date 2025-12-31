@@ -47,7 +47,7 @@ void main()
             gl_Position.xy += offset * 0.3;
         } else {
             // Constant screen size: multiply by w (compensates for perspective divide)
-            gl_Position.xy += offset * 0.004 * gl_Position.w;
+            gl_Position.xy += offset * 0.001 * gl_Position.w;
         }
     }
 }

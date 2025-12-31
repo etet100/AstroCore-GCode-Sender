@@ -152,8 +152,6 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     m_atlasY = 0;
     m_atlasRowHeight = 0;
 
-    QFont font("Arial", 16);
-
     // Build vertex data
     m_billboardVertices.clear();
     m_billboardVertices.reserve(m_billboards.size() * 4);
@@ -171,14 +169,10 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     if (m_texture) {
         delete m_texture;
     }
-    // Don't mirror - Qt and OpenGL have same Y coordinate system for textures
+
     m_texture = new QOpenGLTexture(m_atlasImage);
     m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
     m_texture->setMagnificationFilter(QOpenGLTexture::Nearest);
-
-    // DEBUG: Save atlas to file to inspect
-    m_atlasImage.save("billboard_atlas_debug.png");
-    qDebug() << "[BillboardDrawable] Saved atlas to billboard_atlas_debug.png";
 }
 
 bool BillboardDrawable::updateData(GLPalette &palette)
@@ -188,6 +182,7 @@ bool BillboardDrawable::updateData(GLPalette &palette)
     }
 
     rebuildAtlas(palette);
+
     return true;
 }
 
