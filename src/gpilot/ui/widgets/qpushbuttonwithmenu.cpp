@@ -1,6 +1,6 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
+// Copyright 2025 BTS
 
 #include "qpushbuttonwithmenu.h"
 #include <QMenu>
@@ -23,40 +23,20 @@ QMenu *QPushButtonWithMenu::menu() const
 void QPushButtonWithMenu::mousePressEvent(QMouseEvent *e)
 {
     if (!isOnArrow(e->pos())) {
-        QPushButton::setMenu(nullptr);
+        emit clicked();
+
+        return;
     }
 
     QPushButton::mousePressEvent(e);
-    QPushButton::setMenu(m_menu);
-}
-
-void QPushButtonWithMenu::mouseReleaseEvent(QMouseEvent *e)
-{
-    if (!isOnArrow(e->pos())) {
-        QPushButton::setMenu(nullptr);
-    }
-
-    QPushButton::mouseReleaseEvent(e);
-    QPushButton::setMenu(m_menu);
-}
-
-void QPushButtonWithMenu::paintEvent(QPaintEvent *e)
-{
-    Q_UNUSED(e);
-
-    QStylePainter p(this);
-    QStyleOptionButton option;
-    initStyleOption(&option);
-    p.drawControl(QStyle::CE_PushButton, option);
-
-    QPen pen = p.pen();
-    pen.setColor(option.palette.highlight().color());
-    p.setPen(pen);
-
-    p.drawLine(width() - 22, 3, width() - 22, height() - 4);
 }
 
 bool QPushButtonWithMenu::isOnArrow(const QPoint &pos) const
 {
-    return pos.x() > width() - 20;
+    QStyleOptionButton option;
+    initStyleOption(&option);
+
+    int menuButtonWidth = style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &option, this) * 1.6;
+
+    return pos.x() >= width() - menuButtonWidth;
 }

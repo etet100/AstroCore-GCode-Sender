@@ -17,7 +17,7 @@
 	url = https://github.com/RobTillaart/CRC
 [submodule "src/vendor/phantomstyle"]
 	path = src/vendor/phantomstyle
-	url = https://github.com/cristianadam/phantomstyle
+	url = https://github.com/etet100/G-Pilot-phantomstyle
 [submodule "src/vendor/grblHal"]
 	path = src/vendor/grblHal
 	url = https://github.com/grblHAL/simulator
