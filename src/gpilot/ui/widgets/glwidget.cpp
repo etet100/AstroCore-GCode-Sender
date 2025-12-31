@@ -903,6 +903,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
             currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
             currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
             currentProgram->setUniformValue("u_isOrthographic", (m_mode != ViewMode::Perspective) ? 1 : 0);
+            currentProgram->setUniformValue("u_aspectRatio", (float)width() / (float)height());
             m_palette.bind();
             drawable->draw(currentProgram);
             m_palette.release();
@@ -1098,7 +1099,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         if (m_xRot > 90) m_xRot = 90;
 
         updateView();
-        emit rotationChanged();
+        emit rotated();
     }
 
     // Panning: Right button, Shift+Middle, Shift+Left, or Left button in 2D mode
@@ -1198,6 +1199,8 @@ void GLWidget::mouseDoubleClickEvent(QMouseEvent *event)
         if (!qIsNaN(cursorPos.x()) && !qIsNaN(cursorPos.y())) {
             emit goToCursor(cursorPos);
         }
+
+        emit mouseDoubleClicked(event->pos());
     }
 }
 

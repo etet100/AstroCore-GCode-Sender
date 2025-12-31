@@ -26,6 +26,17 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
 
     connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::cursorPosChanged);
 
+    // connect(ui->visualizer, &GLContainer::rotated, this, [this]() {
+    // });
+    connect(ui->visualizer, &GLContainer::mouseDoubleClicked, this, [this](QPoint pos) {
+        BillboardDrawable* billboardDrawable = m_heightmapGridDrawer.billboardDrawable();
+        billboardDrawable->updateScreenPositions(
+            ui->visualizer->viewMatrix(),
+            ui->visualizer->projectionMatrix(),
+            ui->visualizer->size()
+        );
+        qDebug() << billboardDrawable->hitTest(pos);
+    });
     connect(ui->visualizer, &GLContainer::entered, this, [this]() {
         m_cursorDrawer.setVisible(true);
     });
@@ -35,7 +46,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     connect(ui->visualizer, &GLContainer::zoomChanged, this, [this](double zoom) {
         m_originDrawer.setZoom(zoom);
     });
-    connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
+    // connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
     connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         emit viewModeChanged(mode);
     });

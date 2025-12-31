@@ -11,6 +11,13 @@ struct BillboardContentData {
     virtual ~BillboardContentData() = default;
 };
 
+struct BillboardScreenPosition {
+    QVector2D screenPos;     // Center position on screen
+    QVector2D screenSize;    // Size in pixels on screen
+    int billboardIndex;      // Index in m_billboards array
+    float depth;             // Z-depth for sorting (closer = smaller value)
+};
+
 struct BillboardData
 {
     BillboardData() {}
@@ -58,12 +65,17 @@ class BillboardDrawable : public ShaderDrawable
         void addBillboard(const QVector3D& position, BillboardContentData* cdata, float pixelSize = 10.0f);
         void clearBillboards();
 
-        QOpenGLTexture* texture() { return m_texture; }
-
         void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
         void setGlobalScale(float scale) { m_globalScale = scale; }
 
         ProgramType programType() override { return ProgramType::Billboard; }
+
+        // For hit testing. Call updateScreenPositions() first to refresh positions.
+        void updateScreenPositions(const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QSize& viewportSize, bool isOrthographic = false);
+        // Returns index of hit billboard, or -1 if none hit
+        int hitTest(const QPoint& screenPos) const;
+
+        const QVector<BillboardScreenPosition>& screenPositions() const { return m_screenPositions; }
         bool updateData(GLPalette& palette) override;
         void updateGeometry(QOpenGLShaderProgram* shaderProgram, GLPalette& palette) override;
         void draw(QOpenGLShaderProgram* shaderProgram) override;
@@ -82,10 +94,10 @@ class BillboardDrawable : public ShaderDrawable
         QVector<BillboardVertex> m_billboardVertices;
         QOpenGLTexture *m_texture;
         QOpenGLBuffer m_indexBuffer;
-
         QMap<QString, QRectF> m_textCache;
         QImage m_atlasImage;
         int m_atlasX;
+        QVector<BillboardScreenPosition> m_screenPositions;
         int m_atlasY;
         int m_atlasRowHeight;
 

@@ -10,6 +10,7 @@ uniform sampler2D u_palette;
 uniform int u_scaleWithDistance;  // 1 = scale with distance, 0 = constant screen size
 uniform float u_globalScale;      // Global scale multiplier
 uniform int u_isOrthographic;     // 1 = orthographic projection, 0 = perspective
+uniform float u_aspectRatio;      // Viewport width / height
 
 attribute vec3 a_position;        // Billboard center in world space
 attribute vec2 a_billboardSize;   // Size in pixels
@@ -35,6 +36,9 @@ void main()
 
     // Apply global scale
     offset *= u_globalScale;
+
+    // Compensate for aspect ratio to maintain square billboards
+    offset.x /= u_aspectRatio;
 
     // Different handling based on scaleWithDistance setting and projection mode
     if (u_isOrthographic == 1) {

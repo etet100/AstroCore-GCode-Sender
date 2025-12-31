@@ -46,6 +46,7 @@ public:
 
     void updateExtremes(ShaderDrawable *drawable);
     void fitDrawable(ShaderDrawable *drawable = NULL);
+
     bool antialiasing() const;
     void setAntialiasing(bool antialiasing);
 
@@ -123,9 +124,13 @@ public:
         m_offset = val;
     }
 
+    QMatrix4x4& viewMatrix() { return m_viewMatrix; }
+    QMatrix4x4& projectionMatrix() { return m_projectionMatrix; }
+
 signals:
-    void rotationChanged();
+    void rotated();
     void cursorPosChanged(QPointF);
+    void mouseDoubleClicked(QPoint);
     void resized();
     void entered();
     void left();
