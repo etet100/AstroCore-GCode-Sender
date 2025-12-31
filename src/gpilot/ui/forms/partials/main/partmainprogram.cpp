@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QAbstractItemView>
+#include "utils/utils.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
@@ -146,7 +147,7 @@ void PartMainProgram::setCurrentIndex(const QModelIndex& index)
 
 void PartMainProgram::abortClicked() { emit abort(); }
 void PartMainProgram::startClicked() { emit start(); }
-void PartMainProgram::openClicked() { emit open(); }
+void PartMainProgram::openClicked() { emit openFile(); }
 void PartMainProgram::resetClicked() { emit reset(); }
 void PartMainProgram::setProgramVisible(bool visible)
 {
@@ -209,16 +210,7 @@ void PartMainProgram::setSendButtonText(const QString& text)
 
 void PartMainProgram::updateButtonStyles()
 {
-    style()->unpolish(ui->cmdFileOpen);
-    style()->unpolish(ui->cmdFileReset);
-    style()->unpolish(ui->cmdFileSend);
-    style()->unpolish(ui->cmdFilePause);
-    style()->unpolish(ui->cmdFileAbort);
-    ui->cmdFileOpen->ensurePolished();
-    ui->cmdFileReset->ensurePolished();
-    ui->cmdFileSend->ensurePolished();
-    ui->cmdFilePause->ensurePolished();
-    ui->cmdFileAbort->ensurePolished();
+    Utils::refreshStyle({ui->cmdFileOpen, ui->cmdFileReset, ui->cmdFileSend, ui->cmdFilePause, ui->cmdFileAbort});
 }
 
 void PartMainProgram::setSendMenuFirstActionEnabled(bool enabled)
@@ -229,17 +221,12 @@ void PartMainProgram::setSendMenuFirstActionEnabled(bool enabled)
     }
 }
 
-QMenu* PartMainProgram::getFileOpenMenu()
-{
-    return ui->cmdFileOpen->menu();
-}
-
-void PartMainProgram::setupFileOpenMenu(QObject* receiver, const char* openGCodeSlot, const char* openHeightmapSlot)
-{
-    QMenu* menu = ui->cmdFileOpen->menu();
-    menu->addAction(tr("Open G-Code file"), receiver, openGCodeSlot);
-    menu->addAction(tr("Open Heightmap file"), receiver, openHeightmapSlot);
-}
+// void PartMainProgram::setupFileOpenMenu(QObject* receiver, const char* openGCodeSlot, const char* openHeightmapSlot)
+// {
+//     QMenu* menu = ui->cmdFileOpen->menu();
+//     menu->addAction(tr("Open G-Code file"), receiver, openGCodeSlot);
+//     menu->addAction(tr("Open Heightmap file"), receiver, openHeightmapSlot);
+// }
 
 void PartMainProgram::setupFileSendMenu(QObject* receiver, const char* sendFromLineSlot)
 {
@@ -279,8 +266,45 @@ void PartMainProgram::selectRow(int row)
     }
 }
 
+void PartMainProgram::setRecentFiles(QStringList files)
+{
+    if (files.empty()) {
+        ui->cmdFileOpen->setMenu(nullptr);
+        return;
+    }
+
+    // menu() returns menu even if we set it to nullptr before
+    QMenu* menu = ui->cmdFileOpen->menu();
+    menu->clear();
+
+    for (auto& file : files) {
+        QAction *action = new QAction(file, this);
+        connect(action, &QAction::triggered, this, &PartMainProgram::openRecentFile);
+        menu->addAction(action);
+    }
+
+    menu->addSeparator();
+
+    QAction *clearAction = new QAction(tr("&Clear"), this);
+    connect(clearAction, &QAction::triggered, this, [this]() {
+        emit clearRecentFiles();
+    });
+
+    menu->addAction(clearAction);
+
+    ui->cmdFileOpen->setMenu(menu);
+}
+
 void PartMainProgram::pauseClicked(bool checked) {
     emit pause(checked);
+}
+
+void PartMainProgram::openRecentFile()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    if (action) {
+        emit openFile(action->text());
+    }
 }
 
 bool PartMainProgram::eventFilter(QObject *obj, QEvent *event)

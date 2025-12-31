@@ -110,7 +110,7 @@ private slots:
     void on_actFileSaveTransformedAs_triggered();
     void on_actHeightmapOpen2_triggered();
     void on_actHeightmapSave_triggered();
-    void onActRecentClearTriggered();
+    void clearRecentFiles();
     void on_actFileExit_triggered();
     void on_actServiceSettings_triggered();
     void on_actServiceConfigureGRBL_triggered();
@@ -121,7 +121,7 @@ private slots:
     void on_actViewDarkMode_toggled(bool checked);
     void on_actViewCentralProgram_toggled(bool checked);
     void on_actViewCentralVisualizer_toggled(bool checked);
-    void onFileOpen();
+    void onFileOpen(QString filePath = "");
     void onFileSend();
     void onFilePause(bool checked);
     void onFileAbort();
@@ -297,7 +297,7 @@ private:
     // Ui
     void updateControlsState();
     void updateLayouts();
-    void updateRecentFilesMenu();
+    void updateRecentFilesMenus();
     void updateOverride(SliderBox *slider, int value, char command);
     void updateJogTitle();
     void addRecentFile(QString fileName);
@@ -311,7 +311,7 @@ private:
     // void updateCurrentModel(GCodeTableModel *m_currentModel);
     void updateToolPositionAndToolpathShadowing(QVector3D toolPosition);
     // void updateToolpathShadowingOnCheckMode();
-    QString lastWorkingDirectory();
+    QString lastUsedDirectory();
 
     // Utility
     QTime updateProgramEstimatedTime(QList<LineSegment> &lines);

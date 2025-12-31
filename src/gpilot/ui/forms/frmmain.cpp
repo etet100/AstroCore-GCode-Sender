@@ -149,6 +149,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->program, &PartMainProgram::hideCommentsChanged, this, [this](bool checked) {
         m_programModel.setCommentsVisible(!checked);
     });
+    connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
+        clearRecentFiles();
+    });
 
     connect(ui->control, &PartMainControl::unlock, this, [this]() {
         // m_communicator->m_updateSpindleSpeed = true;
@@ -271,7 +274,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
 
     // Prepare Open and Send menus
-    ui->program->setupFileOpenMenu(this, SLOT(onFileOpen()), SLOT(on_cmdHeightMapLoad_clicked()));
     ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
 
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
@@ -308,7 +310,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
     clearTable();
 
-    connect(ui->program, &PartMainProgram::open, this, &FrmMain::onFileOpen);
+    connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
     connect(ui->program, &PartMainProgram::start, this, &FrmMain::onFileSend);
     connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
     connect(ui->program, &PartMainProgram::abort, this, &FrmMain::onFileAbort);
@@ -594,7 +596,7 @@ void FrmMain::dropEvent(QDropEvent *de)
         // Load dropped g-code file
         if (!fileName.isEmpty()) {
             addRecentFile(fileName);
-            updateRecentFilesMenu();
+            updateRecentFilesMenus();
             loadFile(fileName);
         // Load dropped text
         } else {
@@ -608,7 +610,7 @@ void FrmMain::dropEvent(QDropEvent *de)
 
         // Load dropped heightmap file
         addRecentHeightmap(fileName);
-        updateRecentFilesMenu();
+        updateRecentFilesMenus();
         // loadHeightmap(fileName);
     }
 }
@@ -680,19 +682,19 @@ void FrmMain::on_actFileSaveAs_triggered()
     FilesManager& fm = FilesManager::instance();
 
     if (!m_heightmapMode) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), "", tr(FILE_FILTER_TEXT));
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT));
 
         if (!fileName.isEmpty()) if (saveProgramToFile(fileName, m_program)) {
             fm.setGcodeFilePath(fileName);
             m_fileChanged = false;
 
             addRecentFile(fileName);
-            updateRecentFilesMenu();
+            updateRecentFilesMenus();
 
             updateControlsState();
         }
     } else {
-        QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastWorkingDirectory(), tr("Heightmap files (*.map)")));
+        QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
 
         if (!fileName.isEmpty()) if (saveHeightmap(fileName)) {
             fm.setHeightmapFilePath(fileName);
@@ -701,7 +703,7 @@ void FrmMain::on_actFileSaveAs_triggered()
             ui->heightmap->setOpenFile(fileName.mid(fileName.lastIndexOf("/") + 1));
 
             addRecentHeightmap(fileName);
-            updateRecentFilesMenu();
+            updateRecentFilesMenus();
 
             updateControlsState();
         }
@@ -710,7 +712,7 @@ void FrmMain::on_actFileSaveAs_triggered()
 
 void FrmMain::on_actFileSaveTransformedAs_triggered()
 {
-    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastWorkingDirectory(), tr(FILE_FILTER_TEXT)));
+    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT)));
 
     if (!fileName.isEmpty()) {
 //        saveProgramToFile(fileName, &m_programHeightmapModel);
@@ -719,7 +721,7 @@ void FrmMain::on_actFileSaveTransformedAs_triggered()
 
 void FrmMain::on_actHeightmapOpen2_triggered()
 {
-    QString fileName = (QFileDialog::getOpenFileName(this, tr("Open heightmap"), lastWorkingDirectory(), tr("Heightmap files (*.map)")));
+    QString fileName = (QFileDialog::getOpenFileName(this, tr("Open heightmap"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
     if (fileName.isEmpty()) {
         return;
     }
@@ -739,7 +741,7 @@ void FrmMain::on_actHeightmapOpen2_triggered()
 
 void FrmMain::on_actHeightmapSave_triggered()
 {
-    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastWorkingDirectory(), tr("Heightmap files (*.map)")));
+    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
     if (fileName.isEmpty()) {
         return;
     }
@@ -754,12 +756,15 @@ void FrmMain::on_actHeightmapSave_triggered()
     ui->console->append(tr("Heightmap saved to %1").arg(fileName));
 }
 
-void FrmMain::onActRecentClearTriggered()
+void FrmMain::clearRecentFiles()
 {
-    if (!m_heightmapMode) m_configuration.uiModule().clearRecentFiles();
-        else m_configuration.uiModule().clearRecentHeightmaps();
+    if (!m_heightmapMode) {
+        m_configuration.uiModule().clearRecentFiles();
+    } else {
+        m_configuration.uiModule().clearRecentHeightmaps();
+    }
     m_configuration.save();
-    updateRecentFilesMenu();
+    updateRecentFilesMenus();
 }
 
 void FrmMain::on_actFileExit_triggered()
@@ -886,7 +891,7 @@ void FrmMain::on_actViewCentralVisualizer_toggled(bool checked)
     switchCentralWidget(ui->actViewCentralVisualizer);
 }
 
-void FrmMain::onFileOpen()
+void FrmMain::onFileOpen(QString filePath)
 {
     if (!m_communicator->isMachineConfigurationReady()) {
         qWarning() << "[UI] Machine configuration is not ready";
@@ -897,29 +902,36 @@ void FrmMain::onFileOpen()
     if (!m_heightmapMode) {
         if (!saveChanges(false)) return;
 
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), "",
+        if (filePath.isEmpty()) {
+            filePath = QFileDialog::getOpenFileName(this, tr("Open Heightmap"), lastUsedDirectory(),
                                    tr(FILE_FILTER_TEXT";;All files (*.*)"));
-        if (fileName.isEmpty()) {
-            return;
+            if (filePath.isEmpty()) {
+                return;
+            }
+
+            m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
-        m_configuration.uiModule().currentWorkingDirectory(fileName.left(fileName.lastIndexOf(QRegularExpression("[/\\\\]+"))));
+        addRecentFile(filePath);
+        updateRecentFilesMenus();
 
-        addRecentFile(fileName);
-        updateRecentFilesMenu();
-
-        loadFile(fileName);
+        loadFile(filePath);
     } else {
         if (!saveChanges(true)) return;
 
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), lastWorkingDirectory(), tr("Heightmap files (*.map)"));
-        if (fileName.isEmpty()) {
-            return;
+        if (filePath.isEmpty()) {
+            QString filePath = QFileDialog::getOpenFileName(this, tr("Open G-Code"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
+            if (filePath.isEmpty()) {
+                return;
+            }
+
+            m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
-        addRecentHeightmap(fileName);
-        updateRecentFilesMenu();
-        loadHeightmap(fileName);
+        addRecentHeightmap(filePath);
+        updateRecentFilesMenus();
+
+        loadHeightmap(filePath);
     }
 }
 
@@ -1488,7 +1500,7 @@ void FrmMain::heightmapModeToggled(bool checked)
     // If chkHeightMapUse was checked codeDrawer updated via updateParser
     if (!ui->heightmap->useMap()) ui->visualizer->updateCodeDrawer(indexes);
 
-    updateRecentFilesMenu();
+    updateRecentFilesMenus();
     updateControlsState();
 }
 
@@ -1498,7 +1510,7 @@ void FrmMain::onLoadHeightmapRequested()
         return;
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), lastWorkingDirectory(), tr("Heightmap files (*.map)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
 
     if (fileName != "") {
         addRecentHeightmap(fileName);
@@ -1512,7 +1524,7 @@ void FrmMain::onLoadHeightmapRequested()
             useHeightmapToggled(true);
         }
 
-        updateRecentFilesMenu();
+        updateRecentFilesMenus();
         updateControlsState(); // Enable 'cmdHeightMapMode' button
     }
 }
@@ -2083,7 +2095,7 @@ void FrmMain::applySpindleConfiguration(ConfigurationMachine &machineConfigurati
 
 void FrmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
 {
-    updateRecentFilesMenu();
+    updateRecentFilesMenus();
 }
 
 void FrmMain::loadSettings()
@@ -2831,7 +2843,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
             m_heightmapMode = true;
             on_actFileSave_triggered();
             m_heightmapMode = heightMapMode;
-            updateRecentFilesMenu(); // Restore g-code files recent menu
+            updateRecentFilesMenus(); // Restore g-code files recent menu
         }
 
         m_fileChanged = false;
@@ -3042,11 +3054,10 @@ void FrmMain::updateLayouts()
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
-void FrmMain::updateRecentFilesMenu()
+void FrmMain::updateRecentFilesMenus()
 {
     ui->menuRecent->clear();
-    QMenu *fileOpenMenu = ui->program->getFileOpenMenu();
-    fileOpenMenu->clear();
+    ui->program->setRecentFiles(m_configuration.uiModule().recentFiles());
 
     QStringList files = !m_heightmapMode ? m_configuration.uiModule().recentFiles() : m_configuration.uiModule().recentHeightmaps();
     if (!files.empty())
@@ -3057,17 +3068,14 @@ void FrmMain::updateRecentFilesMenu()
             QAction *action = new QAction(*it, this);
             connect(action, &QAction::triggered, this, &FrmMain::onActRecentFileTriggered);
             ui->menuRecent->addAction(action);
-            fileOpenMenu->addAction(action);
         }
 
         ui->menuRecent->addSeparator();
-        fileOpenMenu->addSeparator();
 
         QAction *clearAction = new QAction(tr("&Clear"), this);
-        connect(clearAction, &QAction::triggered, this, &FrmMain::onActRecentClearTriggered);
+        connect(clearAction, &QAction::triggered, this, &FrmMain::clearRecentFiles);
 
         ui->menuRecent->addAction(clearAction);
-        fileOpenMenu->addAction(clearAction);
     }
 
     updateControlsState();
@@ -3377,8 +3385,9 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 //     }
 // }
 \
-QString FrmMain::lastWorkingDirectory()
+QString FrmMain::lastUsedDirectory()
 {
+    qDebug() << m_configuration.uiModule().currentWorkingDirectory();
     return m_configuration.uiModule().currentWorkingDirectory();
 }
 
