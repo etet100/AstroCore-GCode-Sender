@@ -133,6 +133,7 @@ SOURCES += main.cpp\
     ui/drawers/originbillboarddrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
+    ui/forms/modals/dlgeditheightmappoint.cpp \
     ui/forms/partials/main/partmainconsole.cpp \
     ui/forms/partials/main/partmaincontrol.cpp \
     ui/forms/partials/main/partmainheightmap.cpp \
@@ -266,6 +267,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
+    ui/forms/modals/dlgeditheightmappoint.h \
     ui/forms/partials/main/partmainconsole.h \
     ui/forms/partials/main/partmaincontrol.h \
     ui/forms/partials/main/partmainheightmap.h \
@@ -352,6 +354,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/qpushbuttonwithmenu.h
 
 FORMS    += ui/forms/frmmain.ui \
+    ui/forms/modals/dlgeditheightmappoint.ui \
     ui/forms/partials/main/partmainconsole.ui \
     ui/forms/partials/main/partmaincontrol.ui \
     ui/forms/partials/main/partmainheightmap.ui \
