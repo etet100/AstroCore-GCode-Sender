@@ -18,7 +18,7 @@ HeightmapExporter::HeightmapExporter() {}
 //     0.12 0.15 0.18 0.20
 //     0.10 0.13 0.17 0.19
 
-void HeightmapExporter::exportToFile(const Heightmap heightmap, const QString fileName)
+void HeightmapExporter::exportToFile(const Heightmap& heightmap, const QString fileName)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -36,7 +36,7 @@ void HeightmapExporter::exportToFile(const Heightmap heightmap, const QString fi
     for (int row = 0; row < heightmap.gridHeight(); ++row) {
         out << "row: ";
         for (int col = 0; col < heightmap.gridWidth(); ++col) {
-            out << heightmap.valueAt(QPoint(col, row));
+            out << heightmap.at(col, row);
             if (col < heightmap.gridWidth() - 1) {
                 out << " ";
             }

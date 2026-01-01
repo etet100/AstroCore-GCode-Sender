@@ -1,6 +1,6 @@
 // This file is a part of "Candle" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
+// Copyright 2024-2026 BTS
 
 #include <QFileDialog>
 #include <QTextStream>
@@ -26,6 +26,7 @@
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmaincontrol.h"
 #include "ui/forms/partials/main/partmainvirtualsettings.h"
+#include "ui/forms/modals/dlgeditheightmappoint.h"
 #include "ui/utils/thememanager.h"
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
@@ -282,6 +283,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     // ui->visualizer = new PartMainVisualizer(this);
     // m_program, m_heightmap
+    ui->visualizer->setHeightmap(m_heightmap);
     ui->visualizer->setCodeParser(&m_viewParser);
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
@@ -292,6 +294,16 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     initializeVisualizer();
 
+    connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
+        DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, m_heightmap.at(point), this);
+        connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
+            if (result == QDialog::Accepted) {
+                setHeightmapPoint(dialog->point(), dialog->height());
+            }
+            sender()->deleteLater();
+        });
+        dialog->open();
+    });
     connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
         m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
     });
@@ -727,7 +739,7 @@ void FrmMain::on_actHeightmapOpen2_triggered()
     }
 
     try {
-        m_heightmap = HeightmapLoader::loadFromFile(fileName);
+        m_heightmap = std::move(HeightmapLoader::loadFromFile(fileName));
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load heightmap: %1").arg(err.what()));
         return;
@@ -2015,7 +2027,7 @@ void FrmMain::onDockTopLevelChanged(bool topLevel)
 //     qDebug() << "FrmMain::onProgramLinesUpdated from" << from << "to" << to;
 // }
 
-void FrmMain::updateHeightMapInterpolationDrawer(bool reset)
+void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
 {
     if (m_settingsLoading) return;
 
@@ -3603,4 +3615,12 @@ void FrmMain::switchCentralWidget(QAction* action)
     // Add requested widget to central
     ui->centralWidget->layout()->addWidget(requestedConfig->widget);
     ui->centralWidgetTitle->setTitle(requestedConfig->title);
+}
+
+void FrmMain::setHeightmapPoint(QPoint point, double height)
+{
+    m_heightmap.setHeightAt(point, height);
+    ui->visualizer->updateHeightmap();
+
+    ui->console->append(QString("[Heightmap] Point (%1, %2) set to %3").arg(point.x()).arg(point.y()).arg(height));
 }

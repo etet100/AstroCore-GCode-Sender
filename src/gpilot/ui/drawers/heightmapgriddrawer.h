@@ -11,19 +11,19 @@
 
 struct HeightMapGridBillboardContentData : public BillboardContentData
 {
-        HeightMapGridBillboardContentData(const QPoint& pos, float height, const QString& text, const QColor& bgColor, const QColor& textColor)
-            : pos(pos)
-            , height(height)
-            , text(text)
-            , textColor(textColor)
-            , bgColor(bgColor)
-        {}
+    HeightMapGridBillboardContentData(const QPoint& pos, float height, const QString& text, const QColor& bgColor, const QColor& textColor)
+        : pos(pos)
+        , height(height)
+        , text(text)
+        , textColor(textColor)
+        , bgColor(bgColor)
+    {}
 
-        QPoint pos;
-        float height;
-        QString text;
-        QColor textColor;
-        QColor bgColor;
+    QPoint pos;
+    float height;
+    QString text;
+    QColor textColor;
+    QColor bgColor;
 };
 
 class HeightMapGridBillboardDrawer : public BillboardDrawable
@@ -41,7 +41,7 @@ class HeightMapGridDrawer : public ShaderDrawable
 {
     public:
         explicit HeightMapGridDrawer();
-        void setModel(Heightmap &model);
+        void setModel(Heightmap& model);
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
         void setVisible(bool visible);
         void toggleVisible();
@@ -50,11 +50,11 @@ class HeightMapGridDrawer : public ShaderDrawable
         bool updateData(GLPalette &palette) override;
 
     private:
-        Heightmap &m_model;
+        Heightmap* m_model;
         HeightMapGridBillboardDrawer m_billboardDrawable;
-        void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
-        void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
-        void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette);
+        void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
+        void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
+        void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H

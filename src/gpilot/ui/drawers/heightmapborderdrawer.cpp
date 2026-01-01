@@ -3,20 +3,22 @@
 
 #include "heightmapborderdrawer.h"
 
-HeightMapBorderDrawer::HeightMapBorderDrawer() : m_model(*(new Heightmap()))
+HeightMapBorderDrawer::HeightMapBorderDrawer() : m_model(nullptr)
 {
 }
 
 void HeightMapBorderDrawer::setModel(Heightmap& model)
 {
-    m_model = model;
+    m_model = &model;
     update();
 }
 
 bool HeightMapBorderDrawer::updateData(GLPalette& palette)
 {
-    const QPointF p1 = m_model.startPos();
-    const QPointF p2 = m_model.endPos();
+    if (!m_model) return false;
+
+    const QPointF p1 = m_model->startPos();
+    const QPointF p2 = m_model->endPos();
     const GLuint color = palette.color(1.0, 0.0, 0.0);
 
     m_lines = QVector<VertexData>()

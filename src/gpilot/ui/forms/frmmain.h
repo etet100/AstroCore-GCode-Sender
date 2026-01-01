@@ -84,7 +84,6 @@ public:
     explicit FrmMain(Configuration &configuration, QWidget *parent = 0);
     ~FrmMain();
 
-    //void writeConsole(QString command);
     void initializeCommunicator();
 
 signals:
@@ -180,7 +179,7 @@ private slots:
     void onDockTopLevelChanged(bool topLevel);
     // void onVisualizerCursorPosChanged(QPointF);
     // void onProgramLinesUpdated(int from, int to);
-    void updateHeightMapInterpolationDrawer(bool reset = false);
+    void updateHeightmapInterpolationDrawer(bool reset = false);
 
 protected:
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -339,6 +338,7 @@ private:
     void addDockableWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
     void restoreDockableLayoutState();
     void initializeFontSizeMenu();
+    void setHeightmapPoint(QPoint point, double height);
 };
 
 typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;

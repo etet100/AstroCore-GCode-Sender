@@ -15,7 +15,10 @@ class Heightmap
 {
     public:
         Heightmap();
-        Heightmap(const Heightmap& other);
+        Heightmap(const Heightmap& other) = delete;
+        Heightmap& operator=(const Heightmap& other) = delete;
+        Heightmap(Heightmap&& other) noexcept = default;
+        Heightmap& operator=(Heightmap&& other) noexcept = default;
         Heightmap(QSize size);
         Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data);
 
@@ -45,9 +48,10 @@ class Heightmap
         BottomTop zBottomTop() const { return m_zBottomTop; }
         int probeFeed() const { return m_probeFeed; }
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
-        double valueAt(QPoint pt) const;
-        double& at(int row, int col);
-        double at(int row, int col) const;
+        double& at(int x, int y);
+        double at(QPoint pt) const;
+        double at(int x, int y) const;
+        void setHeightAt(QPoint point, double height);
 
     private:
         QSize m_size;

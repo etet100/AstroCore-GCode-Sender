@@ -13,7 +13,7 @@ class HeightmapExporter
     public:
         HeightmapExporter();
 
-        static void exportToFile(const Heightmap heightmap, const QString fileName);
+        static void exportToFile(const Heightmap& heightmap, const QString fileName);
 };
 
 #endif // HEIGHTMAPEXPORTER_H

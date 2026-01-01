@@ -13,7 +13,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , ui(new Ui::partMainVisualizer)
     , m_heightmapBorderDrawer()
     , m_heightmapGridDrawer()
-    , m_heightmap(*new Heightmap())
+    , m_heightmap(new Heightmap())
     , m_program(*new GCode())
     , m_ignoreZ(false)
     , m_lastDrawnLineIndex(0)
@@ -52,12 +52,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
             m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
         );
         if (contentData != nullptr && m_lastHMGBContentData != contentData) {
-            QMessageBox::information(this, tr("Heightmap Point"),
-                tr("You double clicked on heightmap point at (%1, %2) with height %3.")
-                    .arg(contentData->pos.x())
-                    .arg(contentData->pos.y())
-                    .arg(contentData->height, 0, 'f', 2)
-            );
+            emit editHeightmapPoint(contentData->pos);
         } else if (contentData == nullptr) {
             hideInfoBar();
             m_lastHMGBContentData = nullptr;
@@ -295,12 +290,11 @@ void PartMainVisualizer::reset()
     m_selectionDrawer.update();
 }
 
-void PartMainVisualizer::setHeightmap(Heightmap heightmap)
+void PartMainVisualizer::setHeightmap(Heightmap& heightmap)
 {
-    m_heightmap = heightmap;
-    m_heightmapBorderDrawer.setModel(m_heightmap);
-    m_heightmapGridDrawer.setModel(m_heightmap);
-    // m_heightmapInterpolationDrawer.setModel(m_heightmap);
+    m_heightmap = &heightmap;
+    m_heightmapBorderDrawer.setModel(heightmap);
+    m_heightmapGridDrawer.setModel(heightmap);
 }
 
 void PartMainVisualizer::setSelectionEndPosition(QVector3D pos)
@@ -718,6 +712,13 @@ void PartMainVisualizer::showHeightmapProbeGrid(bool show)
 void PartMainVisualizer::showHeightmapInterpolationGrid(bool show)
 {
     m_heightmapInterpolationDrawer.setVisible(show);
+}
+
+void PartMainVisualizer::updateHeightmap()
+{
+    m_heightmapBorderDrawer.update();
+    m_heightmapGridDrawer.update();
+    m_heightmapInterpolationDrawer.update();
 }
 
 PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int lineNumber)

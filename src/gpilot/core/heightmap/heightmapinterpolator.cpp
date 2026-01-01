@@ -17,16 +17,16 @@ double HeightmapInterpolator::interpolate(QPointF ptMm) const
     QSize gridSize = m_heightmap.gridSize();
 
     // Take physical coordinates
-    auto [i, j] = m_heightmap.gridIndices(ptMm);
+    auto [x, y] = m_heightmap.gridIndices(ptMm);
 
-    double x0 = m_heightmap.startPos().x() + i * gridSize.width();
-    double y0 = m_heightmap.startPos().y() + j * gridSize.height();
+    double x0 = m_heightmap.startPos().x() + x * gridSize.width();
+    double y0 = m_heightmap.startPos().y() + y * gridSize.height();
 
     // Z values at the corners of the grid cell
-    double z00 = m_heightmap.valueAt(QPoint(i, j));
-    double z10 = m_heightmap.valueAt(QPoint(i+1, j));
-    double z01 = m_heightmap.valueAt(QPoint(i, j+1));
-    double z11 = m_heightmap.valueAt(QPoint(i+1, j+1));
+    double z00 = m_heightmap.at(x, y);
+    double z10 = m_heightmap.at(x+1, y);
+    double z01 = m_heightmap.at(x, y+1);
+    double z11 = m_heightmap.at(x+1, y+1);
 
     // Calcualte fractional offset in the grid
     double dx = (ptMm.x() - x0) / gridSize.width();

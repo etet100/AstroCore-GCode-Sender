@@ -20,7 +20,7 @@ protected:
     bool updateData(GLPalette &palette) override;
 
 private:
-    Heightmap& m_model;
+    Heightmap* m_model;
 };
 
 #endif // HEIGHTMAPBORDERDRAWER_H

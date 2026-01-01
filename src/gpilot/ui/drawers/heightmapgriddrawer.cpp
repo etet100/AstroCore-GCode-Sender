@@ -4,7 +4,7 @@
 #include "heightmapgriddrawer.h"
 #include <QPainter>
 
-HeightMapGridDrawer::HeightMapGridDrawer() : m_model(*(new Heightmap()))
+HeightMapGridDrawer::HeightMapGridDrawer() : m_model(new Heightmap())
 {
     m_pointSize = 4;
 }
@@ -18,16 +18,16 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
 
     // Horizontal grid lines
     vertex.color = palette.color(1.0, 0.0, 1.0);// palette.color(0.0, 0.0, 1.0);
-    for (int i = 0; i < gridSize.width(); i++) {
-        for (int j = 1; j < gridSize.height(); j++) {
-            double value = m_model.valueAt(QPoint(i, j));
+    for (int x = 0; x < gridSize.width(); x++) {
+        for (int y = 1; y < gridSize.height(); y++) {
+            double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * (j - 1), startPos.y() + stepSize.height() * i, m_model.valueAt(QPoint(i, j - 1)) + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * (y - 1), startPos.y() + stepSize.height() * x, m_model->at(x, y - 1) + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.valueAt(QPoint(i, j - 1))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * j, startPos.y() + stepSize.height() * i, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * x, value + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }
@@ -35,16 +35,16 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
 
     // Vertical grid lines
     // vertex.color = palette.color(0.0, 0.0, 1.0);
-    for (int j = 0; j < gridSize.height(); j++) {
-        for (int i = 1; i < gridSize.width(); i++) {
-            double value = m_model.valueAt(QPoint(i, j));
+    for (int y = 0; y < gridSize.height(); y++) {
+        for (int x = 1; x < gridSize.width(); x++) {
+            double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * j, startPos.y() + stepSize.height() * (i - 1), m_model.valueAt(QPoint(i - 1, j)) + zOffset);
-            // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.valueAt(QPoint(i - 1, j))) / (max - min)), 1.0, 1.0));
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * (x - 1), m_model->at(x - 1, y) + zOffset);
+            // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.at(QPoint(i - 1, j))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * j, startPos.y() + stepSize.height() * i, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * x, value + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }
@@ -64,19 +64,19 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
 
     double minMaxRange = minMax.max - minMax.min;
 
-    for (int i = 0; i < gridSize.width() - 1; i++) {
-        for (int j = 0; j < gridSize.height() - 1; j++) {
-            double v00 = m_model.valueAt(QPoint(i, j));
-            double v10 = m_model.valueAt(QPoint(i + 1, j));
-            double v01 = m_model.valueAt(QPoint(i, j + 1));
-            double v11 = m_model.valueAt(QPoint(i + 1, j + 1));
+    for (int x = 0; x < gridSize.   width() - 1; x++) {
+        for (int y = 0; y < gridSize.height() - 1; y++) {
+            double v00 = m_model->at(x, y);
+            double v10 = m_model->at(x + 1, y);
+            double v01 = m_model->at(x, y + 1);
+            double v11 = m_model->at(x + 1, y + 1);
 
             if (qIsNaN(v00) || qIsNaN(v10) || qIsNaN(v01) || qIsNaN(v11)) continue;
 
-            QVector3D p00(startPos.x() + stepSize.width() * j,     startPos.y() + stepSize.height() * i,     v00);
-            QVector3D p10(startPos.x() + stepSize.width() * j,     startPos.y() + stepSize.height() * (i+1), v10);
-            QVector3D p01(startPos.x() + stepSize.width() * (j+1), startPos.y() + stepSize.height() * i,     v01);
-            QVector3D p11(startPos.x() + stepSize.width() * (j+1), startPos.y() + stepSize.height() * (i+1), v11);
+            QVector3D p00(startPos.x() + stepSize.width() * x,     startPos.y() + stepSize.height() * y,     v00);
+            QVector3D p10(startPos.x() + stepSize.width() * (x+1), startPos.y() + stepSize.height() * y,     v10);
+            QVector3D p01(startPos.x() + stepSize.width() * x,     startPos.y() + stepSize.height() * (y+1), v01);
+            QVector3D p11(startPos.x() + stepSize.width() * (x+1), startPos.y() + stepSize.height() * (y+1), v11);
 
             GLuint c00 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v00) / minMaxRange), 1.0, 1.0, alpha));
             GLuint c10 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v10) / minMaxRange), 1.0, 1.0, alpha));
@@ -107,7 +107,7 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
 
 void HeightMapGridDrawer::setModel(Heightmap &model)
 {
-    m_model = model;
+    m_model = &model;
     update();
 }
 
@@ -164,9 +164,9 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 //         }
 //     }
 
-    generateTriangles(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
-    generateLines(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
-    generatePlates(m_model.gridSize(), m_model.valuesMinMax(), m_model.startPos(), m_model.stepSize(), vertex, palette);
+    generateTriangles(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
+    generateLines(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
+    generatePlates(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
 
     // Update billboard drawable
     if (m_billboardDrawable.needsUpdateGeometry()) {
@@ -183,11 +183,11 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
     // Clear billboards from previous generation
     m_billboardDrawable.clearBillboards();
 
-    for (int j = 0; j < gridSize.height(); j++) {
-        double y = startPos.y() + stepSize.height() * j;
+    for (int y_ = 0; y_ < gridSize.height(); y_++) {
+        double y = startPos.y() + stepSize.height() * y_;
         double x = startPos.x();
-        for (int i = 0; i < gridSize.width(); i++) {
-            double value = m_model.valueAt(QPoint(j, i));
+        for (int x_ = 0; x_ < gridSize.width(); x_++) {
+            double value = m_model->at(x_, y_);
 
             if (qIsNaN(value)) {
                 x += stepSize.width();
@@ -203,8 +203,8 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             m_billboardDrawable.addBillboard(
                 QVector3D(x, y, value + 13.0),
                 new HeightMapGridBillboardContentData(
-                    QPoint(i, j), value,
-                    QString("%1, %2\n%3").arg(i).arg(j).arg(value, 0, 'f', 2),
+                    QPoint(x_, y_), value,
+                    QString("%1, %2\n%3").arg(x_).arg(y_).arg(value, 0, 'f', 2),
                     QColor(11, 22, 17, 200), Qt::white
                 ),
                 35.0f  // Billboard size in pixels
@@ -235,7 +235,7 @@ QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData 
     QFont smallFont;
     smallFont.setPointSize(14);
     QFont largeFont;
-    largeFont.setPointSize(24);
+    largeFont.setPointSize(30);
 
     QFontMetrics fmSmall(smallFont);
     QFontMetrics fmLarge(largeFont);

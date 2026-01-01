@@ -57,7 +57,7 @@ class PartMainVisualizer : public QWidget
 
         void reset();
 
-        void setHeightmap(Heightmap heightmap);
+        void setHeightmap(Heightmap& heightmap);
         void setHeightmapMode(bool enabled);
         void updateHeightmapGrid();
         // void updateHeightmapGrid(QRectF rect, int x, int y, double zBottom, double zTop);
@@ -98,6 +98,7 @@ class PartMainVisualizer : public QWidget
         void showHeightmapBorder(bool show);
         void showHeightmapProbeGrid(bool show);
         void showHeightmapInterpolationGrid(bool show);
+        void updateHeightmap();
 
         // Line commands generation helper
         struct SegmentInfo {
@@ -117,6 +118,7 @@ class PartMainVisualizer : public QWidget
     signals:
         void goToCursor(QPointF pos);
         void viewModeChanged(GLWidget::ViewMode mode);
+        void editHeightmapPoint(QPoint point);
 
     private slots:
         void cursorPosChanged(QPointF);
@@ -149,7 +151,7 @@ class PartMainVisualizer : public QWidget
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
-        Heightmap& m_heightmap;
+        Heightmap* m_heightmap;
         GCode& m_program;
         bool m_ignoreZ;
         int m_lastDrawnLineIndex;
