@@ -194,20 +194,19 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
                 continue;
             }
 
-            // Draw vertical line from surface to label position
+            // Draw line from surface to label position
             vertex.position = QVector3D(x, y, value);
             m_lines.append(vertex);
-
             vertex.position = QVector3D(x, y, value + 10.0);
             m_lines.append(vertex);
 
-            // Add billboard label at elevated position
-            QString labelText = QString("%1, %2\n%3")
-                .arg(i).arg(j).arg(value, 0, 'f', 2);
-
             m_billboardDrawable.addBillboard(
                 QVector3D(x, y, value + 13.0),
-                new HeightMapGridBillboardContentData(labelText, QColor(11, 22, 17, 200), Qt::white),
+                new HeightMapGridBillboardContentData(
+                    QPoint(i, j), value,
+                    QString("%1, %2\n%3").arg(i).arg(j).arg(value, 0, 'f', 2),
+                    QColor(11, 22, 17, 200), Qt::white
+                ),
                 35.0f  // Billboard size in pixels
             );
 

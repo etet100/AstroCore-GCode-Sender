@@ -66,7 +66,13 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true"/>
+      <string notr="true">QLabel#lblInfo {
+	background: rgba(73, 73, 113, 220);
+	color: white;
+	padding: 4px 20px 4px 20px;
+	font-size: 20px;
+	border-radius: 15px;
+}</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -106,15 +112,13 @@
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">background: rgba(73, 73, 113, 180);
-color: white;
-padding: 4px 20px 4px 20px;
-font-size: 20px;
-border-radius: 15px;
-</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>Toggle mode</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::TextFormat::PlainText</enum>
         </property>
        </widget>
       </item>

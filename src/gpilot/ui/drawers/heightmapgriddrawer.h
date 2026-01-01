@@ -11,12 +11,16 @@
 
 struct HeightMapGridBillboardContentData : public BillboardContentData
 {
-        HeightMapGridBillboardContentData(const QString& text, const QColor& bgColor, const QColor& textColor)
-            : text(text)
+        HeightMapGridBillboardContentData(const QPoint& pos, float height, const QString& text, const QColor& bgColor, const QColor& textColor)
+            : pos(pos)
+            , height(height)
+            , text(text)
             , textColor(textColor)
             , bgColor(bgColor)
         {}
 
+        QPoint pos;
+        float height;
         QString text;
         QColor textColor;
         QColor bgColor;

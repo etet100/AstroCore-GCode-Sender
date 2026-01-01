@@ -108,6 +108,9 @@ class PartMainVisualizer : public QWidget
         };
         SegmentInfo getSegmentInfoForLine(int lineNumber);
 
+        void showInfoBar(QString text);
+        void hideInfoBar();
+
     protected:
         void resizeEvent(QResizeEvent* event) override;
 
@@ -153,7 +156,7 @@ class PartMainVisualizer : public QWidget
         QGraphicsOpacityEffect* m_infoOpacityEffect;
         QPropertyAnimation* m_infoAnimation;
 
-        void placeVisualizerButtons();
+        void placeButtons();
         void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
         void applyToolDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);
         void applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration);

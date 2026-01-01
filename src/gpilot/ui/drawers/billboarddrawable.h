@@ -14,9 +14,10 @@ struct BillboardContentData {
 struct BillboardScreenPosition {
     QVector2D screenPos;     // Center position on screen
     QVector2D screenSize;    // Size in pixels on screen
-    int billboardIndex;      // Index in m_billboards array
-    float depth;             // Z-depth for sorting (closer = smaller value)
+    QSharedPointer<BillboardContentData> contentData;
+    float zDepth;
 };
+
 
 struct BillboardData
 {
@@ -67,13 +68,14 @@ class BillboardDrawable : public ShaderDrawable
 
         void setScaleWithDistance(bool scale) { m_scaleWithDistance = scale; }
         void setGlobalScale(float scale) { m_globalScale = scale; }
+        void setDebugBounds(bool enabled) { m_debugBounds = enabled; }
 
         ProgramType programType() override { return ProgramType::Billboard; }
 
         // For hit testing. Call updateScreenPositions() first to refresh positions.
         void updateScreenPositions(const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QSize& viewportSize, bool isOrthographic = false);
-        // Returns index of hit billboard, or -1 if none hit
-        int hitTest(const QPoint& screenPos) const;
+        // Returns content data of the billboard at the given screen position, or nullptr if none hit
+        BillboardContentData* hitTest(const QPoint& screenPos) const;
 
         const QVector<BillboardScreenPosition>& screenPositions() const { return m_screenPositions; }
         bool updateData(GLPalette& palette) override;
@@ -84,6 +86,7 @@ class BillboardDrawable : public ShaderDrawable
     protected:
         bool m_scaleWithDistance = true;
         float m_globalScale;
+        bool m_debugBounds = false;
 
         virtual QSize measureBillboard(const BillboardContentData* data) = 0;
         virtual QString buildCacheKey(const BillboardContentData* data) = 0;

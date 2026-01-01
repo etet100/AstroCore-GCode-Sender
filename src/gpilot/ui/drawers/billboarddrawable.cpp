@@ -1,4 +1,5 @@
 #include "billboarddrawable.h"
+#include "heightmapgriddrawer.h"
 #include <QPainter>
 #include <QFontMetrics>
 #include <QDebug>
@@ -303,8 +304,9 @@ void BillboardDrawable::updateScreenPositions(const QMatrix4x4& viewMatrix, cons
 
     QMatrix4x4 mvp = projectionMatrix * viewMatrix;
 
-    for (int i = 0; i < m_billboards.size(); ++i) {
-        const BillboardData& billboard = m_billboards[i];
+    for (auto& billboard : m_billboards) {
+    // for (int i = 0; i < m_billboards.size(); ++i) {
+        // const BillboardData& billboard = m_billboards[i];
 
         // Transform 3D position to clip space
         QVector4D clipPos = mvp * QVector4D(billboard.position, 1.0f);
@@ -326,106 +328,121 @@ void BillboardDrawable::updateScreenPositions(const QMatrix4x4& viewMatrix, cons
 
         QVector2D billboardSize(pixelWidth * scale, pixelHeight * scale);
 
-        // Simulate shader offset calculation
-        // offset = (corner - 0.5) * billboardSize * globalScale
-        // Max offset from center is 0.5 * size
-        QVector2D halfSize = billboardSize * 0.5f * m_globalScale;
-
-        // Apply shader multipliers to get clip-space offset
-        float shaderMultiplier;
-        if (isOrthographic) {
-            shaderMultiplier = 0.001f;
-        } else {
-            if (m_scaleWithDistance) {
-                shaderMultiplier = 0.3f;
-            } else {
-                // Constant screen size: multiply by w
-                shaderMultiplier = 0.001f * clipPos.w();
-            }
-        }
-
-        // Calculate clip-space corners
-        // Account for viewport aspect ratio to maintain square billboards
-        float aspectRatio = viewportSize.width() / (float)viewportSize.height();
-        QVector2D clipOffset = halfSize * shaderMultiplier;
-        clipOffset.setX(clipOffset.x() / aspectRatio);  // Compensate for aspect ratio
-
-        QVector4D topLeft = clipPos + QVector4D(-clipOffset.x(), clipOffset.y(), 0, 0);
-        QVector4D bottomRight = clipPos + QVector4D(clipOffset.x(), -clipOffset.y(), 0, 0);
-
         // Perspective divide
         QVector3D ndcCenter = clipPos.toVector3D() / clipPos.w();
-        QVector3D ndcTopLeft = topLeft.toVector3D() / topLeft.w();
-        QVector3D ndcBottomRight = bottomRight.toVector3D() / bottomRight.w();
 
         // Skip billboards outside NDC range [-1, 1]
         if (qAbs(ndcCenter.x()) > 1.0f || qAbs(ndcCenter.y()) > 1.0f || qAbs(ndcCenter.z()) > 1.0f) {
             continue;
         }
 
-        // Convert to screen coordinates
+        // Convert center to screen coordinates
         QVector2D screenCenter(
             (ndcCenter.x() * 0.5f + 0.5f) * viewportSize.width(),
             (1.0f - (ndcCenter.y() * 0.5f + 0.5f)) * viewportSize.height()
         );
 
-        QVector2D screenTopLeft(
-            (ndcTopLeft.x() * 0.5f + 0.5f) * viewportSize.width(),
-            (1.0f - (ndcTopLeft.y() * 0.5f + 0.5f)) * viewportSize.height()
-        );
+        // Calculate screen size using the same shader logic
+        QVector2D halfSize = billboardSize * 0.5f * m_globalScale;
 
-        QVector2D screenBottomRight(
-            (ndcBottomRight.x() * 0.5f + 0.5f) * viewportSize.width(),
-            (1.0f - (ndcBottomRight.y() * 0.5f + 0.5f)) * viewportSize.height()
-        );
+        // Apply shader multipliers - must match shader values exactly!
+        float shaderMultiplier;
+        if (isOrthographic) {
+            shaderMultiplier = 0.004f;  // Match shader: offset * 0.004
+        } else {
+            if (m_scaleWithDistance) {
+                shaderMultiplier = 0.9f;  // Match shader: offset * 0.9
+            } else {
+                // Constant screen size: multiply by w
+                shaderMultiplier = 0.005f * clipPos.w();  // Match shader: offset * 0.005 * w
+            }
+        }
 
-        // Calculate actual screen size from projected corners
+        // Calculate screen-space size
+        // The shader adds offset in CLIP space, then GPU does perspective divide
+        // So: clipPos.xy += offset * multiplier / aspectRatio
+        // After divide by w: ndcPos = clipPos.xy / clipPos.w()
+        float aspectRatio = viewportSize.width() / (float)viewportSize.height();
+
+        // Clip space offset (before perspective divide)
+        float clipOffsetX = halfSize.x() * shaderMultiplier / aspectRatio;
+        float clipOffsetY = halfSize.y() * shaderMultiplier;
+
+        // After perspective divide, NDC offset is: clipOffset / w
+        float ndcOffsetX = clipOffsetX / clipPos.w();
+        float ndcOffsetY = clipOffsetY / clipPos.w();
+
+        // Full size is 2x offset (from -offset to +offset)
+        // NDC to screen: size in NDC * viewport dimension / 2 (because NDC is [-1,1] = range of 2)
         QVector2D screenSize(
-            qAbs(screenBottomRight.x() - screenTopLeft.x()),
-            qAbs(screenBottomRight.y() - screenTopLeft.y())
+            qAbs(ndcOffsetX * 2.0f) * viewportSize.width() * 0.5f,
+            qAbs(ndcOffsetY * 2.0f) * viewportSize.height() * 0.5f
         );
 
         BillboardScreenPosition screenData;
         screenData.screenPos = screenCenter;
         screenData.screenSize = screenSize;
-        screenData.billboardIndex = i;
-        screenData.depth = ndcCenter.z();  // Store depth for potential sorting
+        screenData.contentData = billboard.contentData;
+        screenData.zDepth = ndcCenter.z();
 
         m_screenPositions.append(screenData);
     }
 
-    // Sort by depth (closer = smaller depth value in NDC)
-    std::sort(m_screenPositions.begin(), m_screenPositions.end(),
-        [](const BillboardScreenPosition& a, const BillboardScreenPosition& b) {
-            return a.depth < b.depth;  // Sort ascending: closer billboards first
-        });
+    // No need to sort - we'll find the closest hit in hitTest
 }
 
-int BillboardDrawable::hitTest(const QPoint& screenPos) const
+BillboardContentData* BillboardDrawable::hitTest(const QPoint& screenPos) const
 {
-    // Uncomment for debugging:
-    // qDebug() << "Hit test at" << screenPos << ", checking" << m_screenPositions.size() << "billboards";
+    // Find billboard closest to camera (smallest depth) among all hits
+    BillboardContentData* closestHit = nullptr;
+    float closestDepth = 1.0f;
+    int hitCount = 0;
 
-    // Search from back to front (farthest first, closest last)
-    // Array is sorted by depth (ascending), so iterate backwards to check closest billboards last
-    for (int i = m_screenPositions.size() - 1; i >= 0; --i) {
+    if (m_debugBounds) {
+        qDebug() << "\n=== HIT TEST at" << screenPos << "===";
+    }
+
+    for (int i = 0; i < m_screenPositions.size(); ++i) {
         const BillboardScreenPosition& pos = m_screenPositions[i];
 
+        // Use calculated size directly without correction
+        float hitWidth = pos.screenSize.x();
+        float hitHeight = pos.screenSize.y();
+
         QRectF bounds(
-            pos.screenPos.x() - pos.screenSize.x() * 0.5f,
-            pos.screenPos.y() - pos.screenSize.y() * 0.5f,
-            pos.screenSize.x(),
-            pos.screenSize.y()
+            pos.screenPos.x() - hitWidth * 0.5f,
+            pos.screenPos.y() - hitHeight * 0.5f,
+            hitWidth,
+            hitHeight
         );
 
-        // Uncomment for debugging:
-        // qDebug() << "  Billboard" << pos.billboardIndex << "at" << pos.screenPos
-        //          << "size" << pos.screenSize << "depth" << pos.depth << "bounds" << bounds;
-
         if (bounds.contains(screenPos)) {
-            return pos.billboardIndex;
+            hitCount++;
+
+            if (m_debugBounds) {
+                const HeightMapGridBillboardContentData* hmData =
+                    dynamic_cast<const HeightMapGridBillboardContentData*>(pos.contentData.data());
+                QString gridInfo;
+                if (hmData) {
+                    gridInfo = QString(" grid(%1,%2)").arg(hmData->pos.x()).arg(hmData->pos.y());
+                }
+                qDebug() << "  Hit" << hitCount << gridInfo << ":"
+                         << "center=" << pos.screenPos
+                         << "size=" << pos.screenSize
+                         << "bounds=" << bounds
+                         << "depth=" << pos.zDepth;
+            }
+
+            if (pos.zDepth < closestDepth) {
+                closestDepth = pos.zDepth;
+                closestHit = pos.contentData.data();
+            }
         }
     }
 
-    return -1;
+    if (m_debugBounds && hitCount > 0) {
+        qDebug() << "Selected closest with depth" << closestDepth << "from" << hitCount << "hits";
+    }
+
+    return closestHit;
 }

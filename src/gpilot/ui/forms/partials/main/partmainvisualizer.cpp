@@ -28,6 +28,25 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
 
     // connect(ui->visualizer, &GLContainer::rotated, this, [this]() {
     // });
+    connect(ui->visualizer, &GLContainer::mouseMoved, this, [this](QPoint pos) {
+        BillboardDrawable* billboardDrawable = m_heightmapGridDrawer.billboardDrawable();
+        billboardDrawable->updateScreenPositions(
+            ui->visualizer->viewMatrix(),
+            ui->visualizer->projectionMatrix(),
+            ui->visualizer->size()
+        );
+        HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(billboardDrawable->hitTest(pos));
+        if (cd != nullptr) {
+            showInfoBar(QString("Heightmap at %1, %2 = %3, dbl click to edit")
+                            .arg(cd->pos.x())
+                            .arg(cd->pos.y())
+                            .arg(cd->height, 0, 'f', 2)
+                        );
+        } else {
+            hideInfoBar();
+        }
+    });
+
     connect(ui->visualizer, &GLContainer::mouseDoubleClicked, this, [this](QPoint pos) {
         BillboardDrawable* billboardDrawable = m_heightmapGridDrawer.billboardDrawable();
         billboardDrawable->updateScreenPositions(
@@ -35,7 +54,16 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
             ui->visualizer->projectionMatrix(),
             ui->visualizer->size()
         );
-        qDebug() << billboardDrawable->hitTest(pos);
+        HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(billboardDrawable->hitTest(pos));
+        if (cd != nullptr) {
+            showInfoBar(QString("Heightmap at %1, %2 = %3")
+                        .arg(cd->pos.x())
+                        .arg(cd->pos.y())
+                        .arg(cd->height, 0, 'f', 2)
+            );
+        } else {
+            hideInfoBar();
+        }
     });
     connect(ui->visualizer, &GLContainer::entered, this, [this]() {
         m_cursorDrawer.setVisible(true);
@@ -86,7 +114,7 @@ void PartMainVisualizer::initializeButtons()
     }
 }
 
-void PartMainVisualizer::placeVisualizerButtons()
+void PartMainVisualizer::placeButtons()
 {
     ui->buttons->move(width() - ui->buttons->width() - 8, 8);
 }
@@ -341,7 +369,7 @@ void PartMainVisualizer::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
 
-    placeVisualizerButtons();
+    placeButtons();
     placeInfoBar();
 }
 
@@ -395,14 +423,37 @@ void PartMainVisualizer::_2dClicked()
     ui->visualizer->setViewMode(GLWidget::ViewMode::View2D);
 }
 
-void PartMainVisualizer::showButtonInfo(bool hovered)
+void PartMainVisualizer::showInfoBar(QString text)
 {
     m_infoAnimation->stop();
-    StyledToolButton* button = qobject_cast<StyledToolButton*>(sender());
-    ui->lblInfo->setText(button->toolTip());
+    ui->lblInfo->setText(text);
+    if (m_infoOpacityEffect->opacity() > 0.99) {
+        return;
+    }
     m_infoAnimation->setStartValue(m_infoOpacityEffect->opacity());
-    m_infoAnimation->setEndValue(hovered ? 1.0 : 0.0);
+    m_infoAnimation->setEndValue(1.0);
     m_infoAnimation->start();
+}
+
+void PartMainVisualizer::hideInfoBar()
+{
+    m_infoAnimation->stop();
+    if (m_infoOpacityEffect->opacity() < 0.01) {
+        return;
+    }
+    m_infoAnimation->setStartValue(m_infoOpacityEffect->opacity());
+    m_infoAnimation->setEndValue(0.0);
+    m_infoAnimation->start();
+}
+
+void PartMainVisualizer::showButtonInfo(bool hovered)
+{
+    StyledToolButton* button = qobject_cast<StyledToolButton*>(sender());
+    if (hovered) {
+        showInfoBar(button->toolTip());
+    } else {
+        hideInfoBar();
+    }
 }
 
 void PartMainVisualizer::setUpdatesEnabled2(bool updatesEnabled)
