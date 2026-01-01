@@ -136,11 +136,14 @@ signals:
     void left();
     void goToCursor(QPointF);
     void zoomChanged(double);
+    void mouseMoved(QPoint);
     void viewModeChanged(ViewMode mode);
+    void viewParametersChanged();
 
 private slots:
     void onFramesTimer();
     void onAnimation();
+    void onViewChangeTimerTimeout();
 
 private:
     double m_xRot, m_yRot, m_xLastRot, m_yLastRot;
@@ -167,6 +170,7 @@ private:
     QTime m_spendTime;
     QTime m_estimatedTime;
     QBasicTimer m_timerPaint;
+    QTimer *m_viewChangeTimer;
     double m_xRotTarget, m_yRotTarget;
     double m_xRotStored, m_yRotStored;
     bool m_animateView;
@@ -176,6 +180,7 @@ private:
     QString m_bufferState;
     QPointF m_bottomSurfaceCursorPos;
     bool m_updatesEnabled;
+    bool m_viewChanged;
 
     double normalizeAngle(double angle);
     void animate();
@@ -216,6 +221,7 @@ protected:
 
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 #ifndef USE_GLWINDOW
     void leaveEvent(QEvent *event) override;

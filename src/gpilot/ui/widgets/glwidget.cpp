@@ -44,6 +44,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
 
     m_animateView = false;
     m_updatesEnabled = false;
+    m_viewChanged = false;
 
     m_xRot = m_xRotTarget = 35.264;
     m_yRot = m_yRotTarget = 0;// m_yRot > 180 ? 405 : 45;
@@ -82,6 +83,12 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
 
     // required for mouseMoveEvent to be called without clicking
     setMouseTracking(true);
+
+    // Timer for delayed viewParametersChanged signal
+    m_viewChangeTimer = new QTimer(this);
+    m_viewChangeTimer->setSingleShot(true);
+    m_viewChangeTimer->setInterval(150);
+    connect(m_viewChangeTimer, &QTimer::timeout, this, &GLWidget::onViewChangeTimerTimeout);
 
     // enable antialiasing
     QSurfaceFormat sf = format();
@@ -232,6 +239,7 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
     updateProjection();
     updateView();
     emitZoomChanged();
+    emit viewParametersChanged();
 }
 
 void GLWidget::updateExtremes(ShaderDrawable *drawable)
@@ -276,12 +284,18 @@ void GLWidget::onFramesTimer()
     QTimer::singleShot(1000, this, SLOT(onFramesTimer()));
 }
 
+void GLWidget::onViewChangeTimerTimeout()
+{
+    emit viewParametersChanged();
+}
+
 void GLWidget::onAnimation()
 {
     double t = (double) m_animationFrame++ / (m_fps * 0.2);
 
     if (t >= 1) {
         stopAnimation();
+        emit viewParametersChanged();
     }
 
     QEasingCurve ec(QEasingCurve::OutExpo);
@@ -483,6 +497,7 @@ void GLWidget::toggleProjectionType() {
     updateProjection();
     updateView();
     emit viewModeChanged(m_mode);
+    emit viewParametersChanged();
 }
 
 void GLWidget::toggleRotationCube()
@@ -527,6 +542,9 @@ void GLWidget::setViewMode(ViewMode mode)
     updateProjection();
     updateView();
     emit viewModeChanged(m_mode);
+    if (!m_animateView) {
+        emit viewParametersChanged();
+    }
 }
 
 void GLWidget::set2DView()
@@ -678,6 +696,9 @@ void GLWidget::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
     updateProjection();
     emit resized();
+
+    // Restart timer for delayed viewParametersChanged emission
+    m_viewChangeTimer->start();
 }
 
 void GLWidget::updateProjection()
@@ -1027,6 +1048,16 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     m_yLastRot = m_yRot;
 }
 
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event);
+
+    if (m_viewChanged) {
+        m_viewChanged = false;
+        emit viewParametersChanged();
+    }
+}
+
 QPointF GLWidget::calcPositionOnXYPlane(QPoint mouseClickPosition)
 {
     QVector2D normalizedPos(
@@ -1098,8 +1129,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         if (m_xRot < -90) m_xRot = -90;
         if (m_xRot > 90) m_xRot = 90;
 
+        m_viewChanged = true;
         updateView();
         emit rotated();
+
+        return;
     }
 
     // Panning: Right button, Shift+Middle, Shift+Left, or Left button in 2D mode
@@ -1178,6 +1212,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     #endif
 
         m_lastPos = pos;
+        m_viewChanged = true;
 
         updateView();
     }
@@ -1190,6 +1225,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
             setCursor(Qt::ArrowCursor);
         }
     }
+
+    emit mouseMoved(event->pos());
 }
 
 void GLWidget::mouseDoubleClickEvent(QMouseEvent *event)
@@ -1247,6 +1284,9 @@ void GLWidget::wheelEvent(QWheelEvent *we)
     updateProjection();
     updateView();
 #endif
+
+    // Restart timer for delayed viewParametersChanged emission
+    m_viewChangeTimer->start();
 }
 
 void GLWidget::timerEvent(QTimerEvent *te)
