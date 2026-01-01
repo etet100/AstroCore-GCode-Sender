@@ -145,6 +145,7 @@ class PartMainVisualizer : public QWidget
         CursorDrawer m_cursorDrawer;
         HeightMapBorderDrawer m_heightmapBorderDrawer;
         HeightMapGridDrawer m_heightmapGridDrawer;
+        HeightMapGridBillboardContentData* m_lastHMGBContentData = nullptr;
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
@@ -169,6 +170,7 @@ class PartMainVisualizer : public QWidget
         void placeInfoBar();
         void initializeInfoBar();
         void initializeButtons();
+        void updateBillboardsScreenPositions();
 };
 
 #endif // PARTMAINVISUALIZER_H

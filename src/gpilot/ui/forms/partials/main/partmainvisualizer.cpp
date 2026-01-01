@@ -6,6 +6,7 @@
 #include "ui/drawers/vertexdataexporter.h"
 #include <QRegularExpression>
 #include <QGraphicsOpacityEffect>
+#include <QMessageBox>
 #include "styledtoolbutton.h"
 
 PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
@@ -26,18 +27,17 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
 
     connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::cursorPosChanged);
 
-    // connect(ui->visualizer, &GLContainer::rotated, this, [this]() {
-    // });
+    connect(ui->visualizer, &GLContainer::viewParametersChanged, this, [this]() {
+        qDebug() << "[PartMainVisualizer] View parameters changed";
+        updateBillboardsScreenPositions();
+    });
+
     connect(ui->visualizer, &GLContainer::mouseMoved, this, [this](QPoint pos) {
-        BillboardDrawable* billboardDrawable = m_heightmapGridDrawer.billboardDrawable();
-        billboardDrawable->updateScreenPositions(
-            ui->visualizer->viewMatrix(),
-            ui->visualizer->projectionMatrix(),
-            ui->visualizer->size()
+        HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(
+            m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
         );
-        HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(billboardDrawable->hitTest(pos));
         if (cd != nullptr) {
-            showInfoBar(QString("Heightmap at %1, %2 = %3, dbl click to edit")
+            showInfoBar(QString("Heightmap at %1, %2 = %3, double click to edit")
                             .arg(cd->pos.x())
                             .arg(cd->pos.y())
                             .arg(cd->height, 0, 'f', 2)
@@ -48,21 +48,19 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     });
 
     connect(ui->visualizer, &GLContainer::mouseDoubleClicked, this, [this](QPoint pos) {
-        BillboardDrawable* billboardDrawable = m_heightmapGridDrawer.billboardDrawable();
-        billboardDrawable->updateScreenPositions(
-            ui->visualizer->viewMatrix(),
-            ui->visualizer->projectionMatrix(),
-            ui->visualizer->size()
+        HeightMapGridBillboardContentData* contentData = static_cast<HeightMapGridBillboardContentData*>(
+            m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
         );
-        HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(billboardDrawable->hitTest(pos));
-        if (cd != nullptr) {
-            showInfoBar(QString("Heightmap at %1, %2 = %3")
-                        .arg(cd->pos.x())
-                        .arg(cd->pos.y())
-                        .arg(cd->height, 0, 'f', 2)
+        if (contentData != nullptr && m_lastHMGBContentData != contentData) {
+            QMessageBox::information(this, tr("Heightmap Point"),
+                tr("You double clicked on heightmap point at (%1, %2) with height %3.")
+                    .arg(contentData->pos.x())
+                    .arg(contentData->pos.y())
+                    .arg(contentData->height, 0, 'f', 2)
             );
-        } else {
+        } else if (contentData == nullptr) {
             hideInfoBar();
+            m_lastHMGBContentData = nullptr;
         }
     });
     connect(ui->visualizer, &GLContainer::entered, this, [this]() {
@@ -70,6 +68,8 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     });
     connect(ui->visualizer, &GLContainer::left, this, [this]() {
         m_cursorDrawer.setVisible(false);
+        hideInfoBar();
+        m_lastHMGBContentData = nullptr;
     });
     connect(ui->visualizer, &GLContainer::zoomChanged, this, [this](double zoom) {
         m_originDrawer.setZoom(zoom);
@@ -371,6 +371,7 @@ void PartMainVisualizer::resizeEvent(QResizeEvent *event)
 
     placeButtons();
     placeInfoBar();
+    updateBillboardsScreenPositions();
 }
 
 void PartMainVisualizer::topClicked()
@@ -753,4 +754,13 @@ PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int li
     }
 
     return info;
+}
+
+void PartMainVisualizer::updateBillboardsScreenPositions()
+{
+    m_heightmapGridDrawer.billboardDrawable()->updateScreenPositions(
+        ui->visualizer->viewMatrix(),
+        ui->visualizer->projectionMatrix(),
+        ui->visualizer->size()
+        );
 }

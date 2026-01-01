@@ -67,7 +67,7 @@
      </property>
      <property name="styleSheet">
       <string notr="true">QLabel#lblInfo {
-	background: rgba(73, 73, 113, 220);
+	background-color: rgba(30, 30, 30, 200);
 	color: white;
 	padding: 4px 20px 4px 20px;
 	font-size: 20px;
