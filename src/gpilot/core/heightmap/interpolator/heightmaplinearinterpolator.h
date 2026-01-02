@@ -1,3 +1,6 @@
+// This file is a part of "G-Pilot" application.
+// Copyright 2026 BTS
+
 #ifndef HEIGHTMAPLINEARINTERPOLATOR_H
 #define HEIGHTMAPLINEARINTERPOLATOR_H
 

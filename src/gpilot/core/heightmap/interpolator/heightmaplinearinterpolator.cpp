@@ -1,3 +1,6 @@
+// This file is a part of "G-Pilot" application.
+// Copyright 2026 BTS
+
 #include "heightmaplinearinterpolator.h"
 
 HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap& heightmap) : HeightmapInterpolator(heightmap)
