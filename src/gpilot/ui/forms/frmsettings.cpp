@@ -5,6 +5,7 @@
 #include "ui/forms/frmsettings.h"
 #include "ui_frmsettings.h"
 #include "utils/utils.h"
+#include "ui/utils/thememanager.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
@@ -83,6 +84,11 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
 
     connect(ui->jogging, &partSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
     //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &FrmSettings::onWidgetValidity);)
+
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](float scale){
+        Q_UNUSED(scale)
+        ThemeManager::instance().processQssTemplate(ui->scrollAreaWidgetContents);
+    });
 }
 
 FrmSettings::~FrmSettings()

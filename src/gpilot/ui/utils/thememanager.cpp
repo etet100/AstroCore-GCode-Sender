@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QStyleHints>
 #include <QDebug>
+#include <QWidget>
 #include <QRegularExpression>
 
 ThemeManager::ThemeManager(QObject *parent)
@@ -63,6 +64,7 @@ void ThemeManager::setFontSize(int size, bool force)
 
     m_fontSize = size;
     emit fontSizeChanged(size);
+    emit scaleChanged(scale());
 }
 
 float ThemeManager::scale()
@@ -78,6 +80,32 @@ float ThemeManager::scale()
         default:
             return 1.0f;
     }
+}
+
+void ThemeManager::processQssTemplate(QWidget *widget)
+{
+    QVariant qssProp = widget->property("qss");
+    QString qss;
+    if (!qssProp.isValid()) {
+        qss = widget->styleSheet();
+        widget->setProperty("qss", qss);
+    } else {
+        qss = qssProp.toString();
+    }
+
+    // Extremely simple template processing, have to be extended!!
+    qss = qss.replace("{font-size}", QString::number(m_fontSize))
+        .replace("{0.5*font-size}", QString::number(0.5 * m_fontSize))
+        .replace("{1.5*font-size}", QString::number(1.5 * m_fontSize))
+        .replace("{2*font-size}", QString::number(2 * m_fontSize))
+        .replace("{2.5*font-size}", QString::number(2.5 * m_fontSize))
+        .replace("{scale}", QString::number(scale()))
+        .replace("{scale/2}", QString::number(scale() / 2.0))
+        .replace("{1.5*scale}", QString::number(scale() * 1.0))
+        .replace("{2*scale}", QString::number(scale() * 2.0))
+        .replace("{2.5*scale}", QString::number(scale() * 2.5));
+
+    widget->setStyleSheet(qss);
 }
 
 void ThemeManager::applyTheme(bool dark)

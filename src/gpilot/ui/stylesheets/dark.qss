@@ -1,16 +1,10 @@
 
 /* Splitter horizontal uses vertical handle image and vice versa? */
-QSplitter::handle:vertical, QMainWindow::separator:vertical {
+QSplitter::handle:horizontal, QMainWindow::separator:vertical {
     background-image: url(":/images/handle_vertical_dark.png");
 }
 
 /* Splitter horizontal uses vertical handle image and vice versa? */
-QSplitter::handle:horizontal, QMainWindow::separator:horizontal {
+QSplitter::handle:vertical, QMainWindow::separator:horizontal {
     background-image: url(":/images/handle_horizontal_dark.png");
 }
-
-/*QDockWidget::title {
-    background-color: black;
-    color: white;
-}
-*/

@@ -22,9 +22,11 @@ public:
     // Scale is deduced from the font size. E.g., 7 = 0.9, 8px = 1.0, 9 = 1.1, 10 = 1.2
     // Using font size is deprecated
     float scale();
+    void processQssTemplate(QWidget *widget);
 
 signals:
     void themeChanged(bool dark);
+    void scaleChanged(float scale);
     void fontSizeChanged(int size);
 
 private:

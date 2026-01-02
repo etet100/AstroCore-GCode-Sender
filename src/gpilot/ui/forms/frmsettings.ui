@@ -20,7 +20,7 @@
    <string>Settings</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"></string>
+   <string notr="true"/>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -51,6 +51,9 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
       </property>
@@ -71,6 +74,12 @@
          <width>624</width>
          <height>1409</height>
         </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QGroupBox {
+	font-size: {2*font-size}px;
+	font-weight: bold
+}</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
