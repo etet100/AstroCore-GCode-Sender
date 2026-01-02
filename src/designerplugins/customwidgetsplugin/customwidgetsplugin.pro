@@ -1,10 +1,10 @@
-CONFIG += plugin
+CONFIG += plugin shared
 CONFIG -= debug_and_release
 TEMPLATE = lib
 QT += widgets uiplugin multimedia multimediawidgets
 
 TARGET = gpilot-customwidgets
-
+QMAKE_FLAGS += -Wl,-soname,libgpilot-customwidgets.so
 DEFINES += CUSTOMWIDGETS_EXPORT
 
 HEADERS +=  colorpicker.h \
