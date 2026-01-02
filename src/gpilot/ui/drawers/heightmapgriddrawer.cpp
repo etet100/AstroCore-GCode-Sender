@@ -249,7 +249,7 @@ QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData 
     totalHeight += fmSmall.height() * 0.8;
     // Line 2
     maxWidth = qMax(maxWidth, fmLarge.horizontalAdvance(lines[1]));
-    totalHeight += fmLarge.height() * 0.8;
+    totalHeight += fmLarge.height() * 0.65;
 
     return QSize(maxWidth + 8, totalHeight);
 }

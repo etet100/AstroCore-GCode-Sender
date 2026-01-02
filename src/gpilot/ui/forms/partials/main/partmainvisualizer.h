@@ -121,7 +121,7 @@ class PartMainVisualizer : public QWidget
         void editHeightmapPoint(QPoint point);
 
     private slots:
-        void cursorPosChanged(QPointF);
+        void updateCursorDrawer(QPointF);
         void topClicked();
         void frontClicked();
         void leftClicked();
@@ -133,6 +133,7 @@ class PartMainVisualizer : public QWidget
         void fitClicked();
         void _2dClicked();
         void showButtonInfo(bool hovered);
+        void updateBillboardsScreenPositions();
         void toggleToolClicked();
 
     private:
@@ -173,7 +174,6 @@ class PartMainVisualizer : public QWidget
         void placeInfoBar();
         void initializeInfoBar();
         void initializeButtons();
-        void updateBillboardsScreenPositions();
 };
 
 #endif // PARTMAINVISUALIZER_H

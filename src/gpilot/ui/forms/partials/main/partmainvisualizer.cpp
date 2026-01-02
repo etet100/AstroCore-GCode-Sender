@@ -25,39 +25,42 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     m_probeDrawer->setVisible(false);
     m_currentDrawer = m_codeDrawer;
 
-    connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::cursorPosChanged);
+    connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::updateCursorDrawer);
 
-    connect(ui->visualizer, &GLContainer::viewParametersChanged, this, [this]() {
-        qDebug() << "[PartMainVisualizer] View parameters changed";
-        updateBillboardsScreenPositions();
-    });
-
+    // Handle heightmap billboards interaction - mouse moved, double click
+    connect(ui->visualizer, &GLContainer::viewParametersChanged, this, &PartMainVisualizer::updateBillboardsScreenPositions);
     connect(ui->visualizer, &GLContainer::mouseMoved, this, [this](QPoint pos) {
+        if (!m_heightmapGridDrawer.visible()) {
+            return;
+        }
         HeightMapGridBillboardContentData* cd = static_cast<HeightMapGridBillboardContentData*>(
             m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
         );
         if (cd != nullptr) {
-            showInfoBar(QString("Heightmap at %1, %2 = %3, double click to edit")
-                            .arg(cd->pos.x())
-                            .arg(cd->pos.y())
-                            .arg(cd->height, 0, 'f', 2)
-                        );
+            showInfoBar(QString("Height at %1, %2 = %3, dbl click to edit")
+                .arg(cd->pos.x())
+                .arg(cd->pos.y())
+                .arg(cd->height, 0, 'f', 2)
+            );
         } else {
             hideInfoBar();
         }
     });
-
     connect(ui->visualizer, &GLContainer::mouseDoubleClicked, this, [this](QPoint pos) {
-        HeightMapGridBillboardContentData* contentData = static_cast<HeightMapGridBillboardContentData*>(
-            m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
-        );
-        if (contentData != nullptr && m_lastHMGBContentData != contentData) {
-            emit editHeightmapPoint(contentData->pos);
-        } else if (contentData == nullptr) {
-            hideInfoBar();
-            m_lastHMGBContentData = nullptr;
+        if (m_heightmapGridDrawer.visible()) {
+            HeightMapGridBillboardContentData* contentData = static_cast<HeightMapGridBillboardContentData*>(
+                m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
+            );
+            if (contentData != nullptr && m_lastHMGBContentData != contentData) {
+                emit editHeightmapPoint(contentData->pos);
+            } else if (contentData == nullptr) {
+                hideInfoBar();
+                m_lastHMGBContentData = nullptr;
+            }
         }
     });
+    //
+
     connect(ui->visualizer, &GLContainer::entered, this, [this]() {
         m_cursorDrawer.setVisible(true);
     });
@@ -114,7 +117,7 @@ void PartMainVisualizer::placeButtons()
     ui->buttons->move(width() - ui->buttons->width() - 8, 8);
 }
 
-void PartMainVisualizer::cursorPosChanged(QPointF pos)
+void PartMainVisualizer::updateCursorDrawer(QPointF pos)
 {
    m_cursorDrawer.setPosition(pos);
 }
@@ -175,12 +178,12 @@ void PartMainVisualizer::applyVisualizerConfiguration(
             )
         );
 
-    ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
-    ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
-    ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
-    ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
-    ui->cmdRight->setIcon(QIcon(":/images/visualizer_left.png"));
-    ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
+    // ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
+    // ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
+    // ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
+    // ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
+    // ui->cmdRight->setIcon(QIcon(":/images/visualizer_left.png"));
+    // ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
 
     QColor normal, highlight;
 
@@ -401,6 +404,7 @@ void PartMainVisualizer::rotationCubeClicked()
 void PartMainVisualizer::heightmapClicked()
 {
     m_heightmapGridDrawer.toggleVisible();
+    updateBillboardsScreenPositions();
 }
 
 void PartMainVisualizer::toggleProjectionClicked()
