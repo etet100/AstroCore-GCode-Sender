@@ -417,9 +417,12 @@ LIBS += -L../designerplugins/customwidgetsplugin -lgpilot-customwidgets
 
 #LIBS += C:/Projekty/Qt/Candle/src/vendor/build/uCNC-Debug
 
-LIBS += -lole32 -loleaut32 -luuid -luser32 -lshell32
-LIBS += -L../vendor/uCNC -luCNC
-LIBS += -L../vendor/grblHal -lgrblHal
+LIBS += -luuid
+win32 {
+    LIBS += -lole32 -loleaut32  -luser32 -lshell32
+    LIBS += -L../vendor/uCNC -luCNC
+    LIBS += -L../vendor/grblHal -lgrblHal
+}
 
 DISTFILES += \
     shaders/2dcopy_fragment.glsl \

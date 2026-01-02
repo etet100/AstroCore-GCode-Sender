@@ -47,6 +47,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & 
     QTextStream ts(&outFile);
     ts << txt << Qt::endl;
     QTextStream(stdout) << txt << Qt::endl;
+    ts.flush();
 }
 
 #ifdef WINDOWS

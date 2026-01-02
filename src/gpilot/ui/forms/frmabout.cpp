@@ -2,8 +2,8 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include <QDesktopServices>
-#include "ui/forms/FrmAbout.h"
-#include "ui_FrmAbout.h"
+#include "ui/forms/frmabout.h"
+#include "ui_frmabout.h"
 #include <QFile>
 
 FrmAbout::FrmAbout(QWidget *parent) :
