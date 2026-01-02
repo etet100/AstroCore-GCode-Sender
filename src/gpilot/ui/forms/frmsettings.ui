@@ -826,7 +826,7 @@
           <property name="title">
            <string>Sender</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
+          <layout class="QVBoxLayout" name="verticalLayout_13">
            <property name="spacing">
             <number>0</number>
            </property>

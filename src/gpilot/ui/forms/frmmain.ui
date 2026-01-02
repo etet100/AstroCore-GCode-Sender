@@ -585,7 +585,7 @@ QSlider::handle:horizontal:hover {
            <property name="overrided" stdset="0">
             <bool>false</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_11">
+           <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
              <widget class="PartMainSpindle" name="spindle" native="true"/>
             </item>
