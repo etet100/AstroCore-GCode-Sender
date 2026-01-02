@@ -335,7 +335,6 @@ HEADERS  += ui/forms/frmmain.h \
     # state_behaviour/probingbehavior.h \
     state_behaviour/runningbehavior.h \
     state_behaviour/statebehavior.h \
-    state_behaviour/toolchangebehavior.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
@@ -343,7 +342,6 @@ HEADERS  += ui/forms/frmmain.h \
     ui/utils/windowstaskbar.h \
     ui/widgets/dockabletitle.h \
     ui/widgets/filedropoverlay.h \
-    utils.h \
     utils/interpolation.h \
     utils/utils.h \
     utils/validators.h \
