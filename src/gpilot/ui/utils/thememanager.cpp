@@ -99,6 +99,27 @@ void ThemeManager::applyTheme(bool dark)
     palette.setColor(QPalette::HighlightedText, QColor(0, 0, 0));
     m_app->setPalette(palette);
 
+#ifdef UNIX
+    // Any better way to do this cross-platform?
+    QPalette pall = m_app->palette();
+    if (dark) {
+        pall.setColor(QPalette::Window, QColor(30,30,30));
+        pall.setColor(QPalette::WindowText, Qt::white);
+        pall.setColor(QPalette::Base, QColor(20,20,20));
+        pall.setColor(QPalette::Text, Qt::white);
+        pall.setColor(QPalette::Button, QColor(45,45,45));
+        pall.setColor(QPalette::ButtonText, Qt::white);
+    } else {
+        pall.setColor(QPalette::Window, QColor(240,240,240));
+        pall.setColor(QPalette::WindowText, Qt::black);
+        pall.setColor(QPalette::Base, Qt::white);
+        pall.setColor(QPalette::Text, Qt::black);
+        pall.setColor(QPalette::Button, QColor(225,225,225));
+        pall.setColor(QPalette::ButtonText, Qt::black);
+    }
+    m_app->setPalette(pall);
+#endif
+
     // Load stylesheets
     loadStyleSheets(dark);
 

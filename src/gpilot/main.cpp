@@ -61,13 +61,13 @@ void initConsole()
 
 int main(int argc, char *argv[])
 {
-#ifdef UNIX
-    bool styleOverrided = false;
-    for (int i = 0; i < argc; i++) if (QString(argv[i]).toUpper() == "-STYLE") {
-        styleOverrided = true;
-        break;
-    }
-#endif
+// #ifdef UNIX
+//     bool styleOverrided = false;
+//     for (int i = 0; i < argc; i++) if (QString(argv[i]).toUpper() == "-STYLE") {
+//         styleOverrided = true;
+//         break;
+//     }
+// #endif
     // It is necessary to share OpenGL contexts between widgets. This way,
     // opengl resources don't need to be recreated when docking/undocking
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
@@ -134,17 +134,17 @@ int main(int argc, char *argv[])
         if (baseTranslator->load(baseTranslationFileName)) app.installTranslator(baseTranslator); else delete baseTranslator;
     }
 
-#ifdef UNIX
-    if (!styleOverrided) {
-        foreach (QString str, QStyleFactory::keys()) {
-            qDebug() << "style" << str;
-            if (str.contains("GTK+")) {
-                app.setStyle(QStyleFactory::create(str));
-                break;
-            }
-        }
-    }
-#endif
+// #ifdef UNIX
+//     if (!styleOverrided) {
+//         foreach (QString str, QStyleFactory::keys()) {
+//             qDebug() << "style" << str;
+//             if (str.contains("GTK+")) {
+//                 app.setStyle(QStyleFactory::create(str));
+//                 break;
+//             }
+//         }
+//     }
+// #endif
 
     Provider *provider = nullptr;
     Persister *persister = nullptr;

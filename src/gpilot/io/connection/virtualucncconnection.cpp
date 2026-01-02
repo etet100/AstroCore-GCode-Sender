@@ -190,7 +190,9 @@ VirtualUCNCWorkerThread::VirtualUCNCWorkerThread(QString serverName) : QThread(n
 void VirtualUCNCWorkerThread::run() {
     qInfo() << "Starting virtual uCNC, server " << m_serverName;
     #ifdef STATIC_UCNC
-        uCNC(m_serverName.toStdString().c_str());
+        #ifdef WINDOWS
+             uCNC(m_serverName.toStdString().c_str());
+        #endif
     #else
         qDebug() << "uCNC dynamic mode";
         QLibrary lib("uCNC.dll");

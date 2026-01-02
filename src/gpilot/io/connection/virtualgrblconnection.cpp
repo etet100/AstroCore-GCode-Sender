@@ -206,7 +206,9 @@ VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName, QAtomicInt*
 void VirtualGRBLWorkerThread::run() {
     qInfo() << "[IO][GRBL] Starting virtual GRBL, server " << m_serverName;
     #ifdef STATIC_GRBL
-        GRBL(m_serverName.toStdString().c_str());
+        #ifdef WINDOWS
+             GRBL(m_serverName.toStdString().c_str());
+        #endif
     #else
         qDebug() << "[IO][GRBL] GRBL dynamic mode";
         QLibrary lib("grblHal.dll");

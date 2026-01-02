@@ -168,14 +168,11 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
         addBillboardGeometry(billboard, texRect);
     }
 
-    // Update texture
     if (m_texture) {
         delete m_texture;
     }
 
     m_texture = new QOpenGLTexture(m_atlasImage);
-    m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
-    m_texture->setMagnificationFilter(QOpenGLTexture::Nearest);
 }
 
 bool BillboardDrawable::updateData(GLPalette &palette)
