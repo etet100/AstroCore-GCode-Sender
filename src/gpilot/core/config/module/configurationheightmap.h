@@ -10,11 +10,11 @@
 class ConfigurationHeightmap : public ConfigurationModule
 {
     Q_OBJECT
-    Q_PROPERTY(double borderX MEMBER m_borderX NOTIFY changed)
-    Q_PROPERTY(double borderY MEMBER m_borderY NOTIFY changed)
-    Q_PROPERTY(double borderWidth MEMBER m_borderWidth NOTIFY changed)
-    Q_PROPERTY(double borderHeight MEMBER m_borderHeight NOTIFY changed)
-    Q_PROPERTY(bool borderShow MEMBER m_borderShow NOTIFY changed)
+    Q_PROPERTY(double areaX1 MEMBER m_areaX1 NOTIFY changed)
+    Q_PROPERTY(double areaY1 MEMBER m_areaY1 NOTIFY changed)
+    Q_PROPERTY(double areaX2 MEMBER m_areaX2 NOTIFY changed)
+    Q_PROPERTY(double areaY2 MEMBER m_areaY2 NOTIFY changed)
+    Q_PROPERTY(bool areaShow MEMBER m_areaShow NOTIFY changed)
     Q_PROPERTY(double gridX MEMBER m_gridX NOTIFY changed)
     Q_PROPERTY(double gridY MEMBER m_gridY NOTIFY changed)
     Q_PROPERTY(double gridZTop MEMBER m_gridZTop NOTIFY changed)
@@ -31,11 +31,11 @@ class ConfigurationHeightmap : public ConfigurationModule
 
         QString getSectionName() override { return "heightmap"; }
 
-        double borderX() const { return m_borderX; }
-        double borderY() const { return m_borderY; }
-        double borderWidth() const { return m_borderWidth; }
-        double borderHeight() const { return m_borderHeight; }
-        bool borderShow() const { return m_borderShow; }
+        double areaX1() const { return m_areaX1; }
+        double areaY1() const { return m_areaY1; }
+        double areaX2() const { return m_areaX2; }
+        double areaY2() const { return m_areaY2; }
+        bool areaShow() const { return m_areaShow; }
 
         double gridX() const { return m_gridX; }
         double gridY() const { return m_gridY; }
@@ -50,11 +50,11 @@ class ConfigurationHeightmap : public ConfigurationModule
         bool interpolationShow() const { return m_interpolationShow; }
 
     private:
-        double m_borderX;
-        double m_borderY;
-        double m_borderWidth;
-        double m_borderHeight;
-        bool m_borderShow;
+        double m_areaX1;
+        double m_areaY1;
+        double m_areaX2;
+        double m_areaY2;
+        bool m_areaShow;
 
         double m_gridX;
         double m_gridY;

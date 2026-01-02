@@ -2031,7 +2031,7 @@ void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
 {
     if (m_settingsLoading) return;
 
-    QRectF borderRect = ui->heightmap->borderRectFromTextboxes();
+    QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
     // m_heightmapInterpolationDrawer.setBorderRect(borderRect);
 
     QVector<QVector<double>> *interpolationData = new QVector<QVector<double>>;
@@ -3154,7 +3154,7 @@ bool FrmMain::updateHeightmapGrid()
                                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return false;
 
     // Update grid drawer
-    QRectF borderRect = ui->heightmap->borderRectFromTextboxes();
+    QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
     // ui->visualizer->heightmapGridDrawer()->setBorderRect(borderRect);
     // ui->visualizer->heightmapGridDrawer()->setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
     // ui->visualizer->heightmapGridDrawer()->setZBottom(ui->txtHeightMapGridZBottom->value());

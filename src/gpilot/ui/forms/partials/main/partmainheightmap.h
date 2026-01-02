@@ -29,7 +29,7 @@ class PartMainHeightmap : public QWidget
         void resetUseHeighmap();
         void updateControlsState(bool mainState, bool heightmapMode);
         void setOpenFile(QString filePath);
-        QRectF borderRectFromTextboxes();
+        QRectF areaRectFromTextboxes();
         void setHeightmapBorderRect(QRectF);
 
         struct VisualizationDrawers {
@@ -45,7 +45,7 @@ class PartMainHeightmap : public QWidget
 
     signals:
         void extremesRequired();
-        void borderChanged(QRectF);
+        void areaChanged(QRectF);
         void showVisualizationChanged(VisualizationDrawers drawers);
         void newHeightmapRequested();
         void loadHeightmapRequested();
@@ -54,7 +54,7 @@ class PartMainHeightmap : public QWidget
         void gridParametersChanged(QPoint gridStart, MinMax zMinMax, int probeFeed, QPoint interpolationStep);
 
     private slots:
-        void on_chkShowBorder_toggled(bool checked);
+        void on_chkShowArea_toggled(bool checked);
         void on_chkShowProbeGrid_toggled(bool checked);
         void on_chkUseHeightmap_toggled(bool checked);
         void on_chkShowInterpolation_toggled(bool checked);
@@ -64,19 +64,17 @@ class PartMainHeightmap : public QWidget
         void on_txtGridZBottom_valueChanged(double arg1);
         void on_txtGridX_valueChanged(double arg1);
         void on_txtGridY_valueChanged(double arg1);
-        void on_cmdAutoBorder_clicked();
-        void on_txtBorderX_valueChanged(double arg1);
-        void on_txtBorderWidth_valueChanged(double arg1);
-        void on_txtBorderY_valueChanged(double arg1);
-        void on_txtBorderHeight_valueChanged(double arg1);
+        void on_cmdAreaFromGCode_clicked();
         void on_txtInterpolationStepY_valueChanged(double arg1);
         void on_cmdNew_clicked();
+        void onAreaChanged();
+        void onGridParametersChanged();
 
     private:
         Ui::partMainHeightmap *ui;
         void updateHeightmapGrid(double);
         void updateControlsState();
-        void emitBorderChanged();
+        void emitAreaChanged();
         void emitShowVisualizationChanged();
         void emitGridParametersChanged();
 };

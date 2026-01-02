@@ -10,6 +10,21 @@ PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     , ui(new Ui::partMainHeightmap)
 {
     ui->setupUi(this);
+
+    connect(ui->txtAreaHeight, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaWidth, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaX, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaY, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaX1, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaX2, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaY1, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+    connect(ui->txtAreaY2, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::onAreaChanged);
+
+    ui->fraAreaX1X2->hide();
+    connect(ui->chkAreaWidthHeight, &QCheckBox::toggled, this, [this](bool checked){
+        ui->fraAreaWH->setVisible(checked);
+        ui->fraAreaX1X2->setVisible(!checked);
+    });
 }
 
 PartMainHeightmap::~PartMainHeightmap()
@@ -17,25 +32,36 @@ PartMainHeightmap::~PartMainHeightmap()
     delete ui;
 }
 
-QRectF PartMainHeightmap::borderRectFromTextboxes()
+QRectF PartMainHeightmap::areaRectFromTextboxes()
 {
     QRectF rect;
 
-    rect.setX(ui->txtBorderX->value());
-    rect.setY(ui->txtBorderY->value());
-    rect.setWidth(ui->txtBorderWidth->value());
-    rect.setHeight(ui->txtBorderHeight->value());
+    if (ui->chkAreaWidthHeight->isChecked()) {
+        rect.setX(ui->txtAreaX->value());
+        rect.setY(ui->txtAreaY->value());
+        rect.setWidth(ui->txtAreaWidth->value());
+        rect.setHeight(ui->txtAreaHeight->value());
+    } else {
+        rect.setX(ui->txtAreaX1->value());
+        rect.setY(ui->txtAreaY1->value());
+        rect.setRight(ui->txtAreaX2->value());
+        rect.setBottom(ui->txtAreaY2->value());
+    }
 
     return rect;
 }
 
 void PartMainHeightmap::applyHeightmapConfiguration(ConfigurationHeightmap &configurationHeightmap)
 {
-    ui->txtBorderX->setValue(configurationHeightmap.borderX());
-    ui->txtBorderY->setValue(configurationHeightmap.borderY());
-    ui->txtBorderWidth->setValue(configurationHeightmap.borderWidth());
-    ui->txtBorderHeight->setValue(configurationHeightmap.borderHeight());
-    ui->chkShowBorder->setChecked(configurationHeightmap.borderShow());
+    ui->txtAreaX->setValue(configurationHeightmap.areaX1());
+    ui->txtAreaX1->setValue(configurationHeightmap.areaX1());
+    ui->txtAreaY->setValue(configurationHeightmap.areaY1());
+    ui->txtAreaY1->setValue(configurationHeightmap.areaY1());
+    ui->txtAreaWidth->setValue(configurationHeightmap.areaX2() - configurationHeightmap.areaX1());
+    ui->txtAreaHeight->setValue(configurationHeightmap.areaY2() - configurationHeightmap.areaY1());
+    ui->txtAreaX2->setValue(configurationHeightmap.areaY2());
+    ui->txtAreaY2->setValue(configurationHeightmap.areaY2());
+    ui->chkShowArea->setChecked(configurationHeightmap.areaShow());
 
     ui->txtGridX->setValue(configurationHeightmap.gridX());
     ui->txtGridY->setValue(configurationHeightmap.gridY());
@@ -95,7 +121,7 @@ void PartMainHeightmap::setOpenFile(QString filePath)
     ui->txtHeightMapName->setText(filePath);
 }
 
-void PartMainHeightmap::on_cmdAutoBorder_clicked()
+void PartMainHeightmap::on_cmdAreaFromGCode_clicked()
 {
     // Request extremes from heightmap, setHeightmapBorderRect will be called
     // in response
@@ -105,39 +131,17 @@ void PartMainHeightmap::on_cmdAutoBorder_clicked()
 void PartMainHeightmap::setHeightmapBorderRect(QRectF rect)
 {
     if (!qIsNaN(rect.width()) && !qIsNaN(rect.height())) {
-        ui->txtBorderX->setValue(rect.x());
-        ui->txtBorderY->setValue(rect.y());
-        ui->txtBorderWidth->setValue(rect.width());
-        ui->txtBorderHeight->setValue(rect.height());
+        // WH
+        ui->txtAreaX->setValue(rect.x());
+        ui->txtAreaY->setValue(rect.y());
+        ui->txtAreaWidth->setValue(rect.width());
+        ui->txtAreaHeight->setValue(rect.height());
+        // X1X2
+        ui->txtAreaX1->setValue(rect.x());
+        ui->txtAreaY1->setValue(rect.y());
+        ui->txtAreaX2->setValue(rect.x() + rect.width());
+        ui->txtAreaY2->setValue(rect.y() + rect.height());
     }
-}
-
-void PartMainHeightmap::on_txtBorderX_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitBorderChanged();
-}
-
-void PartMainHeightmap::on_txtBorderWidth_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitBorderChanged();
-}
-
-void PartMainHeightmap::on_txtBorderY_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitBorderChanged();
-}
-
-void PartMainHeightmap::on_txtBorderHeight_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitBorderChanged();
 }
 
 void PartMainHeightmap::on_txtGridX_valueChanged(double arg1)
@@ -182,24 +186,11 @@ void PartMainHeightmap::on_txtInterpolationStepY_valueChanged(double arg1)
     emitGridParametersChanged();
 }
 
-void PartMainHeightmap::updateHeightmapGrid(double arg1)
-{
-    //TODO heightmap
-    // if (sender()->property("previousValue").toDouble() != arg1 && !updateHeightmapGrid())
-    //     static_cast<QDoubleSpinBox*>(sender())->setValue(sender()->property("previousValue").toDouble());
-    // else sender()->setProperty("previousValue", arg1);
-}
-
-void PartMainHeightmap::emitBorderChanged()
-{
-    emit borderChanged(borderRectFromTextboxes());
-}
-
 void PartMainHeightmap::emitShowVisualizationChanged()
 {
     emit showVisualizationChanged(
         {
-            ui->chkShowBorder->isChecked(),
+            ui->chkShowArea->isChecked(),
             ui->chkShowProbeGrid->isChecked(),
             ui->chkShowInterpolation->isChecked()
         }
@@ -223,6 +214,33 @@ void PartMainHeightmap::on_cmdNew_clicked()
     emit newHeightmapRequested();
 }
 
+void PartMainHeightmap::onAreaChanged()
+{
+    if (ui->chkAreaWidthHeight->isChecked()) {
+        ui->txtAreaX1->setValue(ui->txtAreaX->value());
+        ui->txtAreaY1->setValue(ui->txtAreaY->value());
+        ui->txtAreaX2->setValue(ui->txtAreaX->value() + ui->txtAreaWidth->value());
+        ui->txtAreaY2->setValue(ui->txtAreaY->value() + ui->txtAreaHeight->value());
+    } else {
+        ui->txtAreaX->setValue(ui->txtAreaX1->value());
+        ui->txtAreaY->setValue(ui->txtAreaY1->value());
+        ui->txtAreaWidth->setValue(ui->txtAreaX2->value() -  ui->txtAreaX1->value());
+        ui->txtAreaHeight->setValue(ui->txtAreaY2->value() -  ui->txtAreaY1->value());
+    }
+
+    emit areaChanged(areaRectFromTextboxes());
+}
+
+void PartMainHeightmap::onGridParametersChanged()
+{
+    emit gridParametersChanged(
+        QPoint(ui->txtGridX->value(), ui->txtGridY->value()),
+        { ui->txtGridZBottom->value(),  ui->txtGridZTop->value() },
+        ui->txtProbeFeed->value(),
+        QPoint(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
+    );
+}
+
 void PartMainHeightmap::on_chkShowProbeGrid_toggled(bool checked)
 {
     Q_UNUSED(checked)
@@ -235,7 +253,7 @@ void PartMainHeightmap::on_chkUseHeightmap_toggled(bool checked)
     emit useHeightmapToggled(checked);
 }
 
-void PartMainHeightmap::on_chkShowBorder_toggled(bool checked)
+void PartMainHeightmap::on_chkShowArea_toggled(bool checked)
 {
     Q_UNUSED(checked)
 
