@@ -23,11 +23,11 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
             double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * (y - 1), startPos.y() + stepSize.height() * x, m_model->at(x, y - 1) + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * (y - 1), m_model->at(x, y - 1) + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.valueAt(QPoint(i, j - 1))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * x, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }
@@ -40,11 +40,11 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
             double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * (x - 1), m_model->at(x - 1, y) + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * (x - 1), startPos.y() + stepSize.height() * y, m_model->at(x - 1, y) + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.at(QPoint(i - 1, j))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * y, startPos.y() + stepSize.height() * x, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset);
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }

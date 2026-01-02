@@ -467,7 +467,7 @@
           <item>
            <widget class="QCheckBox" name="chkShowArea">
             <property name="text">
-             <string>Show border</string>
+             <string>Show area</string>
             </property>
             <property name="checked">
              <bool>true</bool>
