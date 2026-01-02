@@ -7,7 +7,7 @@
 
 #include "converter.h"
 #include "core/heightmap/heightmap.h"
-#include "core/heightmap/heightmapinterpolator.h"
+#include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
 
 class ApplyHeightmap : public Converter
 {
@@ -16,7 +16,7 @@ class ApplyHeightmap : public Converter
 
     private:
         Heightmap &m_heightmap;
-        HeightmapInterpolator m_interpolator;
+        HeightmapBilinearInterpolator m_interpolator;
 };
 
 #endif // APPLYHEIGHTMAP_H

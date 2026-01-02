@@ -2,6 +2,9 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmapgriddrawer.h"
+#include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
+#include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
+#include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
 #include <QPainter>
 
 HeightMapGridDrawer::HeightMapGridDrawer() : m_model(new Heightmap())
@@ -15,6 +18,7 @@ HeightMapGridDrawer::HeightMapGridDrawer() : m_model(new Heightmap())
 void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette)
 {
     const float zOffset = 0.0f;
+    const QVector3D sizeMul = QVector3D(30, 30, 1);
 
     // Horizontal grid lines
     vertex.color = palette.color(1.0, 0.0, 1.0);// palette.color(0.0, 0.0, 1.0);
@@ -23,11 +27,11 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
             double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * (y - 1), m_model->at(x, y - 1) + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * (y - 1), m_model->at(x, y - 1) + zOffset) * sizeMul;
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.valueAt(QPoint(i, j - 1))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset) * sizeMul;
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }
@@ -40,11 +44,11 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
             double value = m_model->at(x, y);
             if (qIsNaN(value)) continue;
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * (x - 1), startPos.y() + stepSize.height() * y, m_model->at(x - 1, y) + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * (x - 1), startPos.y() + stepSize.height() * y, m_model->at(x - 1, y) + zOffset) * sizeMul;
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - m_model.at(QPoint(i - 1, j))) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
 
-            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset);
+            vertex.position = QVector3D(startPos.x() + stepSize.width() * x, startPos.y() + stepSize.height() * y, value + zOffset) * sizeMul;
             // vertex.color = palette.color(QColor::fromHsvF(0.67 * STEPS((max - value) / (max - min)), 1.0, 1.0));
             m_lines.append(vertex);
         }
@@ -54,6 +58,7 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
 void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette)
 {
     float alpha = 1.0;
+    HeightmapBicubicInterpolator interpolator(*m_model);
 
     auto setTriangleNormal = [](VertexData &a, VertexData &b, VertexData &c) {
         QVector3D normal = QVector3D::normal(a.position, b.position, c.position);
@@ -63,44 +68,56 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
     };
 
     double minMaxRange = minMax.max - minMax.min;
+    const QVector3D sizeMul = QVector3D(30, 30, 1);
 
-    for (int x = 0; x < gridSize.   width() - 1; x++) {
-        for (int y = 0; y < gridSize.height() - 1; y++) {
-            double v00 = m_model->at(x, y);
-            double v10 = m_model->at(x + 1, y);
-            double v01 = m_model->at(x, y + 1);
-            double v11 = m_model->at(x + 1, y + 1);
+    for (int x = 0; x < gridSize.width() - 2; x++) {
+        for (int y = 0; y < gridSize.height() - 2; y++) {
+            // Let's split every cell info 5x5 subcells to test interpolator
+            const double substep = 0.2;
+            for (double x2 = x; x2 < x + 0.9; x2 += substep) {
+                for (double y2 = y; y2 < y + 0.9; y2 += substep) {
+                    double v00 = qBound(minMax.min, interpolator.interpolate(QPointF(x2, y2)), minMax.max);
+                    assert(v00 >= minMax.min && v00 <= minMax.max);
+                    double v10 = qBound(minMax.min, interpolator.interpolate(QPointF(x2 + substep, y2)), minMax.max);
+                    assert(v10 >= minMax.min && v10 <= minMax.max);
+                    double v01 = qBound(minMax.min, interpolator.interpolate(QPointF(x2, y2 + substep)), minMax.max);
+                    assert(v01 >= minMax.min && v01 <= minMax.max);
+                    double v11 = qBound(minMax.min, interpolator.interpolate(QPointF(x2 + substep, y2 + substep)), minMax.max);
 
-            if (qIsNaN(v00) || qIsNaN(v10) || qIsNaN(v01) || qIsNaN(v11)) continue;
+                    if (qIsNaN(v00) || qIsNaN(v10) || qIsNaN(v01) || qIsNaN(v11)) {
+                        continue;
+                    }
 
-            QVector3D p00(startPos.x() + stepSize.width() * x,     startPos.y() + stepSize.height() * y,     v00);
-            QVector3D p10(startPos.x() + stepSize.width() * (x+1), startPos.y() + stepSize.height() * y,     v10);
-            QVector3D p01(startPos.x() + stepSize.width() * x,     startPos.y() + stepSize.height() * (y+1), v01);
-            QVector3D p11(startPos.x() + stepSize.width() * (x+1), startPos.y() + stepSize.height() * (y+1), v11);
+                    QVector3D p00(startPos.x() + stepSize.width() * x2, startPos.y() + stepSize.height() * y2, v00);
+                    QVector3D p10(startPos.x() + stepSize.width() * (x2 + substep), startPos.y() + stepSize.height() * y2, v10);
+                    QVector3D p01(startPos.x() + stepSize.width() * x2, startPos.y() + stepSize.height() * (y2 + substep), v01);
+                    QVector3D p11(startPos.x() + stepSize.width() * (x2 + substep), startPos.y() + stepSize.height() * (y2 + substep), v11);
 
-            GLuint c00 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v00) / minMaxRange), 1.0, 1.0, alpha));
-            GLuint c10 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v10) / minMaxRange), 1.0, 1.0, alpha));
-            GLuint c01 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v01) / minMaxRange), 1.0, 1.0, alpha));
-            GLuint c11 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v11) / minMaxRange), 1.0, 1.0, alpha));
+                    GLuint c00 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v00) / minMaxRange), 1.0, 1.0, alpha));
+                    GLuint c10 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v10) / minMaxRange), 1.0, 1.0, alpha));
+                    GLuint c01 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v01) / minMaxRange), 1.0, 1.0, alpha));
+                    GLuint c11 = palette.color(QColor::fromHsvF(0.67 * QUANTIZE((minMax.max - v11) / minMaxRange), 1.0, 1.0, alpha));
 
-            VertexData vA, vB, vC;
-            // Triangle 1
-            vA.position = p00; vA.color = c00;
-            vB.position = p10; vB.color = c10;
-            vC.position = p11; vC.color = c11;
-            setTriangleNormal(vA, vB, vC);
-            m_triangles.append(vA);
-            m_triangles.append(vB);
-            m_triangles.append(vC);
+                    VertexData vA, vB, vC;
+                    // Triangle 1
+                    vA.position = p00 * sizeMul; vA.color = c00;
+                    vB.position = p10 * sizeMul; vB.color = c10;
+                    vC.position = p11 * sizeMul; vC.color = c11;
+                    setTriangleNormal(vA, vB, vC);
+                    m_triangles.append(vA);
+                    m_triangles.append(vB);
+                    m_triangles.append(vC);
 
-            // Triangle 2
-            vA.position = p00; vA.color = c00;
-            vB.position = p11; vB.color = c11;
-            vC.position = p01; vC.color = c01;
-            setTriangleNormal(vA, vB, vC);
-            m_triangles.append(vA);
-            m_triangles.append(vB);
-            m_triangles.append(vC);
+                    // Triangle 2
+                    vA.position = p00 * sizeMul; vA.color = c00;
+                    vB.position = p11 * sizeMul; vB.color = c11;
+                    vC.position = p01 * sizeMul; vC.color = c01;
+                    setTriangleNormal(vA, vB, vC);
+                    m_triangles.append(vA);
+                    m_triangles.append(vB);
+                    m_triangles.append(vC);
+                }
+            }
         }
     }
 }
@@ -165,13 +182,16 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 //     }
 
     generateTriangles(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
-    generateLines(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
-    generatePlates(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
+
+
+
+    // generateLines(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
+    // generatePlates(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
 
     // Update billboard drawable
-    if (m_billboardDrawable.needsUpdateGeometry()) {
-        m_billboardDrawable.updateData(palette);
-    }
+    // if (m_billboardDrawable.needsUpdateGeometry()) {
+    //     m_billboardDrawable.updateData(palette);
+    // }
 
     return true;
 }

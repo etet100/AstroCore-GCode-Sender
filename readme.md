@@ -437,3 +437,7 @@ row: -3.9 2.17 -0.37 3.6 1.8 -4.0 0.9 1.87 0.77 1.2
 ```
 
 This example defines a 10×10 grid starting at position (0, 0) with 5mm spacing between measurement points.
+
+Heightmap rendering with bicubic interpolation:
+
+![bicubic interpolation](/screenshots/screenshot_heightmap_bicubic.png)

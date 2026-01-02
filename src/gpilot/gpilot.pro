@@ -109,6 +109,10 @@ SOURCES += main.cpp\
     core/gcode/converter/converter.cpp \
     core/gcode/converter/pipeline.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
+    core/heightmap/interpolator/heightmapbicubicinterpolator.cpp \
+    core/heightmap/interpolator/heightmapbilinearinterpolator.cpp \
+    core/heightmap/interpolator/heightmapinterpolator.cpp \
+    core/heightmap/interpolator/heightmaplinearinterpolator.cpp \
     core/heightmap/loader/heightmaploader.cpp \
     core/jogger/jogger.cpp \
     core/machine/physicalmachineconfiguration.cpp \
@@ -120,7 +124,6 @@ SOURCES += main.cpp\
     io/connection/serialconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
-    core/heightmap/heightmapinterpolator.cpp \
     state_behaviour/action.cpp \
     state_behaviour/connectingbehavior.cpp \
     state_behaviour/errorbehaviour.cpp \
@@ -242,6 +245,10 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/converter.h \
     core/gcode/converter/pipeline.h \
     core/heightmap/exporter/heightmapexporter.h \
+    core/heightmap/interpolator/heightmapbicubicinterpolator.h \
+    core/heightmap/interpolator/heightmapbilinearinterpolator.h \
+    core/heightmap/interpolator/heightmapinterpolator.h \
+    core/heightmap/interpolator/heightmaplinearinterpolator.h \
     core/heightmap/loader/heightmaploader.h \
     core/jogger/jogger.h \
     core/machine/physicalmachineconfiguration.h \
@@ -253,7 +260,6 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/serialconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
-    core/heightmap/heightmapinterpolator.h \
     state_behaviour/action.h \
     state_behaviour/connectingbehavior.h \
     state_behaviour/errorbehaviour.h \

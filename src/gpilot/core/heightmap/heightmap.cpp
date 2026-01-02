@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(10, 10))
+Heightmap::Heightmap() : Heightmap(QSize(100, 100))
 {
 }
 
@@ -33,7 +33,7 @@ Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<
 Heightmap::Heightmap(QSize size) : m_size(size)
 {
     m_startPos = QPointF(0.0, 0.0);
-    m_stepSize = QSize(50, 50);
+    m_stepSize = QSizeF(1.0, 1.0); // 1 mm steps -> size = size in mm
     m_data.resize(m_size.width() * m_size.height());
     updateEndPos();
     generateRandom();
@@ -106,7 +106,7 @@ void Heightmap::generateRandom()
     qDebug() << "[Heightmap] generating random heightmap data...";
     for (int y = 0; y < m_size.height(); y++) {
         for (int x = 0; x < m_size.width(); x++) {
-            at(x, y) = (rand() % 300 / 30.0) - 5.0;
+            at(x, y) = (rand() % 800 / 30.0) - 5.0;
         }
     }
 }
