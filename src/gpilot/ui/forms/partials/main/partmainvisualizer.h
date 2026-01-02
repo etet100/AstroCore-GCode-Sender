@@ -133,6 +133,7 @@ class PartMainVisualizer : public QWidget
         void fitClicked();
         void _2dClicked();
         void showButtonInfo(bool hovered);
+        void toggleToolClicked();
 
     private:
         Ui::partMainVisualizer* ui;

@@ -763,5 +763,10 @@ void PartMainVisualizer::updateBillboardsScreenPositions()
         ui->visualizer->viewMatrix(),
         ui->visualizer->projectionMatrix(),
         ui->visualizer->size()
-        );
+    );
+}
+
+void PartMainVisualizer::toggleToolClicked()
+{
+    m_toolDrawer.toggleVisible();
 }
