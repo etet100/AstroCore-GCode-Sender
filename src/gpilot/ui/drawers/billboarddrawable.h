@@ -91,6 +91,7 @@ class BillboardDrawable : public ShaderDrawable
         virtual QSize measureBillboard(const BillboardContentData* data) = 0;
         virtual QString buildCacheKey(const BillboardContentData* data) = 0;
         virtual void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data) = 0;
+        virtual void atlasReady(QImage& atlasImage) { Q_UNUSED(atlasImage); }
 
     private:
         QVector<BillboardData> m_billboards;

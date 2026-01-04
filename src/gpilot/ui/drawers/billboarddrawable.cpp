@@ -146,8 +146,13 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, con
 
 void BillboardDrawable::rebuildAtlas(GLPalette &palette)
 {
-    // Create atlas image
-    const int atlasSize = 2048;
+    if (m_texture) {
+        delete m_texture;
+        m_texture = nullptr;
+    }
+
+    static int atlasSize = 256; // Start with smallest size
+
     m_atlasImage = QImage(atlasSize, atlasSize, QImage::Format_RGBA8888);
     m_atlasImage.fill(Qt::transparent);
 
@@ -164,16 +169,35 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
         QRectF texRect = addBillboardToAtlas(billboard);
 
         if (texRect.width() == 0) {
-            continue; // Skip if atlas is full
+            // Jeśli atlas jest pełny to spróbujemy go powiększyć i zacząć od nowa
+            atlasSize *= 2;
+            if (atlasSize < 4096) {
+                qWarning() << "Rebuilding billboard atlas with size" << atlasSize;
+                rebuildAtlas(palette);
+            } else {
+                qWarning() << "Billboard atlas exceeded maximum size!";
+            }
+
+            return; // Exit if atlas is full, texture will be invalid
         }
 
         // Add geometry for this billboard
         addBillboardGeometry(billboard, texRect);
     }
 
-    if (m_texture) {
-        delete m_texture;
+    // Let's see how much of the atlas was used, to allow dynamic adjustment of atlas size in the future
+    // If less than 25% is used, we decrease the atlas size
+    float usedArea = (m_atlasY + m_atlasRowHeight) * atlasSize;
+    float totalArea = atlasSize * atlasSize;
+    float usageRatio = usedArea / totalArea;
+    qDebug() << "Billboard atlas usage:" << usageRatio * 100.0f << "%" << "; size is " << atlasSize;
+    if (usageRatio < 0.25f && atlasSize > 256) {
+        // Next time, use smaller atlas
+        atlasSize /= 2;
     }
+
+    // Notify derived classes that atlas is ready, may be used to generate mipmaps or other processing
+    atlasReady(m_atlasImage);
 
     m_texture = new QOpenGLTexture(m_atlasImage);
 }
