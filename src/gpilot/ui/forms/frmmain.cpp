@@ -554,9 +554,17 @@ void FrmMain::closeEvent(QCloseEvent *ce)
 
 void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
 {
+    // Ignore dockable widget drops
+    if (dee->mimeData()->hasFormat("application/widget")) {
+        return;
+    }
+
     m_fileDropOverlay = new FileDropOverlay(this);
     m_fileDropOverlay->setGeometry(0, 0, width(), height());
     m_fileDropOverlay->show();
+
+    // Accept all, we will validate in drop event
+    dee->acceptProposedAction();
 
     if (m_communicator->senderState() != SenderState::Stopped || dee->mimeData()->hasFormat("application/widget")) {
         m_fileDropOverlay->showForbidden();
@@ -565,7 +573,6 @@ void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
     }
 
     if (dee->mimeData()->hasFormat("text/plain") && !m_heightmapMode) {
-        dee->acceptProposedAction();
         m_fileDropOverlay->showValid();
 
         return;
@@ -573,7 +580,6 @@ void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
         QString fileName = dee->mimeData()->urls().at(0).toLocalFile();
 
         if ((!m_heightmapMode && Utils::isGCodeFile(fileName)) || (m_heightmapMode && Utils::isHeightmapFile(fileName))) {
-            dee->acceptProposedAction();
             m_fileDropOverlay->showValid();
 
             return;
@@ -596,8 +602,14 @@ void FrmMain::dragLeaveEvent(QDragLeaveEvent *dle)
 void FrmMain::dropEvent(QDropEvent *de)
 {
     if (m_fileDropOverlay) {
+        bool valid = m_fileDropOverlay->valid();
+
         delete m_fileDropOverlay;
         m_fileDropOverlay = nullptr;
+
+        if (!valid) {
+            return;
+        }
     }
 
     QString fileName = de->mimeData()->urls().at(0).toLocalFile();

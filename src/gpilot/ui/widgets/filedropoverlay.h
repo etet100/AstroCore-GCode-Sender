@@ -17,8 +17,11 @@ class FileDropOverlay : public QWidget
 
         void showForbidden();
         void showValid();
+        bool valid();
+
     private:
         Ui::FileDropOverlay* ui;
+        bool m_isValid;
 };
 
 #endif // FILEDROPOVERLAY_H
