@@ -133,6 +133,7 @@ SOURCES += main.cpp\
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
+    ui/drawers/heightmapareadrawer.cpp \
     ui/drawers/originbillboarddrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
@@ -162,7 +163,6 @@ SOURCES += main.cpp\
     ui/forms/frmsettings.cpp \
     ui/forms/frmabout.cpp \
     ui/drawers/gcodedrawer.cpp \
-    ui/drawers/heightmapborderdrawer.cpp \
     ui/drawers/heightmapgriddrawer.cpp \
     ui/drawers/heightmapinterpolationdrawer.cpp \
     ui/drawers/origindrawer.cpp \
@@ -270,6 +270,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \
+    ui/drawers/heightmapareadrawer.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
@@ -299,7 +300,6 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/frmsettings.h \
     ui/forms/frmabout.h \
     ui/drawers/gcodedrawer.h \
-    ui/drawers/heightmapborderdrawer.h \
     ui/drawers/heightmapgriddrawer.h \
     ui/drawers/heightmapinterpolationdrawer.h \
     ui/drawers/origindrawer.h \

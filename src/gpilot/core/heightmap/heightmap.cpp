@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(100, 100))
+Heightmap::Heightmap() : Heightmap(QSize(20, 20))
 {
 }
 
@@ -33,7 +33,7 @@ Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<
 Heightmap::Heightmap(QSize size) : m_size(size)
 {
     m_startPos = QPointF(0.0, 0.0);
-    m_stepSize = QSizeF(1.0, 1.0); // 1 mm steps -> size = size in mm
+    m_stepSize = QSizeF(10.0, 10.0); // 10 mm steps
     m_data.resize(m_size.width() * m_size.height());
     updateEndPos();
     generateRandom();
@@ -92,6 +92,13 @@ void Heightmap::setHeightAt(QPoint point, double height)
 {
     at(point.x(), point.y()) = height;
     updateMinMax();
+}
+
+void Heightmap::reset()
+{
+    for (auto& value : m_data) {
+        value = NAN;
+    }
 }
 
 void Heightmap::setSize(QSize size)

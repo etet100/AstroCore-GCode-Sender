@@ -879,8 +879,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         if (currentProgram) currentProgram->bind();
     }
 
+    // First pass - depth test enabled
     foreach (ShaderDrawable *drawable, m_shaderDrawables) {
-        if (!drawable->visible()) {
+        if (!drawable->visible() || !drawable->depthTestEnabled()) {
             continue;
         }
 
@@ -937,6 +938,69 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
             drawable->draw(currentProgram);
             m_palette.release();
             break;
+        }
+        vertices += drawable->getVertexCount();
+    }
+
+    // Seconds pass - no depth test
+    foreach (ShaderDrawable *drawable, m_shaderDrawables) {
+        if (!drawable->visible() || drawable->depthTestEnabled()) {
+            continue;
+        }
+
+        QOpenGLShaderProgram *newProgram;
+        switch (drawable->programType()) {
+            case ShaderDrawable::ProgramType::GCode: {
+                GcodeDrawer *gcodeDrawable = static_cast<GcodeDrawer*>(drawable);
+                gcodeDrawable->setEyePos(m_eye);
+                // gcodeDrawable->update();
+                newProgram = m_gcodeShaderProgram;
+                break;
+            }
+            case ShaderDrawable::ProgramType::Billboard:
+                newProgram = m_billboardShaderProgram;
+                break;
+            default:
+                newProgram = m_defaultShaderProgram;
+                break;
+        }
+        if (currentProgram != newProgram) {
+            if (currentProgram) {
+                currentProgram->release();
+            }
+            currentProgram = newProgram;
+            currentProgram->bind();
+        }
+
+        if (drawable->needsUpdateGeometry()) {
+            drawable->updateGeometry(currentProgram, m_palette);
+        }
+
+        switch (drawable->programType()) {
+            case ShaderDrawable::ProgramType::GCode: {
+                m_palette.bind();
+                drawable->draw(currentProgram);
+                m_palette.release();
+                break;
+            }
+            case ShaderDrawable::ProgramType::Billboard:
+                // Set billboard-specific uniforms
+                currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
+                currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
+                currentProgram->setUniformValue("u_isOrthographic", (m_mode != ViewMode::Perspective) ? 1 : 0);
+                currentProgram->setUniformValue("u_aspectRatio", (float)width() / (float)height());
+                m_palette.bind();
+                drawable->draw(currentProgram);
+                m_palette.release();
+                break;
+            case ShaderDrawable::ProgramType::Default:
+                m_palette.bind();
+                if (drawable->sort(m_viewMatrix)) {
+                    drawable->bindData(currentProgram);
+                }
+                drawable->draw(currentProgram);
+                m_palette.release();
+                break;
         }
         vertices += drawable->getVertexCount();
     }

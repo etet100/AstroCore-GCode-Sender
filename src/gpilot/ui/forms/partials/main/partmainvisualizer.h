@@ -6,7 +6,7 @@
 #include "ui/drawers/origindrawer.h"
 #include "ui/drawers/gcodedrawer.h"
 #include "ui/drawers/tooldrawer.h"
-#include "ui/drawers/heightmapborderdrawer.h"
+#include "ui/drawers/heightmapareadrawer.h"
 #include "ui/drawers/heightmapgriddrawer.h"
 #include "ui/drawers/heightmapinterpolationdrawer.h"
 #include "ui/drawers/selectiondrawer.h"
@@ -147,7 +147,7 @@ class PartMainVisualizer : public QWidget
         GcodeDrawer *m_currentDrawer;
         ToolDrawer m_toolDrawer;
         CursorDrawer m_cursorDrawer;
-        HeightMapBorderDrawer m_heightmapBorderDrawer;
+        HeightMapAreaDrawer m_heightmapBorderDrawer;
         HeightMapGridDrawer m_heightmapGridDrawer;
         HeightMapGridBillboardContentData* m_lastHMGBContentData = nullptr;
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;

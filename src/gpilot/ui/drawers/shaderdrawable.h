@@ -86,6 +86,7 @@ public:
     bool visible() const;
     void setVisible(bool visible);
     void toggleVisible();
+    bool depthTestEnabled() { return m_depthTestEnabled; }
 
     // bool depthTestEnabled() const;
     // void setDepthTestEnabled(bool enabled);

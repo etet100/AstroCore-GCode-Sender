@@ -127,7 +127,9 @@ void PartMainVisualizer::updateCursorDrawer(QPointF pos)
 void PartMainVisualizer::initDrawables()
 {
     *ui->visualizer << m_codeDrawer << m_probeDrawer
-                    << &m_cursorDrawer << &m_heightmapBorderDrawer
+                    << &m_cursorDrawer
+                    << &m_heightmapBorderDrawer
+                    << m_heightmapBorderDrawer.billboardDrawable()
                     << &m_heightmapGridDrawer
                     << &m_heightmapInterpolationDrawer
                     << m_heightmapGridDrawer.billboardDrawable()

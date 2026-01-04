@@ -61,11 +61,13 @@ void BillboardDrawable::init()
 QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data)
 {
     QString cacheKey = buildCacheKey(data.contentData.data());
+    qDebug() << "Adding billboard to atlas with key:" << cacheKey;
     if (m_textCache.contains(cacheKey)) {
         return m_textCache[cacheKey];
     }
 
     QSize size = measureBillboard(data.contentData.data());
+    qDebug() << size;
 
     // Check if we need to move to next row
     if (m_atlasX + size.width() > m_atlasImage.width()) {
@@ -77,6 +79,7 @@ QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data)
     // Check if we have space
     if (m_atlasY + size.height() > m_atlasImage.height()) {
         qWarning() << "Billboard atlas full!";
+
         return QRectF(0, 0, 0, 0);
     }
 
@@ -146,7 +149,7 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, con
 void BillboardDrawable::rebuildAtlas(GLPalette &palette)
 {
     // Create atlas image
-    const int atlasSize = 1024;
+    const int atlasSize = 2048;
     m_atlasImage = QImage(atlasSize, atlasSize, QImage::Format_RGBA8888);
     m_atlasImage.fill(Qt::transparent);
 
@@ -162,7 +165,9 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     for (const BillboardData &billboard : m_billboards) {
         QRectF texRect = addBillboardToAtlas(billboard);
 
-        if (texRect.width() == 0) continue; // Skip if atlas is full
+        if (texRect.width() == 0) {
+            continue; // Skip if atlas is full
+        }
 
         // Add geometry for this billboard
         addBillboardGeometry(billboard, texRect);
