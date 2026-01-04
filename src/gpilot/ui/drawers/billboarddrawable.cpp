@@ -61,13 +61,11 @@ void BillboardDrawable::init()
 QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data)
 {
     QString cacheKey = buildCacheKey(data.contentData.data());
-    qDebug() << "Adding billboard to atlas with key:" << cacheKey;
     if (m_textCache.contains(cacheKey)) {
         return m_textCache[cacheKey];
     }
 
     QSize size = measureBillboard(data.contentData.data());
-    qDebug() << size;
 
     // Check if we need to move to next row
     if (m_atlasX + size.width() > m_atlasImage.width()) {

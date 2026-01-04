@@ -213,11 +213,11 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             // Draw line from surface to label position
             vertex.position = QVector3D(x, y, value);
             m_lines.append(vertex);
-            vertex.position = QVector3D(x, y, value + 10.0);
+            vertex.position = QVector3D(x, y, value + 4.0);
             m_lines.append(vertex);
 
             m_billboardDrawable.addBillboard(
-                QVector3D(x, y, value + 13.0),
+                QVector3D(x, y, value + 6.0),
                 new HeightMapGridBillboardContentData(
                     QPoint(x_, y_), value,
                     QString("%1, %2\n%3").arg(x_).arg(y_).arg(value, 0, 'f', 2),
