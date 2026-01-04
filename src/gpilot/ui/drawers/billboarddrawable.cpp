@@ -111,9 +111,8 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, con
     float pixelHeight = texRect.height();
 
     // Scale billboard to maintain text proportions while being reasonably sized
-    // Use pixelSize as a base scale factor for the larger dimension
-    float maxDimension = qMax(pixelWidth, pixelHeight);
-    float scale = billboard.pixelSize / maxDimension;
+    // Use pixelSize as height - all billboards with same pixelSize have same height
+    float scale = billboard.pixelSize / pixelHeight;
     QVector2D size(pixelWidth * scale, pixelHeight * scale);
 
     // Normalize texRect coordinates for texture sampling
@@ -142,7 +141,6 @@ void BillboardDrawable::addBillboardGeometry(const BillboardData& billboard, con
         billboard.position, size, QVector2D(0.0, 1.0),
         QVector2D(normalizedLeft, normalizedTop)));
 }
-
 
 void BillboardDrawable::rebuildAtlas(GLPalette &palette)
 {

@@ -223,7 +223,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
                     QString("%1, %2\n%3").arg(x_).arg(y_).arg(value, 0, 'f', 2),
                     QColor(11, 22, 17, 200), Qt::white
                 ),
-                35.0f  // Billboard size in pixels
+                20.0f  // Billboard size in pixels
             );
 
             x += stepSize.width();
@@ -296,9 +296,6 @@ void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect 
     QFont largeFont;
     largeFont.setPointSize(22);
 
-    QFontMetrics fmSmall(smallFont);
-    QFontMetrics fmLarge(largeFont);
-
     painter.setPen(data->textColor);
     painter.setBrush(data->bgColor);
     painter.drawRoundedRect(rect, 5, 5);
@@ -309,12 +306,18 @@ void HeightMapGridBillboardDrawer::drawBillboard(QPainter &painter, const QRect 
     // Line 1
     painter.setPen(data->textColor.darker(200));
     painter.setFont(smallFont);
-    int xPos = rect.x() + (rect.width() - fmSmall.horizontalAdvance(lines[0])) / 2;
-    painter.drawText(xPos, yPos + fmSmall.ascent(), lines[0]);
-    yPos += fmSmall.height() * 0.7;
+
+    painter.drawText(
+        QRect(rect.x(), yPos, rect.width(), rect.height() * 0.4),
+        Qt::AlignCenter, lines[0]);
+
+    yPos += rect.height() * 0.4;
+
     // Line 2
     painter.setPen(data->textColor);
     painter.setFont(largeFont);
-    xPos = rect.x() + (rect.width() - fmLarge.horizontalAdvance(lines[1])) / 2;
-    painter.drawText(xPos, yPos + fmLarge.ascent(), lines[1]);
+
+    painter.drawText(
+        QRect(rect.x(), yPos, rect.width(), rect.height() * 0.6),
+        Qt::AlignCenter, lines[1]);
 }

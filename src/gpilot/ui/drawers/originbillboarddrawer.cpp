@@ -38,13 +38,7 @@ void OriginBillboardDrawer::drawBillboard(QPainter& painter, const QRect& rect, 
     font.setPointSize(24);
     font.setBold(true);
 
-    QFontMetrics fm(font);
-
     painter.setFont(font);
     painter.setPen(data->color);
-
-    int xPos = rect.x() + (rect.width() - fm.horizontalAdvance(data->axis)) / 2;
-    int yPos = rect.y() + (rect.height() - fm.height()) / 2 + fm.ascent();
-
-    painter.drawText(xPos, yPos, data->axis);
+    painter.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, data->axis);
 }
