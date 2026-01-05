@@ -288,10 +288,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
-    m_tableMenu = new QMenu(this);
-    m_tableMenu->addAction(tr("&Insert line"), this, SLOT(onTableInsertLine()), QKeySequence(Qt::Key_Insert));
-    m_tableMenu->addAction(tr("&Delete lines"), this, SLOT(onTableDeleteLines()), QKeySequence(Qt::Key_Delete));
-
     initializeVisualizer();
 
     connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
@@ -320,6 +316,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             ui->program->setAutoScroll(false);
     });
     connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    connect(ui->program, &PartMainProgram::insertLineRequested, this, &FrmMain::onTableInsertLine);
+    connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::onTableDeleteLines);
     clearTable();
 
     connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
@@ -327,7 +325,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
     connect(ui->program, &PartMainProgram::abort, this, &FrmMain::onFileAbort);
     connect(ui->program, &PartMainProgram::reset, this, &FrmMain::onFileReset);
-    connect(ui->program, &PartMainProgram::customContextMenuRequested, this, &FrmMain::onProgramTableContextMenuRequested);
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
                                        QMessageBox::Ignore | QMessageBox::Abort, this);
@@ -1553,16 +1550,6 @@ void FrmMain::onLoadHeightmapRequested()
     }
 }
 
-void FrmMain::onProgramTableContextMenuRequested(const QPoint &pos)
-{
-    if (m_communicator->senderState() != SenderState::Stopped) return;
-
-    QModelIndexList selectedRows = ui->program->getSelectedRows();
-    bool hasSelection = !selectedRows.isEmpty();
-    int selectedRow = hasSelection ? selectedRows[0].row() : -1;
-    ui->program->showTableContextMenu(pos, m_tableMenu, hasSelection, selectedRow, m_currentModel->rowCount());
-}
-
 void FrmMain::on_menuViewWindows_aboutToShow()
 {
     QAction *action;
@@ -1828,9 +1815,10 @@ void FrmMain::onTimerConnection()
 
 void FrmMain::onTableInsertLine()
 {
+    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+
     QModelIndexList selectedRows = ui->program->getSelectedRows();
-    if (selectedRows.count() == 0 ||
-        (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) return;
+    if (selectedRows.isEmpty()) return;
 
     int row = selectedRows[0].row();
 
@@ -1844,10 +1832,10 @@ void FrmMain::onTableInsertLine()
 
 void FrmMain::onTableDeleteLines()
 {
+    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+
     QModelIndexList selectedRows = ui->program->getSelectedRows();
-    if (selectedRows.count() == 0 ||
-        (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping) ||
-        QMessageBox::warning(this, this->windowTitle(), tr("Delete lines?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return;
+    if (selectedRows.isEmpty()) return;
 
     QModelIndex firstRow = selectedRows[0];
     int rowsCount = selectedRows.count();

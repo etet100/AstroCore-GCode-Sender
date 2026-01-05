@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QAbstractItemView>
+#include <QMessageBox>
 #include "utils/utils.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
@@ -30,15 +31,24 @@ void PartMainProgram::setupUi()
     connect(ui->cmdFileAbort, &QPushButton::clicked, this, &PartMainProgram::abortClicked);
     connect(ui->cmdFileReset, &QPushButton::clicked, this, &PartMainProgram::resetClicked);
 
+    setupTableContextMenu();
+
     // Connect table signals
     connect(ui->tblProgram->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, &PartMainProgram::onScrollBarAction);
-    connect(ui->tblProgram, &QWidget::customContextMenuRequested, this, &PartMainProgram::customContextMenuRequested);
+    connect(ui->tblProgram, &QWidget::customContextMenuRequested, this, &PartMainProgram::onTableContextMenuRequested);
     ui->tblProgram->installEventFilter(this);
 
     // Connect checkbox signals
     connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](int state) {
         emit hideCommentsChanged(state == Qt::Checked);
     });
+}
+
+void PartMainProgram::setupTableContextMenu()
+{
+    m_tableMenu = new QMenu(this);
+    m_tableMenu->addAction(tr("&Insert line"), this, SLOT(onInsertLineTriggered()), QKeySequence(Qt::Key_Insert));
+    m_tableMenu->addAction(tr("&Delete lines"), this, SLOT(onDeleteLinesTriggered()), QKeySequence(Qt::Key_Delete));
 }
 
 void PartMainProgram::setProgramModel(QAbstractItemModel* model)
@@ -234,16 +244,41 @@ void PartMainProgram::setupFileSendMenu(QObject* receiver, const char* sendFromL
     menu->addAction(tr("Send from current line"), receiver, sendFromLineSlot);
 }
 
-void PartMainProgram::showTableContextMenu(const QPoint& pos, QMenu* menu, bool hasSelection, int selectedRow, int totalRows)
+void PartMainProgram::onInsertLineTriggered()
 {
-    if (hasSelection) {
-        menu->actions().at(0)->setEnabled(true);
-        menu->actions().at(1)->setEnabled(selectedRow != totalRows - 1);
-    } else {
-        menu->actions().at(0)->setEnabled(false);
-        menu->actions().at(1)->setEnabled(false);
+    QModelIndexList selectedRows = getSelectedRows();
+    if (selectedRows.isEmpty()) return;
+
+    emit insertLineRequested();
+}
+
+void PartMainProgram::onDeleteLinesTriggered()
+{
+    QModelIndexList selectedRows = getSelectedRows();
+    if (selectedRows.isEmpty()) return;
+
+    if (QMessageBox::warning(this, this->windowTitle(), tr("Delete lines?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) {
+        return;
     }
-    menu->popup(ui->tblProgram->viewport()->mapToGlobal(pos));
+
+    emit deleteLinesRequested();
+}
+
+void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
+{
+    QModelIndexList selectedRows = getSelectedRows();
+    bool hasSelection = !selectedRows.isEmpty();
+    int selectedRow = hasSelection ? selectedRows[0].row() : -1;
+    int totalRows = ui->tblProgram->model() ? ui->tblProgram->model()->rowCount() : 0;
+
+    if (hasSelection) {
+        m_tableMenu->actions().at(0)->setEnabled(true);
+        m_tableMenu->actions().at(1)->setEnabled(selectedRow != totalRows - 1);
+    } else {
+        m_tableMenu->actions().at(0)->setEnabled(false);
+        m_tableMenu->actions().at(1)->setEnabled(false);
+    }
+    m_tableMenu->popup(ui->tblProgram->viewport()->mapToGlobal(pos));
 }
 
 QModelIndexList PartMainProgram::getSelectedRows() const

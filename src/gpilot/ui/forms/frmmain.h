@@ -132,7 +132,6 @@ private slots:
     void on_grpJog_toggled(bool checked);
     void on_grpHeightmap_toggled(bool checked);
     void on_chkKeyboardControl_toggled(bool checked);
-    void onProgramTableContextMenuRequested(const QPoint &pos);
     void on_menuViewWindows_aboutToShow();
     void on_menuViewPanels_aboutToShow();
     void on_dockVisualizer_visibilityChanged(bool visible);
@@ -202,7 +201,6 @@ private:
     // Ui
     Ui::frmMain *ui;
 
-    QMenu *m_tableMenu;
     QMessageBox* m_senderErrorBox;
 #ifdef WINDOWS
     UINT m_taskbarButtonCreatedMessageId;

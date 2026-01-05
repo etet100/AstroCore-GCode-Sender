@@ -59,8 +59,6 @@ class PartMainProgram : public QWidget
 
         // void setupFileOpenMenu(QObject* receiver, const char* openGCodeSlot, const char* openHeightmapSlot);
         void setupFileSendMenu(QObject* receiver, const char* sendFromLineSlot);
-        void showTableContextMenu(const QPoint& pos, QMenu* menu, bool hasSelection, int selectedRow, int totalRows);
-
         QModelIndexList getSelectedRows() const;
         int getFirstSelectedRow() const;
         void selectRow(int row);
@@ -76,7 +74,8 @@ class PartMainProgram : public QWidget
         void currentChanged(const QModelIndex& current, const QModelIndex& previous);
         void hideCommentsChanged(bool checked);
         void manualScrollRequested();
-        void customContextMenuRequested(const QPoint& pos);
+        void insertLineRequested();
+        void deleteLinesRequested();
 
     protected:
         bool eventFilter(QObject *obj, QEvent *event) override;
@@ -89,10 +88,15 @@ class PartMainProgram : public QWidget
         void resetClicked();
         void pauseClicked(bool checked = false);
         void openRecentFile();
+        void onTableContextMenuRequested(const QPoint& pos);
+        void onInsertLineTriggered();
+        void onDeleteLinesTriggered();
 
     private:
         Ui::PartMainProgram* ui;
+        QMenu* m_tableMenu;
         void setupUi();
+        void setupTableContextMenu();
 };
 
 #endif // PARTMAINPROGRAM_H
