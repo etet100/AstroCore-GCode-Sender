@@ -22,6 +22,10 @@ class FilesManager : public QObject
         void setHeightmapFilePath(const QString& filePath);
         void resetHeightmapFile();
         bool heightmapOpened() const;
+        void setGcodeModified(const bool modified);
+        bool gcodeModified() const;
+        void setHeightmapModified(const bool modified);
+        bool heightmapModified() const;
 
     signals:
         void gcodeFileStateChanged(const bool opened, const QString& filePath);
@@ -30,8 +34,10 @@ class FilesManager : public QObject
     private:
         QString m_gcodeFilePath;
         bool m_gcodeOpened = false;
+        bool m_gcodeModified = false;
         QString m_heightmapFilePath;
         bool m_heightmapOpened = false;
+        bool m_heightmapModified = false;
 };
 
 #endif // FILESMANAGER_H

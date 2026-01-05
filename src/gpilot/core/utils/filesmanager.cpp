@@ -73,3 +73,22 @@ bool FilesManager::heightmapOpened() const
 {
     return m_heightmapOpened;
 }
+
+void FilesManager::setGcodeModified(const bool modified)
+{
+    m_gcodeModified = modified; }
+
+bool FilesManager::gcodeModified() const
+{
+    return m_gcodeModified;
+}
+
+void FilesManager::setHeightmapModified(const bool modified)
+{
+    m_heightmapModified = modified;
+}
+
+bool FilesManager::heightmapModified() const
+{
+    return m_heightmapModified;
+}

@@ -247,8 +247,6 @@ private:
     // Flags
     bool m_programLoading;
     bool m_settingsLoading;
-    bool m_fileChanged;
-    bool m_heightmapChanged;
 
     // bool m_updateSpindleSpeed;
     // bool m_updateParserStatus;

@@ -69,8 +69,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     // Initializing variables
 
-    m_fileChanged = false;
-    m_heightmapChanged = false;
     m_currentModel = &m_programModel;
 
     // to communicator
@@ -622,7 +620,7 @@ void FrmMain::dropEvent(QDropEvent *de)
         // Load dropped text
         } else {
             FilesManager::instance().resetGcodeFile();
-            m_fileChanged = true;
+            FilesManager::instance().setGcodeModified(true);
             //@todo fix after refactoring loadFile to be faster
             //loadFile(de->mimeData()->text().split("\n"));
         }
@@ -688,7 +686,7 @@ void FrmMain::on_actFileSave_triggered()
         // G-code saving
         if (fm.gcodeOpened()) on_actFileSaveAs_triggered(); else {
             saveProgramToFile(fm.gcodeFilePath(), m_program);
-            m_fileChanged = false;
+            fm.setGcodeModified(false);
         }
     } else {
         // Height map saving
@@ -707,7 +705,7 @@ void FrmMain::on_actFileSaveAs_triggered()
 
         if (!fileName.isEmpty()) if (saveProgramToFile(fileName, m_program)) {
             fm.setGcodeFilePath(fileName);
-            m_fileChanged = false;
+            fm.setGcodeModified(false);
 
             addRecentFile(fileName);
             updateRecentFilesMenus();
@@ -719,7 +717,7 @@ void FrmMain::on_actFileSaveAs_triggered()
 
         if (!fileName.isEmpty()) if (saveHeightmap(fileName)) {
             fm.setHeightmapFilePath(fileName);
-            m_heightmapChanged = false;
+            fm.setHeightmapModified(false);
 
             ui->heightmap->setOpenFile(fileName.mid(fileName.lastIndexOf("/") + 1));
 
@@ -2063,7 +2061,9 @@ void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
     ui->visualizer->updateHeightmapGrid();
 
     // Heightmap changed by table user input
-    if (sender() == &m_heightmapModel) m_heightmapChanged = true;
+    if (sender() == &m_heightmapModel) {
+        FilesManager::instance().setHeightmapModified(true);
+    }
 
     // Reset heightmapped program model
     m_programHeightmapModel.clear();
@@ -2585,7 +2585,10 @@ void FrmMain::updateParser()
     ui->visualizer->updateGCodeExtremes();
     updateControlsState();
 
-    if (m_currentModel == &m_programModel) m_fileChanged = true;
+    if (m_currentModel == &m_programModel) {
+        FilesManager& fm = FilesManager::instance();
+        fm.setGcodeModified(true);
+    }
 }
 
 // @TODO scripting only??
@@ -2839,15 +2842,18 @@ void FrmMain::loadLines(QList<std::string> data)
 
 bool FrmMain::saveChanges(bool heightMapMode)
 {
-    if ((!heightMapMode && m_fileChanged)) {
+    FilesManager& fm = FilesManager::instance();
+
+    if ((!heightMapMode && fm.gcodeModified())) {
         int res = QMessageBox::warning(this, this->windowTitle(), tr("G-code program file was changed. Save?"),
                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (res == QMessageBox::Cancel) return false;
         else if (res == QMessageBox::Yes) on_actFileSave_triggered();
-        m_fileChanged = false;
+
+        fm.setGcodeModified(false);
     }
 
-    if (m_heightmapChanged) {
+    if (fm.heightmapModified()) {
         int res = QMessageBox::warning(this, this->windowTitle(), tr("Heightmap file was changed. Save?"),
                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (res == QMessageBox::Cancel) return false;
@@ -2858,7 +2864,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
             updateRecentFilesMenus(); // Restore g-code files recent menu
         }
 
-        m_fileChanged = false;
+        fm.setHeightmapModified(false);
     }
 
     return true;
@@ -2898,8 +2904,10 @@ void FrmMain::resetHeightmap()
     m_heightmapModel.resize(1, 1);
 
     ui->heightmap->fileClosed();
-    FilesManager::instance().resetHeightmapFile();
-    m_heightmapChanged = false;
+
+    FilesManager& fm = FilesManager::instance();
+    fm.resetHeightmapFile();
+    fm.setHeightmapModified(false);
 }
 
 void FrmMain::newFile()
@@ -2948,13 +2956,14 @@ void FrmMain::newHeightmap()
     m_heightmapModel.clear();
     onFileReset();
     ui->heightmap->setOpenFile(tr("Untitled"));
-    FilesManager::instance().resetHeightmapFile();
+
+    FilesManager& fm = FilesManager::instance();
+    fm.resetHeightmapFile();
+    fm.setHeightmapModified(false);
 
     //TODO heightmap
     // updateHeightmapBorderDrawer();
     updateHeightmapGrid();
-
-    m_heightmapChanged = false;
 
     updateControlsState();
 }
@@ -3207,7 +3216,8 @@ bool FrmMain::updateHeightmapGrid()
 
     if (ui->visualizer->isCurrentDrawerProbeMode()) updateParser();
 
-    m_heightmapChanged = true;
+    FilesManager::instance().setHeightmapModified(true);
+
     return true;
 }
 
