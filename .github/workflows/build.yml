@@ -76,8 +76,8 @@ jobs:
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir build\\vendor\\PropertyEditor
-            cd build\\vendor\\PropertyEditor
+            mkdir -p build/vendor/PropertyEditor
+            cd build/vendor/PropertyEditor
             qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
@@ -90,14 +90,15 @@ jobs:
           fi
 
       - name: Build uCNC
+        if: matrix.os == 'windows-latest'
         shell: bash
         env:
           QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir build\\vendor\\uCNC
-            cd build\\vendor\\uCNC
+            mkdir -p build/vendor/uCNC
+            cd build/vendor/uCNC
             qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
@@ -110,14 +111,15 @@ jobs:
           fi
 
       - name: Build grblHal
+        if: matrix.os == 'windows-latest'
         shell: bash
         env:
           QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir build\\vendor\\grblHal
-            cd build\\vendor\\grblHal
+            mkdir -p build/vendor/grblHal
+            cd build/vendor/grblHal
             qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
@@ -136,8 +138,8 @@ jobs:
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir build\\designerplugins
-            cd build\\designerplugins
+            mkdir -p build/designerplugins
+            cd build/designerplugins
             qmake ../../src/designerplugins/designerplugins.pro -r
             mingw32-make -j12
           else
@@ -154,8 +156,8 @@ jobs:
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir build\\gpilot
-            cd build\\gpilot
+            mkdir -p build/gpilot
+            cd build/gpilot
             qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
