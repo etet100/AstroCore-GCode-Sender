@@ -58,18 +58,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_connectionManager(this, configuration.connectionModule()),
     m_connection(nullptr),
     m_program(),
-    m_programModel(m_program),
-    m_probeModel(m_program),
-    m_programHeightmapModel(m_program),
-    m_heightmapModel(m_heightmap),
     m_configuration(configuration)
 {
     // Loading settings
     m_settingsFileName = qApp->applicationDirPath() + "/settings.ini";
 
     // Initializing variables
-
-    m_currentModel = &m_programModel;
 
     // to communicator
     // m_communicator->m_homing = false;
@@ -115,8 +109,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             return;
         }
 
-        int tableIndex = m_currentModel->toFilteredIndex(m_program.commandIndex());
-        ui->program->scrollToCurrentIndex(m_currentModel->index(tableIndex, 1));
+        int tableIndex = ui->program->currentModel()->toFilteredIndex(m_program.commandIndex());
+        ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
 
         GCodeViewParser *parser = &m_viewParser;
         QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
@@ -146,7 +140,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->program, &PartMainProgram::hideCommentsChanged, this, [this](bool checked) {
-        m_programModel.setCommentsVisible(!checked);
+        ui->program->setProgramModelCommentsVisible(!checked);
     });
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         clearRecentFiles();
@@ -307,21 +301,22 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
         m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
     });
-    connect(&m_programModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
-    connect(&m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
-    connect(&m_probeModel, &QAbstractItemModel::dataChanged, this, &FrmMain::onTableCellChanged);
-    connect(&m_heightmapModel, SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
+
+    // Initialize program models in PartMainProgram
+    ui->program->initialize(&m_program, &m_heightmap);
+
+    // Connect model signals from PartMainProgram
+    connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
+    connect(ui->program->heightmapModel(), SIGNAL(dataChangedByUserInput()), this, SLOT(updateHeightMapInterpolationDrawer()));
     // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
 
-    ui->program->setProgramModel(&m_programModel);
-    ui->program->setProgramItemDelegate(&m_programItemDelegate);
     connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
         if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping))
             ui->program->setAutoScroll(false);
     });
     connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    connect(ui->program, &PartMainProgram::insertLineRequested, this, &FrmMain::onTableInsertLine);
-    connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::onTableDeleteLines);
+    connect(ui->program, &PartMainProgram::insertLineRequested, this, &FrmMain::programInsertLine);
+    connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::programDeleteLines);
     clearTable();
 
     connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
@@ -1074,7 +1069,7 @@ void FrmMain::onFileReset()
         // delete m_heightmapInterpolationDrawer.data();
         ui->visualizer->updateHeightmapInterpolation(true);
 
-        m_heightmapModel.clear();
+        ui->program->clearHeightmapModel();
         updateHeightmapGrid();
     }
 }
@@ -1489,7 +1484,7 @@ void FrmMain::heightmapModeToggled(bool checked)
     }
 
     if (checked) {
-        ui->program->setProgramModel(&m_probeModel);
+        ui->program->setCurrentModel(ui->program->probeModel());
         resizeTableHeightmapSections();
         //updateCurrentModel(&m_programModel);
         ui->visualizer->useProbeDrawer();
@@ -1497,7 +1492,7 @@ void FrmMain::heightmapModeToggled(bool checked)
     } else {
         m_probeParser.reset();
         if (!ui->heightmap->useMap()) {
-            ui->program->setProgramModel(&m_programModel);
+            ui->program->setCurrentModel(ui->program->programModel());
             // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
             ui->program->selectFirstRow();
 
@@ -1817,7 +1812,7 @@ void FrmMain::onTimerConnection()
 //     ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_communicator->m_commands.length()).arg(m_communicator->m_queue.length()));
 // }
 
-void FrmMain::onTableInsertLine()
+void FrmMain::programInsertLine()
 {
     if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
 
@@ -1826,15 +1821,15 @@ void FrmMain::onTableInsertLine()
 
     int row = selectedRows[0].row();
 
-    m_currentModel->insertRow(row);
-    m_currentModel->setData(m_currentModel->index(row, 2), GCodeItem::InQueue);
+    ui->program->insertRowInCurrentModel(row);
+    ui->program->setCurrentModelData(ui->program->currentModelIndex(row, 2), GCodeItem::InQueue);
 
     updateParser();
 
     ui->program->selectRow(row);
 }
 
-void FrmMain::onTableDeleteLines()
+void FrmMain::programDeleteLines()
 {
     if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
 
@@ -1843,14 +1838,16 @@ void FrmMain::onTableDeleteLines()
 
     QModelIndex firstRow = selectedRows[0];
     int rowsCount = selectedRows.count();
-    if (selectedRows.last().row() == m_currentModel->rowCount() - 1) rowsCount--;
+    if (selectedRows.last().row() == ui->program->currentModelRowCount() - 1) rowsCount--;
 
-    if (firstRow.row() != m_currentModel->rowCount() - 1) {
-        m_currentModel->removeRows(firstRow.row(), rowsCount);
+    if (firstRow.row() != ui->program->currentModelRowCount() - 1) {
+        ui->program->removeRowsFromCurrentModel(firstRow.row(), rowsCount);
     } else return;
 
     // Drop heightmap cache
-    if (m_currentModel == &m_programModel) m_programHeightmapModel.clear();
+    if (ui->program->currentModel() == ui->program->programModel()) {
+        ui->program->clearProgramHeightmapModel();
+    }
 
     updateParser();
 
@@ -1876,14 +1873,16 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
         model->setData(model->index(i1.row(), 5), QVariant());
 
         // Drop heightmap cache
-        if (m_currentModel == &m_programModel) m_programHeightmapModel.clear();
+        if (ui->program->currentModel() == ui->program->programModel()) {
+            ui->program->clearProgramHeightmapModel();
+        }
 
         // Update visualizer
         updateParser();
 
         // Hightlight w/o current cell changed event (double hightlight on current cell changed)
         QList<LineSegment>& list = m_viewParser.getLineSegmentList();
-        for (int i = 0; i < list.count() && list[i].getLineNumber() <= m_currentModel->data(m_currentModel->index(i1.row(), 4)).toInt(); i++) {
+        for (int i = 0; i < list.count() && list[i].getLineNumber() <= ui->program->currentModelData(ui->program->currentModelIndex(i1.row(), 4)).toInt(); i++) {
             list[i].setIsHightlight(true);
         }
     }
@@ -2053,7 +2052,7 @@ void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
             double x = interpolationStepX * j + borderRect.x();
             double y = interpolationStepY * i + borderRect.y();
 
-            row.append(reset ? qQNaN() : Interpolation::bicubicInterpolate(borderRect, &m_heightmapModel, x, y));
+            row.append(reset ? qQNaN() : Interpolation::bicubicInterpolate(borderRect, ui->program->heightmapModel(), x, y));
         }
         interpolationData->append(row);
     }
@@ -2067,12 +2066,12 @@ void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
     ui->visualizer->updateHeightmapGrid();
 
     // Heightmap changed by table user input
-    if (sender() == &m_heightmapModel) {
+    if (sender() == ui->program->heightmapModel()) {
         FilesManager::instance().setHeightmapModified(true);
     }
 
     // Reset heightmapped program model
-    m_programHeightmapModel.clear();
+    ui->program->programHeightmapModel()->clear();
 }
 
 void FrmMain::preloadSettings()
@@ -2538,16 +2537,16 @@ void FrmMain::updateParser()
     QString stripped;
     QList<QString> args;
 
-    QProgressDialog progress(tr("Updating..."), tr("Abort"), 0, m_currentModel->rowCount() - 2, this);
+    QProgressDialog progress(tr("Updating..."), tr("Abort"), 0, ui->program->currentModelRowCount() - 2, this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setFixedSize(progress.sizeHint());
 
-    if (m_currentModel->rowCount() > PROGRESSMINLINES) {
+    if (ui->program->currentModelRowCount() > PROGRESSMINLINES) {
         progress.show();
         progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
     }
 
-    for (int i = 0; i < m_currentModel->rowCount() - 1; i++) {
+    for (int i = 0; i < ui->program->currentModelRowCount() - 1; i++) {
         // Get stored args
         args = (*m_currentProgram)[i].args;
 
@@ -2591,7 +2590,7 @@ void FrmMain::updateParser()
     ui->visualizer->updateGCodeExtremes();
     updateControlsState();
 
-    if (m_currentModel == &m_programModel) {
+    if (ui->program->currentModel() == ui->program->programModel()) {
         FilesManager& fm = FilesManager::instance();
         fm.setGcodeModified(true);
     }
@@ -2659,8 +2658,8 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     // Reset tables
     clearTable();
-    m_probeModel.clear();
-    m_programHeightmapModel.clear();
+    ui->program->probeModel()->clear();
+    ui->program->programHeightmapModel()->clear();
     // updateCurrentModel(&m_programModel);
 
     // Reset parsers
@@ -2695,14 +2694,14 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_program.reset();
     m_program << *data->gcode;
 
-    m_programModel.insertRow(m_programModel.rowCount());
+    ui->program->programModel()->insertRow(ui->program->programModel()->rowCount());
 
     updateProgramEstimatedTime(data->viewParser->getLines());
 
     m_programLoading = false;
 
     // Set table model
-    ui->program->setProgramModel(&m_programModel);
+    ui->program->setProgramModel(ui->program->programModel());
     ui->program->restoreHeaderState(headerState);
 
     // Update tableview
@@ -2726,8 +2725,8 @@ void FrmMain::loadLines(QList<std::string> data)
 
     // Reset tables
     clearTable();
-    m_probeModel.clear();
-    m_programHeightmapModel.clear();
+    ui->program->probeModel()->clear();
+    ui->program->programHeightmapModel()->clear();
     // updateCurrentModel(&m_programModel);
 
     // Reset parsers
@@ -2814,7 +2813,7 @@ void FrmMain::loadLines(QList<std::string> data)
     progress.close();
     qApp->processEvents();
 
-    m_programModel.insertRow(m_programModel.rowCount());
+    ui->program->programModel()->insertRow(ui->program->programModel()->rowCount());
 
     updateProgramEstimatedTime(
         m_viewParser.getLinesFromParser(
@@ -2827,7 +2826,7 @@ void FrmMain::loadLines(QList<std::string> data)
     m_programLoading = false;
 
     // Set table model
-    ui->program->setProgramModel(&m_programModel);
+    ui->program->setCurrentModel(ui->program->programModel());
     ui->program->restoreHeaderState(headerState);
 
     // Update tableview
@@ -2897,8 +2896,8 @@ bool FrmMain::saveProgramToFile(QString fileName, GCode &model)
 
 void FrmMain::clearTable()
 {
-    m_programModel.clear();
-    m_programModel.insertRow(0);
+    ui->program->programModel()->clear();
+    ui->program->programModel()->insertRow(0);
 }
 
 void FrmMain::resetHeightmap()
@@ -2907,7 +2906,7 @@ void FrmMain::resetHeightmap()
     ui->visualizer->updateHeightmapInterpolation(true);
 
     ui->program->setHeightMapModel(NULL);
-    m_heightmapModel.resize(1, 1);
+    ui->program->heightmapModel()->resize(1, 1);
 
     ui->heightmap->fileClosed();
 
@@ -2920,8 +2919,8 @@ void FrmMain::newFile()
 {
     // Reset tables
     clearTable();
-    m_probeModel.clear();
-    m_programHeightmapModel.clear();
+    ui->program->probeModel()->clear();
+    ui->program->programHeightmapModel()->clear();
     // updateCurrentModel(&m_programModel);
 
     // Reset parsers
@@ -2942,10 +2941,10 @@ void FrmMain::newFile()
 
     // Reset tableview
     QByteArray headerState = ui->program->saveHeaderState();
-    ui->program->setProgramModel(NULL);
+    ui->program->setCurrentModel(NULL);
 
     // Set table model
-    ui->program->setProgramModel(&m_programModel);
+    ui->program->setCurrentModel(ui->program->programModel());
     ui->program->restoreHeaderState(headerState);
 
     // Update tableview
@@ -2959,7 +2958,7 @@ void FrmMain::newFile()
 
 void FrmMain::newHeightmap()
 {
-    m_heightmapModel.clear();
+    ui->program->heightmapModel()->clear();
     onFileReset();
     ui->heightmap->setOpenFile(tr("Untitled"));
 
@@ -2998,8 +2997,8 @@ void FrmMain::updateControlsState()
     ui->actFileNew->setEnabled(senderState == SenderState::Stopped);
     ui->actFileOpen->setEnabled(senderState == SenderState::Stopped);
     ui->program->setOpenButtonEnabled(senderState == SenderState::Stopped);
-    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
-    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && m_programModel.rowCount() > 1);
+    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && ui->program->programModel()->rowCount() > 1);
+    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && ui->program->programModel()->rowCount() > 1);
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -3020,8 +3019,8 @@ void FrmMain::updateControlsState()
         (senderState == SenderState::Stopped) &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
     );
-    ui->actFileSave->setEnabled(m_programModel.rowCount() > 1);
-    ui->actFileSaveAs->setEnabled(m_programModel.rowCount() > 1);
+    ui->actFileSave->setEnabled(ui->program->programModel()->rowCount() > 1);
+    ui->actFileSaveAs->setEnabled(ui->program->programModel()->rowCount() > 1);
 
     ui->program->setProgramTableEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
@@ -3064,7 +3063,7 @@ void FrmMain::updateControlsState()
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
     ui->heightmap->updateControlsState(
-        !process && m_programModel.rowCount() > 1,
+        !process && ui->program->programModel()->rowCount() > 1,
         m_heightmapMode
     );
 
@@ -3159,9 +3158,9 @@ bool FrmMain::updateHeightmapGrid()
 
     // Grid map changing warning
     bool nan = true;
-    for (int i = 0; i < m_heightmapModel.rowCount(); i++)
-        for (int j = 0; j < m_heightmapModel.columnCount(); j++)
-            if (!qIsNaN(m_heightmapModel.data(m_heightmapModel.index(i, j), Qt::UserRole).toDouble())) {
+    for (int i = 0; i < ui->program->heightmapModel()->rowCount(); i++)
+        for (int j = 0; j < ui->program->heightmapModel()->columnCount(); j++)
+            if (!qIsNaN(ui->program->heightmapModel()->data(ui->program->heightmapModel()->index(i, j), Qt::UserRole).toDouble())) {
                 nan = false;
                 break;
             }
@@ -3179,9 +3178,9 @@ bool FrmMain::updateHeightmapGrid()
     int gridPointsX = m_heightmap.gridSize().width();
     int gridPointsY = m_heightmap.gridSize().height();
 
-    m_heightmapModel.resize(gridPointsX, gridPointsY);
+    ui->program->heightmapModel()->resize(gridPointsX, gridPointsY);
     ui->program->setHeightMapModel(NULL);
-    ui->program->setHeightMapModel(&m_heightmapModel);
+    ui->program->setHeightMapModel(ui->program->heightmapModel());
     resizeTableHeightmapSections();
 
     // Update interpolation
@@ -3192,15 +3191,15 @@ bool FrmMain::updateHeightmapGrid()
     double gridStepY = gridPointsY > 1 ? borderRect.height() / (gridPointsY - 1) : 0;
 
     m_programLoading = true;
-    m_probeModel.clear();
-    m_probeModel.insertRow(0);
+    ui->program->probeModel()->clear();
+    ui->program->probeModel()->insertRow(0);
 
-    m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G21G90F%1G0Z%2").
+    ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G21G90F%1G0Z%2").
                     arg(m_heightmap.probeFeed()).arg(m_heightmap.zBottomTop().top));
-    m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G0X0Y0"));
-    m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G38.2Z%1")
+    ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G0X0Y0"));
+    ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G38.2Z%1")
                          .arg(m_heightmap.zBottomTop().bottom));
-    m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G0Z%1")
+    ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G0Z%1")
                          .arg(m_heightmap.zBottomTop().top));
 
     double x, y;
@@ -3209,11 +3208,11 @@ bool FrmMain::updateHeightmapGrid()
         y = borderRect.top() + gridStepY * i;
         for (int j = 0; j < gridPointsX; j++) {
             x = borderRect.left() + gridStepX * (i % 2 ? gridPointsX - 1 - j : j);
-            m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G0X%1Y%2")
+            ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G0X%1Y%2")
                                  .arg(x, 0, 'f', 3).arg(y, 0, 'f', 3));
-            m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G38.2Z%1")
+            ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G38.2Z%1")
                                  .arg(m_heightmap.zBottomTop().bottom));
-            m_probeModel.setData(m_probeModel.index(m_probeModel.rowCount() - 1, 1), QString("G0Z%1")
+            ui->program->probeModel()->setData(ui->program->probeModel()->index(ui->program->probeModel()->rowCount() - 1, 1), QString("G0Z%1")
                                  .arg(m_heightmap.zBottomTop().top));
         }
     }
@@ -3369,7 +3368,7 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
     if (((senderState == SenderState::Transferring) || (senderState == SenderState::Stopping)
          || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused))
          && deviceState != MachineState::Check) {
-        int lineIndex = m_currentModel->data(m_currentModel->index(m_program.processedCommandIndex(), 4)).toInt();
+        int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(m_program.processedCommandIndex(), 4)).toInt();
         ui->visualizer->updateToolTracking(toolPosition, lineIndex, m_program);
     } else {
         ui->visualizer->setToolPosition(toolPosition);
@@ -3517,7 +3516,7 @@ void FrmMain::onTransferCompleted()
 QString FrmMain::getLineInitCommands(int row)
 {
     int commandIndex = row;
-    int lineNumber = m_currentModel->data(m_currentModel->index(commandIndex, 4)).toInt();
+    int lineNumber = ui->program->currentModelData(ui->program->currentModelIndex(commandIndex, 4)).toInt();
 
     auto segmentInfo = ui->visualizer->getSegmentInfoForLine(lineNumber);
     if (!segmentInfo.firstSegment || !segmentInfo.lastSegment) {

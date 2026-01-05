@@ -6,6 +6,12 @@
 #include <QAbstractItemDelegate>
 #include <QAbstractItemView>
 #include <QModelIndex>
+#include "ui/tables/gcodetablemodel.h"
+#include "ui/tables/heightmaptablemodel.h"
+#include "ui/tables/gcodeitemdelegate.h"
+
+class GCode;
+class Heightmap;
 
 namespace Ui {
 class PartMainProgram;
@@ -19,9 +25,29 @@ class PartMainProgram : public QWidget
         explicit PartMainProgram(QWidget* parent = nullptr);
         ~PartMainProgram();
 
+        void initialize(GCode* program, Heightmap* heightmap);
+
         void setProgramModel(QAbstractItemModel* model);
         void setProgramItemDelegate(QAbstractItemDelegate* delegate);
         void setHeightMapModel(QAbstractItemModel* model);
+
+        // Table models access
+        GCodeTableModel* programModel() { return m_programModel; }
+        GCodeTableModel* probeModel() { return m_probeModel; }
+        GCodeTableModel* programHeightmapModel() { return m_programHeightmapModel; }
+        GCodeTableModel* currentModel() { return m_currentModel; }
+        HeightmapTableModel* heightmapModel() { return m_heightmapModel; }
+
+        void setCurrentModel(GCodeTableModel* model);
+        void insertRowInCurrentModel(int row);
+        void removeRowsFromCurrentModel(int row, int count);
+        int currentModelRowCount() const;
+        QModelIndex currentModelIndex(int row, int column) const;
+        QVariant currentModelData(const QModelIndex& index) const;
+        void setCurrentModelData(const QModelIndex& index, const QVariant& value);
+        void clearProgramHeightmapModel();
+        void clearHeightmapModel();
+        void setProgramModelCommentsVisible(bool visible);
 
         void setAutoScroll(bool enabled);
         bool isAutoScroll() const;
@@ -76,6 +102,7 @@ class PartMainProgram : public QWidget
         void manualScrollRequested();
         void insertLineRequested();
         void deleteLinesRequested();
+        void modelDataChanged(QModelIndex i1, QModelIndex i2);
 
     protected:
         bool eventFilter(QObject *obj, QEvent *event) override;
@@ -95,6 +122,15 @@ class PartMainProgram : public QWidget
     private:
         Ui::PartMainProgram* ui;
         QMenu* m_tableMenu;
+
+        // Table models
+        GCodeTableModel* m_programModel;
+        GCodeTableModel* m_probeModel;
+        GCodeTableModel* m_programHeightmapModel;
+        GCodeTableModel* m_currentModel;
+        HeightmapTableModel* m_heightmapModel;
+        GCodeItemDelegate m_programItemDelegate;
+
         void setupUi();
         void setupTableContextMenu();
 };

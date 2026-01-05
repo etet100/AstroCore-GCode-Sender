@@ -38,9 +38,6 @@
 #include "ui/forms/frmgrblconfigurator.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 
-#include "ui/tables/gcodetablemodel.h"
-#include "ui/tables/heightmaptablemodel.h"
-#include "ui/tables/gcodeitemdelegate.h"
 #include "utils/interpolation.h"
 #include "styledtoolbutton.h"
 #include "sliderbox.h"
@@ -164,8 +161,8 @@ private slots:
     void onStateBehaviorChanged(StateBehavior *sb);
 
     void onTimerConnection();
-    void onTableInsertLine();
-    void onTableDeleteLines();
+    void programInsertLine();
+    void programDeleteLines();
     void onTableCellChanged(QModelIndex i1, QModelIndex i2);
     void onTableCurrentChanged(QModelIndex idx1, QModelIndex idx2);
     void onOverridingToggled(bool checked);
@@ -224,14 +221,6 @@ private:
     GCode m_program;
     GCode *m_currentProgram = &m_program;
     FileDropOverlay *m_fileDropOverlay = nullptr;
-
-    // Table models
-    GCodeTableModel m_programModel;
-    GCodeTableModel m_probeModel;
-    GCodeTableModel m_programHeightmapModel;
-    GCodeTableModel *m_currentModel;
-    HeightmapTableModel m_heightmapModel;
-    GCodeItemDelegate m_programItemDelegate;
 
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;

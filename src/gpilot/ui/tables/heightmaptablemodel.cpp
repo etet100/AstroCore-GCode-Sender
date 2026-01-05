@@ -86,7 +86,7 @@ int HeightmapTableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
 
-    return m_data[0].count();
+    return m_data.count() ? m_data[0].count() : 0;
 }
 
 QVariant HeightmapTableModel::headerData(int section, Qt::Orientation orientation, int role) const

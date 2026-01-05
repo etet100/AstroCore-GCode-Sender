@@ -8,10 +8,17 @@
 #include <QAbstractItemView>
 #include <QMessageBox>
 #include "utils/utils.h"
+#include "core/gcode/gcode.h"
+#include "core/heightmap/heightmap.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::PartMainProgram)
+    , m_programModel(nullptr)
+    , m_probeModel(nullptr)
+    , m_programHeightmapModel(nullptr)
+    , m_currentModel(nullptr)
+    , m_heightmapModel(nullptr)
 {
     ui->setupUi(this);
     setupUi();
@@ -19,6 +26,10 @@ PartMainProgram::PartMainProgram(QWidget* parent)
 
 PartMainProgram::~PartMainProgram()
 {
+    delete m_programModel;
+    delete m_probeModel;
+    delete m_programHeightmapModel;
+    delete m_heightmapModel;
     delete ui;
 }
 
@@ -255,7 +266,9 @@ void PartMainProgram::onInsertLineTriggered()
 void PartMainProgram::onDeleteLinesTriggered()
 {
     QModelIndexList selectedRows = getSelectedRows();
-    if (selectedRows.isEmpty()) return;
+    if (selectedRows.isEmpty()) {
+        return;
+    }
 
     if (QMessageBox::warning(this, this->windowTitle(), tr("Delete lines?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) {
         return;
@@ -363,5 +376,97 @@ void PartMainProgram::onScrollBarAction(int action)
     Q_UNUSED(action)
     emit manualScrollRequested();
 }
+
+void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
+{
+    if (!program || !heightmap) return;
+
+    // Initialize models with data sources
+    m_programModel = new GCodeTableModel(*program, this);
+    m_probeModel = new GCodeTableModel(*program, this);
+    m_programHeightmapModel = new GCodeTableModel(*program, this);
+    m_heightmapModel = new HeightmapTableModel(*heightmap, this);
+
+    m_currentModel = m_programModel;
+
+    // Connect model signals
+    connect(m_programModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    connect(m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    connect(m_probeModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+
+    // Set models to UI
+    ui->tblProgram->setModel(m_programModel);
+    ui->tblProgram->setItemDelegate(&m_programItemDelegate);
+    ui->tblHeightMap->setModel(m_heightmapModel);
+
+    // Setup table columns
+    ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    ui->tblProgram->hideColumn(4);
+    ui->tblProgram->hideColumn(5);
+
+    // Connect selection changes
+    if (ui->tblProgram->selectionModel()) {
+        connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &PartMainProgram::currentChanged);
+    }
+}
+
+void PartMainProgram::setCurrentModel(GCodeTableModel* model)
+{
+    if (m_currentModel == model) return;
+    m_currentModel = model;
+    ui->tblProgram->setModel(model);
+}
+
+void PartMainProgram::insertRowInCurrentModel(int row)
+{
+    if (m_currentModel) {
+        m_currentModel->insertRow(row);
+    }
+}
+
+void PartMainProgram::removeRowsFromCurrentModel(int row, int count)
+{
+    if (m_currentModel) {
+        m_currentModel->removeRows(row, count);
+    }
+}
+
+int PartMainProgram::currentModelRowCount() const
+{
+    return m_currentModel ? m_currentModel->rowCount() : 0;
+}
+
+QModelIndex PartMainProgram::currentModelIndex(int row, int column) const
+{
+    return m_currentModel ? m_currentModel->index(row, column) : QModelIndex();
+}
+
+QVariant PartMainProgram::currentModelData(const QModelIndex& index) const
+{
+    return m_currentModel ? m_currentModel->data(index) : QVariant();
+}
+
+void PartMainProgram::setCurrentModelData(const QModelIndex& index, const QVariant& value)
+{
+    if (m_currentModel) {
+        m_currentModel->setData(index, value);
+    }
+}
+
+void PartMainProgram::clearProgramHeightmapModel()
+{
+    m_programHeightmapModel->clear();
+}
+
+void PartMainProgram::clearHeightmapModel()
+{
+    m_heightmapModel->clear();
+}
+
+void PartMainProgram::setProgramModelCommentsVisible(bool visible)
+{
+    m_programModel->setCommentsVisible(visible);
+}
+
 
 
