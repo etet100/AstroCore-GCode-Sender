@@ -26,16 +26,18 @@ void FilesManager::setGcodeFilePath(const QString &filePath)
 {
     m_gcodeFilePath = filePath;
     m_gcodeOpened = true;
+    m_gcodeModified = false;
 
-    emit gcodeFileStateChanged(m_gcodeOpened, filePath);
+    emit gcodeFileStateChanged(m_gcodeOpened, filePath, m_gcodeModified);
 }
 
 void FilesManager::resetGcodeFile()
 {
     m_gcodeFilePath.clear();
     m_gcodeOpened = false;
+    m_gcodeModified = false;
 
-    emit gcodeFileStateChanged(false, "");
+    emit gcodeFileStateChanged(false, "", false);
 }
 
 bool FilesManager::gcodeOpened() const
@@ -57,16 +59,18 @@ void FilesManager::setHeightmapFilePath(const QString &filePath)
 {
     m_heightmapFilePath = filePath;
     m_heightmapOpened = true;
+    m_heightmapModified = false;
 
-    emit heightmapFileStateChanged(m_heightmapOpened, filePath);
+    emit heightmapFileStateChanged(m_heightmapOpened, filePath, m_heightmapModified);
 }
 
 void FilesManager::resetHeightmapFile()
 {
     m_heightmapFilePath.clear();
     m_heightmapOpened = false;
+    m_heightmapModified = false;
 
-    emit heightmapFileStateChanged(false, "");
+    emit heightmapFileStateChanged(false, "", false);
 }
 
 bool FilesManager::heightmapOpened() const
@@ -76,7 +80,10 @@ bool FilesManager::heightmapOpened() const
 
 void FilesManager::setGcodeModified(const bool modified)
 {
-    m_gcodeModified = modified; }
+    m_gcodeModified = modified;
+
+    emit gcodeFileStateChanged(m_gcodeOpened, m_gcodeFilePath, modified);
+}
 
 bool FilesManager::gcodeModified() const
 {
@@ -86,6 +93,8 @@ bool FilesManager::gcodeModified() const
 void FilesManager::setHeightmapModified(const bool modified)
 {
     m_heightmapModified = modified;
+
+    emit heightmapFileStateChanged(m_heightmapOpened, m_heightmapFilePath, modified);
 }
 
 bool FilesManager::heightmapModified() const

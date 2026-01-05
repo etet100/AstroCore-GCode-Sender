@@ -28,8 +28,8 @@ class FilesManager : public QObject
         bool heightmapModified() const;
 
     signals:
-        void gcodeFileStateChanged(const bool opened, const QString& filePath);
-        void heightmapFileStateChanged(const bool opened, const QString& filePath);
+        void gcodeFileStateChanged(const bool opened, const QString& filePath, const bool modified);
+        void heightmapFileStateChanged(const bool opened, const QString& filePath, const bool modified);
 
     private:
         QString m_gcodeFilePath;

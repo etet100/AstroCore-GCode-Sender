@@ -3,6 +3,7 @@
 // Copyright 2024 BTS
 
 #include "gcode.h"
+#include <QCryptographicHash>
 
 GCode::GCode(QObject *parent) : QObject(parent) {
     reset();
@@ -77,6 +78,26 @@ void GCode::addUpdatedRange(int commandIndex)
 {
     m_linesUpdatedFrom = qMin(m_linesUpdatedFrom, commandIndex);
     m_linesUpdatedTo = qMax(m_linesUpdatedTo, commandIndex);
+}
+
+QString GCode::calculateHash() const
+{
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    for (const GCodeItem& item : m_data) {
+        hash.addData(item.command.toUtf8());
+    }
+
+    return QLatin1String(hash.result().toHex());
+}
+
+void GCode::updateHash()
+{
+    m_contentHash = calculateHash();
+}
+
+bool GCode::isModified() const
+{
+    return m_contentHash != calculateHash();
 }
 
 void GCode::setCommandSent()

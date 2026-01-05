@@ -66,9 +66,6 @@ class GCode : public QObject
         QString command();
         int processedCommandIndex() { return m_processedCommandIndex; }
         void advanceCommandIndex();
-        StreamerStartResult start();
-        void stop();
-        void pause();
         bool isLastCommand();
         bool noMoreCommands();
         bool hasMoreCommands();
@@ -113,8 +110,13 @@ class GCode : public QObject
         int m_linesUpdatedFrom = INT_MAX;
         int m_linesUpdatedTo = INT_MIN;
         QTimer m_linesUpdatedTimer;
+        QString m_contentHash;
 
         void addUpdatedRange(int commandIndex);
+        // Calculates and updates the checksum/hash of the GCode data
+        void updateHash();
+        QString calculateHash() const;
+        bool isModified() const;
 
     signals:
         void progressChanged(int progress);

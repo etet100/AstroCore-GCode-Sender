@@ -238,9 +238,15 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     //
     FilesManager& fm = FilesManager::instance();
-    connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this, &fm](bool opened, const QString& filePath) {
+    connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this, &fm](bool opened, const QString& filePath, bool modified) {
         Q_UNUSED(filePath);
-        this->setWindowTitle(!opened ? qApp->applicationDisplayName() : fm.gcodeFileName() + " - " + qApp->applicationDisplayName());
+
+        if (!opened) {
+            this->setWindowTitle(qApp->applicationDisplayName());
+        } else {
+            QString mod = modified ? " (*)" : "";
+            this->setWindowTitle(fm.gcodeFileName() + mod + " - " + qApp->applicationDisplayName());
+        }
     });
 
     m_heightmapMode = false;
