@@ -8,30 +8,44 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install Qt 6.8.1 (MinGW)
+      - name: List available Qt modules for Linux
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          python -m pip install aqtinstall
+          aqt list-qt linux desktop --arch 6.8.1
+          aqt list-qt linux desktop --modules 6.8.1 linux_gcc_64
+
+      - name: Install Qt 6.8.1
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.8.1"
-          host: "windows"
+          host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
           target: "desktop"
-          arch: "win64_mingw"
-          tools: "tools_mingw1310 tools_ifw"
-          modules: "qtmultimedia qtserialport qtimageformats qtshadertools"
+          arch: ${{ matrix.os == 'windows-latest' && 'win64_mingw' || 'linux_gcc_64' }}
+          tools: ${{ matrix.os == 'windows-latest' && 'tools_mingw1310 tools_ifw' || '' }}
+          modules: ${{ matrix.os == 'windows-latest' && 'qtmultimedia qtserialport qtimageformats qtshadertools' || 'qtmultimedia qtserialport qtimageformats qtshadertools' }}
           cache: true
 
       - name: Verify Qt installation
-        env:
-          QMAKESPEC: win32-g++
+        shell: bash
         run: |
           qmake --version
-          g++ --version || echo "g++ not found in PATH"
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            g++ --version || echo "g++ not found in PATH"
+          else
+            g++ --version
+          fi
           qmake -query QMAKE_SPEC || echo "QMAKE_SPEC not found"
 
       - uses: actions/checkout@v4
@@ -39,74 +53,122 @@ jobs:
           submodules: recursive
 
       - name: Setup build
-        shell: cmd
+        shell: bash
         run: |
-          where gcc
-          gcc --version
-          where g++
-          g++ --version
-          mkdir build
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            where gcc
+            gcc --version
+            where g++
+            g++ --version
+            mkdir build
+          else
+            which gcc
+            gcc --version
+            which g++
+            g++ --version
+            mkdir -p build
+          fi
 
       - name: Build PropertyEditor
-        shell: cmd
+        shell: bash
         env:
-          QMAKESPEC: win32-g++
-          WINDOWS: "1"
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
-          mkdir build\vendor\PropertyEditor
-          cd build\vendor\PropertyEditor
-          qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
-          mingw32-make.exe -f Makefile qmake_all
-          mingw32-make -j12
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir build\\vendor\\PropertyEditor
+            cd build\\vendor\\PropertyEditor
+            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
+          else
+            mkdir -p build/vendor/PropertyEditor
+            cd build/vendor/PropertyEditor
+            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            make -f Makefile qmake_all
+            make -j$(nproc)
+          fi
 
       - name: Build uCNC
-        shell: cmd
+        shell: bash
         env:
-          QMAKESPEC: win32-g++
-          WINDOWS: "1"
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
-          mkdir build\vendor\uCNC
-          cd build\vendor\uCNC
-          qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
-          mingw32-make.exe -f Makefile qmake_all
-          mingw32-make -j12
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir build\\vendor\\uCNC
+            cd build\\vendor\\uCNC
+            qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
+          else
+            mkdir -p build/vendor/uCNC
+            cd build/vendor/uCNC
+            qmake ../../../src/vendor/uCNC/uCNC.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            make -f Makefile qmake_all
+            make -j$(nproc)
+          fi
 
       - name: Build grblHal
-        shell: cmd
+        shell: bash
         env:
-          QMAKESPEC: win32-g++
-          WINDOWS: "1"
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
-          mkdir build\vendor\grblHal
-          cd build\vendor\grblHal
-          qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
-          mingw32-make.exe -f Makefile qmake_all
-          mingw32-make -j12
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir build\\vendor\\grblHal
+            cd build\\vendor\\grblHal
+            qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
+          else
+            mkdir -p build/vendor/grblHal
+            cd build/vendor/grblHal
+            qmake ../../../src/vendor/grblHal/grblHal.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            make -f Makefile qmake_all
+            make -j$(nproc)
+          fi
 
       - name: Build designerplugins
-        shell: cmd
+        shell: bash
         env:
-          QMAKESPEC: win32-g++
-          WINDOWS: "1"
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
-          mkdir build\designerplugins
-          cd build\designerplugins
-          qmake ../../src/designerplugins/designerplugins.pro -r
-          mingw32-make -j12
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir build\\designerplugins
+            cd build\\designerplugins
+            qmake ../../src/designerplugins/designerplugins.pro -r
+            mingw32-make -j12
+          else
+            mkdir -p build/designerplugins
+            cd build/designerplugins
+            qmake ../../src/designerplugins/designerplugins.pro -r
+            make -j$(nproc)
+          fi
 
       - name: Build G-Pilot
-        shell: cmd
+        shell: bash
         env:
-          QMAKESPEC: win32-g++
-          WINDOWS: "1"
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
-          mkdir build\gpilot
-          cd build\gpilot
-          qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
-          mingw32-make.exe -f Makefile qmake_all
-          mingw32-make -j12
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir build\\gpilot
+            cd build\\gpilot
+            qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
+          else
+            mkdir -p build/gpilot
+            cd build/gpilot
+            qmake ../../src/gpilot/gpilot.pro "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            make -f Makefile qmake_all
+            make -j$(nproc)
+          fi
 
       - name: Create complete package
+        if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
           cd build\gpilot
@@ -124,12 +186,14 @@ jobs:
           del /Q Makefile*
 
       - name: Create offline installer
+        if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
           xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
           binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller.exe
 
       - name: Package build artifacts
+        if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
           ls build
@@ -139,6 +203,7 @@ jobs:
           powershell Compress-Archive -Path build\gpilot\* -DestinationPath GPilotPortable.zip
 
       - name: Create GitHub pre-release with build artifacts
+        if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
