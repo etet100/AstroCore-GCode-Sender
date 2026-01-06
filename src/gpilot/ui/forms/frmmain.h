@@ -47,6 +47,7 @@
 #include "ui/widgets/dropwidget.h"
 #include "ui/utils/windowstaskbar.h"
 #include "ui/widgets/filedropoverlay.h"
+#include "core/utils/programtimeestimator.h"
 
 namespace Ui {
 class frmMain;
@@ -231,7 +232,9 @@ private:
     // Timers
     QTimer m_timerConnection;
     QBasicTimer m_timerToolAnimation;
-    qint64 m_startTime;
+
+    // Time estimation
+    ProgramTimeEstimator m_timeEstimator;
 
     // Flags
     bool m_programLoading;
@@ -294,7 +297,6 @@ private:
     QString lastUsedDirectory();
 
     // Utility
-    QTime updateProgramEstimatedTime(QList<LineSegment> &lines);
     QList<LineSegment *> subdivideSegment(LineSegment *segment);
     // void jogStep(QVector3D vector);
     void jogStart(QVector3D vector);

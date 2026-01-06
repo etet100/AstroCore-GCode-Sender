@@ -970,6 +970,7 @@ void FrmMain::onFileOpen(QString filePath)
 void FrmMain::onFileSend()
 {
     m_program.reset();
+    m_timeEstimator.startExecution();
     m_communicator->sb()->action(RunAction(m_program));
 
 //     if (m_currentModel->rowCount() == 1) return;
@@ -1029,11 +1030,13 @@ void FrmMain::onFilePause(bool checked)
     if (checked) {
         Action action(Action::Pause);
         if (m_communicator->stateBehavior()->action(action)) {
+            m_timeEstimator.pauseExecution();
             ui->program->setPauseButtonText(tr("Resume"));
         }
     } else {
         Action action(Action::Resume);
         if (m_communicator->stateBehavior()->action(action)) {
+            m_timeEstimator.resumeExecution();
             ui->program->setPauseButtonText(tr("Pause"));
         }
     }
@@ -1042,6 +1045,7 @@ void FrmMain::onFilePause(bool checked)
 void FrmMain::onFileAbort()
 {
     ui->program->setAbortButtonEnabled(false);
+    m_timeEstimator.stopExecution();
     m_communicator->abort();
 }
 
@@ -1072,7 +1076,9 @@ void FrmMain::onFileReset()
 
         ui->program->resetToFirstRow();
 
+        m_timeEstimator.reset();
         ui->visualizer->setSpendTime(QTime(0, 0, 0));
+        ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
     } else {
         ui->heightmap->setGridUpdateEnabled();
 
@@ -1653,12 +1659,10 @@ void FrmMain::onMachineStateReceived(MachineState state)
     // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&
     //                                                     (m_communicator->senderState() != SenderStopping)));
 
-    // Update "elapsed time" timer
+    // Update elapsed time and remaining time with adaptive correction
     if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) {
-        int elapsed = QDateTime::currentSecsSinceEpoch() - m_startTime;
-        QTime time(0, 0, 0);
-        time.addSecs(elapsed);
-        ui->visualizer->setSpendTime(time);
+        ui->visualizer->setSpendTime(m_timeEstimator.elapsedTime());
+        ui->visualizer->setEstimatedTime(m_timeEstimator.estimatedRemainingTimeWithCorrection());
     }
 
     updateControlsState();
@@ -1808,6 +1812,11 @@ void FrmMain::onConfigurationReceived(PhysicalMachineConfiguration configuration
 void FrmMain::onToolPositionReceived(QVector3D pos)
 {
     updateToolPositionAndToolpathShadowing(pos);
+
+    // Update time estimator with current progress for adaptive correction
+    if (m_timeEstimator.isTracking()) {
+        m_timeEstimator.updateProgress(m_program);
+    }
 }
 
 void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
@@ -2731,7 +2740,14 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     ui->program->addProgramModelRow();
 
-    updateProgramEstimatedTime(data->viewParser->getLines());
+    // Calculate initial time estimation
+    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+        data->viewParser->getLines(),
+        ui->overrides->targetFeed(),
+        ui->overrides->targetRapid()
+    );
+    ui->visualizer->setEstimatedTime(estimatedTime);
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     m_programLoading = false;
 
@@ -2771,8 +2787,9 @@ void FrmMain::loadLines(QList<std::string> data)
     // Reset code drawer
     ui->visualizer->resetVisualization();
 
-    QList<LineSegment> list;
-    updateProgramEstimatedTime(list);
+    m_timeEstimator.reset();
+    ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     // Update interface
     ui->heightmap->resetUseHeighmap();
@@ -2850,13 +2867,19 @@ void FrmMain::loadLines(QList<std::string> data)
 
     ui->program->addProgramModelRow();
 
-    updateProgramEstimatedTime(
-        m_viewParser.getLinesFromParser(
-            &parser,
-            m_configuration.parserModule().arcApproximationValue(),
-            m_configuration.parserModule().arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
-        )
+    QList<LineSegment> segments = m_viewParser.getLinesFromParser(
+        &parser,
+        m_configuration.parserModule().arcApproximationValue(),
+        m_configuration.parserModule().arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
     );
+
+    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+        segments,
+        ui->overrides->targetFeed(),
+        ui->overrides->targetRapid()
+    );
+    ui->visualizer->setEstimatedTime(estimatedTime);
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     m_programLoading = false;
 
@@ -2946,8 +2969,9 @@ void FrmMain::newFile()
     // Reset code drawer
     ui->visualizer->reset();
 
-    QList<LineSegment> list;
-    updateProgramEstimatedTime(list);
+    m_timeEstimator.reset();
+    ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     FilesManager::instance().resetGcodeFile();
     ui->heightmap->resetUseHeighmap();
@@ -3420,34 +3444,6 @@ QString FrmMain::lastUsedDirectory()
 {
     qDebug() << m_configuration.uiModule().currentWorkingDirectory();
     return m_configuration.uiModule().currentWorkingDirectory();
-}
-
-QTime FrmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
-{
-    double time = 0;
-
-    for (int i = 0; i < lines.count(); i++) {
-        LineSegment& ls = lines[i];
-        double length = (ls.getEnd() - ls.getStart()).length();
-
-        if (!qIsNaN(length) && !qIsNaN(ls.getSpeed()) && ls.getSpeed() != 0) time +=
-                length / ((ui->overrides->feedOverridden() && !ls.isFastTraverse())
-                          ? (ls.getSpeed() * ui->overrides->targetFeed() / 100) :
-                            (ui->overrides->rapidOverridden() && ls.isFastTraverse())
-                             ? (ls.getSpeed() * ui->overrides->targetRapid() / 100) : ls.getSpeed());
-    }
-
-    time *= 60;
-
-    QTime t;
-
-    t.setHMS(0, 0, 0);
-    t = t.addSecs(time);
-
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
-    ui->visualizer->setEstimatedTime(t);
-
-    return t;
 }
 
 // QList<LineSegment*> FrmMain::subdivideSegment(LineSegment* segment)

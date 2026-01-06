@@ -118,6 +118,7 @@ SOURCES += main.cpp\
     core/machine/physicalmachineconfiguration.cpp \
     core/machine/physicalmachineconfigurationparser.cpp \
     core/utils/filesmanager.cpp \
+    core/utils/programtimeestimator.cpp \
     io/connection/connection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
@@ -254,6 +255,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/machine/physicalmachineconfiguration.h \
     core/machine/physicalmachineconfigurationparser.h \
     core/utils/filesmanager.h \
+    core/utils/programtimeestimator.h \
     io/connection/connection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
