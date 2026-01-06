@@ -176,6 +176,7 @@ private slots:
     // void onVisualizerCursorPosChanged(QPointF);
     // void onProgramLinesUpdated(int from, int to);
     void updateHeightmapInterpolationDrawer(bool reset = false);
+    void onHeightmapDataChangedByUser();
 
 protected:
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;

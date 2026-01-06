@@ -31,22 +31,45 @@ class PartMainProgram : public QWidget
         void setProgramItemDelegate(QAbstractItemDelegate* delegate);
         void setHeightMapModel(QAbstractItemModel* model);
 
-        // Table models access
-        GCodeTableModel* programModel() { return m_programModel; }
-        GCodeTableModel* probeModel() { return m_probeModel; }
-        GCodeTableModel* programHeightmapModel() { return m_programHeightmapModel; }
-        GCodeTableModel* currentModel() { return m_currentModel; }
-        HeightmapTableModel* heightmapModel() { return m_heightmapModel; }
+        // High-level model operations
+        // Program model operations
+        void clearProgramModel();
+        void addProgramModelRow();
+        int programModelRowCount() const;
+        void insertProgramModelRow(int row);
+        void switchToProgramModel();
 
-        void setCurrentModel(GCodeTableModel* model);
+        // Probe model operations
+        void clearProbeModel();
+        void addProbeModelRow();
+        void setProbeModelData(int row, int column, const QVariant& value);
+        void insertProbeModelRow(int row);
+        int probeModelRowCount() const;
+        void switchToProbeModel();
+
+        // Heightmap model operations
+        void clearHeightmapModel();
+        void resizeHeightmapModel(int rows, int cols);
+        bool hasHeightmapData() const;
+        int heightmapModelRowCount() const;
+        int heightmapModelColumnCount() const;
+        QVariant heightmapModelData(int row, int column, int role = Qt::DisplayRole) const;
+        HeightmapTableModel* getHeightmapModelForInterpolation(); // Temporary for Interpolation
+
+        // ProgramHeightmap model operations
+        void clearProgramHeightmapModel();
+
+        // Current model operations
+        bool isCurrentModelProgramModel() const;
+        int getCurrentModelFilteredIndex(int index) const;
         void insertRowInCurrentModel(int row);
         void removeRowsFromCurrentModel(int row, int count);
         int currentModelRowCount() const;
         QModelIndex currentModelIndex(int row, int column) const;
         QVariant currentModelData(const QModelIndex& index) const;
         void setCurrentModelData(const QModelIndex& index, const QVariant& value);
-        void clearProgramHeightmapModel();
-        void clearHeightmapModel();
+        // void clearProgramHeightmapModel();
+        // void clearHeightmapModel();
         void setProgramModelCommentsVisible(bool visible);
 
         void setAutoScroll(bool enabled);
@@ -103,6 +126,7 @@ class PartMainProgram : public QWidget
         void insertLineRequested();
         void deleteLinesRequested();
         void modelDataChanged(QModelIndex i1, QModelIndex i2);
+        void heightmapDataChangedByUser();
 
     protected:
         bool eventFilter(QObject *obj, QEvent *event) override;

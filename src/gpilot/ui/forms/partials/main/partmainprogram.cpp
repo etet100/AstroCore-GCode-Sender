@@ -393,6 +393,7 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
     connect(m_programModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
     connect(m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
     connect(m_probeModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    connect(m_heightmapModel, &HeightmapTableModel::dataChangedByUserInput, this, &PartMainProgram::heightmapDataChangedByUser);
 
     // Set models to UI
     ui->tblProgram->setModel(m_programModel);
@@ -410,12 +411,12 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
     }
 }
 
-void PartMainProgram::setCurrentModel(GCodeTableModel* model)
-{
-    if (m_currentModel == model) return;
-    m_currentModel = model;
-    ui->tblProgram->setModel(model);
-}
+// void PartMainProgram::setCurrentModel(GCodeTableModel* model)
+// {
+//     if (m_currentModel == model) return;
+//     m_currentModel = model;
+//     ui->tblProgram->setModel(model);
+// }
 
 void PartMainProgram::insertRowInCurrentModel(int row)
 {
@@ -453,19 +454,155 @@ void PartMainProgram::setCurrentModelData(const QModelIndex& index, const QVaria
     }
 }
 
-void PartMainProgram::clearProgramHeightmapModel()
-{
-    m_programHeightmapModel->clear();
-}
-
-void PartMainProgram::clearHeightmapModel()
-{
-    m_heightmapModel->clear();
-}
-
 void PartMainProgram::setProgramModelCommentsVisible(bool visible)
 {
     m_programModel->setCommentsVisible(visible);
+}
+
+// Program model operations
+void PartMainProgram::clearProgramModel()
+{
+    if (m_programModel) {
+        m_programModel->clear();
+    }
+}
+
+void PartMainProgram::addProgramModelRow()
+{
+    if (m_programModel) {
+        m_programModel->insertRow(m_programModel->rowCount());
+    }
+}
+
+int PartMainProgram::programModelRowCount() const
+{
+    return m_programModel ? m_programModel->rowCount() : 0;
+}
+
+void PartMainProgram::insertProgramModelRow(int row)
+{
+    if (m_programModel) {
+        m_programModel->insertRow(row);
+    }
+}
+
+void PartMainProgram::switchToProgramModel()
+{
+    if (m_currentModel == m_programModel) return;
+    m_currentModel = m_programModel;
+    ui->tblProgram->setModel(m_programModel);
+}
+
+// Probe model operations
+void PartMainProgram::clearProbeModel()
+{
+    if (m_probeModel) {
+        m_probeModel->clear();
+    }
+}
+
+void PartMainProgram::addProbeModelRow()
+{
+    if (m_probeModel) {
+        m_probeModel->insertRow(m_probeModel->rowCount());
+    }
+}
+
+void PartMainProgram::setProbeModelData(int row, int column, const QVariant& value)
+{
+    if (m_probeModel) {
+        m_probeModel->setData(m_probeModel->index(row, column), value);
+    }
+}
+
+void PartMainProgram::insertProbeModelRow(int row)
+{
+    if (m_probeModel) {
+        m_probeModel->insertRow(row);
+    }
+}
+
+int PartMainProgram::probeModelRowCount() const
+{
+    return m_probeModel ? m_probeModel->rowCount() : 0;
+}
+
+void PartMainProgram::switchToProbeModel()
+{
+    if (m_currentModel == m_probeModel) return;
+    m_currentModel = m_probeModel;
+    ui->tblProgram->setModel(m_probeModel);
+}
+
+// Heightmap model operations
+void PartMainProgram::clearHeightmapModel()
+{
+    if (m_heightmapModel) {
+        m_heightmapModel->clear();
+    }
+}
+
+void PartMainProgram::resizeHeightmapModel(int rows, int cols)
+{
+    if (m_heightmapModel) {
+        m_heightmapModel->resize(rows, cols);
+    }
+}
+
+bool PartMainProgram::hasHeightmapData() const
+{
+    if (!m_heightmapModel) return false;
+
+    for (int i = 0; i < m_heightmapModel->rowCount(); i++) {
+        for (int j = 0; j < m_heightmapModel->columnCount(); j++) {
+            if (!qIsNaN(m_heightmapModel->data(m_heightmapModel->index(i, j), Qt::UserRole).toDouble())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int PartMainProgram::heightmapModelRowCount() const
+{
+    return m_heightmapModel ? m_heightmapModel->rowCount() : 0;
+}
+
+int PartMainProgram::heightmapModelColumnCount() const
+{
+    return m_heightmapModel ? m_heightmapModel->columnCount() : 0;
+}
+
+QVariant PartMainProgram::heightmapModelData(int row, int column, int role) const
+{
+    if (m_heightmapModel) {
+        return m_heightmapModel->data(m_heightmapModel->index(row, column), role);
+    }
+    return QVariant();
+}
+
+HeightmapTableModel* PartMainProgram::getHeightmapModelForInterpolation()
+{
+    return m_heightmapModel;
+}
+
+// ProgramHeightmap model operations
+void PartMainProgram::clearProgramHeightmapModel()
+{
+    if (m_programHeightmapModel) {
+        m_programHeightmapModel->clear();
+    }
+}
+
+// Current model operations
+bool PartMainProgram::isCurrentModelProgramModel() const
+{
+    return m_currentModel == m_programModel;
+}
+
+int PartMainProgram::getCurrentModelFilteredIndex(int index) const
+{
+    return m_currentModel ? m_currentModel->toFilteredIndex(index) : -1;
 }
 
 
