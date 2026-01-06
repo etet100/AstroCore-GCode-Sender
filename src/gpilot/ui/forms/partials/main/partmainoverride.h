@@ -12,42 +12,49 @@ class PartMainOverride : public QWidget
 {
     Q_OBJECT
 
-public:
-    explicit PartMainOverride(QWidget *parent = nullptr);
-    ~PartMainOverride();
+    public:
+        explicit PartMainOverride(QWidget *parent = nullptr);
+        ~PartMainOverride();
 
-    void applyConfiguration(ConfigurationMachine &machineConfiguration);
-    // @TODO make this private
-    Ui::partMainOverride *ui;
+        void applyConfiguration(ConfigurationMachine &machineConfiguration);
 
-    static constexpr double NO_OVERRIDE = -1;
-    class Overrides
-    {
-        public:
-            bool feedOverridden;
-            double feed;
-            bool rapidOverridden;
-            double rapid;
-            bool spindleOverridden;
-            double spindle;
-    };
-    Overrides overrides();
+        // Is it correct? No override means go 100%?
+        static constexpr double NO_OVERRIDE = 100;
 
-    void setRapid(int);
+        void setCurrentRapid(int);
+        void setCurrentFeed(int);
+        void setCurrentSpindle(int);
+        int targetFeed();
+        int targetRapid();
+        int targetSpindle();
+        bool feedOverridden();
+        bool rapidOverridden();
+        bool spindleOverridden();
 
-signals:
-    void overrideChanged();
+    signals:
+        void overrideChanged(
+            bool feedOverridden,
+            double feed,
+            bool rapidOverridden,
+            double rapid,
+            bool spindleOverridden,
+            double spindle
+        );
 
-private slots:
-    void onActSpindleSpeedMinusTriggered();
-    void onActOverrideFeedPlusTriggered();
-    void onActOverrideFeedMinusTriggered();
-    void onActOverrideRapidPlusTriggered();
-    void onActOverrideRapidMinusTriggered();
-    void onActOverrideSpindlePlusTriggered();
-    void onActOverrideSpindleMinusTriggered();
-    void onOverridingToggled(bool state);
-    void onValueChanged();
+    private slots:
+        void onFeedPlusTriggered();
+        void onFeedMinusTriggered();
+        void onRapidPlusTriggered();
+        void onRapidMinusTriggered();
+        void onSpindlePlusTriggered();
+        void onSpindleMinusTriggered();
+        void onOverridingToggled(bool state);
+        void onValueChanged();
+
+    private:
+        Ui::partMainOverride *ui;
+
+        void emitOverrideChanged();
 };
 
 #endif // PARTMAINOVERRIDE_H

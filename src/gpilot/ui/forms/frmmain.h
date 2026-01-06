@@ -35,12 +35,12 @@
 #include "ui/forms/partials/main/partmainstate.h"
 #include "ui/forms/partials/main/partmainconsole.h"
 #include "ui/forms/partials/main/partmainvisualizer.h"
+#include "ui/forms/partials/main/partmainoverride.h"
 #include "ui/forms/frmgrblconfigurator.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 
 #include "utils/interpolation.h"
 #include "styledtoolbutton.h"
-#include "sliderbox.h"
 #include "ui/forms/frmsettings.h"
 #include "ui/forms/frmabout.h"
 #include "scripting/scriptvars.h"
@@ -165,8 +165,7 @@ private slots:
     void programDeleteLines();
     void onTableCellChanged(QModelIndex i1, QModelIndex i2);
     void onTableCurrentChanged(QModelIndex idx1, QModelIndex idx2);
-    void onOverridingToggled(bool checked);
-    void onOverrideChanged();
+    void onOverrideChanged(bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle);
     void onActRecentFileTriggered();
     // void onActSendFromLineTriggered();
     void onSlbSpindleValueUserChanged();
@@ -280,7 +279,6 @@ private:
     void updateControlsState();
     void updateLayouts();
     void updateRecentFilesMenus();
-    void updateOverride(SliderBox *slider, int value, char command);
     void updateJogTitle();
     void addRecentFile(QString fileName);
     void addRecentHeightmap(QString fileName);

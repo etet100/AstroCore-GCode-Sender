@@ -7,14 +7,13 @@ PartMainOverride::PartMainOverride(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->actOverrideSpindleMinus, &QAction::triggered, this, &PartMainOverride::onActSpindleSpeedMinusTriggered);
-    connect(ui->actOverrideSpindlePlus, &QAction::triggered, this, &PartMainOverride::onActOverrideSpindlePlusTriggered);
-    connect(ui->actOverrideFeedMinus, &QAction::triggered, this, &PartMainOverride::onActOverrideFeedMinusTriggered);
-    connect(ui->actOverrideFeedPlus, &QAction::triggered, this, &PartMainOverride::onActOverrideFeedPlusTriggered);
-    connect(ui->actOverrideRapidMinus, &QAction::triggered, this, &PartMainOverride::onActOverrideRapidMinusTriggered);
-    connect(ui->actOverrideRapidPlus, &QAction::triggered, this, &PartMainOverride::onActOverrideRapidPlusTriggered);
+    connect(ui->actOverrideSpindleMinus, &QAction::triggered, this, &PartMainOverride::onSpindleMinusTriggered);
+    connect(ui->actOverrideSpindlePlus, &QAction::triggered, this, &PartMainOverride::onSpindlePlusTriggered);
+    connect(ui->actOverrideFeedMinus, &QAction::triggered, this, &PartMainOverride::onFeedMinusTriggered);
+    connect(ui->actOverrideFeedPlus, &QAction::triggered, this, &PartMainOverride::onFeedPlusTriggered);
+    connect(ui->actOverrideRapidMinus, &QAction::triggered, this, &PartMainOverride::onRapidMinusTriggered);
+    connect(ui->actOverrideRapidPlus, &QAction::triggered, this, &PartMainOverride::onRapidPlusTriggered);
 
-    // Setting up slider boxes
     ui->slbFeed->setRatio(1);
     ui->slbFeed->setMinimum(10);
     ui->slbFeed->setMaximum(200);
@@ -59,54 +58,77 @@ void PartMainOverride::applyConfiguration(ConfigurationMachine &machineConfigura
     ui->slbSpindle->setValue(machineConfiguration.overrideSpindleSpeedValue());
 }
 
-PartMainOverride::Overrides PartMainOverride::overrides()
-{
-    return {
-        .feedOverridden = ui->slbFeed->isChecked(),
-        .feed =  ui->slbFeed->isChecked() ? ui->slbFeed->value() : NO_OVERRIDE,
-        .rapidOverridden = ui->slbRapid->isChecked(),
-        .rapid = ui->slbRapid->isChecked() ? ui->slbRapid->value() : NO_OVERRIDE,
-        .spindleOverridden = ui->slbSpindle->isChecked(),
-        .spindle = ui->slbSpindle->isChecked() ? ui->slbSpindle->value() : NO_OVERRIDE
-    };
-}
-
-void PartMainOverride::setRapid(int value)
+void PartMainOverride::setCurrentRapid(int value)
 {
     ui->slbRapid->setCurrentValue(value);
 }
 
-void PartMainOverride::onActSpindleSpeedMinusTriggered()
+void PartMainOverride::setCurrentFeed(int value)
 {
-    ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() - 1);
+    ui->slbFeed->setCurrentValue(value);
 }
 
-void PartMainOverride::onActOverrideFeedPlusTriggered()
+void PartMainOverride::setCurrentSpindle(int value)
+{
+    ui->slbSpindle->setCurrentValue(value);
+}
+
+int PartMainOverride::targetFeed()
+{
+    return ui->slbFeed->isChecked() ? ui->slbFeed->value() : NO_OVERRIDE;
+}
+
+int PartMainOverride::targetRapid()
+{
+    return ui->slbRapid->isChecked() ? ui->slbRapid->value() : NO_OVERRIDE;
+}
+
+int PartMainOverride::targetSpindle()
+{
+    return ui->slbSpindle->isChecked() ? ui->slbSpindle->value() : NO_OVERRIDE;
+}
+
+bool PartMainOverride::feedOverridden()
+{
+    return ui->slbFeed->isChecked();
+}
+
+bool PartMainOverride::rapidOverridden()
+{
+    return ui->slbRapid->isChecked();
+}
+
+bool PartMainOverride::spindleOverridden()
+{
+    return ui->slbSpindle->isChecked();
+}
+
+void PartMainOverride::onFeedPlusTriggered()
 {
     ui->slbFeed->setSliderPosition(ui->slbFeed->sliderPosition() + 1);
 }
 
-void PartMainOverride::onActOverrideFeedMinusTriggered()
+void PartMainOverride::onFeedMinusTriggered()
 {
     ui->slbFeed->setSliderPosition(ui->slbFeed->sliderPosition() - 1);
 }
 
-void PartMainOverride::onActOverrideRapidPlusTriggered()
+void PartMainOverride::onRapidPlusTriggered()
 {
     ui->slbRapid->setSliderPosition(ui->slbRapid->sliderPosition() + 1);
 }
 
-void PartMainOverride::onActOverrideRapidMinusTriggered()
+void PartMainOverride::onRapidMinusTriggered()
 {
     ui->slbRapid->setSliderPosition(ui->slbRapid->sliderPosition() - 1);
 }
 
-void PartMainOverride::onActOverrideSpindlePlusTriggered()
+void PartMainOverride::onSpindlePlusTriggered()
 {
     ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() + 1);
 }
 
-void PartMainOverride::onActOverrideSpindleMinusTriggered()
+void PartMainOverride::onSpindleMinusTriggered()
 {
     ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() - 1);
 }
@@ -114,9 +136,23 @@ void PartMainOverride::onActOverrideSpindleMinusTriggered()
 void PartMainOverride::onOverridingToggled(bool state)
 {
     Q_UNUSED(state);
-    emit overrideChanged();
+
+    emitOverrideChanged();
 }
 
 void PartMainOverride::onValueChanged()
 {
+    emitOverrideChanged();
+}
+
+void PartMainOverride::emitOverrideChanged()
+{
+    emit overrideChanged(
+        ui->slbFeed->isChecked(),
+        ui->slbFeed->isChecked() ? ui->slbFeed->value() : NO_OVERRIDE,
+        ui->slbRapid->isChecked(),
+        ui->slbRapid->isChecked() ? ui->slbRapid->value() : NO_OVERRIDE,
+        ui->slbSpindle->isChecked(),
+        ui->slbSpindle->isChecked() ? ui->slbSpindle->value() : NO_OVERRIDE
+    );
 }

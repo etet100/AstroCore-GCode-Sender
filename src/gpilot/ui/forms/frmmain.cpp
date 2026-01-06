@@ -31,7 +31,6 @@
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
 #include "ui_frmmain.h"
-#include "ui_partmainoverride.h"
 #include "ui/widgets/widgetmimedata.h"
 #include "ui/widgets/dockabletitle.h"
 #include "io/connection/connectionmanager.h"
@@ -267,6 +266,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         ui->visualizer->showHeightmapProbeGrid(drawers.grid);
         ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
     });
+
+    connect(ui->overrides, &PartMainOverride::overrideChanged, this, &FrmMain::onOverrideChanged);
 
     // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
     // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
@@ -1172,15 +1173,13 @@ void FrmMain::on_cmdSpindle_clicked(bool checked)
 
 void FrmMain::on_grpOverriding_toggled(bool checked)
 {
-    PartMainOverride::Overrides overrides = ui->overrides->overrides();
-
     if (checked) {
         ui->grpOverriding->setTitle(tr("Overriding"));
-    } else if (overrides.feedOverridden | overrides.rapidOverridden | overrides.spindleOverridden) {
+    } else if (ui->overrides->feedOverridden() | ui->overrides->rapidOverridden() | ui->overrides->spindleOverridden()) {
         ui->grpOverriding->setTitle(tr("Overriding") + QString(tr(" (%1/%2/%3)"))
-                                    .arg(overrides.feedOverridden ? QString::number(overrides.feed) : "-")
-                                    .arg(overrides.rapidOverridden ? QString::number(overrides.rapid) : "-")
-                                    .arg(overrides.spindleOverridden ? QString::number(overrides.spindleOverridden) : "-"));
+               .arg(ui->overrides->feedOverridden() ? QString::number(ui->overrides->targetFeed()) : "-")
+               .arg(ui->overrides->rapidOverridden() ? QString::number(ui->overrides->targetRapid()) : "-")
+               .arg(ui->overrides->spindleOverridden() ? QString::number(ui->overrides->targetSpindle()) : "-"));
     }
     updateLayouts();
 
@@ -1711,27 +1710,52 @@ void FrmMain::onSpindleSpeedReceived(int spindleSpeed)
     // ui->slbSpindle->setCurrentValue(spindleSpeed);
 }
 
+// https://github.com/gnea/grbl/blob/master/doc/markdown/commands.md
 void FrmMain::onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride)
 {
-    updateOverride(ui->overrides->ui->slbFeed, feedOverride, '\x91');
-    updateOverride(ui->overrides->ui->slbSpindle, spindleOverride, '\x9a');
+    ui->overrides->setCurrentFeed(feedOverride);
+    ui->overrides->setCurrentSpindle(spindleOverride);
 
-    PartMainOverride::Overrides overrides = ui->overrides->overrides();
+    auto sendOverrideCommand = [this](int current, int target, char fullRate,
+                                      char decrease10, char decrease1,
+                                      char increase10, char increase1) {
+        if (current == target) {
+           return;
+        }
+        if (target == 100) {
+            m_communicator->sendRealtimeCommand(fullRate);
+        } else {
+            int diff = abs(target - current);
+            char cmd = (target < current)
+                ? (diff >= 10 ? decrease10 : decrease1)
+                : (diff >= 10 ? increase10 : increase1);
+            m_communicator->sendRealtimeCommand(cmd);
+        }
+    };
 
-    ui->overrides->setRapid(rapidOverride);
+    sendOverrideCommand(feedOverride, ui->overrides->targetFeed(),
+                        GRBL_LIVE_FEED_FULL_RATE,
+                        GRBL_LIVE_FEED_DECREASE_10, GRBL_LIVE_FEED_DECREASE_1,
+                        GRBL_LIVE_FEED_INCREASE_10, GRBL_LIVE_FEED_INCREASE_1);
 
-    int target = overrides.rapidOverridden ? overrides.rapid : 100;
+    sendOverrideCommand(spindleOverride, ui->overrides->targetSpindle(),
+                        GRBL_LIVE_SPINDLE_FULL_SPEED,
+                        GRBL_LIVE_SPINDLE_DECREASE_10, GRBL_LIVE_SPINDLE_DECREASE_1,
+                        GRBL_LIVE_SPINDLE_INCREASE_10, GRBL_LIVE_SPINDLE_INCREASE_1);
 
+    // Rapid
+    ui->overrides->setCurrentRapid(rapidOverride);
+    int target = ui->overrides->targetRapid();
     if (rapidOverride != target) {
         switch (target) {
             case 25:
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_FULL_RATE);
+                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_QUARTER_RATE);
                 break;
             case 50:
                 m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_HALF_RATE);
                 break;
             case 100:
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_QUARTER_RATE);
+                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_FULL_RATE);
                 break;
         }
     }
@@ -1903,20 +1927,15 @@ void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
     ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row(), *m_currentProgram);
 }
 
-void FrmMain::onOverridingToggled(bool checked)
+// To be checked later, do we use this property?
+void FrmMain::onOverrideChanged(bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle)
 {
-    Q_UNUSED(checked)
+    Q_UNUSED(feed)
+    Q_UNUSED(rapid)
+    Q_UNUSED(spindle)
 
-    PartMainOverride::Overrides overrides = ui->overrides->overrides();
-
-    ui->grpOverriding->setProperty("overrided", overrides.feedOverridden | overrides.rapidOverridden | overrides.spindleOverridden);
-    style()->unpolish(ui->grpOverriding);
-    ui->grpOverriding->ensurePolished();
-}
-
-void FrmMain::onOverrideChanged()
-{
-//    updateProgramEstimatedTime(m_currentDrawer->viewParser()->getLineSegmentList());
+    ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
+    Utils::refreshStyle(ui->grpOverriding);
 }
 
 void FrmMain::onActRecentFileTriggered()
@@ -3104,20 +3123,6 @@ void FrmMain::updateRecentFilesMenus()
     updateControlsState();
 }
 
-void FrmMain::updateOverride(SliderBox *slider, int value, char command)
-{
-    slider->setCurrentValue(value);
-
-    int target = slider->isChecked() ? slider->value() : 100;
-    bool smallStep = abs(target - slider->currentValue()) < 10 || m_configuration.connectionModule().queryStateInterval() < 100;
-
-    if (slider->currentValue() < target) {
-        m_connection->sendByteArray(QByteArray(1, char(smallStep ? command + 2 : command)));
-    } else if (slider->currentValue() > target) {
-        m_connection->sendByteArray(QByteArray(1, char(smallStep ? command + 3 : command + 1)));
-    }
-}
-
 void FrmMain::updateJogTitle()
 {
     if (ui->grpJog->isChecked() || !ui->jog->keyboardControl()) {
@@ -3420,17 +3425,16 @@ QString FrmMain::lastUsedDirectory()
 QTime FrmMain::updateProgramEstimatedTime(QList<LineSegment>& lines)
 {
     double time = 0;
-    PartMainOverride::Overrides overrides = ui->overrides->overrides();
 
     for (int i = 0; i < lines.count(); i++) {
         LineSegment& ls = lines[i];
         double length = (ls.getEnd() - ls.getStart()).length();
 
         if (!qIsNaN(length) && !qIsNaN(ls.getSpeed()) && ls.getSpeed() != 0) time +=
-                length / ((overrides.feedOverridden && !ls.isFastTraverse())
-                          ? (ls.getSpeed() * overrides.feed / 100) :
-                            (overrides.rapidOverridden && ls.isFastTraverse())
-                             ? (ls.getSpeed() * overrides.rapid / 100) : ls.getSpeed());
+                length / ((ui->overrides->feedOverridden() && !ls.isFastTraverse())
+                          ? (ls.getSpeed() * ui->overrides->targetFeed() / 100) :
+                            (ui->overrides->rapidOverridden() && ls.isFastTraverse())
+                             ? (ls.getSpeed() * ui->overrides->targetRapid() / 100) : ls.getSpeed());
     }
 
     time *= 60;
