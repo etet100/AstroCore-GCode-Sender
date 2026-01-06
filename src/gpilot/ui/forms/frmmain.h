@@ -270,9 +270,6 @@ private:
     void loadLines(QList<std::string> data);
     void applyLoaderGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
-    bool saveProgramToFile(QString fileName, GCode &data);
-    void loadHeightmap(QString fileName) { Q_UNUSED(fileName); };
-    bool saveHeightmap(QString fileName) { Q_UNUSED(fileName); return true; };
     void clearTable();
     void resetHeightmap();
     void newFile();

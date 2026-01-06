@@ -37,6 +37,7 @@
 #include "io/connection/connectionmanager.h"
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
+#include "core/gcode/exporter/gcodeexporter.h"
 #include "core/heightmap/loader/heightmaploader.h"
 #include "core/heightmap/exporter/heightmapexporter.h"
 #include "core/utils/filesmanager.h"
@@ -686,13 +687,15 @@ void FrmMain::on_actFileSave_triggered()
     if (!m_heightmapMode) {
         // G-code saving
         if (fm.gcodeOpened()) on_actFileSaveAs_triggered(); else {
-            saveProgramToFile(fm.gcodeFilePath(), m_program);
+            GCodeExporter exporter;
+            exporter.exportToFile(m_program, fm.gcodeFilePath());
             fm.setGcodeModified(false);
         }
     } else {
         // Height map saving
         if (fm.heightmapOpened()) on_actFileSaveAs_triggered(); else {
-            saveHeightmap(fm.heightmapFilePath());
+            HeightmapExporter exporter;
+            exporter.exportToFile(m_heightmap, fm.heightmapFilePath());
         }
     }
 }
@@ -704,7 +707,10 @@ void FrmMain::on_actFileSaveAs_triggered()
     if (!m_heightmapMode) {
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT));
 
-        if (!fileName.isEmpty()) if (saveProgramToFile(fileName, m_program)) {
+        if (!fileName.isEmpty()) {
+            GCodeExporter exporter;
+            exporter.exportToFile(m_program, fm.gcodeFilePath());
+
             fm.setGcodeFilePath(fileName);
             fm.setGcodeModified(false);
 
@@ -716,7 +722,10 @@ void FrmMain::on_actFileSaveAs_triggered()
     } else {
         QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
 
-        if (!fileName.isEmpty()) if (saveHeightmap(fileName)) {
+        if (!fileName.isEmpty()) {
+            HeightmapExporter exporter;
+            exporter.exportToFile(m_heightmap, fm.heightmapFilePath());
+
             fm.setHeightmapFilePath(fileName);
             fm.setHeightmapModified(false);
 
@@ -735,7 +744,8 @@ void FrmMain::on_actFileSaveTransformedAs_triggered()
     QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT)));
 
     if (!fileName.isEmpty()) {
-//        saveProgramToFile(fileName, &m_programHeightmapModel);
+        GCodeExporter exporter;
+        exporter.exportToFile(m_program, fileName);
     }
 }
 
@@ -951,7 +961,8 @@ void FrmMain::onFileOpen(QString filePath)
         addRecentHeightmap(filePath);
         updateRecentFilesMenus();
 
-        loadHeightmap(filePath);
+        HeightmapLoader loader;
+        m_heightmap = loader.loadFromFile(filePath);
     }
 }
 
@@ -1026,8 +1037,6 @@ void FrmMain::onFilePause(bool checked)
         }
     }
 }
-
-
 
 void FrmMain::onFileAbort()
 {
@@ -1530,11 +1539,12 @@ void FrmMain::onLoadHeightmapRequested()
         return;
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
 
-    if (fileName != "") {
-        addRecentHeightmap(fileName);
-        loadHeightmap(fileName);
+    if (filePath != "") {
+        addRecentHeightmap(filePath);
+        HeightmapLoader loader;
+        m_heightmap = loader.loadFromFile(filePath);
 
         // If using heightmap
         if (ui->heightmap->useMap() && !m_heightmapMode) {
@@ -1912,11 +1922,16 @@ void FrmMain::onOverrideChanged()
 void FrmMain::onActRecentFileTriggered()
 {
     QAction *action = static_cast<QAction*>(sender());
-    QString fileName = action->text();
+    QString filePath = action->text();
 
     if (action != NULL) {
         if (!saveChanges(m_heightmapMode)) return;
-        if (!m_heightmapMode) loadFile(fileName); else loadHeightmap(fileName);
+        if (!m_heightmapMode) {
+            loadFile(filePath);
+        } else {
+            HeightmapLoader loader;
+            m_heightmap = loader.loadFromFile(filePath);
+        }
     }
 }
 
@@ -2871,25 +2886,6 @@ bool FrmMain::saveChanges(bool heightMapMode)
 
         fm.setHeightmapModified(false);
     }
-
-    return true;
-}
-
-bool FrmMain::saveProgramToFile(QString fileName, GCode &model)
-{
-    QFile file(fileName);
-    QDir dir;
-
-    if (file.exists()) dir.remove(file.fileName());
-    if (!file.open(QIODevice::WriteOnly)) return false;
-
-    QTextStream textStream(&file);
-
-    for (int i = 0; i < model.count() - 1; i++) {
-        textStream << model[i].command << "\r\n";
-    }
-
-    file.close();
 
     return true;
 }
