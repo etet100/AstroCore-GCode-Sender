@@ -96,7 +96,6 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
                     VertexData vA, vB, vC;
                     // Triangle 1
                     vA.position = p00; vA.color = c00;
-                    qDebug() << x << x2 << p00.x() << (p00).x();
                     vB.position = p10; vB.color = c10;
                     vC.position = p11; vC.color = c11;
                     setTriangleNormal(vA, vB, vC);

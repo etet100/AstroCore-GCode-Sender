@@ -70,7 +70,7 @@ bool VirtualUCNCConnection::open()
 void VirtualUCNCConnection::flushOutgoingData()
 {
     if (!m_socket) {
-        qDebug() << "No socket connection!";
+        qDebug() << "[IO][uCNC] No socket connection!";
         return;
     }
     if (m_socket->bytesToWrite()) {
@@ -85,7 +85,7 @@ void VirtualUCNCConnection::sendByteArray(QByteArray byteArray)
     flushOutgoingData();
 
     #ifdef DEBUG_UCNC_COMMUNICATION
-        qDebug() << "uCNC (byte) >> " << byteArray.toHex();
+        qDebug() << "[IO][uCNC] (byte) >> " << byteArray.toHex();
     #endif
 
     m_socket->write(byteArray.data(), 1);
@@ -97,7 +97,7 @@ void VirtualUCNCConnection::sendLine(QString line)
     flushOutgoingData();
 
     #ifdef DEBUG_UCNC_COMMUNICATION
-        qDebug() << "uCNC >> " << line;
+        qDebug() << "[IO][uCNC] >> " << line;
     #endif
 
     std::string str = QString(line + "\n").toStdString();
@@ -163,7 +163,7 @@ void VirtualUCNCConnection::processIncomingData()
 {
     while (true) {
         #ifdef DEBUG_UCNC_COMMUNICATION
-            qDebug() << "uCNC == " << m_incoming;
+            qDebug() << "[IO][uCNC] == " << m_incoming;
         #endif
         if (m_incoming.isEmpty()) {
             return;
@@ -177,7 +177,7 @@ void VirtualUCNCConnection::processIncomingData()
         m_incoming.remove(0, pos + 1);
 
         #ifdef DEBUG_UCNC_COMMUNICATION
-            qDebug() << "uCNC << " << line;
+            qDebug() << "[IO][uCNC] << " << line;
         #endif
 
         emit this->lineReceived(line);
@@ -194,18 +194,18 @@ void VirtualUCNCWorkerThread::run() {
              uCNC(m_serverName.toStdString().c_str());
         #endif
     #else
-        qDebug() << "uCNC dynamic mode";
+        qDebug() << "[IO][uCNC] Dynamic mode";
         QLibrary lib("uCNC.dll");
         if (!lib.load()) {
-            qWarning() << "uCNC library could not be loaded!";
+            qWarning() << "[IO][uCNC] uCNC library could not be loaded!";
             return;
         }
         uCNCFunction uCNC = (uCNCFunction) lib.resolve("uCNC");
         if (uCNC != nullptr) {
-            qDebug() << "Calling uCNC() function";
+            qDebug() << "[IO][uCNC] Calling uCNC() function";
             uCNC(m_serverName.toStdString().c_str()); // Wywołanie funkcji z biblioteki
         } else {
-            qInfo() << "uCNC not initialized. uCNC() not found!";
+            qInfo() << "[IO][uCNC] uCNC not initialized. uCNC() not found!";
         }
         lib.unload();
     #endif

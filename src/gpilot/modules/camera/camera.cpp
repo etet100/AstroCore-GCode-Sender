@@ -43,7 +43,7 @@ void Camera::setCamera(const QCameraDevice &cameraDevice)
     }
     m_captureSession.setCamera(nullptr);
 
-    qDebug() << "Camera device:" << cameraDevice.description();
+    qDebug() << "[Camera] Device:" << cameraDevice.description();
 
     m_camera.reset(new QCamera(cameraDevice));
     m_captureSession.setCamera(m_camera.data());
@@ -113,7 +113,7 @@ void Camera::updateCameraDevice(QAction *action)
 
 void Camera::updateCameraActive(bool active)
 {
-    qDebug() << active;
+    qDebug() << "[Camera] " << active;
 }
 
 void Camera::resizeEvent(QResizeEvent *event)
@@ -251,14 +251,14 @@ void Camera::findBestResolution(int w, int h)
     }
 
     if (!bestFormat.isNull() && m_camera->cameraFormat() != bestFormat) {
-        qDebug() << "Setting camera format to" << bestFormat.resolution()
+        qDebug() << "[Camera] Setting camera format to" << bestFormat.resolution()
                  << (float) bestFormat.resolution().width() / (float) bestFormat.resolution().height()
                  << bestScale;
         m_camera->setCameraFormat(bestFormat);
     }
 
     if (bestFormat.isNull()) {
-        qDebug() << "Matching camera format not found!";
+        qDebug() << "[Camera] Matching camera format not found!";
     }
 }
 

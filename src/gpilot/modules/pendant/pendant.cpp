@@ -152,7 +152,7 @@ void Pendant::sendState()
 
 void Pendant::sendWifiConfig()
 {
-    qDebug() << "Sending wifi config";
+    qDebug() << "[Pendant] Sending wifi config";
 
     WifiConfigMessage message;
 
