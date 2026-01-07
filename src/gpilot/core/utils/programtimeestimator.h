@@ -8,23 +8,18 @@
 #include <QDateTime>
 #include <QList>
 #include "core/gcode/parser/linesegment.h"
+#include "timer.h"
 
 class GCode;
 
 class ProgramTimeEstimator
 {
 public:
-    ProgramTimeEstimator();
+    ProgramTimeEstimator(Timer& timer);
 
     QTime calculateEstimatedTime(const QList<LineSegment>& lines,
                                   int feedOverride = 100,
                                   int rapidOverride = 100);
-
-    void startExecution();
-    void stopExecution();
-    void pauseExecution();
-    void resumeExecution();
-    void reset();
 
     void updateProgress(GCode& program);
 
@@ -39,17 +34,17 @@ public:
     // Progress percentage (0-100)
     double progressPercentage() const { return m_progressPercentage; }
     // Check if estimation is active
-    bool isTracking() const { return m_isTracking; }
-    bool isPaused() const { return m_isPaused; }
+    bool isTracking() const { return m_timer.isTracking(); }
+    bool isPaused() const { return m_timer.isPaused(); }
 
     // Estimation accuracy info
     QString accuracyInfo() const;
 
+    // Reset estimation state (but not timer)
+    void resetEstimation();
+
 private:
-    // Time tracking
-    qint64 m_startTimeSeconds;
-    qint64 m_pauseTimeSeconds;
-    qint64 m_totalPausedSeconds;
+    Timer& m_timer;
     QTime m_estimatedTotalTime;
 
     // Segment tracking for detailed correction
@@ -60,12 +55,8 @@ private:
     double m_correctionFactor;
     double m_completedEstimatedTime; // sum of estimated time for completed segments
 
-    bool m_isTracking;
-    bool m_isPaused;
-
     double calculateSegmentTime(LineSegment& segment, int feedOverride, int rapidOverride);
     void updateCorrectionFactor();
-    qint64 getCurrentTimeSeconds() const;
 };
 
 #endif // PROGRAMTIMEESTIMATOR_H

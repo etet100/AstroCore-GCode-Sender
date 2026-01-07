@@ -6,17 +6,13 @@
 #include <QDebug>
 #include <cmath>
 
-ProgramTimeEstimator::ProgramTimeEstimator()
-    : m_startTimeSeconds(0)
-    , m_pauseTimeSeconds(0)
-    , m_totalPausedSeconds(0)
+ProgramTimeEstimator::ProgramTimeEstimator(Timer& timer)
+    : m_timer(timer)
     , m_estimatedTotalTime(0, 0, 0)
     , m_lastCompletedSegmentIndex(-1)
     , m_progressPercentage(0.0)
     , m_correctionFactor(1.0)
     , m_completedEstimatedTime(0.0)
-    , m_isTracking(false)
-    , m_isPaused(false)
 {
 }
 
@@ -68,56 +64,6 @@ double ProgramTimeEstimator::calculateSegmentTime(LineSegment& segment,
     return (length / effectiveSpeed) * 60.0;
 }
 
-void ProgramTimeEstimator::startExecution()
-{
-    m_startTimeSeconds = getCurrentTimeSeconds();
-    m_pauseTimeSeconds = 0;
-    m_totalPausedSeconds = 0;
-    m_isTracking = true;
-    m_isPaused = false;
-    m_progressPercentage = 0.0;
-    m_correctionFactor = 1.0;
-    m_completedEstimatedTime = 0.0;
-}
-
-void ProgramTimeEstimator::stopExecution()
-{
-    m_isTracking = false;
-    m_isPaused = false;
-}
-
-void ProgramTimeEstimator::pauseExecution()
-{
-    if (m_isTracking && !m_isPaused) {
-        m_pauseTimeSeconds = getCurrentTimeSeconds();
-        m_isPaused = true;
-    }
-}
-
-void ProgramTimeEstimator::resumeExecution()
-{
-    if (m_isTracking && m_isPaused) {
-        qint64 pauseDuration = getCurrentTimeSeconds() - m_pauseTimeSeconds;
-        m_totalPausedSeconds += pauseDuration;
-        m_isPaused = false;
-        m_pauseTimeSeconds = 0;
-    }
-}
-
-void ProgramTimeEstimator::reset()
-{
-    m_startTimeSeconds = 0;
-    m_pauseTimeSeconds = 0;
-    m_totalPausedSeconds = 0;
-    m_lastCompletedSegmentIndex = -1;
-    m_progressPercentage = 0.0;
-    m_correctionFactor = 1.0;
-    m_completedEstimatedTime = 0.0;
-    m_isTracking = false;
-    m_isPaused = false;
-    m_segmentEstimatedTimes.clear();
-}
-
 void ProgramTimeEstimator::updateProgress(GCode& program)
 {
     int processedIndex = program.processedCommandIndex();
@@ -142,15 +88,12 @@ void ProgramTimeEstimator::updateProgress(GCode& program)
 
 void ProgramTimeEstimator::updateCorrectionFactor()
 {
-    if (!m_isTracking || m_completedEstimatedTime < 1.0) {
+    if (!m_timer.isTracking() || m_completedEstimatedTime < 1.0) {
         return;
     }
 
-    qint64 actualElapsed = getCurrentTimeSeconds() - m_startTimeSeconds - m_totalPausedSeconds;
-
-    if (m_isPaused) {
-        actualElapsed = m_pauseTimeSeconds - m_startTimeSeconds - m_totalPausedSeconds;
-    }
+    QTime elapsed = m_timer.elapsedTime();
+    qint64 actualElapsed = elapsed.hour() * 3600 + elapsed.minute() * 60 + elapsed.second();
 
     if (actualElapsed > 0) {
         // Correction factor = actual time / estimated time
@@ -175,21 +118,18 @@ void ProgramTimeEstimator::updateCorrectionFactor()
     }
 }
 
+void ProgramTimeEstimator::resetEstimation()
+{
+    m_lastCompletedSegmentIndex = -1;
+    m_progressPercentage = 0.0;
+    m_correctionFactor = 1.0;
+    m_completedEstimatedTime = 0.0;
+    m_segmentEstimatedTimes.clear();
+}
+
 QTime ProgramTimeEstimator::elapsedTime() const
 {
-    if (!m_isTracking) {
-        return QTime(0, 0, 0);
-    }
-
-    qint64 elapsed;
-    if (m_isPaused) {
-        elapsed = m_pauseTimeSeconds - m_startTimeSeconds - m_totalPausedSeconds;
-    } else {
-        elapsed = getCurrentTimeSeconds() - m_startTimeSeconds - m_totalPausedSeconds;
-    }
-
-    QTime time(0, 0, 0);
-    return time.addSecs(static_cast<int>(elapsed));
+    return m_timer.elapsedTime();
 }
 
 QTime ProgramTimeEstimator::estimatedTotalTime() const
@@ -215,7 +155,7 @@ QTime ProgramTimeEstimator::remainingTime() const
 
 QTime ProgramTimeEstimator::estimatedRemainingTimeWithCorrection() const
 {
-    if (!m_isTracking || m_segmentEstimatedTimes.isEmpty()) {
+    if (!m_timer.isTracking() || m_segmentEstimatedTimes.isEmpty()) {
         return remainingTime();
     }
 
@@ -234,7 +174,7 @@ QTime ProgramTimeEstimator::estimatedRemainingTimeWithCorrection() const
 
 QString ProgramTimeEstimator::accuracyInfo() const
 {
-    if (!m_isTracking || m_correctionFactor == 1.0) {
+    if (!m_timer.isTracking() || m_correctionFactor == 1.0) {
         return QString("Accuracy: estimating...");
     }
 
@@ -253,9 +193,4 @@ QString ProgramTimeEstimator::accuracyInfo() const
         .arg(accuracyPercent, 0, 'f', 1)
         .arg(trend)
         .arg(m_correctionFactor, 0, 'f', 2);
-}
-
-qint64 ProgramTimeEstimator::getCurrentTimeSeconds() const
-{
-    return QDateTime::currentSecsSinceEpoch();
 }

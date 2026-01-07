@@ -58,6 +58,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_connectionManager(this, configuration.connectionModule()),
     m_connection(nullptr),
     m_program(),
+    m_timeEstimator(m_timer),
     m_configuration(configuration)
 {
     // Loading settings
@@ -970,7 +971,7 @@ void FrmMain::onFileOpen(QString filePath)
 void FrmMain::onFileSend()
 {
     m_program.reset();
-    m_timeEstimator.startExecution();
+    m_timer.startExecution();
     m_communicator->sb()->action(RunAction(m_program));
 
 //     if (m_currentModel->rowCount() == 1) return;
@@ -1030,13 +1031,13 @@ void FrmMain::onFilePause(bool checked)
     if (checked) {
         Action action(Action::Pause);
         if (m_communicator->stateBehavior()->action(action)) {
-            m_timeEstimator.pauseExecution();
+            m_timer.pauseExecution();
             ui->program->setPauseButtonText(tr("Resume"));
         }
     } else {
         Action action(Action::Resume);
         if (m_communicator->stateBehavior()->action(action)) {
-            m_timeEstimator.resumeExecution();
+            m_timer.resumeExecution();
             ui->program->setPauseButtonText(tr("Pause"));
         }
     }
@@ -1045,7 +1046,7 @@ void FrmMain::onFilePause(bool checked)
 void FrmMain::onFileAbort()
 {
     ui->program->setAbortButtonEnabled(false);
-    m_timeEstimator.stopExecution();
+    m_timer.stopExecution();
     m_communicator->abort();
 }
 
@@ -1076,7 +1077,8 @@ void FrmMain::onFileReset()
 
         ui->program->resetToFirstRow();
 
-        m_timeEstimator.reset();
+        m_timer.reset();
+        m_timeEstimator.resetEstimation();
         ui->visualizer->setSpendTime(QTime(0, 0, 0));
         ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
     } else {
@@ -2787,7 +2789,7 @@ void FrmMain::loadLines(QList<std::string> data)
     // Reset code drawer
     ui->visualizer->resetVisualization();
 
-    m_timeEstimator.reset();
+    m_timeEstimator.resetEstimation();
     ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
     ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
@@ -2969,7 +2971,7 @@ void FrmMain::newFile()
     // Reset code drawer
     ui->visualizer->reset();
 
-    m_timeEstimator.reset();
+    m_timeEstimator.resetEstimation();
     ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
     ui->visualizer->setSpendTime(QTime(0, 0, 0));
 

@@ -48,6 +48,7 @@
 #include "ui/utils/windowstaskbar.h"
 #include "ui/widgets/filedropoverlay.h"
 #include "core/utils/programtimeestimator.h"
+#include "core/utils/timer.h"
 
 namespace Ui {
 class frmMain;
@@ -234,6 +235,7 @@ private:
     QBasicTimer m_timerToolAnimation;
 
     // Time estimation
+    Timer m_timer;
     ProgramTimeEstimator m_timeEstimator;
 
     // Flags
