@@ -281,6 +281,11 @@ How to build (Windows, Qt, MinGW/LLVM)
     - To enable multi-threaded compilation for faster builds:
       - Go to Projects → Build → Build Steps → Make → Make arguments
       - Add `-j8` (adjust number based on your CPU cores)
+    - Set auto-copy of DLL files after build:
+      - Under Projects → Build Settings or Deploy Settings → Build Steps, add a Custom Process Step:
+        - Command: `python`
+        - Arguments: `copy_files.py %{ActiveProject:BuildConfig:Path} %{ActiveProject:BuildConfig:Path}\src\gpilot\`
+        - Working directory: `%{ActiveProject:ProjectDirectory}\scripts`
     - Click Build (Ctrl+B).
     - The executable and DLL files will appear in the `bin` folder.
 

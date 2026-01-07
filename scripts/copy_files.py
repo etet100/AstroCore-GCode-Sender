@@ -2,6 +2,9 @@ import os
 import sys
 import shutil
 
+if len(sys.argv) != 3:
+    raise Exception("Usage: copy_files.py <source_path> <dest_path>")
+
 sourcePath = sys.argv[1] + "\\"
 destPath = sys.argv[2] + "\\"
 
@@ -15,6 +18,7 @@ def copyFile(sourceSubpath, filename):
 
     shutil.copyfile(sourcePath + sourceSubpath + filename, destPath + filename)
 
-copyFile("src\\gpilot\\", "GPilot.exe")
+# copyFile("src\\gpilot\\", "GPilot.exe")
 copyFile("src\\vendor\\uCNC\\", "uCNC.dll")
+copyFile("src\\vendor\\grblHal\\", "grblHal.dll")
 copyFile("src\\vendor\\PropertyEditor\\", "PropertyEditor.dll")
