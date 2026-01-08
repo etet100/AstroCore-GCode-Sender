@@ -11,7 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            config: debug
+          - os: windows-latest
+            config: release
+          - os: ubuntu-latest
+            config: debug
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -78,7 +84,7 @@ jobs:
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mkdir -p build/vendor/PropertyEditor
             cd build/vendor/PropertyEditor
-            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
@@ -99,7 +105,7 @@ jobs:
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mkdir -p build/vendor/uCNC
             cd build/vendor/uCNC
-            qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            qmake ../../../src/vendor/uCNC/uCNC.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
@@ -120,7 +126,7 @@ jobs:
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mkdir -p build/vendor/grblHal
             cd build/vendor/grblHal
-            qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
+            qmake ../../../src/vendor/grblHal/grblHal.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
@@ -158,13 +164,13 @@ jobs:
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mkdir -p build/gpilot
             cd build/gpilot
-            qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
             mkdir -p build/gpilot
             cd build/gpilot
-            qmake ../../src/gpilot/gpilot.pro "CONFIG+=debug" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            qmake ../../src/gpilot/gpilot.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             make -f Makefile qmake_all
             make -j$(nproc)
           fi
@@ -192,7 +198,7 @@ jobs:
         shell: cmd
         run: |
           xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
-          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller.exe
+          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller-${{ matrix.config }}.exe
 
       - name: Package build artifacts
         if: matrix.os == 'windows-latest'
@@ -202,10 +208,28 @@ jobs:
           mkdir artifacts
           for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
           dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath GPilotPortable.zip
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath GPilotPortable-${{ matrix.config }}.zip
 
-      - name: Create GitHub pre-release with build artifacts
+      - name: Upload build artifacts
         if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpilot-${{ matrix.config }}-artifacts
+          path: |
+            GPilotPortable-${{ matrix.config }}.zip
+            GPilotInstaller-${{ matrix.config }}.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub release with all artifacts
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -215,7 +239,18 @@ jobs:
           prerelease: true
           body: |
             Automatic build created from commit ${{ github.sha }}.
-            This is a debug version. Available as a portable zip file and installer.
+
+            ## Available Builds
+
+            **Debug Build:**
+            - GPilotPortable-debug.zip - Portable debug version
+            - GPilotInstaller-debug.exe - Debug installer
+
+            **Release Build:**
+            - GPilotPortable-release.zip - Portable release version
+            - GPilotInstaller-release.exe - Release installer
           files: |
-            GPilotPortable.zip
-            GPilotInstaller.exe
+            artifacts/gpilot-debug-artifacts/GPilotPortable-debug.zip
+            artifacts/gpilot-debug-artifacts/GPilotInstaller-debug.exe
+            artifacts/gpilot-release-artifacts/GPilotPortable-release.zip
+            artifacts/gpilot-release-artifacts/GPilotInstaller-release.exe

@@ -35,6 +35,17 @@ Automatic builds are available as a zip (portable) file and as an installer (cre
 The latest version is always available here:
 https://github.com/etet100/G-Pilot-GCode-Sender/releases/latest
 
+Each release contains both **Debug** and **Release** versions:
+
+- **Debug Build** (`GPilotPortable-debug.zip`, `GPilotInstaller-debug.exe`):
+  - Includes debugging symbols and additional logging
+  - Larger file size but better for troubleshooting issues
+  - Recommended for testing and reporting bugs
+
+- **Release Build** (`GPilotPortable-release.zip`, `GPilotInstaller-release.exe`):
+  - Optimized for performance with smaller file size
+  - Recommended for normal usage
+
 **Note:** This is a prerelease version. The installer and builds are for testing and preview purposes only. There is still a lot of work to be done, but you can try it out and give feedback!
 
 System requirements for running "G-Pilot":
