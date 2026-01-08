@@ -80,7 +80,6 @@ class PartMainProgram : public QWidget
 
         void setHeightMapVisible(bool visible);
         void setProgramVisible(bool visible);
-        void resizeHeightMapSections();
         QByteArray saveHeaderState() const;
         void restoreHeaderState(const QByteArray& state);
 
@@ -130,6 +129,7 @@ class PartMainProgram : public QWidget
 
     protected:
         bool eventFilter(QObject *obj, QEvent *event) override;
+        void resizeEvent(QResizeEvent* event) override;
 
     private slots:
         void onScrollBarAction(int action);
@@ -157,6 +157,7 @@ class PartMainProgram : public QWidget
 
         void setupUi();
         void setupTableContextMenu();
+        void resizeHeightMapSections();
 };
 
 #endif // PARTMAINPROGRAM_H

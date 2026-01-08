@@ -291,7 +291,6 @@ private:
     void updateHeightmapBorderDrawer();
     bool updateHeightmapGrid();
     void updateHeightmapGrid(double arg1);
-    void resizeTableHeightmapSections();
     bool eventFilter(QObject *obj, QEvent *event) override;
     // void updateCurrentModel(GCodeTableModel *m_currentModel);
     void updateToolPositionAndToolpathShadowing(QVector3D toolPosition);

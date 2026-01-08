@@ -506,8 +506,6 @@ void FrmMain::resizeEvent(QResizeEvent *re)
 {
     QMainWindow::resizeEvent(re);
 
-    resizeTableHeightmapSections();
-
     if (!m_firstShow) {
         m_configuration.uiModule().setMainFormGeometry(this);
     }
@@ -1501,7 +1499,6 @@ void FrmMain::heightmapModeToggled(bool checked)
 
     if (checked) {
         ui->program->switchToProbeModel();
-        resizeTableHeightmapSections();
         //updateCurrentModel(&m_programModel);
         ui->visualizer->useProbeDrawer();
         updateParser();  // Update probe program parser
@@ -1512,7 +1509,6 @@ void FrmMain::heightmapModeToggled(bool checked)
             // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
             ui->program->selectFirstRow();
 
-            resizeTableHeightmapSections();
             // updateCurrentModel(&m_programModel);
             ui->visualizer->useCodeDrawer();
 
@@ -3006,7 +3002,6 @@ void FrmMain::newHeightmap()
 
     FilesManager& fm = FilesManager::instance();
     fm.resetHeightmapFile();
-    fm.setHeightmapModified(false);
 
     //TODO heightmap
     // updateHeightmapBorderDrawer();
@@ -3209,7 +3204,6 @@ bool FrmMain::updateHeightmapGrid()
     ui->program->resizeHeightmapModel(gridPointsX, gridPointsY);
     ui->program->setHeightMapModel(NULL);
     ui->program->setHeightMapModel(ui->program->getHeightmapModelForInterpolation());
-    resizeTableHeightmapSections();
 
     // Update interpolation
     ui->visualizer->updateHeightmapInterpolation(true);
@@ -3262,11 +3256,6 @@ bool FrmMain::updateHeightmapGrid()
 //         static_cast<QDoubleSpinBox*>(sender())->setValue(sender()->property("previousValue").toDouble());
 //     else sender()->setProperty("previousValue", arg1);
 // }
-
-void FrmMain::resizeTableHeightmapSections()
-{
-    ui->program->resizeHeightMapSections();
-}
 
 bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 {

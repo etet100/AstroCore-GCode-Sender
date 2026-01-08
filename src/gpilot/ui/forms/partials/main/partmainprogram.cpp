@@ -370,6 +370,11 @@ bool PartMainProgram::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
+void PartMainProgram::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    resizeHeightMapSections();
+}
 
 void PartMainProgram::onScrollBarAction(int action)
 {
