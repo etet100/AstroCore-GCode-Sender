@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {/* Perspective Cube with all faces highlighted */}
+  {/* Front Face */}
+  <path d="M4 8H16V20H4Z" fill="currentColor" fill-opacity="0.2" />
+  {/* Top Face */}
+  <path d="M4 8L8 4H20L16 8Z" fill="currentColor" fill-opacity="0.2" />
+  {/* Right Face */}
+  <path d="M16 8L20 4V16L16 20Z" fill="currentColor" fill-opacity="0.2" />
+</svg>

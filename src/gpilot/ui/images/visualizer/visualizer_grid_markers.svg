@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {/* The Plaque/Label Card */}
+  <rect x="4" y="3" width="16" height="11" rx="2" stroke-opacity="1" />
+  {/* Abstract Lines representing text (X, Y, H) */}
+  <path d="M7 6H17" stroke-width="1" opacity="0.4" />
+  <path d="M7 9H14" stroke-width="1" opacity="0.4" />
+  <path d="M7 12H12" stroke-width="1" opacity="0.4" />
+  {/* The Stem/Pin connecting to ground */}
+  <path d="M12 14V21" stroke-opacity="0.6" />
+  {/* Ground Dot */}
+  <circle cx="12" cy="21" r="1.5" fill="currentColor" />
+</svg>

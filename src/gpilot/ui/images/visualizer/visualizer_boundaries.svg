@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {/* Flat Perspective Rectangle (Diamond) */}
+  <path d="M12 5L3 10L12 15L21 10L12 5Z" />
+  {/* Corner Brackets to emphasize Area/Bounds */}
+  <path d="M12 5V7" />
+  <path d="M12 15V13" />
+  <path d="M3 10H5" />
+  <path d="M21 10H19" />
+</svg>

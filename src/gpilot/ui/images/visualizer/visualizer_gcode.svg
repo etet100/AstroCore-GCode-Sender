@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2 18 L9 14 L17 16 L10 20 Z" opacity="0.3" stroke-width="1"/>
+
+  <path d="M9 15 L9 8" stroke-dasharray="2 2" opacity="0.7" />
+  <path d="M9 8 L17 12" opacity="0.7" />
+  <path d="M17 12 L17 16" stroke-dasharray="2 2" opacity="0.7" />
+
+  <path d="M3 18 L9 15" stroke-width="1.5" />
+
+  <circle cx="3" cy="18" r="0.8" fill="currentColor" />
+  <circle cx="9" cy="8" r="0.8" fill="currentColor" />
+
+  <path d="M15 14 L17 16 L19 14" stroke-width="1.5" />
+</svg>

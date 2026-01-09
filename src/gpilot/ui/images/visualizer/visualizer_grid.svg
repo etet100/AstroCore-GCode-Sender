@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {/* Flat Perspective Grid (No Thickness) */}
+  {/* Main Plane (Diamond) */}
+  <path d="M12 5L3 10L12 15L21 10L12 5Z" />
+  {/* Grid Lines */}
+  <path d="M7.5 7.5L16.5 12.5" opacity="0.5" />
+  <path d="M16.5 7.5L7.5 12.5" opacity="0.5" />
+</svg>

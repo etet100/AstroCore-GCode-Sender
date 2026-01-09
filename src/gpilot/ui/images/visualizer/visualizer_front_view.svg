@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    {/* Perspective Cube with Front Face facing camera - Distinct from Left View */}
+    {/* Front Face (Highlighted) */}
+    <path
+      d="M4 8H16V20H4Z"
+      fill="currentColor"
+      fill-opacity="1"
+    />
+    {/* Top Face (Receding) */}
+    <path
+      d="M4 8L8 4H20L16 8"
+      fill="currentColor"
+      fill-opacity="0.2"
+    />
+    {/* Right Face (Receding) */}
+    <path
+      d="M16 8L20 4V16L16 20"
+      fill="currentColor"
+      fill-opacity="0.2"
+    />
+  </svg>
