@@ -51,8 +51,6 @@ class PartMainProgram : public QWidget
         void clearHeightmapModel();
         void resizeHeightmapModel(int rows, int cols);
         bool hasHeightmapData() const;
-        int heightmapModelRowCount() const;
-        int heightmapModelColumnCount() const;
         QVariant heightmapModelData(int row, int column, int role = Qt::DisplayRole) const;
         HeightmapTableModel* getHeightmapModelForInterpolation(); // Temporary for Interpolation
 

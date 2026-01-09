@@ -54,6 +54,7 @@ class Heightmap
         void setHeightAt(QPoint point, double height);
         // Sets all values to NAN
         void reset();
+        bool anyHeightSet();
 
     private:
         QSize m_size;

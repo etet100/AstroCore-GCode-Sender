@@ -101,6 +101,17 @@ void Heightmap::reset()
     }
 }
 
+bool Heightmap::anyHeightSet()
+{
+    for (const auto& value : m_data) {
+        if (!qIsNaN(value)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void Heightmap::setSize(QSize size)
 {
     m_size = size;

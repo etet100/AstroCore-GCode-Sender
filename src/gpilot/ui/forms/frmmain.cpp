@@ -3195,18 +3195,14 @@ void FrmMain::addRecentHeightmap(QString fileName)
 
 bool FrmMain::updateHeightmapGrid()
 {
-    if (m_settingsLoading) return true;
+    if (m_settingsLoading) {
+        return true;
+    }
 
-    // Grid map changing warning
-    bool nan = true;
-    for (int i = 0; i < ui->program->heightmapModelRowCount(); i++)
-        for (int j = 0; j < ui->program->heightmapModelColumnCount(); j++)
-            if (!qIsNaN(ui->program->heightmapModelData(i, j, Qt::UserRole).toDouble())) {
-                nan = false;
-                break;
-            }
-    if (!nan && QMessageBox::warning(this, this->windowTitle(), tr("Changing grid settings will reset probe data. Continue?"),
+    if (!m_heightmap.anyHeightSet()) {
+        if (QMessageBox::warning(this, this->windowTitle(), tr("Changing grid settings will reset probe data. Continue?"),
                                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return false;
+    }
 
     // Update grid drawer
     QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
@@ -3261,7 +3257,9 @@ bool FrmMain::updateHeightmapGrid()
 
     m_programLoading = false;
 
-    if (ui->visualizer->isCurrentDrawerProbeMode()) updateParser();
+    if (ui->visualizer->isCurrentDrawerProbeMode()) {
+        updateParser();
+    }
 
     FilesManager::instance().setHeightmapModified(true);
 

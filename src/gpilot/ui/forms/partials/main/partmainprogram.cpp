@@ -568,16 +568,6 @@ bool PartMainProgram::hasHeightmapData() const
     return false;
 }
 
-int PartMainProgram::heightmapModelRowCount() const
-{
-    return m_heightmapModel ? m_heightmapModel->rowCount() : 0;
-}
-
-int PartMainProgram::heightmapModelColumnCount() const
-{
-    return m_heightmapModel ? m_heightmapModel->columnCount() : 0;
-}
-
 QVariant PartMainProgram::heightmapModelData(int row, int column, int role) const
 {
     if (m_heightmapModel) {
