@@ -18,10 +18,10 @@ public:
     void initialize(QApplication *app, bool dark);
     void setDark(bool dark);
     bool dark() const { return m_dark; }
-    void setFontSize(int, bool force = false);
-    // Scale is deduced from the font size. E.g., 7 = 0.9, 8px = 1.0, 9 = 1.1, 10 = 1.2
-    // Using font size is deprecated
-    float scale();
+    void setScale(int, bool force = false);
+    void increaseScale();
+    void decreaseScale();
+    int scale();
     void processQssTemplate(QWidget *widget);
 
 signals:
@@ -41,7 +41,10 @@ private:
 
     QApplication *m_app;
     int m_fontSize = -1;
+    int m_scale = -1;
     bool m_dark;
+
+    int scaleToFontSize(int scale);
 };
 
 #endif // THEMEMANAGER_H

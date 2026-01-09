@@ -20,7 +20,8 @@ class ConfigurationUI : public ConfigurationModule
     friend class FrmSettings;
 
     Q_OBJECT
-    Q_PROPERTY(int fontSize MEMBER m_fontSize NOTIFY changed)
+    // percentage
+    Q_PROPERTY(int uiScale MEMBER m_uiScale NOTIFY changed)
     Q_PROPERTY(QString language MEMBER m_language NOTIFY changed)
     Q_PROPERTY(QStringList recentFiles MEMBER m_recentFiles NOTIFY changed)
     Q_PROPERTY(QStringList recentHeightmaps MEMBER m_recentHeightmaps NOTIFY changed)
@@ -46,8 +47,8 @@ class ConfigurationUI : public ConfigurationModule
         explicit ConfigurationUI(QObject *parent);
         QString getSectionName() override { return "baseui.main"; }
 
-        int fontSize() const { return m_fontSize; }
-        void setFontSize(int fontSize) { m_fontSize = fontSize; emit changed(); }
+        double uiScale() const { return m_uiScale; }
+        void setUiScale(int scale) { m_uiScale = scale; emit changed(); }
         QString language() const { return m_language; }
         QStringList recentFiles() const { return m_recentFiles; }
         QStringList recentHeightmaps() const { return m_recentHeightmaps; }
@@ -91,7 +92,7 @@ class ConfigurationUI : public ConfigurationModule
 
     private:
         static const int MAX_RECENT_FILES = 10;
-        int m_fontSize;
+        int m_uiScale;
         QString m_language;
         QStringList m_recentFiles;
         QStringList m_recentHeightmaps;

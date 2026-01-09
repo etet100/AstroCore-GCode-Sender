@@ -38,48 +38,65 @@ void ThemeManager::setDark(bool dark)
 
     m_dark = dark;
     applyTheme(dark);
-    // Re-apply font size after stylesheet change
-    if (m_fontSize > 0) {
-        setFontSize(m_fontSize, true);
+    // Re-apply scale after stylesheet change
+    if (m_scale > 0) {
+        setScale(m_scale, true);
     }
 
     emit themeChanged(dark);
 }
 
-void ThemeManager::setFontSize(int size, bool force)
+void ThemeManager::setScale(int scale, bool force)
 {
-    if (!force && m_fontSize == size) {
+    if (!force && m_scale == scale) {
         return;
     }
+
+    if (scale < 80 || scale > 140) {
+        qWarning() << "[ThemeManager] Scale" << scale << "% is out of supported range (80%-140%), using default 100%";
+        scale = 100;
+    }
+
+    int fontSize = scaleToFontSize(scale);
+    qDebug() << "[ThemeManager] Setting scale to" << scale << "% with font size" << fontSize;
 
     m_app->setStyleSheet(QString(m_app->styleSheet()).replace(
         QRegularExpression("/\\* mainfontsize \\*/ font-size:[^;^\\}]+"),
-        QString("/* mainfontsize */ font-size: %1pt").arg(size))
+        QString("/* mainfontsize */ font-size: %1pt").arg(fontSize))
     );
 
-    // Do not emit signal if size did not change, even if forced
-    if (m_fontSize == size) {
+    // Do not emit signal if scale did not change, even if forced
+    if (m_scale == scale) {
         return;
     }
 
-    m_fontSize = size;
-    emit fontSizeChanged(size);
-    emit scaleChanged(scale());
+    m_scale = scale;
+    m_fontSize = fontSize;
+    emit scaleChanged(scale);
+    emit fontSizeChanged(m_fontSize);
 }
 
-float ThemeManager::scale()
+void ThemeManager::increaseScale()
 {
-    // Mapping font size to scale factor is something to tune later
-    switch (m_fontSize) {
-        case 7: return 0.9f;
-        case 9: return 1.1f;
-        case 10: return 1.2f;
-        case 11: return 1.3f;
-        case 12: return 1.4f;
-        case 8:
-        default:
-            return 1.0f;
+    if (m_scale >= 140) {
+        return;
     }
+
+    setScale(m_scale + 10);
+}
+
+void ThemeManager::decreaseScale()
+{
+    if (m_scale <= 80) {
+        return;
+    }
+
+    setScale(m_scale - 10);
+}
+
+int ThemeManager::scale()
+{
+    return m_scale;
 }
 
 void ThemeManager::processQssTemplate(QWidget *widget)
@@ -186,4 +203,20 @@ void ThemeManager::loadStyleSheets(bool dark)
     stylesheetFile.close();
 
     m_app->setStyleSheet(stylesheet);
+}
+
+int ThemeManager::scaleToFontSize(int scale)
+{
+    switch (scale) {
+        case 80: return 8; // 80%
+        case 90: return 9;
+        case 110: return 11;
+        case 120: return 12;
+        case 130: return 13; // 130%
+        case 140: return 14;
+        case 100: return 10;
+        default:
+            qWarning() << "[ThemeManager] Unknown scale" << scale << "%, using default font size 9pt";
+            return 9;
+    }
 }

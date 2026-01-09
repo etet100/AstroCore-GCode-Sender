@@ -119,6 +119,8 @@ private slots:
     void on_actViewDarkMode_toggled(bool checked);
     void on_actViewCentralProgram_toggled(bool checked);
     void on_actViewCentralVisualizer_toggled(bool checked);
+    void decreaseUiScale();
+    void increaseUiScale();
     void onFileOpen(QString filePath = "");
     void onFileSend();
     void onFilePause(bool checked);
@@ -321,8 +323,9 @@ private:
     void appendSpacer(DropWidget *dockPanel);
     void addDockableWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
     void restoreDockableLayoutState();
-    void initializeFontSizeMenu();
+    void initializeUiScaleMenu();
     void setHeightmapPoint(QPoint point, double height);
+    void updateUiScaleMenu();
 };
 
 typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;

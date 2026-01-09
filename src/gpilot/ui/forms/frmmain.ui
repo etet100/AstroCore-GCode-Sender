@@ -219,9 +219,9 @@ QSlider::handle:horizontal:hover {
       <string>&amp;Panels</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuFontSize">
+    <widget class="QMenu" name="menuUIScale">
      <property name="title">
-      <string>Font size</string>
+      <string>UI scale</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuCentralWidget">
@@ -238,7 +238,7 @@ QSlider::handle:horizontal:hover {
     <addaction name="actViewLockPanels"/>
     <addaction name="separator"/>
     <addaction name="actViewDarkMode"/>
-    <addaction name="menuFontSize"/>
+    <addaction name="menuUIScale"/>
     <addaction name="menuCentralWidget"/>
    </widget>
    <widget class="QMenu" name="menuHeightmap">

@@ -14,7 +14,7 @@ What G stands for?
 *Any help is welcome!*
 
 What is G-Pilot?
------------
+----------------
 
 GRBL/uCNC controller application with G-Code visualizer written in Qt.
 
@@ -27,6 +27,12 @@ Supported functions:
 * Joystick/Joypad/Controller support.
 * Customizable interface.
 * uCNC/grblHAL virtual modes (cnc machine simulator).
+
+User Interface
+--------------
+The main user interface consists of a single window that contains all the controls needed to operate the machine. You can see the loaded program (G-code), a visualizer, machine state display, heightmap management, and all other important controls in one place. The layout is designed to be clear and easy to use, so you can quickly access every function you need.
+
+The size of interface elements can be adjusted to fit your screen resolution. You can scale the interface from 80% to 140%, which is equal to font sizes from 8 to 14. You can change the scale in the settings panel, in the `view` menu of the main window, or by using the keyboard shortcuts `Ctrl+` (to increase) or `Ctrl-` (to decrease) the scale. Scale changes take effect immediately.
 
 ## Download & Install (prerelease)
 

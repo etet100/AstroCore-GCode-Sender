@@ -80,7 +80,7 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
     this->setLocale(QLocale::C);
 
     ui->cboFpsLock->setValidator(&m_intValidator);
-    ui->cboFontSize->setValidator(&m_intValidator);
+    ui->cboUIScale->setValidator(&m_intValidator);
 
     connect(ui->jogging, &partSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
     //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &FrmSettings::onWidgetValidity);)
@@ -184,7 +184,7 @@ void FrmSettings::initializeWidgets()
     ui->txtMaxTravelZ->setValue(machine.maxTravel().z());
 
     const ConfigurationUI &ui_ = m_configuration.uiModule();
-    ui->cboFontSize->setCurrentText(QString::number(ui_.fontSize()));
+    ui->cboUIScale->setCurrentText(QString::number((int)ui_.uiScale() * 100) + "%");
     ui->cboLanguage->setCurrentIndex(ui->cboLanguage->findData(ui_.language()));
     ui->chkDarkTheme->setChecked(ui_.darkTheme());
 
@@ -275,7 +275,7 @@ void FrmSettings::applySettings()
     machine.m_maxTravel = QVector3D(ui->txtMaxTravelX->value(), ui->txtMaxTravelY->value(), ui->txtMaxTravelZ->value());
 
     ConfigurationUI &ui_ = m_configuration.uiModule();
-    ui_.m_fontSize = ui->cboFontSize->currentText().toInt();
+    ui_.m_uiScale = ui->cboUIScale->currentText().toInt() / 100.0f;
     ui_.m_language = ui->cboLanguage->currentData().toString();
     ui_.m_darkMode = ui->chkDarkTheme->isChecked();
 

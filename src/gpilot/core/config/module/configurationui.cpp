@@ -5,7 +5,7 @@
 #include "configurationui.h"
 
 const QMap<QString,QVariant> DEFAULTS = {
-    {"fontSize", 9},
+    {"uiScale", 100},
     {"language", "en"},
     {"recentFiles", QStringList{}},
     {"recentHeightmaps", QStringList{"map1.txt", "map2.txt", "map3.txt"}},

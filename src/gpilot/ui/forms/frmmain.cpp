@@ -90,7 +90,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->dockProgram->setTitleBarWidget(new DockableTitle(ui->dockProgram));
     ui->dockModification->setTitleBarWidget(new DockableTitle(ui->dockModification));
 
-    initializeFontSizeMenu();
+    initializeUiScaleMenu();
     preloadSettings();
     Utils::setVisualMode(this, m_configuration.uiModule().darkTheme());
     initializeCommunicator();
@@ -919,6 +919,16 @@ void FrmMain::on_actViewCentralVisualizer_toggled(bool checked)
 {
     Q_UNUSED(checked);
     switchCentralWidget(ui->actViewCentralVisualizer);
+}
+
+void FrmMain::decreaseUiScale()
+{
+    ThemeManager::instance().decreaseScale();
+}
+
+void FrmMain::increaseUiScale()
+{
+    ThemeManager::instance().increaseScale();
 }
 
 void FrmMain::onFileOpen(QString filePath)
@@ -2121,9 +2131,9 @@ void FrmMain::preloadSettings()
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
     ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
 
-    ThemeManager::instance().setFontSize(uiConfiguration.fontSize());
-    for (auto action : ui->menuFontSize->actions()) {
-        action->setChecked(action->property("size").toInt() == uiConfiguration.fontSize());
+    ThemeManager::instance().setScale(uiConfiguration.uiScale());
+    for (auto action : ui->menuUIScale->actions()) {
+        action->setChecked(action->property("scale").toDouble() == uiConfiguration.uiScale());
     }
 
     // Update v-sync in glformat
@@ -2276,32 +2286,30 @@ void FrmMain::restoreDockableLayoutState()
 
     // Normal window state
     restoreState(set.value("formMainState").toByteArray());
-
-    //     // Maximized window state
-    // show();
-    // qApp->processEvents();
-    // restoreState(set.value("formMainState").toByteArray());
-
-    // Setup coords textboxes
-    // @TODO do we need this here?
-    // setupCoordsTextboxes();
-
-    // Settings form geometry
-    // m_settings->restoreGeometry(set.value("formSettingsGeometry").toByteArray());
-    // m_settings->ui->splitMain->restoreState(set.value("settingsSplitMain").toByteArray());
 }
 
-void FrmMain::initializeFontSizeMenu()
+void FrmMain::updateUiScaleMenu()
+{
+    double scale = m_configuration.uiModule().uiScale();
+
+    for (auto& action : ui->menuUIScale->actions()) {
+        action->setChecked(action->property("scale").toInt() == scale);
+    }
+}
+
+void FrmMain::initializeUiScaleMenu()
 {
     QAction* action;
-    for (int i = 8; i <= 12; i++) {
-        action = ui->menuFontSize->addAction(QString::number(i) + " pt");
-        action->setProperty("size", i);
+    double scale = m_configuration.uiModule().uiScale();
+    for (int i = 80; i <= 140; i+=10) {
+        action = ui->menuUIScale->addAction(QString::number(i) + "%" + (i == 100 ? " (default)" : ""));
+        action->setProperty("scale", i);
         action->setCheckable(true);
+        action->setChecked(i == scale);
         connect(action, &QAction::triggered, this, [this](bool checked) {
             QAction* act = qobject_cast<QAction*>(sender());
             if (checked) {
-                for (auto action : ui->menuFontSize->actions()) {
+                for (auto action : ui->menuUIScale->actions()) {
                     if (action != sender()) {
                         action->setChecked(false);
                     }
@@ -2312,11 +2320,21 @@ void FrmMain::initializeFontSizeMenu()
                 return;
             }
 
-            int size = act->property("size").toInt();
-            ThemeManager::instance().setFontSize(size);
-            m_configuration.uiModule().setFontSize(size);
+            ThemeManager::instance().setScale(act->property("scale").toInt());
         });
     }
+
+    updateUiScaleMenu();
+
+    QShortcut* shortcutIncrease = new QShortcut(QKeySequence("Ctrl++"), this);
+    connect(shortcutIncrease, &QShortcut::activated, this, &FrmMain::increaseUiScale);
+    QShortcut* shortcutDecrease = new QShortcut(QKeySequence("Ctrl+-"), this);
+    connect(shortcutDecrease, &QShortcut::activated, this, &FrmMain::decreaseUiScale);
+
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](double scale){
+        m_configuration.uiModule().setUiScale(scale);
+        updateUiScaleMenu();
+    });
 }
 
 void FrmMain::saveSettings()
@@ -2466,7 +2484,7 @@ void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
     ui->program->setAutoScroll(uiConfiguration.autoScrollGCode());
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
     ThemeManager& tm = ThemeManager::instance();
-    tm.setFontSize(uiConfiguration.fontSize());
+    tm.setScale(uiConfiguration.uiScale());
     tm.setDark(uiConfiguration.darkTheme());
 }
 

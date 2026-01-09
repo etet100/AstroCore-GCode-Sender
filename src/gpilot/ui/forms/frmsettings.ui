@@ -70,9 +70,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
-         <width>624</width>
-         <height>1409</height>
+         <y>-1049</y>
+         <width>627</width>
+         <height>1431</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1359,7 +1359,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QComboBox" name="cboFontSize">
+              <widget class="QComboBox" name="cboUIScale">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -1370,7 +1370,7 @@
                 <bool>true</bool>
                </property>
                <property name="currentText">
-                <string>8</string>
+                <string>90%</string>
                </property>
                <property name="maxCount">
                 <number>10</number>
@@ -1380,27 +1380,32 @@
                </property>
                <item>
                 <property name="text">
-                 <string>8</string>
+                 <string>90%</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>9</string>
+                 <string>100% (default)</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>10</string>
+                 <string>110%</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>11</string>
+                 <string>120%</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>12</string>
+                 <string>130%</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>140%</string>
                 </property>
                </item>
               </widget>
@@ -1428,7 +1433,7 @@
              <item row="1" column="0">
               <widget class="QLabel" name="lblFontSize">
                <property name="text">
-                <string>Font size:</string>
+                <string>UI Scale</string>
                </property>
               </widget>
              </item>
