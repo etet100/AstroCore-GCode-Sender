@@ -104,6 +104,7 @@ SOURCES += main.cpp\
     core/config/persistence/json/jsonprovider.cpp \
     core/config/persistence/xml/xmlpersister.cpp \
     core/config/persistence/xml/xmlprovider.cpp \
+    core/core.cpp \
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/converter.cpp \
@@ -242,6 +243,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/persistence/xml/xmlpersister.h \
     core/config/persistence/xml/xmlprovider.h \
     core/config/registry.h \
+    core/core.h \
     core/gcode/converter/applyheightmap.h \
     core/gcode/converter/arcstolines.h \
     core/gcode/converter/converter.h \
