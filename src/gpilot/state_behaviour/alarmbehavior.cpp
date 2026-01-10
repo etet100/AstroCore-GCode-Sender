@@ -65,6 +65,19 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
         return Result::Ok;
     }
 
+    if (command == "$$") {
+        if (!cmdStatus.ok) {
+            qDebug() << "[AlarmBehavior] Error receiving device configuration.";
+
+            return Result::Ok;
+        }
+
+        qDebug() << "[AlarmBehavior] Processing device configuration.";
+        m_communicator->processDeviceConfiguration(fullResponse);
+
+        return Result::Ok;
+    }
+
     return Result::Unhandled;
 }
 
@@ -88,6 +101,10 @@ bool AlarmBehavior::doAction(const Action &action)
     switch (action.type()) {
         case Action::Type::Unlock:
             unlock();
+            return true;
+
+        case Action::Type::QueryMachineConfiguration:
+            m_communicator->queryMachineConfiguration();
             return true;
     }
 
