@@ -2237,10 +2237,6 @@ void FrmMain::restoreDockableLayoutState()
 
     ui->program->restoreHeaderState(set.value("header", QByteArray()).toByteArray());
 
-    // Restore last commands list
-    // ui->cboCommand->addItems(set.value("recentCommands", QStringList()).toStringList());
-    // ui->cboCommand->setCurrentIndex(-1);
-
     // Adjust docks width
     int w = qMax(ui->dockDevice->widget()->sizeHint().width(),
         ui->dockModification->widget()->sizeHint().width());
@@ -3271,13 +3267,6 @@ bool FrmMain::updateHeightmapGrid()
 
     return true;
 }
-
-// void FrmMain::updateHeightmapGrid(double arg1)
-// {
-//     if (sender()->property("previousValue").toDouble() != arg1 && !updateHeightmapGrid())
-//         static_cast<QDoubleSpinBox*>(sender())->setValue(sender()->property("previousValue").toDouble());
-//     else sender()->setProperty("previousValue", arg1);
-// }
 
 bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 {

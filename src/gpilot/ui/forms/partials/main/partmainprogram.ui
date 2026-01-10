@@ -126,6 +126,9 @@
          <property name="text">
           <string>Open</string>
          </property>
+         <property name="shortcut">
+          <string>Ctrl+O</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -150,7 +153,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Send</string>
+          <string>Start</string>
          </property>
         </widget>
        </item>
