@@ -406,7 +406,23 @@ void PartMainVisualizer::rotationCubeClicked()
 void PartMainVisualizer::heightmapClicked()
 {
     m_heightmapGridDrawer.toggleVisible();
-    updateBillboardsScreenPositions();
+    if (m_heightmapGridDrawer.visible()) {
+        updateBillboardsScreenPositions();
+    }
+}
+
+void PartMainVisualizer::heightmapMarkersClicked()
+{
+    if (!m_heightmapGridDrawer.visible()) {
+        // show grid too
+        m_heightmapGridDrawer.toggleVisible();
+        updateBillboardsScreenPositions();
+    } else {
+        m_heightmapGridDrawer.billboardDrawable()->toggleVisible();
+        if (m_heightmapGridDrawer.billboardDrawable()->visible()) {
+            updateBillboardsScreenPositions();
+        }
+    }
 }
 
 void PartMainVisualizer::toggleProjectionClicked()

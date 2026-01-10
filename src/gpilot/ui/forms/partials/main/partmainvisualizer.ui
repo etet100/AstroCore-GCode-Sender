@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>300</height>
+    <height>314</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -430,7 +430,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="StyledToolButton" name="styledToolButton">
+       <widget class="StyledToolButton" name="cmdLeft">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -524,6 +524,32 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
           <normaloff>:/images/visualizer_tool.png</normaloff>:/images/visualizer_tool.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="StyledToolButton" name="cmdToggleHeightmapMarkers">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle heightmap markers</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer/visualizer_grid_markers.svg</normaloff>:/images/visualizer/visualizer_grid_markers.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -703,7 +729,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    </hints>
   </connection>
   <connection>
-   <sender>styledToolButton</sender>
+   <sender>cmdLeft</sender>
    <signal>clicked()</signal>
    <receiver>partMainVisualizer</receiver>
    <slot>leftClicked()</slot>
@@ -734,6 +760,22 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmdToggleHeightmapMarkers</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>heightmapMarkersClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>301</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>117</x>
+     <y>296</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>fitClicked()</slot>
@@ -747,5 +789,6 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
   <slot>rightClicked()</slot>
   <slot>_2dClicked()</slot>
   <slot>toggleToolClicked()</slot>
+  <slot>heightmapMarkersClicked()</slot>
  </slots>
 </ui>

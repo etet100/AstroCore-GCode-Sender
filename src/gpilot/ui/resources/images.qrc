@@ -60,5 +60,21 @@
         <file>../images/dockable_close.png</file>
         <file>../images/dockable_undock.png</file>
         <file>../images/dockable_dock.png</file>
+        <file>../images/visualizer/visualizer_grid.svg</file>
+        <file>../images/visualizer/visualizer_grid_markers.svg</file>
+        <file>../images/visualizer/visualizer_boundaries.svg</file>
+        <file>../images/visualizer/visualizer_cube_hidden.svg</file>
+        <file>../images/visualizer/visualizer_cube_visible.svg</file>
+        <file>../images/visualizer/visualizer_front_view.svg</file>
+        <file>../images/visualizer/visualizer_iso_view.svg</file>
+        <file>../images/visualizer/visualizer_left_view.svg</file>
+        <file>../images/visualizer/visualizer_markers.svg</file>
+        <file>../images/visualizer/visualizer_origin.svg</file>
+        <file>../images/visualizer/visualizer_overlay_text.svg</file>
+        <file>../images/visualizer/visualizer_perspective.svg</file>
+        <file>../images/visualizer/visualizer_right_view.svg</file>
+        <file>../images/visualizer/visualizer_top_view.svg</file>
+        <file>../images/visualizer/visualizer_tool.svg</file>
+        <file>../images/visualizer/visualizer_gcode.svg</file>
     </qresource>
 </RCC>

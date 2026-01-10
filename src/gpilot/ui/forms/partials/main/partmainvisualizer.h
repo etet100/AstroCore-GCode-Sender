@@ -129,6 +129,7 @@ class PartMainVisualizer : public QWidget
         void isometricClicked();
         void rotationCubeClicked();
         void heightmapClicked();
+        void heightmapMarkersClicked();
         void toggleProjectionClicked();
         void fitClicked();
         void _2dClicked();
