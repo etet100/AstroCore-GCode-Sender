@@ -256,7 +256,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
     connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
-        ui->heightmap->setHeightmapBorderRect(ui->visualizer->getCodeDrawerBounds());
+        ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
     });
     connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::on_actFileNew_triggered);
     connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
@@ -266,6 +266,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         ui->visualizer->showHeightmapBorder(drawers.border);
         ui->visualizer->showHeightmapProbeGrid(drawers.grid);
         ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
+    });
+    connect(ui->heightmap, &PartMainHeightmap::areaChanged, this, [this](QRectF area) {
+        if (area != m_heightmap.area()) {
+            m_heightmap.setArea(area);
+            ui->visualizer->updateHeightmap();
+        }
     });
 
     connect(ui->overrides, &PartMainOverride::overrideChanged, this, &FrmMain::onOverrideChanged);
@@ -2963,7 +2969,7 @@ void FrmMain::resetHeightmap()
     ui->program->setHeightMapModel(NULL);
     ui->program->resizeHeightmapModel(1, 1);
 
-    ui->heightmap->fileClosed();
+    ui->heightmap->resetOpenFile();
 
     FilesManager& fm = FilesManager::instance();
     fm.resetHeightmapFile();

@@ -25,12 +25,12 @@ class PartMainHeightmap : public QWidget
         bool useMap();
         bool showInterpolationGrid();
         void setGridUpdateEnabled();
-        void fileClosed();
+        void resetOpenFile();
         void resetUseHeighmap();
         void updateControlsState(bool mainState, bool heightmapMode);
         void setOpenFile(QString filePath);
         QRectF areaRectFromTextboxes();
-        void setHeightmapBorderRect(QRectF);
+        void setHeightmapAreaRect(QRectF area);
 
         struct VisualizationDrawers {
             bool border;
@@ -45,13 +45,13 @@ class PartMainHeightmap : public QWidget
 
     signals:
         void extremesRequired();
-        void areaChanged(QRectF);
-        void showVisualizationChanged(VisualizationDrawers drawers);
+        void areaChanged(QRectF area);
+        void showVisualizationChanged(PartMainHeightmap::VisualizationDrawers drawers);
         void newHeightmapRequested();
         void loadHeightmapRequested();
         void useHeightmapToggled(bool checked);
         void heightmapModeToggled(bool checked);
-        void gridParametersChanged(QPoint gridStart, MinMax zMinMax, int probeFeed, QPoint interpolationStep);
+        void gridParametersChanged(QPoint gridStart, PartMainHeightmap::MinMax zMinMax, int probeFeed, QPoint interpolationStep);
 
     private slots:
         void on_chkShowArea_toggled(bool checked);

@@ -43,7 +43,8 @@ class Heightmap
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
         QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
-        QRectF mapArea() const { return m_mapArea; }
+        QRectF area() const { return QRectF(m_startPos, m_endPos); }
+        void setArea(QRectF area);
         MinMax valuesMinMax() const { return m_valuesMinMax; }
         BottomTop zBottomTop() const { return m_zBottomTop; }
         int probeFeed() const { return m_probeFeed; }
@@ -63,7 +64,7 @@ class Heightmap
         QPointF m_endPos;
         QSizeF m_stepSize;
         QSizeF m_interpolationStepSize;
-        QRectF m_mapArea;
+        // QRectF m_mapArea;
         BottomTop m_zBottomTop = {NAN, NAN};
         MinMax m_valuesMinMax = {NAN, NAN};
         int m_probeFeed = 100;

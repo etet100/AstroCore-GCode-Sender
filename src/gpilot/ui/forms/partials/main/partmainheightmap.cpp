@@ -99,7 +99,7 @@ void PartMainHeightmap::setGridUpdateEnabled()
     ui->txtGridZTop->setEnabled(true);
 }
 
-void PartMainHeightmap::fileClosed()
+void PartMainHeightmap::resetOpenFile()
 {
     ui->txtHeightMapName->setText("");
 }
@@ -128,9 +128,15 @@ void PartMainHeightmap::on_cmdAreaFromGCode_clicked()
     emit extremesRequired();
 }
 
-void PartMainHeightmap::setHeightmapBorderRect(QRectF rect)
+void PartMainHeightmap::setHeightmapAreaRect(QRectF rect)
 {
-    if (!qIsNaN(rect.width()) && !qIsNaN(rect.height())) {
+    if (qIsNaN(rect.width()) || qIsNaN(rect.height())) {
+        return;
+    }
+
+    {
+        QSignalBlocker blocker(this);
+
         // WH
         ui->txtAreaX->setValue(rect.x());
         ui->txtAreaY->setValue(rect.y());
@@ -142,6 +148,8 @@ void PartMainHeightmap::setHeightmapBorderRect(QRectF rect)
         ui->txtAreaX2->setValue(rect.x() + rect.width());
         ui->txtAreaY2->setValue(rect.y() + rect.height());
     }
+
+    emit areaChanged(rect);
 }
 
 void PartMainHeightmap::on_txtGridX_valueChanged(double arg1)
@@ -216,16 +224,20 @@ void PartMainHeightmap::on_cmdNew_clicked()
 
 void PartMainHeightmap::onAreaChanged()
 {
-    if (ui->chkAreaWidthHeight->isChecked()) {
-        ui->txtAreaX1->setValue(ui->txtAreaX->value());
-        ui->txtAreaY1->setValue(ui->txtAreaY->value());
-        ui->txtAreaX2->setValue(ui->txtAreaX->value() + ui->txtAreaWidth->value());
-        ui->txtAreaY2->setValue(ui->txtAreaY->value() + ui->txtAreaHeight->value());
-    } else {
-        ui->txtAreaX->setValue(ui->txtAreaX1->value());
-        ui->txtAreaY->setValue(ui->txtAreaY1->value());
-        ui->txtAreaWidth->setValue(ui->txtAreaX2->value() -  ui->txtAreaX1->value());
-        ui->txtAreaHeight->setValue(ui->txtAreaY2->value() -  ui->txtAreaY1->value());
+    {
+        QSignalBlocker blocker(this);
+
+        if (ui->chkAreaWidthHeight->isChecked()) {
+            ui->txtAreaX1->setValue(ui->txtAreaX->value());
+            ui->txtAreaY1->setValue(ui->txtAreaY->value());
+            ui->txtAreaX2->setValue(ui->txtAreaX->value() + ui->txtAreaWidth->value());
+            ui->txtAreaY2->setValue(ui->txtAreaY->value() + ui->txtAreaHeight->value());
+        } else {
+            ui->txtAreaX->setValue(ui->txtAreaX1->value());
+            ui->txtAreaY->setValue(ui->txtAreaY1->value());
+            ui->txtAreaWidth->setValue(ui->txtAreaX2->value() -  ui->txtAreaX1->value());
+            ui->txtAreaHeight->setValue(ui->txtAreaY2->value() -  ui->txtAreaY1->value());
+        }
     }
 
     emit areaChanged(areaRectFromTextboxes());

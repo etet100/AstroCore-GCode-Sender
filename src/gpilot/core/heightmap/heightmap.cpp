@@ -66,7 +66,17 @@ bool Heightmap::isInside(QPointF ptMm) const
            ptMm.y() >= m_startPos.y() && ptMm.y() <= m_endPos.y();
 }
 
-QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const {
+// Change area, keep grid size the same
+void Heightmap::setArea(QRectF area)
+{
+    m_startPos = area.topLeft();
+    m_stepSize = QSizeF(area.width() / (float) (m_size.width() - 1), area.height() / (float) (m_size.height() - 1));
+    updateEndPos();
+    // reset();
+}
+
+QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const
+{
     int i = static_cast<int>((ptMm.x() - m_startPos.x()) / m_stepSize.width());
     int j = static_cast<int>((ptMm.y() - m_startPos.y()) / m_stepSize.height());
 

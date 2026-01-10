@@ -218,6 +218,9 @@
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
              </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
              </property>
@@ -239,6 +242,9 @@
              </property>
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+             </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
              </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
@@ -271,6 +277,9 @@
              </property>
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+             </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
              </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
@@ -308,6 +317,9 @@
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
              </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
              </property>
@@ -324,6 +336,9 @@
         </item>
         <item>
          <widget class="QWidget" name="fraAreaX1X2" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <layout class="QGridLayout" name="layAreaX1X2">
            <property name="leftMargin">
             <number>0</number>
@@ -358,6 +373,9 @@
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
              </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
              </property>
@@ -379,6 +397,9 @@
              </property>
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+             </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
              </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
@@ -411,6 +432,9 @@
              </property>
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+             </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
              </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
@@ -447,6 +471,9 @@
              </property>
              <property name="buttonSymbols">
               <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+             </property>
+             <property name="keyboardTracking">
+              <bool>false</bool>
              </property>
              <property name="minimum">
               <double>-9999.000000000000000</double>
@@ -530,6 +557,9 @@
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
             </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
+            </property>
             <property name="decimals">
              <number>0</number>
             </property>
@@ -558,6 +588,9 @@
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
             </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
+            </property>
             <property name="minimum">
              <double>-999.000000000000000</double>
             </property>
@@ -582,6 +615,9 @@
             </property>
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="minimum">
              <double>-999.000000000000000</double>
@@ -622,6 +658,9 @@
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
             </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
+            </property>
             <property name="decimals">
              <number>0</number>
             </property>
@@ -656,6 +695,9 @@
             </property>
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="decimals">
              <number>0</number>
@@ -741,6 +783,9 @@
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
             </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
+            </property>
             <property name="decimals">
              <number>0</number>
             </property>
@@ -768,6 +813,9 @@
             </property>
             <property name="buttonSymbols">
              <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="decimals">
              <number>0</number>
@@ -805,6 +853,16 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <item>
+             <property name="text">
+              <string>Linear</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bilinear</string>
+             </property>
+            </item>
             <item>
              <property name="text">
               <string>Bicubic</string>
