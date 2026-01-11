@@ -26,7 +26,6 @@ PartMainProgram::PartMainProgram(QWidget* parent)
 
 PartMainProgram::~PartMainProgram()
 {
-    delete m_programModel;
     delete m_probeModel;
     delete m_programHeightmapModel;
     delete m_heightmapModel;
@@ -58,34 +57,24 @@ void PartMainProgram::setupUi()
 void PartMainProgram::setupTableContextMenu()
 {
     m_tableMenu = new QMenu(this);
-    m_tableMenu->addAction(tr("&Insert line"), this, SLOT(onInsertLineTriggered()), QKeySequence(Qt::Key_Insert));
-    m_tableMenu->addAction(tr("&Delete lines"), this, SLOT(onDeleteLinesTriggered()), QKeySequence(Qt::Key_Delete));
+    m_tableMenu->addAction(tr("&Insert lines"), QKeySequence(Qt::Key_Insert), this, SLOT(onInsertLinesTriggered()));
+    m_tableMenu->addAction(tr("&Insert lines after"), QKeySequence(Qt::Key_Insert), this, SLOT(onInsertLinesAfterTriggered()));
+    m_tableMenu->addAction(tr("&Delete selected"), QKeySequence(Qt::Key_Delete), this, SLOT(onDeleteSelectedTriggered()));
+    m_tableMenu->addAction(tr("&Edit selected"), QKeySequence("E"), this, SLOT(onEditSelectedTriggered()));
 }
 
-void PartMainProgram::setProgramModel(QAbstractItemModel* model)
+void PartMainProgram::setProgram(GCode* program)
 {
-    ui->tblProgram->setModel(model);
-
-    // Setup table columns after model is set
-    if (model) {
-        ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-        ui->tblProgram->hideColumn(4);
-        ui->tblProgram->hideColumn(5);
-    }
-
-    if (ui->tblProgram->selectionModel()) {
-        connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &PartMainProgram::currentChanged);
-    }
+    m_programModel.setProgram(program);
+    m_probeModel = new GCodeTableModel(program, this);
+    m_programHeightmapModel = new GCodeTableModel(program, this);
 }
 
-void PartMainProgram::setProgramItemDelegate(QAbstractItemDelegate* delegate)
+void PartMainProgram::setHeightmap(Heightmap* heightmap)
 {
-    ui->tblProgram->setItemDelegate(delegate);
-}
+    m_heightmapModel = new HeightmapTableModel(heightmap, this);
+    ui->tblHeightMap->setModel(m_heightmapModel);
 
-void PartMainProgram::setHeightMapModel(QAbstractItemModel* model)
-{
-    ui->tblHeightMap->setModel(model);
     // Logic from FrmMain for heightmap table header
     if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize() * ui->tblHeightMap->horizontalHeader()->count() < width()) {
          ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -255,18 +244,31 @@ void PartMainProgram::setupFileSendMenu(QObject* receiver, const char* sendFromL
     menu->addAction(tr("Send from current line"), receiver, sendFromLineSlot);
 }
 
-void PartMainProgram::onInsertLineTriggered()
+void PartMainProgram::insertLines(bool before)
 {
-    QModelIndexList selectedRows = getSelectedRows();
-    if (selectedRows.isEmpty()) return;
+    QModelIndex current = ui->tblProgram->currentIndex();
 
-    emit insertLineRequested();
+    emit insertLinesRequested(current.row(), before);
+
+    selectRow(current.row() + (before ? 0 : 1));
 }
 
-void PartMainProgram::onDeleteLinesTriggered()
+void PartMainProgram::onEditSelectedTriggered()
 {
-    QModelIndexList selectedRows = getSelectedRows();
-    if (selectedRows.isEmpty()) {
+    SelRange range = getSelectedRange();
+    if (!range.count) {
+        return;
+    }
+
+    emit editLinesRequested(range.from, range.to);
+
+    selectRow(range.from);
+}
+
+void PartMainProgram::onDeleteSelectedTriggered()
+{
+    SelRange range = getSelectedRange();
+    if (!range.count) {
         return;
     }
 
@@ -274,7 +276,9 @@ void PartMainProgram::onDeleteLinesTriggered()
         return;
     }
 
-    emit deleteLinesRequested();
+    emit deleteLinesRequested(range.from, range.to);
+
+    selectRow(range.from);
 }
 
 void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
@@ -284,26 +288,64 @@ void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
     int selectedRow = hasSelection ? selectedRows[0].row() : -1;
     int totalRows = ui->tblProgram->model() ? ui->tblProgram->model()->rowCount() : 0;
 
+    // 0 - Insert (before)
+    // 1 - Insert after
+    // 2 - Delete selected
+    // 3 - Edit selected
     if (hasSelection) {
         m_tableMenu->actions().at(0)->setEnabled(true);
-        m_tableMenu->actions().at(1)->setEnabled(selectedRow != totalRows - 1);
+        m_tableMenu->actions().at(1)->setEnabled(true);
+        m_tableMenu->actions().at(3)->setEnabled(true);
+        // Do not delete last row (placeholder for new line)
+        m_tableMenu->actions().at(2)->setEnabled(selectedRow != totalRows - 1);
     } else {
-        m_tableMenu->actions().at(0)->setEnabled(false);
         m_tableMenu->actions().at(1)->setEnabled(false);
+        m_tableMenu->actions().at(2)->setEnabled(false);
+        m_tableMenu->actions().at(3)->setEnabled(false);
     }
+
     m_tableMenu->popup(ui->tblProgram->viewport()->mapToGlobal(pos));
+}
+
+void PartMainProgram::onInsertLinesTriggered()
+{
+    insertLines(true);
+}
+
+void PartMainProgram::onInsertLinesAfterTriggered()
+{
+    insertLines(false);
 }
 
 QModelIndexList PartMainProgram::getSelectedRows() const
 {
-    if (ui->tblProgram->selectionModel())
+    if (ui->tblProgram->selectionModel()) {
         return ui->tblProgram->selectionModel()->selectedRows();
+    }
+
     return QModelIndexList();
+}
+
+PartMainProgram::SelRange PartMainProgram::getSelectedRange() const
+{
+    QModelIndexList rows = getSelectedRows();
+    SelRange range = { -1, -1, 0 };
+
+    if (rows.isEmpty()) {
+        return range;
+    }
+
+    range.from = rows.first().row();
+    range.to = rows.last().row();
+    range.count = range.to - range.from + 1;
+
+    return range;
 }
 
 int PartMainProgram::getFirstSelectedRow() const
 {
     QModelIndexList rows = getSelectedRows();
+
     return rows.isEmpty() ? -1 : rows[0].row();
 }
 
@@ -384,24 +426,32 @@ void PartMainProgram::onScrollBarAction(int action)
 
 void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
 {
-    if (!program || !heightmap) return;
 
     // Initialize models with data sources
-    m_programModel = new GCodeTableModel(*program, this);
-    m_probeModel = new GCodeTableModel(*program, this);
-    m_programHeightmapModel = new GCodeTableModel(*program, this);
-    m_heightmapModel = new HeightmapTableModel(*heightmap, this);
+    if (program) {
+        setProgram(program);
+    }
+    if (heightmap) {
+        setHeightmap(heightmap);
+    }
 
-    m_currentModel = m_programModel;
+    m_currentModel = &m_programModel;
 
     // Connect model signals
-    connect(m_programModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
-    connect(m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
-    connect(m_probeModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
-    connect(m_heightmapModel, &HeightmapTableModel::dataChangedByUserInput, this, &PartMainProgram::heightmapDataChangedByUser);
+    // connect(m_programModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    // connect(m_programHeightmapModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    // connect(m_probeModel, &QAbstractItemModel::dataChanged, this, &PartMainProgram::modelDataChanged);
+    // connect(m_heightmapModel, &HeightmapTableModel::dataChangedByUserInput, this, &PartMainProgram::heightmapDataChangedByUser);
+
+    connect(program, &GCode::loaded, this, [this]() {
+        m_programModel.update();
+    });
+    connect(program, &GCode::linesUpdated, this, [this]() {
+        m_programModel.update();
+    });
 
     // Set models to UI
-    ui->tblProgram->setModel(m_programModel);
+    ui->tblProgram->setModel(&m_programModel);
     ui->tblProgram->setItemDelegate(&m_programItemDelegate);
     ui->tblHeightMap->setModel(m_heightmapModel);
 
@@ -415,13 +465,6 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
         connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &PartMainProgram::currentChanged);
     }
 }
-
-// void PartMainProgram::setCurrentModel(GCodeTableModel* model)
-// {
-//     if (m_currentModel == model) return;
-//     m_currentModel = model;
-//     ui->tblProgram->setModel(model);
-// }
 
 void PartMainProgram::insertRowInCurrentModel(int row)
 {
@@ -459,43 +502,40 @@ void PartMainProgram::setCurrentModelData(const QModelIndex& index, const QVaria
     }
 }
 
-void PartMainProgram::setProgramModelCommentsVisible(bool visible)
+void PartMainProgram::setProgramCommentsVisible(bool visible)
 {
-    m_programModel->setCommentsVisible(visible);
+    m_programModel.setCommentsVisible(visible);
 }
 
 // Program model operations
 void PartMainProgram::clearProgramModel()
 {
-    if (m_programModel) {
-        m_programModel->clear();
-    }
+    m_programModel.clear();
 }
 
 void PartMainProgram::addProgramModelRow()
 {
-    if (m_programModel) {
-        m_programModel->insertRow(m_programModel->rowCount());
-    }
+    m_programModel.insertRow(m_programModel.rowCount());
 }
 
 int PartMainProgram::programModelRowCount() const
 {
-    return m_programModel ? m_programModel->rowCount() : 0;
+    return m_programModel.rowCount();
 }
 
 void PartMainProgram::insertProgramModelRow(int row)
 {
-    if (m_programModel) {
-        m_programModel->insertRow(row);
-    }
+    m_programModel.insertRow(row);
 }
 
 void PartMainProgram::switchToProgramModel()
 {
-    if (m_currentModel == m_programModel) return;
-    m_currentModel = m_programModel;
-    ui->tblProgram->setModel(m_programModel);
+    if (m_currentModel == &m_programModel) {
+        return;
+    }
+
+    m_currentModel = &m_programModel;
+    ui->tblProgram->setModel(&m_programModel);
 }
 
 // Probe model operations
@@ -576,11 +616,6 @@ QVariant PartMainProgram::heightmapModelData(int row, int column, int role) cons
     return QVariant();
 }
 
-HeightmapTableModel* PartMainProgram::getHeightmapModelForInterpolation()
-{
-    return m_heightmapModel;
-}
-
 // ProgramHeightmap model operations
 void PartMainProgram::clearProgramHeightmapModel()
 {
@@ -592,7 +627,7 @@ void PartMainProgram::clearProgramHeightmapModel()
 // Current model operations
 bool PartMainProgram::isCurrentModelProgramModel() const
 {
-    return m_currentModel == m_programModel;
+    return m_currentModel == &m_programModel;
 }
 
 int PartMainProgram::getCurrentModelFilteredIndex(int index) const

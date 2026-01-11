@@ -2,7 +2,6 @@
 #define PARTMAINPROGRAM_H
 
 #include <QWidget>
-#include <QAbstractItemModel>
 #include <QAbstractItemDelegate>
 #include <QAbstractItemView>
 #include <QModelIndex>
@@ -26,10 +25,8 @@ class PartMainProgram : public QWidget
         ~PartMainProgram();
 
         void initialize(GCode* program, Heightmap* heightmap);
-
-        void setProgramModel(QAbstractItemModel* model);
-        void setProgramItemDelegate(QAbstractItemDelegate* delegate);
-        void setHeightMapModel(QAbstractItemModel* model);
+        void setProgram(GCode* program);
+        void setHeightmap(Heightmap* heigtmap);
 
         // High-level model operations
         // Program model operations
@@ -52,7 +49,6 @@ class PartMainProgram : public QWidget
         void resizeHeightmapModel(int rows, int cols);
         bool hasHeightmapData() const;
         QVariant heightmapModelData(int row, int column, int role = Qt::DisplayRole) const;
-        HeightmapTableModel* getHeightmapModelForInterpolation(); // Temporary for Interpolation
 
         // ProgramHeightmap model operations
         void clearProgramHeightmapModel();
@@ -68,7 +64,7 @@ class PartMainProgram : public QWidget
         void setCurrentModelData(const QModelIndex& index, const QVariant& value);
         // void clearProgramHeightmapModel();
         // void clearHeightmapModel();
-        void setProgramModelCommentsVisible(bool visible);
+        void setProgramCommentsVisible(bool visible);
 
         void setAutoScroll(bool enabled);
         bool isAutoScroll() const;
@@ -105,9 +101,6 @@ class PartMainProgram : public QWidget
 
         // void setupFileOpenMenu(QObject* receiver, const char* openGCodeSlot, const char* openHeightmapSlot);
         void setupFileSendMenu(QObject* receiver, const char* sendFromLineSlot);
-        QModelIndexList getSelectedRows() const;
-        int getFirstSelectedRow() const;
-        void selectRow(int row);
         void setRecentFiles(QStringList files);
 
     signals:
@@ -120,9 +113,10 @@ class PartMainProgram : public QWidget
         void currentChanged(const QModelIndex& current, const QModelIndex& previous);
         void hideCommentsChanged(bool checked);
         void manualScrollRequested();
-        void insertLineRequested();
-        void deleteLinesRequested();
-        void modelDataChanged(QModelIndex i1, QModelIndex i2);
+        void insertLinesRequested(int current, bool before);
+        void editLinesRequested(int from, int to);
+        void deleteLinesRequested(int from, int to);
+        // void modelDataChanged(QModelIndex i1, QModelIndex i2);
         void heightmapDataChangedByUser();
 
     protected:
@@ -138,15 +132,23 @@ class PartMainProgram : public QWidget
         void pauseClicked(bool checked = false);
         void openRecentFile();
         void onTableContextMenuRequested(const QPoint& pos);
-        void onInsertLineTriggered();
-        void onDeleteLinesTriggered();
+        void onInsertLinesTriggered();
+        void onInsertLinesAfterTriggered();
+        void onDeleteSelectedTriggered();
+        void onEditSelectedTriggered();
 
     private:
         Ui::PartMainProgram* ui;
         QMenu* m_tableMenu;
 
+        struct SelRange {
+            int from;
+            int to;
+            int count;
+        };
+
         // Table models
-        GCodeTableModel* m_programModel;
+        GCodeTableModel m_programModel;
         GCodeTableModel* m_probeModel;
         GCodeTableModel* m_programHeightmapModel;
         GCodeTableModel* m_currentModel;
@@ -156,6 +158,11 @@ class PartMainProgram : public QWidget
         void setupUi();
         void setupTableContextMenu();
         void resizeHeightMapSections();
+        void selectRow(int row);
+        QModelIndexList getSelectedRows() const;
+        SelRange getSelectedRange() const;
+        int getFirstSelectedRow() const;
+        void insertLines(bool before);
 };
 
 #endif // PARTMAINPROGRAM_H

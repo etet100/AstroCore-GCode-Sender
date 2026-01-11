@@ -3,10 +3,14 @@
 
 #include "heightmaptablemodel.h"
 
-HeightmapTableModel::HeightmapTableModel(Heightmap &data, QObject *parent)
+HeightmapTableModel::HeightmapTableModel(Heightmap* data, QObject* parent)
     : QAbstractTableModel(parent)
 {
     // m_data.append(QVector<double>());
+}
+
+void HeightmapTableModel::setHeightmap(Heightmap* heightmap)
+{
 }
 
 void HeightmapTableModel::resize(int cols, int rows)

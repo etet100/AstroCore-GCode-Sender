@@ -4,13 +4,13 @@
 
 #include "gcodetablemodel.h"
 
-GCodeTableModel::GCodeTableModel(GCode &data, QObject *parent) :
+GCodeTableModel::GCodeTableModel(GCode* data, QObject *parent) :
     QAbstractTableModel(parent),
     m_data(data)
 {
     m_headers << tr("#") << tr("Command") << tr("State") << tr("Response") << tr("Line") << tr("Args");
 
-    connect(&data, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+    connect(data, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
         emit dataChanged(
             index(toFilteredIndex(fromLine), 0),
             index(toFilteredIndex(toLine), columnCount() - 1));
@@ -27,8 +27,8 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
     if (m_filtered) {
         rowNumber = m_filteredRows[index.row()];
     }
-    GCodeItem item = m_data[rowNumber];
 
+    GCodeItem& item = m_data->at(rowNumber);
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         switch ((GCodeTableColumn)index.column())
         {
@@ -76,14 +76,16 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
 bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (index.isValid() && role == Qt::EditRole) {
+        int row = index.row();
+        GCodeItem& item = m_data->at(row);
         switch ((GCodeTableColumn)index.column())
         {
             case GCodeTableColumn::Number: return false;
-            case GCodeTableColumn::Command: m_data[index.row()].command = value.toString(); break;
+            case GCodeTableColumn::Command: item.command = value.toString(); break;
             // case 2: m_data[index.row()].state = value.toInt(); break;
-            case GCodeTableColumn::Response: m_data[index.row()].response = value.toString(); break;
-            case GCodeTableColumn::Line: m_data[index.row()].lineNumber = value.toInt(); break;
-            case GCodeTableColumn::Args: m_data[index.row()].args = value.toStringList(); break;
+            case GCodeTableColumn::Response: item.response = value.toString(); break;
+            case GCodeTableColumn::Line: item.lineNumber = value.toInt(); break;
+            case GCodeTableColumn::Args: item.args = value.toStringList(); break;
         }
         emit dataChanged(index, index);
 
@@ -93,12 +95,22 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
     return false;
 }
 
+void GCodeTableModel::setProgram(GCode* data)
+{
+    beginResetModel();
+    m_data = data;
+    m_filteredRows.clear();
+    m_allRowsToFiltered.clear();
+    m_filtered = false;
+    endResetModel();
+}
+
 bool GCodeTableModel::insertRow(int row, const QModelIndex &parent)
 {
     if (row > rowCount()) return false;
 
     beginInsertRows(parent, row, row);
-    m_data.insert(row, GCodeItem());
+    m_data->insert(row, GCodeItem());
     endInsertRows();
 
     return true;
@@ -106,10 +118,8 @@ bool GCodeTableModel::insertRow(int row, const QModelIndex &parent)
 
 bool GCodeTableModel::removeRow(int row, const QModelIndex &parent)
 {
-    //if (!index(row, 0).isValid()) return false;
-
     beginRemoveRows(parent, row, row);
-    m_data.removeAt(row);
+    m_data->removeAt(row);
     endRemoveRows();
 
     return true;
@@ -118,7 +128,7 @@ bool GCodeTableModel::removeRow(int row, const QModelIndex &parent)
 bool GCodeTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     beginRemoveRows(parent, row, row + count - 1);
-    m_data.erase(row, row + count);
+    m_data->erase(row, row + count);
     endRemoveRows();
 
     return true;
@@ -127,7 +137,13 @@ bool GCodeTableModel::removeRows(int row, int count, const QModelIndex &parent)
 void GCodeTableModel::clear()
 {
     beginResetModel();
-    m_data.clear();
+    m_data->clear();
+    endResetModel();
+}
+
+void GCodeTableModel::update()
+{
+    beginResetModel();
     endResetModel();
 }
 
@@ -135,7 +151,7 @@ int GCodeTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
 
-    return m_filtered ? m_filteredRows.size() : m_data.count();
+    return m_filtered ? m_filteredRows.size() : m_data->count();
 }
 
 int GCodeTableModel::columnCount(const QModelIndex &parent) const
@@ -186,7 +202,7 @@ void GCodeTableModel::prepareNoCommentFilter()
     m_allRowsToFiltered.clear();
     int i = 0;
     int k = 0;
-    for (auto& row : m_data) {
+    for (auto& row : *m_data) {
         if (row.group != GCodeItemGroup::Comment) {
             k = m_filteredRows.size();
             m_filteredRows.append(i);
@@ -198,7 +214,7 @@ void GCodeTableModel::prepareNoCommentFilter()
     // qDebug() << m_filteredRows;
     // qDebug() << m_allRowsToFiltered;
 
-    assert(m_data.count() == m_allRowsToFiltered.count());
+    assert(m_data->count() == m_allRowsToFiltered.count());
 
     m_filtered = true;
 }

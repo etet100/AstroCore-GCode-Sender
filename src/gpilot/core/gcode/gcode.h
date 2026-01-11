@@ -75,11 +75,17 @@ class GCode : public QObject
         void setCommandResponse(int commandIndex, bool success, QString response);
         void setCommandSkipped();
         GCodeItem& operator [] (int index) { return m_data[index]; }
+        GCodeItem& at(int index) { return m_data[index]; }
         int count() { return m_data.count(); }
         bool empty() { return m_data.isEmpty(); }
         void clear() { m_data.clear(); }
+        void insertLines(int, QString text);
+        void deleteLines(int from, int to);
+        QString linesAsText(int from, int to);
+        void replaceLinesFromText(int from, int to, QString text);
         GCode& operator << (const GCodeItem& item) {
             m_data.append(item);
+            emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
 
             return *this;
         }
@@ -87,6 +93,8 @@ class GCode : public QObject
             for (const GCodeItem& item : source.m_data) {
                 m_data.append(item);
             }
+            emit loaded();
+
             return *this;
         }
         void reserve(int size) { m_data.reserve(size); }
@@ -121,6 +129,7 @@ class GCode : public QObject
     signals:
         void progressChanged(int progress);
         void linesUpdated(int fromLine, int toLine);
+        void loaded();
         void finished();
         void paused();
         void error();

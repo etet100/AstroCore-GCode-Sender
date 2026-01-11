@@ -165,8 +165,9 @@ private slots:
     void onStateBehaviorChanged(StateBehavior *sb);
 
     void onTimerConnection();
-    void programInsertLine();
-    void programDeleteLines();
+    void programInsertLines(int current, bool before);
+    void programDeleteLines(int from, int to);
+    void programEditLines(int from, int to);
     void onTableCellChanged(QModelIndex i1, QModelIndex i2);
     void onTableCurrentChanged(QModelIndex idx1, QModelIndex idx2);
     void onOverrideChanged(bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle);
@@ -178,7 +179,7 @@ private slots:
     void onDockTopLevelChanged(bool topLevel);
     // void onVisualizerCursorPosChanged(QPointF);
     // void onProgramLinesUpdated(int from, int to);
-    void updateHeightmapInterpolationDrawer(bool reset = false);
+    // void updateHeightmapInterpolationDrawer(bool reset = false);
     void onHeightmapDataChangedByUser();
 
 protected:

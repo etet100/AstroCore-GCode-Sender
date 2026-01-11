@@ -123,6 +123,39 @@ void GCode::setCommandSkipped()
     addUpdatedRange(m_commandIndex);
 }
 
+void GCode::insertLines(int at, QString text)
+{
+    // @TODO Implement
+
+    emit linesUpdated(0, m_data.count() - 1);
+}
+
+void GCode::deleteLines(int from, int to)
+{
+    m_data.erase(m_data.begin() + from, m_data.begin() + to + 1);
+
+    addUpdatedRange(from);
+    // All lines after 'to' are also updated because their indices have changed
+    emit linesUpdated(from, m_data.count() - 1);
+}
+
+QString GCode::linesAsText(int from, int to)
+{
+    QStringList lines;
+    for (int i = from; i <= to; i++) {
+        lines.append(m_data[i].command);
+    }
+
+    return lines.join("\n");
+}
+
+void GCode::replaceLinesFromText(int from, int to, QString text)
+{
+    // @TODO Implement
+
+    emit linesUpdated(from, to);
+}
+
 void GCode::onLinesUpdatedTimer()
 {
     if (m_linesUpdatedTo == INT_MIN) {

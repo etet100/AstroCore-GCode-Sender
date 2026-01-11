@@ -12,7 +12,8 @@ class HeightmapTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit HeightmapTableModel(Heightmap &data, QObject *parent = 0);
+    explicit HeightmapTableModel(Heightmap* data, QObject *parent = 0);
+    void setHeightmap(Heightmap* heightmap);
 
     void resize(int cols, int rows);
 

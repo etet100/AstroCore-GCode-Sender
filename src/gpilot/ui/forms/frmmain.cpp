@@ -27,6 +27,7 @@
 #include "ui/forms/partials/main/partmaincontrol.h"
 #include "ui/forms/partials/main/partmainvirtualsettings.h"
 #include "ui/forms/modals/dlgeditheightmappoint.h"
+#include "ui/forms/modals/dlgeditprogram.h"
 #include "ui/utils/thememanager.h"
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
@@ -141,7 +142,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->program, &PartMainProgram::hideCommentsChanged, this, [this](bool checked) {
-        ui->program->setProgramModelCommentsVisible(!checked);
+        ui->program->setProgramCommentsVisible(!checked);
     });
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         clearRecentFiles();
@@ -315,7 +316,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->program->initialize(&m_program, &m_heightmap);
 
     // Connect model signals from PartMainProgram
-    connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
+    // connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
     connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
     // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
 
@@ -324,8 +325,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             ui->program->setAutoScroll(false);
     });
     connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    connect(ui->program, &PartMainProgram::insertLineRequested, this, &FrmMain::programInsertLine);
+    connect(ui->program, &PartMainProgram::insertLinesRequested, this, &FrmMain::programInsertLines);
     connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::programDeleteLines);
+    connect(ui->program, &PartMainProgram::editLinesRequested, this, &FrmMain::programEditLines);
     clearTable();
 
     connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
@@ -1858,57 +1860,39 @@ void FrmMain::onTimerConnection()
     m_communicator->processConnectionTimer();
 }
 
-// @todo another way to update visualizer??
-// void FrmMain::onTimerStateQuery()
-// {
-//     if (m_connection->isConnected() && m_communicator->m_resetCompleted && m_communicator->m_statusReceived) {
-//         m_connection->sendByteArray(QByteArray(1, '?'));
-//         m_communicator->m_statusReceived = false;
-//     }
-
-//     ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_communicator->m_commands.length()).arg(m_communicator->m_queue.length()));
-// }
-
-void FrmMain::programInsertLine()
+void FrmMain::programEditLines(int from, int to)
 {
     if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
 
-    QModelIndexList selectedRows = ui->program->getSelectedRows();
-    if (selectedRows.isEmpty()) return;
+    DlgEditProgram dlg(this);
+    dlg.setProgramText(m_program.linesAsText(from, to));
+    if (dlg.exec() == QDialog::Accepted) {
+        m_program.replaceLinesFromText(from, to, dlg.programText());
 
-    int row = selectedRows[0].row();
-
-    ui->program->insertRowInCurrentModel(row);
-    ui->program->setCurrentModelData(ui->program->currentModelIndex(row, 2), GCodeItem::InQueue);
-
-    updateParser();
-
-    ui->program->selectRow(row);
-}
-
-void FrmMain::programDeleteLines()
-{
-    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
-
-    QModelIndexList selectedRows = ui->program->getSelectedRows();
-    if (selectedRows.isEmpty()) return;
-
-    QModelIndex firstRow = selectedRows[0];
-    int rowsCount = selectedRows.count();
-    if (selectedRows.last().row() == ui->program->currentModelRowCount() - 1) rowsCount--;
-
-    if (firstRow.row() != ui->program->currentModelRowCount() - 1) {
-        ui->program->removeRowsFromCurrentModel(firstRow.row(), rowsCount);
-    } else return;
-
-    // Drop heightmap cache
-    if (ui->program->isCurrentModelProgramModel()) {
-        ui->program->clearProgramHeightmapModel();
+        updateParser();
     }
 
-    updateParser();
+}
 
-    ui->program->selectRow(firstRow.row());
+void FrmMain::programInsertLines(int current, bool before)
+{
+    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+
+    DlgEditProgram dlg(this);
+    if (dlg.exec() == QDialog::Accepted) {
+        m_program.insertLines(before ? current : current + 1, dlg.programText());
+
+        updateParser();
+    }
+}
+
+void FrmMain::programDeleteLines(int from, int to)
+{
+    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+
+    m_program.deleteLines(from, to);
+
+    updateParser();
 }
 
 void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
@@ -2087,49 +2071,49 @@ void FrmMain::onDockTopLevelChanged(bool topLevel)
 //     qDebug() << "FrmMain::onProgramLinesUpdated from" << from << "to" << to;
 // }
 
-void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
-{
-    if (m_settingsLoading) return;
+// void FrmMain::updateHeightmapInterpolationDrawer(bool reset)
+// {
+//     if (m_settingsLoading) return;
 
-    QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
-    // m_heightmapInterpolationDrawer.setBorderRect(borderRect);
+//     QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
+//     // m_heightmapInterpolationDrawer.setBorderRect(borderRect);
 
-    QVector<QVector<double>> *interpolationData = new QVector<QVector<double>>;
+//     QVector<QVector<double>> *interpolationData = new QVector<QVector<double>>;
 
-    int interpolationPointsX = m_heightmap.interpolationStepSize().width();// * (ui->txtHeightMapGridX->value() - 1) + 1;
-    int interpolationPointsY = m_heightmap.interpolationStepSize().height();// * (ui->txtHeightMapGridY->value() - 1) + 1;
+//     int interpolationPointsX = m_heightmap.interpolationStepSize().width();// * (ui->txtHeightMapGridX->value() - 1) + 1;
+//     int interpolationPointsY = m_heightmap.interpolationStepSize().height();// * (ui->txtHeightMapGridY->value() - 1) + 1;
 
-    double interpolationStepX = interpolationPointsX > 1 ? borderRect.width() / (interpolationPointsX - 1) : 0;
-    double interpolationStepY = interpolationPointsY > 1 ? borderRect.height() / (interpolationPointsY - 1) : 0;
+//     double interpolationStepX = interpolationPointsX > 1 ? borderRect.width() / (interpolationPointsX - 1) : 0;
+//     double interpolationStepY = interpolationPointsY > 1 ? borderRect.height() / (interpolationPointsY - 1) : 0;
 
-    for (int i = 0; i < interpolationPointsY; i++) {
-        QVector<double> row;
-        for (int j = 0; j < interpolationPointsX; j++) {
+//     for (int i = 0; i < interpolationPointsY; i++) {
+//         QVector<double> row;
+//         for (int j = 0; j < interpolationPointsX; j++) {
 
-            double x = interpolationStepX * j + borderRect.x();
-            double y = interpolationStepY * i + borderRect.y();
+//             double x = interpolationStepX * j + borderRect.x();
+//             double y = interpolationStepY * i + borderRect.y();
 
-            row.append(reset ? qQNaN() : Interpolation::bicubicInterpolate(borderRect, ui->program->getHeightmapModelForInterpolation(), x, y));
-        }
-        interpolationData->append(row);
-    }
+//             row.append(reset ? qQNaN() : Interpolation::bicubicInterpolate(borderRect, ui->program->getHeightmapModelForInterpolation(), x, y));
+//         }
+//         interpolationData->append(row);
+//     }
 
-    // if (m_heightmapInterpolationDrawer.data() != NULL) {
-    //     delete m_heightmapInterpolationDrawer.data();
-    // }
-    ui->visualizer->setInterpolationData(interpolationData, borderRect);
+//     // if (m_heightmapInterpolationDrawer.data() != NULL) {
+//     //     delete m_heightmapInterpolationDrawer.data();
+//     // }
+//     ui->visualizer->setInterpolationData(interpolationData, borderRect);
 
-    // Update grid drawer
-    ui->visualizer->updateHeightmapGrid();
+//     // Update grid drawer
+//     ui->visualizer->updateHeightmapGrid();
 
-    // Reset heightmapped program model
-    ui->program->clearProgramHeightmapModel();
-}
+//     // Reset heightmapped program model
+//     ui->program->clearProgramHeightmapModel();
+// }
 
 void FrmMain::onHeightmapDataChangedByUser()
 {
     FilesManager::instance().setHeightmapModified(true);
-    updateHeightmapInterpolationDrawer();
+    // updateHeightmapInterpolationDrawer();
 }
 
 void FrmMain::preloadSettings()
@@ -2711,7 +2695,7 @@ void FrmMain::loadFile(QString filePath)
 
 void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
-    qDebug() << "Finished loading file" << data->gcode->count();
+    qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
 
     assert(m_communicator->isMachineConfigurationReady());
     if (!m_communicator->isMachineConfigurationReady()) {
@@ -2736,12 +2720,11 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // Update interface
     ui->heightmap->resetUseHeighmap();
     ui->grpHeightmap->setProperty("overrided", false);
-    style()->unpolish(ui->grpHeightmap);
-    ui->grpHeightmap->ensurePolished();
+    Utils::refreshStyle(ui->grpHeightmap);
 
     // Reset tableview
     QByteArray headerState = ui->program->saveProgramHeaderState();
-    ui->program->setProgramTableModel(NULL);
+    // ui->program->setProgramTableModel(nullptr);
 
     // // Prepare parser
     // GcodeParser parser;
@@ -2752,8 +2735,11 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_programLoading = true;
 
     // Prepare model
-    m_program.clear();
-    m_program.reset();
+    {
+        QSignalBlocker blocker(m_program);
+        m_program.clear();
+        m_program.reset();
+    }
     m_program << *data->gcode;
 
     ui->program->addProgramModelRow();
@@ -2817,7 +2803,7 @@ void FrmMain::loadLines(QList<std::string> data)
 
     // Reset tableview
     QByteArray headerState = ui->program->saveProgramHeaderState();
-    ui->program->setProgramTableModel(NULL);
+    ui->program->setProgramTableModel(nullptr);
 
     // Prepare parser
     GcodeParser parser;
@@ -2962,7 +2948,7 @@ void FrmMain::resetHeightmap()
     // delete m_heightmapInterpolationDrawer.data();
     ui->visualizer->updateHeightmapInterpolation(true);
 
-    ui->program->setHeightMapModel(NULL);
+    ui->program->setHeightmap(NULL);
     ui->program->resizeHeightmapModel(1, 1);
 
     ui->heightmap->resetOpenFile();
@@ -3218,8 +3204,8 @@ bool FrmMain::updateHeightmapGrid()
     int gridPointsY = m_heightmap.gridSize().height();
 
     ui->program->resizeHeightmapModel(gridPointsX, gridPointsY);
-    ui->program->setHeightMapModel(NULL);
-    ui->program->setHeightMapModel(ui->program->getHeightmapModelForInterpolation());
+    ui->program->setHeightmap(nullptr);
+    ui->program->setHeightmap(&m_heightmap);
 
     // Update interpolation
     ui->visualizer->updateHeightmapInterpolation(true);
