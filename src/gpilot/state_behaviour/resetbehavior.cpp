@@ -182,6 +182,8 @@ bool ResetBehavior::dataIsReset(QString data)
         logSignal("Detected gCarvin device.");
     } else if (data.contains("uCNC")) {
         logSignal("Detected uCNC device.");
+    } else if (data.contains("FluidNC")) {
+        logSignal("Detected FluidNC device.");
     } else if (data.contains("Grbl")) {
         logSignal("Detected GRBL device.");
     } else {

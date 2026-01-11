@@ -16,7 +16,7 @@ What G stands for?
 What is G-Pilot?
 ----------------
 
-GRBL/uCNC controller application with G-Code visualizer written in Qt.
+GRBL/uCNC/FluidNC controller application with G-Code visualizer written in Qt.
 
 Supported functions:
 * Controlling GRBL-based cnc-machine via console commands, buttons on form, numpad.
@@ -26,7 +26,7 @@ Supported functions:
 * Camera
 * Joystick/Joypad/Controller support.
 * Customizable interface.
-* uCNC/grblHAL virtual modes (cnc machine simulator).
+* uCNC/grblHAL/FluidNC virtual modes (cnc machine simulator).
 
 User Interface
 --------------
@@ -66,6 +66,7 @@ Usefull links:
 * https://github.com/Paciente8159/uCNC (modern firmware, inspired by Grbl and LinuxCNC)
 * https://github.com/grbl/grbl (original GRBL firmware)
 * https://github.com/grblHAL (modular, mostly compatible with GRBL)
+* https://github.com/bdring/FluidNC (firmware for ESP32, compatible with GRBL)
 
 Build requirements:
 -------------------
@@ -103,6 +104,7 @@ G-Pilot supports the following connection modes:
 * Raw TCP, uses exactly the same protocol as serial port mode, no additional handshaking is performed
 * uCNC virtual mode, no real hardware needed
 * grblHAL virtual mode, no real hardware needed
+* FluidNC virtual mode, no real hardware needed
 
 ![screenshot](/screenshots/screenshot_connection_modes.png)
 

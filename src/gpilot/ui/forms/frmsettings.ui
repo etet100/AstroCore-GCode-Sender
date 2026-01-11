@@ -140,6 +140,11 @@
                     <string>GRBL virtual mode</string>
                    </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string>FluidNC virtual mode</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                 <item row="1" column="0">

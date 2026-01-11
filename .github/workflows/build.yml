@@ -137,6 +137,27 @@ jobs:
             make -j$(nproc)
           fi
 
+      - name: Build FluidNC
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        env:
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            mkdir -p build/vendor/FluidNC
+            cd build/vendor/FluidNC
+            qmake ../../../src/vendor/FluidNC/FluidNC.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            mingw32-make.exe -f Makefile qmake_all
+            mingw32-make -j12
+          else
+            mkdir -p build/vendor/FluidNC
+            cd build/vendor/FluidNC
+            qmake ../../../src/vendor/FluidNC/FluidNC.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            make -f Makefile qmake_all
+            make -j$(nproc)
+          fi
+
       - name: Build designerplugins
         shell: bash
         env:

@@ -4,7 +4,8 @@ SUBDIRS = PropertyEditor
 
 win32 {
         SUBDIRS += grblHal \
-        uCNC
+        uCNC \
+        FluidNC
 }
 
 HEADERS += Arduino.h

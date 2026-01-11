@@ -7,7 +7,6 @@
 #include <QLibrary>
 #include <QUuid>
 #ifdef WINDOWS
-Q_OS_WIN
     #include <windows.h>
     #ifndef _MSC_VER
         // #define STATIC_GRBL

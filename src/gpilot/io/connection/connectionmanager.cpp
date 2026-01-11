@@ -22,6 +22,8 @@ Connection *ConnectionManager::createConnection(ConfigurationConnection::Connect
             return initializeVirtualGrblConnection();
         case ConfigurationConnection::ConnectionMode::RAW_TCP:
             return initializeRawTcpConnection();
+        case ConfigurationConnection::ConnectionMode::VIRTUAL_FLUIDNC:
+            return initializeVirtualFluidNcConnection();
         default:
             assert(false);
             break;
@@ -60,4 +62,11 @@ RawTcpConnection *ConnectionManager::initializeRawTcpConnection()
     rawTcpConnection->setPort(m_configurationConnection.rawTcpPort());
 
     return rawTcpConnection;
+}
+
+VirtualFluidNCConnection *ConnectionManager::initializeVirtualFluidNcConnection()
+{
+    VirtualFluidNCConnection* virtualConnection = new VirtualFluidNCConnection(this);
+
+    return virtualConnection;
 }

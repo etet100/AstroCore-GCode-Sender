@@ -125,6 +125,7 @@ SOURCES += main.cpp\
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
     io/connection/serialconnection.cpp \
+    io/connection/virtualfluidncconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
     state_behaviour/action.cpp \
@@ -264,6 +265,7 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
     io/connection/serialconnection.h \
+    io/connection/virtualfluidncconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
     state_behaviour/action.h \

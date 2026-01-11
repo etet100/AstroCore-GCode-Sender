@@ -11,6 +11,7 @@
 #include "rawtcpconnection.h"
 #include "virtualucncconnection.h"
 #include "virtualgrblconnection.h"
+#include "virtualfluidncconnection.h"
 #include "connection.h"
 
 class ConnectionManager : public QObject
@@ -26,6 +27,7 @@ class ConnectionManager : public QObject
         VirtualUCNCConnection* initializeVirtualUcncConnection();
         VirtualGRBLConnection* initializeVirtualGrblConnection();
         RawTcpConnection* initializeRawTcpConnection();
+        VirtualFluidNCConnection* initializeVirtualFluidNcConnection();
         const ConfigurationConnection& m_configurationConnection;
 };
 

@@ -27,7 +27,10 @@ install_ucnc.files = src/vendor/uCNC/uCNC.dll
 install_grbl.path = bin
 install_grbl.files = src/vendor/grblHal/grblHal.dll
 
-INSTALLS += install_propertyeditor install_ucnc install_grbl
+install_fluidnc.path = bin
+install_fluidnc.files = src/vendor/grblHal/FluidddNC.dll
+
+INSTALLS += install_propertyeditor install_ucnc install_grbl install_fluidnc
 
 INSTALLS += install_main
 

@@ -31,6 +31,7 @@ class ConfigurationConnection : public ConfigurationModule
             RAW_TCP = 1,
             VIRTUAL_UCNC = 2,
             VIRTUAL_GRBL = 3,
+            VIRTUAL_FLUIDNC = 4
         };
         Q_ENUM(ConnectionMode);
 

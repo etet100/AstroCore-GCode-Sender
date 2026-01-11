@@ -938,43 +938,40 @@ void Communicator::processAlarm(QString data)
 // Save offset to be used when calculating work coordinates
 void Communicator::processOffsetsVars(QStringList response)
 {
-    static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
-    static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
-
     for (auto &line : response) {
-        QRegularExpressionMatch match = gx.match(line);
-        if (match.hasMatch()) {
-            if (match.captured(1) == "G92") {
-                qDebug() << "[Communicator] G92 offset updated";
-                m_workOffset = QVector3D(
-                    match.captured(2).toDouble(),
-                    match.captured(3).toDouble(),
-                    match.captured(4).toDouble()
-                );
-            }
-
-            m_storedVars.setCoords(
-                match.captured(1),
-                QVector3D(
-                    match.captured(2).toDouble(),
-                    match.captured(3).toDouble(),
-                    match.captured(4).toDouble()
-                    )
-                );
+        if (line.startsWith('[') && line.endsWith(']')) {
+            line = line.mid(1, line.length() - 2);
         } else {
-            match = tx.match(line);
-            if (match.hasMatch()) {
-                m_storedVars.setCoords(
-                    match.captured(1),
-                    QVector3D(0, 0, match.captured(2).toDouble())
-                    );
-            } else {
-                qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
-                assert(false);
+            qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
+            assert(false);
 
-                return;
-            }
+            return;
         }
+
+        QStringList parts = line.split(":");
+        if (parts.size() != 2) {
+            qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
+            assert(false);
+
+            return;
+        }
+
+        QStringList axes = parts[1].split(",");
+        QVector3D pos = QVector3D(
+            axes.size() == 3 ? axes[0].toDouble() : 0,
+            axes.size() == 3 ? axes[1].toDouble() : 0,
+            axes.size() == 3 ? axes[2].toDouble() : axes[0].toDouble()
+        );
+
+        if (parts[0] == "G92") {
+            qDebug() << "[Communicator] G92 offset updated";
+            m_workOffset = pos;
+        }
+
+        m_storedVars.setCoords(
+            parts[0],
+            pos
+        );
     }
 
     qDebug() << "[Communicator] Offsets updated";

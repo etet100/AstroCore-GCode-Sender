@@ -21,6 +21,9 @@
 [submodule "src/vendor/grblHal"]
 	path = src/vendor/grblHal
 	url = https://github.com/grblHAL/simulator
+[submodule "src/vendor/FluidNC"]
+	path = src/vendor/FluidNC
+	url = https://github.com/etet100/G-Pilot-FluidNC
 [submodule "src/vendor/QtValueSlider"]
 	path = src/vendor/QtValueSlider
 	url = https://github.com/etet100/G-Pilot-qt-value-slider

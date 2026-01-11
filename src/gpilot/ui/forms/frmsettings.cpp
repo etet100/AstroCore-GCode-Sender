@@ -509,11 +509,11 @@ void FrmSettings::onConnectionModeChanged(int mod)
             ui->frameConnectionRawSocket->show();
             break;
         // virtual uCNC
-        case 2:
-            ui->frameConnectionSimulator->show();
-            break;
         // virtual GRBL
+        // virtual FLUIDNC
+        case 2:
         case 3:
+        case 4:
             ui->frameConnectionSimulator->show();
             break;
     }
