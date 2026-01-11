@@ -22,4 +22,5 @@
     <InstallerApplicationIcon>gpilot.ico</InstallerApplicationIcon>
     <InstallerWindowIcon>gpilot.ico</InstallerWindowIcon>
     <ProductUrl>https://github.com/etet100/G-Pilot-GCode-Sender</ProductUrl>
+    <ControlScript>controlscript.qs</ControlScript>
 </Installer>
