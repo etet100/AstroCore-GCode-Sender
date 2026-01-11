@@ -105,8 +105,3 @@ QString HeightMapAreaBillboardDrawer::buildCacheKey(const BillboardContentData *
 
     return cdata->id;
 }
-
-void HeightMapAreaBillboardDrawer::atlasReady(QImage &atlasImage)
-{
-    atlasImage.save("heightmap_area_atlas.png");
-}

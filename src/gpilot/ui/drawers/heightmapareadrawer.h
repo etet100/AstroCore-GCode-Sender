@@ -20,7 +20,6 @@ struct HeightMapAreaBillboardContentData : public BillboardContentData
     QString id;
 };
 
-
 class HeightMapAreaBillboardDrawer : public BillboardDrawable
 {
     public:
@@ -30,7 +29,6 @@ class HeightMapAreaBillboardDrawer : public BillboardDrawable
         void drawBillboard(QPainter& painter, const QRect& rect, const BillboardContentData* data) override;
         QSize measureBillboard(const BillboardContentData *data) override;
         QString buildCacheKey(const BillboardContentData *data) override;
-        void atlasReady(QImage &atlasImage);
 
     private:
         QFont m_font;

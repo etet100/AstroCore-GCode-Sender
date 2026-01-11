@@ -199,6 +199,8 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     atlasReady(m_atlasImage);
 
     m_texture = new QOpenGLTexture(m_atlasImage);
+    m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+    m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
 }
 
 bool BillboardDrawable::updateData(GLPalette &palette)
@@ -229,6 +231,7 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
 
     shaderProgram->setUniformValue("u_scaleWithDistance", m_scaleWithDistance ? 1 : 0);
     shaderProgram->setUniformValue("u_globalScale", m_globalScale);
+    shaderProgram->setUniformValue("u_billboardTexture", 1);
 
     if (!m_vao.isCreated() || !m_vbo.isCreated()) {
         init();
@@ -251,6 +254,9 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 3, sizeof(BillboardVertex));
+    } else {
+        qWarning() << "[BillboardDrawable] Shader attribute a_position not found!";
+        assert(false);
     }
     offset += sizeof(QVector3D);
 
@@ -258,6 +264,9 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 2, sizeof(BillboardVertex));
+    } else {
+        qWarning() << "[BillboardDrawable] Shader attribute a_billboardSize not found!";
+        assert(false);
     }
     offset += sizeof(QVector2D);
 
@@ -265,6 +274,9 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 2, sizeof(BillboardVertex));
+    } else {
+        qWarning() << "[BillboardDrawable] Shader attribute a_corner not found!";
+        assert(false);
     }
     offset += sizeof(QVector2D);
 
@@ -272,14 +284,11 @@ void BillboardDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 2, sizeof(BillboardVertex));
+    } else {
+        qWarning() << "[BillboardDrawable] Shader attribute a_texCoord not found!";
+        assert(false);
     }
     offset += sizeof(QVector2D);
-
-    pos = shaderProgram->attributeLocation("a_color");
-    if (pos >= 0) {
-        shaderProgram->enableAttributeArray(pos);
-        shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 1, sizeof(BillboardVertex));
-    }
 
     glActiveTexture(GL_TEXTURE1);
     m_texture->bind();
