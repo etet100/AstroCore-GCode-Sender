@@ -430,6 +430,11 @@ void PartMainVisualizer::toggleProjectionClicked()
     ui->visualizer->toggleProjectionType();
 }
 
+void PartMainVisualizer::toggleOriginClicked()
+{
+    m_originDrawer.toggleVisible();
+}
+
 void PartMainVisualizer::fitClicked()
 {
     ui->visualizer->fitDrawable(m_currentDrawer);

@@ -131,6 +131,7 @@ class PartMainVisualizer : public QWidget
         void heightmapClicked();
         void heightmapMarkersClicked();
         void toggleProjectionClicked();
+        void toggleOriginClicked();
         void fitClicked();
         void _2dClicked();
         void showButtonInfo(bool hovered);

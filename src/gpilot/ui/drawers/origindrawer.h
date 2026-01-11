@@ -11,6 +11,8 @@ public:
 
     void setZoom(double);
     OriginBillboardDrawer &billboardDrawable() { return m_billboardDrawable; }
+    void setVisible(bool visible);
+    void toggleVisible();
 
 protected:
     bool updateData(GLPalette &palette) override;

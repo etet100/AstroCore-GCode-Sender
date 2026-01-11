@@ -12,6 +12,18 @@ void OriginDrawer::setZoom(double zoom)
     update();
 }
 
+void OriginDrawer::setVisible(bool visible)
+{
+    ShaderDrawable::setVisible(visible);
+    m_billboardDrawable.setVisible(visible);
+}
+
+void OriginDrawer::toggleVisible()
+{
+    ShaderDrawable::toggleVisible();
+    m_billboardDrawable.setVisible(m_visible);
+}
+
 bool OriginDrawer::updateData(GLPalette &palette)
 {
     QColor cx = QColor(255, 0, 0);
