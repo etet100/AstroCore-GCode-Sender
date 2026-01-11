@@ -43,6 +43,9 @@ class PartMainHeightmap : public QWidget
             double max;
         };
 
+    protected:
+        void resizeEvent(QResizeEvent *event) override;
+
     signals:
         void extremesRequired();
         void areaChanged(QRectF area);

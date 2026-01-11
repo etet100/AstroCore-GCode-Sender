@@ -24,6 +24,9 @@ class PartMainVirtualSettings : public QWidget
         void extracted();
         void deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
 
+    protected:
+        void resizeEvent(QResizeEvent *event) override;
+
     private:
         Ui::partMainVirtualSettings *ui;
         HomingDirs m_homingDirs = HomingDirs();

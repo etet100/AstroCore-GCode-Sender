@@ -152,6 +152,13 @@ void PartMainHeightmap::setHeightmapAreaRect(QRectF rect)
     emit areaChanged(rect);
 }
 
+void PartMainHeightmap::resizeEvent(QResizeEvent *event)
+{
+    setMinimumHeight(sizeHint().height());
+
+    QWidget::resizeEvent(event);
+}
+
 void PartMainHeightmap::on_txtGridX_valueChanged(double arg1)
 {
     Q_UNUSED(arg1)

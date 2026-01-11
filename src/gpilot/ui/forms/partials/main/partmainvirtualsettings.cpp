@@ -31,6 +31,13 @@ void PartMainVirtualSettings::deviceConfigurationReceived(PhysicalMachineConfigu
     setEnabled(true);
 }
 
+void PartMainVirtualSettings::resizeEvent(QResizeEvent *event)
+{
+    setMinimumHeight(sizeHint().height());
+
+    QWidget::resizeEvent(event);
+}
+
 float PartMainVirtualSettings::calcFinalAxisPos(HomingDir homingDir, float currentPos, int val)
 {
     float finalPos = currentPos + (homingDir == HomingDir::Negative ? -val : val);
