@@ -61,12 +61,16 @@ QVariant IniProvider::getVariant(const QString group, const QString key, QVarian
 
 QStringList IniProvider::getStringList(const QString group, const QString key, QStringList defaultValue)
 {
-    QVariant var = getVariant(group, key, defaultValue);
-    if (var.toString().isEmpty()) {
+    QStringList list = getVariant(group, key, defaultValue).toStringList();
+
+    qDebug() << "IniProvider::getStringList" << group + "/" + key << "=>" << list;
+
+    // do not return list with single empty string
+    if (list.length() == 1 && list[0] == "") {
         return QStringList();
     }
 
-    return var.toStringList();
+    return list;
 }
 
 QVariantMap IniProvider::getVariantMap(const QString group, const QString key, QVariantMap mapWithDefaultValues)
