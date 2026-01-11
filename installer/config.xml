@@ -6,8 +6,9 @@
     <Publisher>BTS</Publisher>
     <StartMenuDir>G-Pilot</StartMenuDir>
     <TargetDir>@HomeDir@/GPilot</TargetDir>
+    <ControlScript>controlscript.qs</ControlScript>
     <InstallActionColumnVisible>true</InstallActionColumnVisible>
-    <RemoveTargetDir>true</RemoveTargetDir>
+    <RemoveTargetDir>false</RemoveTargetDir>
     <RunProgram>@TargetDir@/GPilot.exe</RunProgram>
     <RunProgramDescription>Launch G-Pilot</RunProgramDescription>
     <RunProgramArguments></RunProgramArguments>
