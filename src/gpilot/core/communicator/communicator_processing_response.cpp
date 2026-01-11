@@ -949,7 +949,7 @@ void Communicator::processOffsetsVars(QStringList response)
         }
 
         QStringList parts = line.split(":");
-        if (parts.size() != 2) {
+        if (parts.size() != 2 && parts[0] != "PRB") {
             qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
             assert(false);
 
