@@ -76,7 +76,7 @@ QRectF BillboardDrawable::addBillboardToAtlas(const BillboardData& data)
 
     // Check if we have space
     if (m_atlasY + size.height() > m_atlasImage.height()) {
-        qWarning() << "Billboard atlas full!";
+        qWarning() << "[Billboard] Atlas full";
 
         return QRectF(0, 0, 0, 0);
     }
@@ -170,10 +170,10 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
             // Jeśli atlas jest pełny to spróbujemy go powiększyć i zacząć od nowa
             atlasSize *= 2;
             if (atlasSize < 4096) {
-                qWarning() << "Rebuilding billboard atlas with size" << atlasSize;
+                qWarning() << "[Billboard] Rebuilding billboard atlas with size" << atlasSize;
                 rebuildAtlas(palette);
             } else {
-                qWarning() << "Billboard atlas exceeded maximum size!";
+                qWarning() << "[Billboard] Billboard atlas exceeded maximum size!";
             }
 
             return; // Exit if atlas is full, texture will be invalid
@@ -188,10 +188,11 @@ void BillboardDrawable::rebuildAtlas(GLPalette &palette)
     float usedArea = (m_atlasY + m_atlasRowHeight) * atlasSize;
     float totalArea = atlasSize * atlasSize;
     float usageRatio = usedArea / totalArea;
-    qDebug() << "Billboard atlas usage:" << usageRatio * 100.0f << "%" << "; size is " << atlasSize;
+    qDebug() << "[Billboard] Billboard atlas usage:" << usageRatio * 100.0f << "%" << "; size is " << atlasSize;
     if (usageRatio < 0.25f && atlasSize > 256) {
         // Next time, use smaller atlas
         atlasSize /= 2;
+        qDebug() << "[Billboard] Decreasing billboard atlas size to" << atlasSize;
     }
 
     // Notify derived classes that atlas is ready, may be used to generate mipmaps or other processing
@@ -421,7 +422,7 @@ BillboardContentData* BillboardDrawable::hitTest(const QPoint& screenPos) const
     int hitCount = 0;
 
     if (m_debugBounds) {
-        qDebug() << "\n=== HIT TEST at" << screenPos << "===";
+        qDebug() << "[Billboard] HIT TEST at" << screenPos;
     }
 
     for (int i = 0; i < m_screenPositions.size(); ++i) {
@@ -448,7 +449,7 @@ BillboardContentData* BillboardDrawable::hitTest(const QPoint& screenPos) const
                 if (hmData) {
                     gridInfo = QString(" grid(%1,%2)").arg(hmData->pos.x()).arg(hmData->pos.y());
                 }
-                qDebug() << "  Hit" << hitCount << gridInfo << ":"
+                qDebug() << "[Billboard] Hit" << hitCount << gridInfo << ":"
                          << "center=" << pos.screenPos
                          << "size=" << pos.screenSize
                          << "bounds=" << bounds
@@ -463,7 +464,7 @@ BillboardContentData* BillboardDrawable::hitTest(const QPoint& screenPos) const
     }
 
     if (m_debugBounds && hitCount > 0) {
-        qDebug() << "Selected closest with depth" << closestDepth << "from" << hitCount << "hits";
+        qDebug() << "[Billboard] Selected closest with depth" << closestDepth << "from" << hitCount << "hits";
     }
 
     return closestHit;
