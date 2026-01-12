@@ -7,6 +7,7 @@
 #include <QRegularExpression>
 #include "state_behaviour/initializationbehavior.h"
 #include "state_behaviour/homingbehavior.h"
+#include "core/gcode/parser/gcodepreprocessorutils.h"
 
 Communicator::Communicator(
     QObject *parent,

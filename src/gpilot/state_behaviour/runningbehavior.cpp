@@ -9,6 +9,7 @@
 #include "alarmbehavior.h"
 // #include "toolchangebehavior.h"
 #include "core/communicator/communicator.h"
+#include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
 
 RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
