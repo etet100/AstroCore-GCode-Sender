@@ -934,6 +934,11 @@ void FrmMain::decreaseUiScale()
     ThemeManager::instance().decreaseScale();
 }
 
+void FrmMain::resetUiScale()
+{
+    ThemeManager::instance().resetScale();
+}
+
 void FrmMain::increaseUiScale()
 {
     ThemeManager::instance().increaseScale();
@@ -2312,10 +2317,12 @@ void FrmMain::initializeUiScaleMenu()
 
     updateUiScaleMenu();
 
-    QShortcut* shortcutIncrease = new QShortcut(QKeySequence("Ctrl++"), this);
-    connect(shortcutIncrease, &QShortcut::activated, this, &FrmMain::increaseUiScale);
-    QShortcut* shortcutDecrease = new QShortcut(QKeySequence("Ctrl+-"), this);
-    connect(shortcutDecrease, &QShortcut::activated, this, &FrmMain::decreaseUiScale);
+    QShortcut* shortcutUIScaleUp = new QShortcut(QKeySequence("Ctrl++"), this);
+    connect(shortcutUIScaleUp, &QShortcut::activated, this, &FrmMain::increaseUiScale);
+    QShortcut* shortcutUpScaleDown = new QShortcut(QKeySequence("Ctrl+-"), this);
+    connect(shortcutUpScaleDown, &QShortcut::activated, this, &FrmMain::decreaseUiScale);
+    QShortcut* shortcutReset = new QShortcut(QKeySequence("Ctrl+0"), this);
+    connect(shortcutReset, &QShortcut::activated, this, &FrmMain::resetUiScale);
 
     connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](double scale){
         m_configuration.uiModule().setUiScale(scale);

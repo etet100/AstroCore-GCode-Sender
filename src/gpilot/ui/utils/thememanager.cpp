@@ -94,9 +94,19 @@ void ThemeManager::decreaseScale()
     setScale(m_scale - 10);
 }
 
+void ThemeManager::resetScale()
+{
+    setScale(100);
+}
+
 int ThemeManager::scale()
 {
     return m_scale;
+}
+
+float ThemeManager::scaleF()
+{
+    return (float)m_scale / 100.0f;
 }
 
 void ThemeManager::processQssTemplate(QWidget *widget)

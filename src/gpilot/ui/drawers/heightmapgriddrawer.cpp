@@ -6,6 +6,7 @@
 #include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
 #include <QPainter>
+#include "ui/utils/thememanager.h"
 
 HeightMapGridDrawer::HeightMapGridDrawer() : m_model(new Heightmap())
 {
@@ -146,15 +147,6 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
     VertexData vertex;
     vertex.start = QVector3D(sNan, sNan, m_pointSize);
 
-    // Calculate grid parameters
-    // int gridSize.width() = m_model.gridWidth();
-    // int gridSize.height() = m_model.gridHeight();
-
-    // QPointF startPos = m_model.startPos();
-
-    // double max = m_model.maxValue();
-    // double min = m_model.minValue();
-
     // Probe path / dots
 //     for (int i = 0; i < gridSize.width(); i++) {
 //         for (int j = 0; j < gridSize.height(); j++) {
@@ -177,9 +169,6 @@ bool HeightMapGridDrawer::updateData(GLPalette &palette)
 //     }
 
     generateTriangles(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
-
-
-
     generateLines(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
     generatePlates(m_model->gridSize(), m_model->valuesMinMax(), m_model->startPos(), m_model->stepSize(), vertex, palette);
 
@@ -199,6 +188,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
     m_billboardDrawable.clearBillboards();
 
     double y = startPos.y();
+    const float scale = ThemeManager::instance().scaleF();
     for (int y_ = 0; y_ < gridSize.height(); y_++) {
         double x = startPos.x();
         for (int x_ = 0; x_ < gridSize.width(); x_++) {
@@ -222,7 +212,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
                     QString("%1, %2\n%3").arg(x_).arg(y_).arg(value, 0, 'f', 2),
                     QColor(11, 22, 17, 200), Qt::white
                 ),
-                30.0f  // Billboard size in pixels
+                30.0f * scale // Billboard size in pixels
             );
 
             x += stepSize.width();

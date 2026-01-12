@@ -119,8 +119,11 @@ private slots:
     void on_actViewDarkMode_toggled(bool checked);
     void on_actViewCentralProgram_toggled(bool checked);
     void on_actViewCentralVisualizer_toggled(bool checked);
+    // UI Scale
     void decreaseUiScale();
     void increaseUiScale();
+    void resetUiScale();
+    //
     void onFileOpen(QString filePath = "");
     void onFileSend();
     void onFilePause(bool checked);

@@ -1035,7 +1035,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     painter.setRenderHint(QPainter::TextAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    const float scale = ThemeManager::instance().scale() / 100.0f;
+    const float scale = ThemeManager::instance().scaleF();
     const int lineHeight = 15 * scale;
     // text base point is at the bottom left corner, so we need to offset by font height
     const int fontHeight = painter.fontMetrics().height();

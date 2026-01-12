@@ -8,6 +8,7 @@
 #include <QGraphicsOpacityEffect>
 #include <QMessageBox>
 #include "styledtoolbutton.h"
+#include "ui/utils/thememanager.h"
 
 PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , ui(new Ui::partMainVisualizer)
@@ -75,6 +76,11 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     // connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
     connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         emit viewModeChanged(mode);
+    });
+
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, [this]() {
+        m_originDrawer.update();
+        m_heightmapGridDrawer.update();
     });
 
     initializeButtons();

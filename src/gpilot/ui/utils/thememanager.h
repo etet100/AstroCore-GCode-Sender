@@ -21,7 +21,11 @@ public:
     void setScale(int, bool force = false);
     void increaseScale();
     void decreaseScale();
+    void resetScale();
+    /** Get current scale in percentage (e.g., 100, 110, 120) */
     int scale();
+    /** Get current scale as float (e.g., 1.0, 1.1, 1.2) */
+    float scaleF();
     void processQssTemplate(QWidget *widget);
 
 signals:

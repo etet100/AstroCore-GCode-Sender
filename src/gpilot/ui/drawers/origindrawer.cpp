@@ -1,4 +1,5 @@
 #include "origindrawer.h"
+#include "ui/utils/thememanager.h"
 
 OriginDrawer::OriginDrawer()
 {
@@ -38,9 +39,10 @@ bool OriginDrawer::updateData(GLPalette &palette)
     // Axis labels
     m_billboardDrawable.clearBillboards();
     const float ofsFromEnd = 3.0f;
-    m_billboardDrawable.addBillboard((QVector3D(10 + ofsFromEnd, 0, 0)) * m_scale, new OriginBillboardContentData("X", cx), 10.0f);
-    m_billboardDrawable.addBillboard((QVector3D(0, 10 + ofsFromEnd, 0)) * m_scale, new OriginBillboardContentData("Y", cy), 10.0f);
-    m_billboardDrawable.addBillboard((QVector3D(0, 0, 10 + ofsFromEnd)) * m_scale, new OriginBillboardContentData("Z", cz), 10.0f);
+    const float scale = ThemeManager::instance().scaleF();
+    m_billboardDrawable.addBillboard((QVector3D(10 + ofsFromEnd, 0, 0)) * m_scale, new OriginBillboardContentData("X", cx), 10.0f * scale);
+    m_billboardDrawable.addBillboard((QVector3D(0, 10 + ofsFromEnd, 0)) * m_scale, new OriginBillboardContentData("Y", cy), 10.0f * scale);
+    m_billboardDrawable.addBillboard((QVector3D(0, 0, 10 + ofsFromEnd)) * m_scale, new OriginBillboardContentData("Z", cz), 10.0f * scale);
 
     // Axis lines
     m_lines = QVector<VertexData>()
