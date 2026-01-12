@@ -87,7 +87,7 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
 
         if (!trimmed.empty()) {
             // Split command
-            stripped = GcodePreprocessorUtils::removeComment(command);
+            stripped = GcodePreprocessorUtils::removeComment(trimmed);
             args = GcodePreprocessorUtils::splitCommand(stripped);
             comment = GcodePreprocessorUtils::getComment(command);
             if (stripped.empty() && comment.empty()) {
@@ -95,6 +95,7 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
             }
 
             GCodeItem item;
+            item.rawLine = QString::fromStdString(trimmed);
             item.command = QString::fromStdString(stripped);
             item.comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command));
             item.state = GCodeItem::InQueue;

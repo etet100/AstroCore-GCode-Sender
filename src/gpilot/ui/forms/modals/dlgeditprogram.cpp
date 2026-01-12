@@ -6,6 +6,8 @@ DlgEditProgram::DlgEditProgram(QWidget* parent)
     , ui(new Ui::DlgEditProgram)
 {
     ui->setupUi(this);
+
+    m_highlighter = new SyntaxHighlighter(ui->txtProgram->document());
 }
 
 DlgEditProgram::~DlgEditProgram()

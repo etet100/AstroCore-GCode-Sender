@@ -205,6 +205,7 @@ SOURCES += main.cpp\
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
+    ui/utils/syntaxhighlighter.cpp \
     ui/utils/thememanager.cpp \
     ui/utils/windowstaskbar.cpp \
     ui/widgets/dockabletitle.cpp \
@@ -348,6 +349,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
+    ui/utils/syntaxhighlighter.h \
     ui/utils/thememanager.h \
     ui/utils/windowstaskbar.h \
     ui/widgets/dockabletitle.h \

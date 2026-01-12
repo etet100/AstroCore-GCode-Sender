@@ -84,7 +84,7 @@ QString GCode::calculateHash() const
 {
     QCryptographicHash hash(QCryptographicHash::Md5);
     for (const GCodeItem& item : m_data) {
-        hash.addData(item.command.toUtf8());
+        hash.addData(item.rawLine.toUtf8());
     }
 
     return QLatin1String(hash.result().toHex());
@@ -143,7 +143,7 @@ QString GCode::linesAsText(int from, int to)
 {
     QStringList lines;
     for (int i = from; i <= to; i++) {
-        lines.append(m_data[i].command);
+        lines.append(m_data[i].rawLine);
     }
 
     return lines.join("\n");

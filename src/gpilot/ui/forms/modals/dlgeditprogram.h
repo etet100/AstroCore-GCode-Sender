@@ -2,6 +2,7 @@
 #define DLGEDITPROGRAM_H
 
 #include <QDialog>
+#include "ui/utils/syntaxhighlighter.h"
 
 namespace Ui {
 class DlgEditProgram;
@@ -20,6 +21,7 @@ class DlgEditProgram : public QDialog
 
     private:
         Ui::DlgEditProgram* ui;
+        SyntaxHighlighter* m_highlighter;
 };
 
 #endif // DLGEDITPROGRAM_H

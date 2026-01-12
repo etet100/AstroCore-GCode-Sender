@@ -40,6 +40,7 @@ struct GCodeItem
 {
     enum States { InQueue = 0, Sent, Processed, Error, Skipped, Comment };
 
+    QString rawLine;
     QString command;
     QString comment;
     QString response;
