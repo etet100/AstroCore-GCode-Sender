@@ -64,6 +64,7 @@ void HeightMapAreaDrawer::generateStartEndMarkers()
 HeightMapAreaBillboardDrawer::HeightMapAreaBillboardDrawer() : BillboardDrawable() , m_fm(m_font)
 {
     m_depthTestEnabled = false;
+    m_scaleWithDistance = false;
     m_font.setPixelSize(17);
     m_fm = QFontMetrics(m_font);
 }

@@ -43,7 +43,7 @@ void main()
     // Different handling based on scaleWithDistance setting and projection mode
     if (u_isOrthographic == 1) {
         // Orthographic projection: w = 1.0, need smaller multiplier
-        gl_Position.xy += offset * 0.004;
+        gl_Position.xy += offset * 0.005;
     } else {
         // Perspective projection
         if (u_scaleWithDistance == 1) {
