@@ -13,9 +13,7 @@ enum class GCodeTableColumn {
     Number = 0,
     Command = 1,
     State,
-    Response,
-    Line,
-    Args
+    Response
 };
 
 class GCodeTableModel : public QAbstractTableModel
@@ -42,6 +40,9 @@ public:
 
     void setCommentsVisible(bool visible);
     int toFilteredIndex(int index) const;
+
+private slots:
+    void notifyLinesUpdated(int fromLine, int toLine);
 
 private:
     GCode* m_data;

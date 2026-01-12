@@ -455,10 +455,8 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
     ui->tblProgram->setItemDelegate(&m_programItemDelegate);
     ui->tblHeightMap->setModel(m_heightmapModel);
 
-    // Setup table columns
-    ui->tblProgram->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->tblProgram->hideColumn(4);
-    ui->tblProgram->hideColumn(5);
+    // Setup table columns, expand last column
+    ui->tblProgram->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
     // Connect selection changes
     if (ui->tblProgram->selectionModel()) {

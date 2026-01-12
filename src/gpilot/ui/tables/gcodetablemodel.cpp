@@ -8,13 +8,18 @@ GCodeTableModel::GCodeTableModel(GCode* data, QObject *parent) :
     QAbstractTableModel(parent),
     m_data(data)
 {
-    m_headers << tr("#") << tr("Command") << tr("State") << tr("Response") << tr("Line") << tr("Args");
+    m_headers << tr("#") << tr("Command") << tr("State") << tr("Response");
 
-    connect(data, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
-        emit dataChanged(
-            index(toFilteredIndex(fromLine), 0),
-            index(toFilteredIndex(toLine), columnCount() - 1));
-    });
+    if (data) {
+        connect(data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
+    }
+}
+
+void GCodeTableModel::notifyLinesUpdated(int fromLine, int toLine)
+{
+    emit dataChanged(
+        index(toFilteredIndex(fromLine), 0),
+        index(toFilteredIndex(toLine), columnCount() - 1));
 }
 
 QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
@@ -45,8 +50,6 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
                 }
                 return tr("Unknown");
             case GCodeTableColumn::Response: return item.response;
-            case GCodeTableColumn::Line: return item.lineNumber;
-            case GCodeTableColumn::Args: return QVariant(item.args);
         }
     }
 
@@ -84,8 +87,6 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
             case GCodeTableColumn::Command: item.command = value.toString(); break;
             // case 2: m_data[index.row()].state = value.toInt(); break;
             case GCodeTableColumn::Response: item.response = value.toString(); break;
-            case GCodeTableColumn::Line: item.lineNumber = value.toInt(); break;
-            case GCodeTableColumn::Args: item.args = value.toStringList(); break;
         }
         emit dataChanged(index, index);
 
@@ -102,6 +103,7 @@ void GCodeTableModel::setProgram(GCode* data)
     m_filteredRows.clear();
     m_allRowsToFiltered.clear();
     m_filtered = false;
+    connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
     endResetModel();
 }
 
@@ -158,7 +160,7 @@ int GCodeTableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
 
-    return 6;
+    return 4;
 }
 
 QVariant GCodeTableModel::headerData(int section, Qt::Orientation orientation, int role) const
