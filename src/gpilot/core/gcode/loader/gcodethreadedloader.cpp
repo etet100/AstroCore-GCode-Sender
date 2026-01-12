@@ -11,9 +11,7 @@ void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfi
 {
     GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
         configuration,
-        GCodeLoaderWorker::Source::File,
-        fileName,
-        QStringList()
+        fileName
     );
 
     connect(m_thread, &GCodeLoaderWorker::progress, this, [this](int value){
@@ -35,9 +33,19 @@ void GCodeThreadedLoader::loadFromLines(const QStringList& lines, GCodeLoaderCon
 {
     GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
         configuration,
-        GCodeLoaderWorker::Source::Lines,
-        "",
         lines
+    );
+
+    m_thread->run();
+
+    emit started();
+}
+
+void GCodeThreadedLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
+{
+    GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
+        configuration,
+        gcode
     );
 
     m_thread->run();
@@ -50,13 +58,28 @@ void GCodeThreadedLoader::cancel()
     m_thread->requestInterruption();
 }
 
-GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, Source source, const QString &fileName, const QStringList &lines, QObject *parent)
+GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const QString &fileName, QObject *parent)
     : QThread(parent)
     , m_configuration(configuration)
 {
-    this->m_source = source;
+    this->m_source = Source::File;
     this->m_fileName = fileName;
+}
+
+GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const QStringList &lines, QObject *parent)
+    : QThread(parent)
+    , m_configuration(configuration)
+{
+    this->m_source = Source::Lines;
     this->m_lines = lines;
+}
+
+GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const GCode *gcode, QObject *parent)
+    : QThread(parent)
+    , m_configuration(configuration)
+{
+    this->m_source = Source::UpdateGCode;
+    this->m_gcode = const_cast<GCode*>(gcode);
 }
 
 void GCodeLoaderWorker::run() {
@@ -79,6 +102,9 @@ void GCodeLoaderWorker::run() {
             break;
         case Source::Lines:
             loader.loadFromLines(this->m_lines, m_configuration);
+            break;
+        case Source::UpdateGCode:
+            loader.update(this->m_gcode, m_configuration);
             break;
     }
 }

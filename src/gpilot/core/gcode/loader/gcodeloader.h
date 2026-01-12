@@ -24,6 +24,7 @@ class GCodeLoaderConfiguration {
         }
         double arcApproximationValue() const { return m_arcApproximationValue; }
         ConfigurationParser::ParserArcApproximationMode arcApproximationMode() const { return m_arcApproximationMode; }
+
     private:
         ConfigurationParser::ParserArcApproximationMode m_arcApproximationMode;
         double m_arcApproximationValue;
@@ -34,9 +35,11 @@ class AbstractGCodeLoader : public QObject
     Q_OBJECT
 
     public:
-        explicit AbstractGCodeLoader(QObject *parent = nullptr) : QObject(parent) {}
-        virtual void loadFromFile(const QString &fileName, GCodeLoaderConfiguration &configuration) = 0;
-        virtual void loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration) = 0;
+        explicit AbstractGCodeLoader(QObject* parent = nullptr)
+            : QObject(parent) {}
+        virtual void loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration) = 0;
+        virtual void loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration) = 0;
+        virtual void update(GCode* gcode, GCodeLoaderConfiguration& configuration) = 0;
         virtual void cancel() = 0;
 
     signals:
@@ -49,15 +52,15 @@ class AbstractGCodeLoader : public QObject
 class GCodeLoader : public AbstractGCodeLoader
 {
     public:
-        explicit GCodeLoader(QObject *parent = nullptr);
-        void loadFromFile(const QString &fileName, GCodeLoaderConfiguration &configuration) override;
-        void loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration) override;
+        explicit GCodeLoader(QObject* parent = nullptr);
+        void loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration) override;
+        void loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration) override;
+        void update(GCode* gcode, GCodeLoaderConfiguration& configuration) override;
         void cancel() override;
 
     private:
-    //    static const int PROGRESSSTEP = 1000;
         bool m_cancel;
-        void loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfiguration &configuration);
+        void loadFromIODevice(QIODevice& io, int size, GCodeLoaderConfiguration& configuration);
 };
 
 #endif // GCODELOADER_H

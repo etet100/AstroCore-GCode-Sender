@@ -10,13 +10,15 @@
 
 #include <QObject>
 #include <QMatrix4x4>
-#include <cmath>
 #include "pointsegment.h"
+
+class GCodeItem;
 
 class GcodePreprocessorUtils : public QObject
 {
     Q_OBJECT
 public:
+    static GCodeItem parseLine(std::string line);
     static QString overrideSpeed(QString command, double speed, double *original = NULL);
     static QString trimCommand(QString command);
     static std::string trimCommand(std::string command);

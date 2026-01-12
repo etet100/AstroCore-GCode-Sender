@@ -11,16 +11,19 @@ class GCodeLoaderWorker : public QThread
     public:
         enum class Source {
             File,
-            Lines
+            Lines,
+            UpdateGCode
         };
 
-        GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, Source source, const QString &fileName, const QStringList &lines, QObject *parent = nullptr);
+        GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const QString& fileName, QObject* parent = nullptr);
+        GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const QStringList& lines, QObject* parent = nullptr);
+        GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const GCode* gcode, QObject* parent = nullptr);
 
         void run();
 
     signals:
         void progress(int value);
-        void finished(GCodeLoaderData *result);
+        void finished(GCodeLoaderData* result);
         void cancelled();
 
     private:
@@ -29,6 +32,7 @@ class GCodeLoaderWorker : public QThread
         Source m_source;
         QString m_fileName;
         QStringList m_lines;
+        GCode* m_gcode;
 };
 
 class GCodeThreadedLoader : public AbstractGCodeLoader
@@ -39,6 +43,7 @@ class GCodeThreadedLoader : public AbstractGCodeLoader
         GCodeThreadedLoader(QObject *parent = nullptr);
         void loadFromFile(const QString &fileName, GCodeLoaderConfiguration &configuration) override;
         void loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration) override;
+        void update(GCode* gcode, GCodeLoaderConfiguration &configuration) override;
         void cancel() override;
 
     private:

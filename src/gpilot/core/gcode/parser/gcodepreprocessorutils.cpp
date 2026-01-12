@@ -11,6 +11,7 @@
 #include "gcodepreprocessorutils.h"
 #include "limits"
 #include "ui/tables/gcodetablemodel.h"
+#include "core/gcode/gcode.h"
 
 /**
 * std::string utils
@@ -42,6 +43,47 @@ static inline std::string &rtrim(std::string &s)
 static inline std::string &trim(std::string &s)
 {
     return ltrim(rtrim(s));
+}
+
+GCodeItem GcodePreprocessorUtils::parseLine(std::string line)
+{
+    std::string command;
+    std::string stripped;
+    std::string comment;
+    QStringList args;
+    std::string trimmed = GcodePreprocessorUtils::trimCommand(line);
+
+    if (trimmed.empty()) {
+        return {
+            .state = GCodeItem::EmptyLine
+        };
+    }
+
+    // Split command
+    stripped = GcodePreprocessorUtils::removeComment(trimmed);
+    args = GcodePreprocessorUtils::splitCommand(stripped);
+    comment = GcodePreprocessorUtils::getComment(command);
+    if (stripped.empty() && comment.empty()) {
+        return {
+            .state = GCodeItem::EmptyLine
+        };
+    }
+
+    GCodeItemGroup group = GCodeItemGroup::Unknown; // TODO: determine group
+    GCodeItem::States state = GCodeItem::InQueue;
+    if (stripped.empty()) {
+        state = GCodeItem::Comment;
+        group = GCodeItemGroup::Comment;
+    }
+
+    return {
+        .rawLine = QString::fromStdString(trimmed),
+        .command = QString::fromStdString(stripped),
+        .comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command)),
+        .state = state,
+        .args = args,
+        .group = group
+    };
 }
 
 /**

@@ -61,55 +61,73 @@ void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfigurati
     loadFromIODevice(io, lines.size(), configuration);
 }
 
+void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
+{
+    emit started();
+
+    m_cancel = false;
+    int size = gcode->count();
+    int remaining = size;
+
+    GcodeParser parser;
+    for (auto& item : *gcode) {
+        item.lineNumber = parser.getCommandNumber();
+        parser.addCommand(item.args);
+
+        remaining--;
+        int percentage = 100 - (remaining * 100 / size);
+        static int lastPercentage = 0;
+        if (percentage != lastPercentage) {
+            lastPercentage = percentage;
+            emit progress(percentage);
+        }
+
+        if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
+            emit cancelled();
+
+            return;
+        }
+    }
+
+    GCodeViewParser* viewParser = new GCodeViewParser();
+    viewParser->getLinesFromParser(
+        &parser,
+        configuration.arcApproximationValue(),
+        configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+    );
+
+    if (m_cancel) {
+        emit cancelled();
+    } else {
+        emit progress(100);
+
+        GCodeLoaderData *result = new GCodeLoaderData();
+        result->gcode = gcode;
+        result->viewParser = viewParser;
+
+        emit finished(result);
+    }
+}
+
 void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfiguration &configuration)
 {
     emit started();
 
-    qDebug() << configuration.arcApproximationValue();
-    qDebug() << configuration.arcApproximationMode();
-
     m_cancel = false;
 
-    std::string command;
-    std::string stripped;
-    std::string trimmed;
-    std::string comment;
-    QList<QString> args;
     int remaining = size;
     GcodeParser parser;
     GCode* gcode = new GCode();
-    PointSegment* ps = nullptr;
 
     while (!io.atEnd()) {
-        command = io.readLine().toStdString();
-
-        trimmed = GcodePreprocessorUtils::trimCommand(command);
-
-        if (!trimmed.empty()) {
-            // Split command
-            stripped = GcodePreprocessorUtils::removeComment(trimmed);
-            args = GcodePreprocessorUtils::splitCommand(stripped);
-            comment = GcodePreprocessorUtils::getComment(command);
-            if (stripped.empty() && comment.empty()) {
-                break;
-            }
-
-            GCodeItem item;
-            item.rawLine = QString::fromStdString(trimmed);
-            item.command = QString::fromStdString(stripped);
-            item.comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command));
-            item.state = GCodeItem::InQueue;
-            item.lineNumber = parser.getCommandNumber();
-            item.args = args;
-            item.group = GCodeItemGroup::Unknown; // TODO: determine group
-            if (stripped.empty()) {
-                item.state = GCodeItem::Comment;
-                item.group = GCodeItemGroup::Comment;
-            }
-            item.ps = parser.addCommand(item);
-
-            *gcode << item;
+        GCodeItem item = GcodePreprocessorUtils::parseLine(io.readLine().toStdString());
+        if (item.state == GCodeItem::EmptyLine) {
+            continue;
         }
+
+        item.lineNumber = parser.getCommandNumber();
+        parser.addCommand(item.args);
+        *gcode << item;
 
         remaining = size - io.pos();
 
@@ -134,11 +152,6 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         configuration.arcApproximationValue(),
         configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
     );
-    // viewParser->getLinesFromGCode(
-    //     *gcode,
-    //     configuration.arcApproximationValue(),
-    //     configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
-    // );
 
     if (m_cancel) {
         delete gcode;
