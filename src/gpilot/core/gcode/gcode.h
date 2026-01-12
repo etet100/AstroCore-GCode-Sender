@@ -6,7 +6,6 @@
 #define GCODE_H
 
 #include <QObject>
-#include "core/gcode/parser/gcodeparser.h"
 #include <QTimer>
 
 enum class StreamerStartResult
@@ -38,7 +37,7 @@ enum class GCodeItemGroup
 
 struct GCodeItem
 {
-    enum States { InQueue = 0, Sent, Processed, Error, Skipped, Comment };
+    enum States { InQueue = 0, EmptyLine, Sent, Processed, Error, Skipped, Comment };
 
     QString rawLine;
     QString command;
@@ -48,7 +47,6 @@ struct GCodeItem
     States state = InQueue;
     QStringList args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
-    PointSegment* ps = nullptr;
 
     bool isArc() const {
         return command.startsWith('G') && (command == "G2" || command == "G3");
@@ -114,7 +112,6 @@ class GCode : public QObject
     private:
         int m_commandIndex;
         int m_processedCommandIndex;
-        GcodeParser m_parser;
         QList<GCodeItem> m_data;
         int m_linesUpdatedFrom = INT_MAX;
         int m_linesUpdatedTo = INT_MIN;
