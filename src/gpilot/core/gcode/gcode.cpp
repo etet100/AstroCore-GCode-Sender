@@ -84,7 +84,7 @@ QString GCode::calculateHash() const
 {
     QCryptographicHash hash(QCryptographicHash::Md5);
     for (const GCodeItem& item : m_data) {
-        hash.addData(item.rawLine.toUtf8());
+        hash.addData(item.line.toUtf8());
     }
 
     return QLatin1String(hash.result().toHex());
@@ -123,18 +123,10 @@ void GCode::setCommandSkipped()
     addUpdatedRange(m_commandIndex);
 }
 
-void GCode::insertLines(int at, QString text)
-{
-    // @TODO Implement
-
-    emit linesUpdated(0, m_data.count() - 1);
-}
-
 void GCode::deleteLines(int from, int to)
 {
-    m_data.erase(m_data.begin() + from, m_data.begin() + to + 1);
+    m_data.remove(from, to - from + 1);
 
-    addUpdatedRange(from);
     // All lines after 'to' are also updated because their indices have changed
     emit linesUpdated(from, m_data.count() - 1);
 }
@@ -143,17 +135,29 @@ QString GCode::linesAsText(int from, int to)
 {
     QStringList lines;
     for (int i = from; i <= to; i++) {
-        lines.append(m_data[i].rawLine);
+        lines.append(m_data[i].line);
     }
 
     return lines.join("\n");
 }
 
-void GCode::replaceLinesFromText(int from, int to, QString text)
+void GCode::replace(int from, int to, GCode &gcode)
 {
-    // @TODO Implement
+    m_data.remove(from, to - from + 1);
 
-    emit linesUpdated(from, to);
+    int i = 0;
+    for (auto& item : gcode) {
+        m_data.insert(from + i, item);
+        i++;
+    }
+
+    // Mark both removed and added lines as updated, does it make sense?
+    for (int i = from; i < std::max(to, from + gcode.count()); i++) {
+        addUpdatedRange(i);
+    }
+
+    // All lines after 'to' are also updated because their indices have changed
+    emit linesUpdated(from, m_data.count() - 1);
 }
 
 void GCode::onLinesUpdatedTimer()

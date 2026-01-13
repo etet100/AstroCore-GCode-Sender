@@ -55,8 +55,8 @@ StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
         qDebug() << "[ConnectingBehavior] Connection not established. Giving up.";
         log("Connection not established. Giving up.", {"Connecting", m_communicator->connection()->name()});
 
-        m_communicator->connection()->deleteLater();
-        m_communicator->setConnection(nullptr, true);
+        // m_communicator->connection()->deleteLater();
+        // m_communicator->setConnection(nullptr, true);
     }
 
     return StateBehavior::onExit(next);

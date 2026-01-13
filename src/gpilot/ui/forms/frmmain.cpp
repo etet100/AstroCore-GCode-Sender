@@ -57,7 +57,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 #endif
     m_heightmap(),
     m_connectionManager(this, configuration.connectionModule()),
-    m_connection(nullptr),
     m_program(),
     m_timeEstimator(m_timer),
     m_configuration(configuration)
@@ -1877,7 +1876,10 @@ void FrmMain::programEditLines(int from, int to)
     DlgEditProgram dlg(this);
     dlg.setProgramText(m_program.linesAsText(from, to));
     if (dlg.exec() == QDialog::Accepted) {
-        m_program.replaceLinesFromText(from, to, dlg.programText());
+        GCode gcode;
+        QStringList lines = dlg.programText().split("\n");
+        GcodePreprocessorUtils::parseLines(lines, gcode);
+        m_program.replace(from, to, gcode);
 
         updateParser();
     }
@@ -1890,7 +1892,14 @@ void FrmMain::programInsertLines(int current, bool before)
 
     DlgEditProgram dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
-        m_program.insertLines(before ? current : current + 1, dlg.programText());
+        GCode gcode;
+        QStringList lines = dlg.programText().split("\n");
+        GcodePreprocessorUtils::parseLines(lines, gcode);
+        m_program.replace(
+            before ? current : current + 1,
+            before ? current : current + 1,
+            gcode
+        );
 
         updateParser();
     }
@@ -2582,103 +2591,99 @@ void FrmMain::updateParser()
 {
     assert(m_communicator->isMachineConfigurationReady());
 
-    GCodeViewParser *viewParse = ui->visualizer->getCurrentParser();
-
-    GcodeParser parser;
-    parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
-    if (m_configuration.visualizerModule().ignoreZ()) {
-        parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    if (m_visualizer_updater) {
+        // Update in progress, cancel it
+        m_visualizer_updater->cancel();
+        m_visualizer_updater = nullptr;
     }
 
-    ui->program->setTableUpdatesEnabled(false);
+    m_visualizer_updater = new GCodeThreadedLoader(this);
+    connect(m_visualizer_updater, &GCodeThreadedLoader::cancelled, this, [this]() {
+        m_visualizer_updater->deleteLater();
+        m_visualizer_updater = nullptr;
+    });
+    connect(m_visualizer_updater, &GCodeThreadedLoader::finished, this, [this](GCodeLoaderData *data) {
+        this->applyUpdaterGCode(data);
+        delete data;
+        m_visualizer_updater->deleteLater();
+        m_visualizer_updater = nullptr;
+    });
 
-    QString stripped;
-    QList<QString> args;
+    GCodeLoaderConfiguration configuration(m_configuration.parserModule());
+    m_visualizer_updater->update(&m_program, configuration);
 
-    QProgressDialog progress(tr("Updating..."), tr("Abort"), 0, ui->program->currentModelRowCount() - 2, this);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setFixedSize(progress.sizeHint());
 
-    if (ui->program->currentModelRowCount() > PROGRESSMINLINES) {
-        progress.show();
-        progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
-    }
+    // GCodeViewParser *viewParse = ui->visualizer->getCurrentParser();
 
-    for (int i = 0; i < ui->program->currentModelRowCount() - 1; i++) {
-        // Get stored args
-        args = (*m_currentProgram)[i].args;
+    // GcodeParser parser;
+    // parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
+    // if (m_configuration.visualizerModule().ignoreZ()) {
+    //     parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+    // }
 
-        // Store args if none
-        if (args.isEmpty()) {
-            stripped = GcodePreprocessorUtils::removeComment((*m_currentProgram)[i].command);
-            args = GcodePreprocessorUtils::splitCommand(stripped);
-            (*m_currentProgram)[i].args = args;
-        }
+    // ui->program->setTableUpdatesEnabled(false);
 
-        // Add command to parser
-        parser.addCommand(args);
+    // QString stripped;
+    // QList<QString> args;
 
-        // Update table model
-        (*m_currentProgram)[i].state = GCodeItem::InQueue;
-        (*m_currentProgram)[i].response = QString();
-        (*m_currentProgram)[i].lineNumber = parser.getCommandNumber();
+    // QProgressDialog progress(tr("Updating..."), tr("Abort"), 0, ui->program->currentModelRowCount() - 2, this);
+    // progress.setWindowModality(Qt::WindowModal);
+    // progress.setFixedSize(progress.sizeHint());
 
-        if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
-            progress.setValue(i);
-            qApp->processEvents();
-            if (progress.wasCanceled()) break;
-        }
-    }
-    progress.close();
+    // if (ui->program->currentModelRowCount() > PROGRESSMINLINES) {
+    //     progress.show();
+    //     progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
+    // }
 
-    ui->program->setTableUpdatesEnabled(true);
+    // for (int i = 0; i < ui->program->currentModelRowCount() - 1; i++) {
+    //     // Get stored args
+    //     args = (*m_currentProgram)[i].args;
 
-    viewParse->reset();
+    //     // Store args if none
+    //     if (args.isEmpty()) {
+    //         stripped = GcodePreprocessorUtils::removeComment((*m_currentProgram)[i].command);
+    //         args = GcodePreprocessorUtils::splitCommand(stripped);
+    //         (*m_currentProgram)[i].args = args;
+    //     }
 
-    ConfigurationParser &configurationParser = m_configuration.parserModule();
+    //     // Add command to parser
+    //     parser.addCommand(args);
 
-    // updateProgramEstimatedTime(
-        // viewParse->getLinesFromParser(
-        //     &parser,
-        //     configurationParser.arcApproximationValue(),
-        //     configurationParser.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
-        // )
-    // );
-    ui->visualizer->updateCurrentDrawerGeometry();
-    ui->visualizer->updateGCodeExtremes();
-    updateControlsState();
+    //     // Update table model
+    //     (*m_currentProgram)[i].state = GCodeItem::InQueue;
+    //     (*m_currentProgram)[i].response = QString();
+    //     (*m_currentProgram)[i].lineNumber = parser.getCommandNumber();
 
-    if (ui->program->isCurrentModelProgramModel()) {
-        FilesManager& fm = FilesManager::instance();
-        fm.setGcodeModified(true);
-    }
+    //     if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
+    //         progress.setValue(i);
+    //         qApp->processEvents();
+    //         if (progress.wasCanceled()) break;
+    //     }
+    // }
+    // progress.close();
+
+    // ui->program->setTableUpdatesEnabled(true);
+
+    // viewParse->reset();
+
+    // ConfigurationParser &configurationParser = m_configuration.parserModule();
+
+    // // updateProgramEstimatedTime(
+    //     // viewParse->getLinesFromParser(
+    //     //     &parser,
+    //     //     configurationParser.arcApproximationValue(),
+    //     //     configurationParser.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+    //     // )
+    // // );
+    // ui->visualizer->updateCurrentDrawerGeometry();
+    // ui->visualizer->updateGCodeExtremes();
+    // updateControlsState();
+
+    // if (ui->program->isCurrentModelProgramModel()) {
+    //     FilesManager& fm = FilesManager::instance();
+    //     fm.setGcodeModified(true);
+    // }
 }
-
-// @TODO scripting only??
-// void FrmMain::storeOffsetsVars(QString response)
-// {
-//     static QRegularExpression gx("\\[(G5[4-9]|G28|G30|G92|PRB):([\\d\\.\\-]+),([\\d\\.\\-]+),([\\d\\.\\-]+)");
-//     static QRegularExpression tx("\\[(TLO):([\\d\\.\\-]+)");
-
-//     int p = 0;
-//     while ((p = gx.indexIn(response, p)) != -1) {
-//         m_storedVars.setCoords(gx.cap(1), QVector3D(
-//             gx.cap(2).toDouble(),
-//             gx.cap(3).toDouble(),
-//             gx.cap(4).toDouble()
-//         ));
-
-//         p += gx.matchedLength();
-//     }
-
-//     if (tx.indexIn(response) != -1) {
-//         m_storedVars.setCoords(tx.cap(1), QVector3D(
-//             0,
-//             0,
-//             tx.cap(2).toDouble()
-//         ));
-//     }
-// }
 
 void FrmMain::loadFile(QString filePath)
 {
@@ -2705,6 +2710,86 @@ void FrmMain::loadFile(QString filePath)
     loader->loadFromFile(filePath, configuration);
 }
 
+void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
+{
+    qDebug() << "[FrmMain] Finished updating visualizer data";
+
+    assert(m_communicator->isMachineConfigurationReady());
+    if (!m_communicator->isMachineConfigurationReady()) {
+        return;
+    }
+
+    // Reset tables
+    // clearTable();
+    // ui->program->clearProbeModel();
+    // ui->program->clearProgramHeightmapModel();
+    // updateCurrentModel(&m_programModel);
+
+    // Reset parsers
+    // m_viewParser.reset();
+    // m_probeParser.reset();
+
+    // Reset code drawer
+    // ui->visualizer->useCodeDrawer();
+    m_viewParser = *data->viewParser;
+    // ui->visualizer->loadNewProgram();
+
+    // Update interface
+    // ui->heightmap->resetUseHeighmap();
+    // ui->grpHeightmap->setProperty("overrided", false);
+    // Utils::refreshStyle(ui->grpHeightmap);
+
+    // Reset tableview
+    // QByteArray headerState = ui->program->saveProgramHeaderState();
+    // ui->program->setProgramTableModel(nullptr);
+
+    // // Prepare parser
+    // GcodeParser parser;
+    // parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
+    // if (m_codeDrawer->getIgnoreZ()) parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+
+    // Block parser updates on table changes
+    // m_programLoading = true;
+
+    // Prepare model
+    // {
+    //     QSignalBlocker blocker(m_program);
+    //     m_program.clear();
+    //     m_program.reset();
+    // }
+    // m_program << *data->gcode;
+
+    // ui->program->addProgramModelRow();
+
+    // Calculate initial time estimation
+    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+        m_viewParser.getLines(),
+        ui->overrides->targetFeed(),
+        ui->overrides->targetRapid()
+    );
+    ui->visualizer->setEstimatedTime(estimatedTime);
+    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+
+    ui->visualizer->setCodeParser(&m_viewParser);
+    ui->visualizer->updateCodeDrawer();
+
+    // m_programLoading = false;
+
+    // Set table model
+    // ui->program->switchToProgramModel();
+    // ui->program->restoreHeaderState(headerState);
+
+    // Update tableview
+    // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    // ui->program->selectFirstRow();
+
+    //  Update code drawer
+    // ui->visualizer->fitCodeDrawer();
+
+    // resetHeightmap();
+    // updateControlsState();
+}
+
 void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
     qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
@@ -2721,7 +2806,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // updateCurrentModel(&m_programModel);
 
     // Reset parsers
-    m_viewParser.reset();
+    // m_viewParser.reset();
     m_probeParser.reset();
 
     // Reset code drawer
@@ -2758,7 +2843,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     // Calculate initial time estimation
     QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
-        data->viewParser->getLines(),
+        m_viewParser.getLines(),
         ui->overrides->targetFeed(),
         ui->overrides->targetRapid()
     );
@@ -2776,6 +2861,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->program->selectFirstRow();
 
     //  Update code drawer
+    ui->visualizer->setCodeParser(&m_viewParser);
     ui->visualizer->updateCodeDrawer();
     ui->visualizer->fitCodeDrawer();
 

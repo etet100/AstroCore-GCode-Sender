@@ -39,7 +39,7 @@ struct GCodeItem
 {
     enum States { InQueue = 0, EmptyLine, Sent, Processed, Error, Skipped, Comment };
 
-    QString rawLine;
+    QString line;
     QString command;
     QString comment;
     QString response;
@@ -81,7 +81,7 @@ class GCode : public QObject
         void insertLines(int, QString text);
         void deleteLines(int from, int to);
         QString linesAsText(int from, int to);
-        void replaceLinesFromText(int from, int to, QString text);
+        void replace(int from, int to, GCode& gcode);
         GCode& operator << (const GCodeItem& item) {
             m_data.append(item);
             emit linesUpdated(m_data.count() - 1, m_data.count() - 1);

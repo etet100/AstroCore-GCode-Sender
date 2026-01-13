@@ -7,23 +7,20 @@ GCodeThreadedLoader::GCodeThreadedLoader(QObject* parent) : AbstractGCodeLoader(
 {
 }
 
+GCodeThreadedLoader::~GCodeThreadedLoader()
+{
+    if (m_thread) {
+        delete m_thread;
+    }
+}
+
 void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration)
 {
-    GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
+    m_thread = new GCodeLoaderWorker(
         configuration,
         fileName
     );
-
-    connect(m_thread, &GCodeLoaderWorker::progress, this, [this](int value){
-        emit progress(value);
-    });
-    connect(m_thread, &GCodeLoaderWorker::finished, this, [this](GCodeLoaderData* result){
-        emit finished(result);
-    });
-    connect(m_thread, &GCodeLoaderWorker::cancelled, this, [this](){
-        emit cancelled();
-    });
-
+    connectSignals();
     m_thread->start();
 
     emit started();
@@ -31,24 +28,24 @@ void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfi
 
 void GCodeThreadedLoader::loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration)
 {
-    GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
+    m_thread = new GCodeLoaderWorker(
         configuration,
         lines
     );
-
-    m_thread->run();
+    connectSignals();
+    m_thread->start();
 
     emit started();
 }
 
 void GCodeThreadedLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
 {
-    GCodeLoaderWorker *m_thread = new GCodeLoaderWorker(
+    m_thread = new GCodeLoaderWorker(
         configuration,
         gcode
     );
-
-    m_thread->run();
+    connectSignals();
+    m_thread->start();
 
     emit started();
 }
@@ -56,6 +53,27 @@ void GCodeThreadedLoader::update(GCode* gcode, GCodeLoaderConfiguration& configu
 void GCodeThreadedLoader::cancel()
 {
     m_thread->requestInterruption();
+}
+
+void GCodeThreadedLoader::deleteThread()
+{
+    m_thread->deleteLater();
+    m_thread = nullptr;
+}
+
+void GCodeThreadedLoader::connectSignals()
+{
+    connect(m_thread, &GCodeLoaderWorker::progress, this, [this](int value){
+        emit progress(value);
+    });
+    connect(m_thread, &GCodeLoaderWorker::finished, this, [this](GCodeLoaderData* result){
+        emit finished(result);
+        deleteThread();
+    });
+    connect(m_thread, &GCodeLoaderWorker::cancelled, this, [this](){
+        emit cancelled();
+        deleteThread();
+    });
 }
 
 GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const QString &fileName, QObject *parent)
@@ -90,7 +108,9 @@ void GCodeLoaderWorker::run() {
         [this](int value) { emit progress(value); }, Qt::QueuedConnection);
     connect(
         &loader, &GCodeLoader::finished, this,
-        [this](GCodeLoaderData *result) { emit finished(result); },
+        [this](GCodeLoaderData *result) {
+            emit finished(result);
+        },
         Qt::QueuedConnection);
     connect(
         &loader, &GCodeLoader::cancelled, this,

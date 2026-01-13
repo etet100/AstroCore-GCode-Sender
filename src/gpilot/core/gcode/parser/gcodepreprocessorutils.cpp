@@ -45,25 +45,32 @@ static inline std::string &trim(std::string &s)
     return ltrim(rtrim(s));
 }
 
+void GcodePreprocessorUtils::parseLines(QStringList& lines, GCode& gcode)
+{
+    for (auto& line : lines) {
+        GCodeItem item = GcodePreprocessorUtils::parseLine(line.toStdString());
+        if (item.state == GCodeItem::EmptyLine) {
+            continue;
+        }
+        gcode << item;
+    }
+}
+
 GCodeItem GcodePreprocessorUtils::parseLine(std::string line)
 {
-    std::string command;
-    std::string stripped;
-    std::string comment;
-    QStringList args;
-    std::string trimmed = GcodePreprocessorUtils::trimCommand(line);
+    line = GcodePreprocessorUtils::trimCommand(line);
 
-    if (trimmed.empty()) {
+    if (line.empty()) {
         return {
             .state = GCodeItem::EmptyLine
         };
     }
 
     // Split command
-    stripped = GcodePreprocessorUtils::removeComment(trimmed);
-    args = GcodePreprocessorUtils::splitCommand(stripped);
-    comment = GcodePreprocessorUtils::getComment(command);
-    if (stripped.empty() && comment.empty()) {
+    std::string command = GcodePreprocessorUtils::removeComment(line);
+    QStringList args = GcodePreprocessorUtils::splitCommand(command);
+    std::string comment = GcodePreprocessorUtils::getComment(line);
+    if (command.empty() && comment.empty()) {
         return {
             .state = GCodeItem::EmptyLine
         };
@@ -71,15 +78,15 @@ GCodeItem GcodePreprocessorUtils::parseLine(std::string line)
 
     GCodeItemGroup group = GCodeItemGroup::Unknown; // TODO: determine group
     GCodeItem::States state = GCodeItem::InQueue;
-    if (stripped.empty()) {
+    if (command.empty()) {
         state = GCodeItem::Comment;
         group = GCodeItemGroup::Comment;
     }
 
     return {
-        .rawLine = QString::fromStdString(trimmed),
-        .command = QString::fromStdString(stripped),
-        .comment = QString::fromStdString(GcodePreprocessorUtils::getComment(command)),
+        .line = QString::fromStdString(line),
+        .command = QString::fromStdString(command),
+        .comment = QString::fromStdString(comment),
         .state = state,
         .args = args,
         .group = group

@@ -41,6 +41,7 @@ class GCodeThreadedLoader : public AbstractGCodeLoader
 
     public:
         GCodeThreadedLoader(QObject *parent = nullptr);
+        ~GCodeThreadedLoader();
         void loadFromFile(const QString &fileName, GCodeLoaderConfiguration &configuration) override;
         void loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration) override;
         void update(GCode* gcode, GCodeLoaderConfiguration &configuration) override;
@@ -48,6 +49,8 @@ class GCodeThreadedLoader : public AbstractGCodeLoader
 
     private:
         GCodeLoaderWorker *m_thread;
+        void connectSignals();
+        void deleteThread();
 };
 
 #endif // GCODETHREADEDLOADER_H

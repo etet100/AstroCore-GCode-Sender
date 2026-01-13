@@ -35,7 +35,8 @@ public:
     void setSpeedOverride(double speedOverride);
     int getTruncateDecimalLength();
     void setTruncateDecimalLength(int truncateDecimalLength);
-    void reset(const QVector3D &initialPoint = QVector3D(qQNaN(), qQNaN(), qQNaN()));
+    // Theoretically the initial point is unknown, can we assume (0,0,0)?
+    void reset(const QVector3D &initialPoint = QVector3D(0, 0, 0));
     PointSegment *addCommand(QString command);
     PointSegment *addCommand(const QStringList &args);
     PointSegment *addCommand(const GCodeItem &gcodeItem);

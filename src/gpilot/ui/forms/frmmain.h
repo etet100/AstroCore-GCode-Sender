@@ -28,7 +28,7 @@
 #include "core/gcode/gcode.h"
 #include "core/globals.h"
 #include "core/gcode/loader/gcodeloader.h"
-
+#include "core/gcode/loader/gcodethreadedloader.h"
 #include "io/connection/connection.h"
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmainprogram.h"
@@ -226,7 +226,7 @@ private:
 
     // @TODO to be moved to separate core class
     ConnectionManager m_connectionManager;
-    Connection *m_connection;
+    Connection *m_connection = nullptr;
     Communicator *m_communicator;
     GCode m_program;
     GCode *m_currentProgram = &m_program;
@@ -277,12 +277,14 @@ private:
     // QString evaluateCommand(QString command);
 
     // Parser
+    GCodeThreadedLoader *m_visualizer_updater = nullptr;
     void updateParser();
 
     // Files/models
     void loadFile(QString filePath);
     void loadLines(QList<std::string> data);
     void applyLoaderGCode(GCodeLoaderData *data);
+    void applyUpdaterGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
     void clearTable();
     void resetHeightmap();
