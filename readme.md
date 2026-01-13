@@ -34,6 +34,16 @@ The main user interface consists of a single window that contains all the contro
 
 The size of interface elements can be adjusted to fit your screen resolution. You can scale the interface from 80% to 140%, which is equal to font sizes from 8 to 14. You can change the scale in the settings panel, in the `view` menu of the main window, or by using the keyboard shortcuts `Ctrl+` (to increase) or `Ctrl-` (to decrease) the scale. Scale changes take effect immediately.
 
+## G-code Editing
+
+After loading, the G-code can be edited directly in the program. You can edit a single line in place, edit a range of lines, add one or more new lines, or delete lines. After each edit, the preview updates immediately.
+
+For editing multiple lines, a simple editor with syntax highlighting is available.
+
+You can also save the edited file at any time.
+
+![gcode editor](/screenshots/screenshot_edit_gcode.png)](/screenshots/screenshot_gcode_editor.png)
+
 ## Download & Install (prerelease)
 
 Automatic builds are available as a zip (portable) file and as an installer (created with Qt Installer Framework).
