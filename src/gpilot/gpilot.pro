@@ -83,6 +83,8 @@ win32-msvc*: {
 # don't create both debug and release folders
 CONFIG -= debug_and_release
 
+CONFIG -= qml_debug
+
 SOURCES += main.cpp\
     core/communicator/communicator.cpp \
     core/communicator/communicator_processing_response.cpp \

@@ -72,6 +72,7 @@ struct CentralWidgetConfig {
     QWidget* widget;
     QDockWidget* dock;
     QAction* action;
+    QString name;
     QString title;
 };
 
@@ -184,6 +185,7 @@ private slots:
     // void onProgramLinesUpdated(int from, int to);
     // void updateHeightmapInterpolationDrawer(bool reset = false);
     void onHeightmapDataChangedByUser();
+    void centralWidgetActionTriggered(bool checked);
 
 protected:
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -261,7 +263,8 @@ private:
     // Central widget management
     QList<CentralWidgetConfig> m_centralWidgets;
     void initializeCentralWidgets();
-    void switchCentralWidget(QAction* action);
+    void switchCentralWidget(CentralWidgetConfig* config);
+    void restoreCentralWidget();
 
     // Settings
     void preloadSettings();
@@ -325,7 +328,7 @@ private:
     void applyJoggingConfiguration(ConfigurationJogging &joggingConfiguration);
     void appendPanel(DropWidget *dockPanel, const QString name, const QString title, QWidget *panel);
     void appendSpacer(DropWidget *dockPanel);
-    void addDockableWindow(const QString title, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
+    void addDockableWindow(const QString title, const QString name, QWidget *window, Qt::DockWidgetArea area, Qt::Orientation orientation);
     void restoreDockableLayoutState();
     void initializeUiScaleMenu();
     void setHeightmapPoint(QPoint point, double height);

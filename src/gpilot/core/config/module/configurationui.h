@@ -42,6 +42,7 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(QStringList panelUserState MEMBER m_panelUserState NOTIFY changed)
     Q_PROPERTY(QStringList hiddenPanels MEMBER m_hiddenPanels NOTIFY changed)
     Q_PROPERTY(QStringList collapsedPanels MEMBER m_collapsedPanels NOTIFY changed)
+    Q_PROPERTY(QString centralWidget MEMBER m_centralWidget NOTIFY changed)
 
     public:
         explicit ConfigurationUI(QObject *parent);
@@ -89,6 +90,8 @@ class ConfigurationUI : public ConfigurationModule
         void setHiddenPanels(const QStringList &panels) { m_hiddenPanels = panels; emit changed(); }
         QStringList collapsedPanels() const { return m_collapsedPanels; }
         void setCollapsedPanels(const QStringList &panels) { m_collapsedPanels = panels; emit changed(); }
+        QString centralWidget() const { return m_centralWidget; }
+        void setCentralWidget(const QString &widget) { m_centralWidget = widget; emit changed(); }
 
     private:
         static const int MAX_RECENT_FILES = 10;
@@ -113,6 +116,7 @@ class ConfigurationUI : public ConfigurationModule
         bool m_grblConfigratorFormMaximized;
         QList<int> m_settingsFormSlicerSizes;
         bool m_darkMode;
+        QString m_centralWidget;
 };
 
 #endif // CONFIGURATIONUI_H

@@ -399,10 +399,13 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // Camera
     addDockableWindow(
         "Camera",
+        "camera",
         new Camera(this),
         Qt::TopDockWidgetArea,
         Qt::Horizontal
     );
+
+    restoreCentralWidget();
 
     // After everything is set up, restore layout
     restoreDockableLayoutState();
@@ -918,15 +921,13 @@ void FrmMain::on_actViewDarkMode_toggled(bool checked)
 
 void FrmMain::on_actViewCentralProgram_toggled(bool checked)
 {
-    Q_UNUSED(checked);
-    switchCentralWidget(ui->actViewCentralProgram);
+    centralWidgetActionTriggered(checked);
 }
 
 // Visualiser in central widget, program docked, hide empty visualizer dock
 void FrmMain::on_actViewCentralVisualizer_toggled(bool checked)
 {
-    Q_UNUSED(checked);
-    switchCentralWidget(ui->actViewCentralVisualizer);
+    centralWidgetActionTriggered(checked);
 }
 
 void FrmMain::decreaseUiScale()
@@ -1591,6 +1592,10 @@ void FrmMain::on_menuViewWindows_aboutToShow()
     QList<QAction*> al;
 
     foreach (QDockWidget *dock, findChildren<QDockWidget*>()) {
+        if (dock->property("cw").toBool() == true) {
+            // central widget cannot be hide/show
+            continue;
+        }
         action = new QAction(dock->windowTitle(), ui->menuViewWindows);
         action->setCheckable(true);
         action->setChecked(dock->isVisible());
@@ -2514,10 +2519,10 @@ void FrmMain::appendSpacer(DropWidget *dockPanel)
     layout->setStretchFactor(grp, 1);
 }
 
-void FrmMain::addDockableWindow(const QString title, QWidget *widget, Qt::DockWidgetArea area, Qt::Orientation orientation)
+void FrmMain::addDockableWindow(const QString title, const QString name, QWidget *widget, Qt::DockWidgetArea area, Qt::Orientation orientation)
 {
     QDockWidget *dock = new QDockWidget(tr(title.toStdString().c_str()));
-    dock->setObjectName(title);
+    dock->setObjectName("dock-" + name);
     dock->setMinimumHeight(200);
     dock->setWidget(widget);
     Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
@@ -2527,15 +2532,15 @@ void FrmMain::addDockableWindow(const QString title, QWidget *widget, Qt::DockWi
     QAction* action = new QAction(title, ui->menuCentralWidget);
     action->setCheckable(true);
     action->setChecked(false);
-    connect(action, &QAction::triggered, this, [this, action]() {
-        switchCentralWidget(action);
-    });
+    // connect(action, &QAction::triggered, this, &FrmMain::centralWidgetActionTriggered);
+    connect(action, &QAction::triggered, this, &FrmMain::centralWidgetActionTriggered);
     ui->menuCentralWidget->addAction(action);
 
     m_centralWidgets.append({
         widget,
         dock,
         action,
+        name,
         title
     });
 }
@@ -3097,8 +3102,10 @@ void FrmMain::updateControlsState()
     // m_heightmapGridDrawer.setVisible(true);//ui->chkHeightMapGridShow->isChecked() && m_heightmapMode);
     ui->visualizer->setHeightmapInterpolationVisible(ui->heightmap->showInterpolationGrid() && m_heightmapMode);
 
-    ui->centralWidgetTitle->setTitle(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
-    ui->centralWidgetTitle->setProperty("overrided", m_heightmapMode);
+    // TODO Central widget
+    // We can't do this since we don't know what is our current central widget
+    // ui->centralWidgetTitle->setTitle(m_heightmapMode ? tr("Heightmap") : tr("G-code program"));
+    // ui->centralWidgetTitle->setProperty("overrided", m_heightmapMode);
 
     // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
@@ -3559,34 +3566,32 @@ bool FrmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
 void FrmMain::initializeCentralWidgets()
 {
     m_centralWidgets = {
-        {ui->program, ui->dockProgram, ui->actViewCentralProgram, "G-code program"},
-        {ui->visualizer, ui->dockVisualizer, ui->actViewCentralVisualizer, "Visualizer"}
+        {ui->program, ui->dockProgram, ui->actViewCentralProgram, "program", "G-code program"},
+        {ui->visualizer, ui->dockVisualizer, ui->actViewCentralVisualizer, "visualizer", "Visualizer"}
     };
 }
 
-void FrmMain::switchCentralWidget(QAction* action)
+void FrmMain::centralWidgetActionTriggered(bool checked)
 {
+    QAction* action = qobject_cast<QAction*>(sender());
+
     // If action is being unchecked, re-check it and return
-    if (!action->isChecked()) {
+    if (!checked) {
         const QSignalBlocker blocker(action);
         action->setChecked(true);
         return;
     }
 
-    // Find requested widget config
-    CentralWidgetConfig* requestedConfig = nullptr;
     for (auto& config : m_centralWidgets) {
         if (config.action == action) {
-            requestedConfig = &config;
+            switchCentralWidget(&config);
             break;
         }
     }
+}
 
-    if (!requestedConfig) {
-        return;
-    }
-
-    // Find and undock current central widget
+void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
+{
     CentralWidgetConfig* currentConfig = nullptr;
     for (auto& config : m_centralWidgets) {
         if (config.widget->parentWidget() == ui->centralWidget) {
@@ -3601,13 +3606,13 @@ void FrmMain::switchCentralWidget(QAction* action)
 
     // Uncheck all other actions
     for (auto& config : m_centralWidgets) {
-        if (config.action != action) {
+        if (config.name != requestedConfig->name) {
             const QSignalBlocker blocker(config.action);
             config.action->setChecked(false);
+            config.dock->setProperty("cw", false);
         }
     }
 
-    // Remember visibility state of requested dock
     bool dockWasVisible = requestedConfig->dock->isVisible();
 
     // Undock requested widget
@@ -3624,6 +3629,26 @@ void FrmMain::switchCentralWidget(QAction* action)
     // Add requested widget to central
     ui->centralWidget->layout()->addWidget(requestedConfig->widget);
     ui->centralWidgetTitle->setTitle(requestedConfig->title);
+
+    m_configuration.uiModule().setCentralWidget(requestedConfig->name);
+    const QSignalBlocker blocker(requestedConfig->action);
+    requestedConfig->action->setChecked(true);
+    requestedConfig->dock->setProperty("cw", true);
+}
+
+void FrmMain::restoreCentralWidget()
+{
+    QString centralWidgetName = m_configuration.uiModule().centralWidget();
+    if (centralWidgetName.isEmpty()) {
+        return;
+    }
+
+    for (auto& config : m_centralWidgets) {
+        if (config.name == centralWidgetName) {
+            switchCentralWidget(&config);
+            break;
+        }
+    }
 }
 
 void FrmMain::setHeightmapPoint(QPoint point, double height)
