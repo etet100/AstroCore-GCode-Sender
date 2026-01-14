@@ -26,20 +26,17 @@ public:
     PointSegment(const QVector3D *b, int num);
     PointSegment(QVector3D *point, int num, QVector3D *center, double radius, bool clockwise);
     ~PointSegment();
-    void setPoint(QVector3D m_point);
     QVector3D* point();
 
     QVector<double> points();
-    void setToolHead(int head);
     int getToolhead();
-    void setLineNumber(int num);
     int getLineNumber();
-    void setSpeed(double s);
     double getSpeed();
-    void setIsZMovement(bool isZ);
+    void setSpeed(double s);
     bool isZMovement();
-    void setIsMetric(bool m_isMetric);
+    void setIsZMovement(bool isZ);
     bool isMetric();
+    void setIsMetric(bool m_isMetric);
     void setIsArc(bool isA);
     bool isArc();
     void setIsFastTraverse(bool isF);
@@ -52,33 +49,31 @@ public:
     void setRadius(double rad);
     double getRadius();
     void convertToMetric();
-
     bool isAbsolute() const;
     void setIsAbsolute(bool isAbsolute);
-
     planes plane() const;
     void setPlane(const planes &plane);
-
     double getSpindleSpeed() const;
     void setSpindleSpeed(double spindleSpeed);
-
     double getDwell() const;
     void setDwell(double dwell);
 
 private:
     ArcProperties *m_arcProperties;
-    int m_toolhead;
-    double m_speed;
-    double m_spindleSpeed;
-    double m_dwell;
-    QVector3D *m_point;
-    bool m_isMetric;
-    bool m_isZMovement;
-    bool m_isArc;
-    bool m_isFastTraverse;
-    bool m_isAbsolute;
-    int m_lineNumber;
-    planes m_plane;
+    int m_toolhead = 0;
+    double m_speed = 0;
+    double m_spindleSpeed = 0;
+    double m_dwell = 0;
+    QVector3D *m_point = nullptr;
+    bool m_isMetric = true;
+    bool m_isZMovement = false;
+    bool m_isArc = false;
+    bool m_isFastTraverse = false;
+    bool m_isAbsolute = true;
+    int m_lineNumber = -1;
+    planes m_plane = XY;
+
+    void setToolHead(int head);
 };
 
 #endif // POINTSEGMENT_H

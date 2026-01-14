@@ -120,7 +120,7 @@ QList<LineSegment>& GCodeViewParser::getLinesFromParser(GcodeParser *parser, dou
 
         // start is null for the first iteration.
         if (start != nullptr) {
-            // Expand arc for graphics.            
+            // Expand arc for graphics.
             if (ps->isArc()) {
                 QList<QVector3D> points =
                     GcodePreprocessorUtils::generatePointsAlongArcBDring(ps->plane(),
@@ -184,7 +184,7 @@ QList<LineSegment>& GCodeViewParser::getLines()
     return m_lines;
 }
 
-QVector<QList<int>>& GCodeViewParser::getLinesIndexes()
+QList<QList<int>>& GCodeViewParser::getLinesIndexes()
 {
     return m_lineIndexes;
 }
