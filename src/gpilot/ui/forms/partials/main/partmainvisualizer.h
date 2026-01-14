@@ -38,7 +38,7 @@ class PartMainVisualizer : public QWidget
         void fitCodeDrawer();
 
         void initDrawables();
-        void setCodeParser(GCodeViewParser* parser);
+        void setProgram(GCode* program, GCodeViewParser* parser);
         void setProbeParser(GCodeViewParser* parser);
 
         void updateCodeDrawer(const QList<int>& indexes);
@@ -75,8 +75,8 @@ class PartMainVisualizer : public QWidget
         // High-level API for program operations
         void loadNewProgram();
         void resetVisualization();
-        void updateToolpathHighlighting(int currentRow, int previousRow, GCode& program);
-        void updateToolTracking(QVector3D toolPosition, int processedLineIndex, GCode& program);
+        void updateToolpathHighlighting(int currentRow, int previousRow);
+        void updateToolTracking(QVector3D toolPosition, int processedLineIndex);
         void resetLastDrawnLine();
         void finalizeTransfer();
 
@@ -155,8 +155,8 @@ class PartMainVisualizer : public QWidget
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
-        Heightmap* m_heightmap;
-        GCode& m_program;
+        Heightmap* m_heightmap = nullptr;
+        GCode* m_program = nullptr;
         bool m_ignoreZ;
         int m_lastDrawnLineIndex;
 

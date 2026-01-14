@@ -14,8 +14,6 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , ui(new Ui::partMainVisualizer)
     , m_heightmapBorderDrawer()
     , m_heightmapGridDrawer()
-    , m_heightmap(new Heightmap())
-    , m_program(*new GCode())
     , m_ignoreZ(false)
     , m_lastDrawnLineIndex(0)
 {
@@ -244,8 +242,9 @@ void PartMainVisualizer::fitCodeDrawer()
     ui->visualizer->fitDrawable(m_codeDrawer);
 }
 
-void PartMainVisualizer::setCodeParser(GCodeViewParser* parser)
+void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
 {
+    m_program = program;
     m_codeDrawer->setViewParser(parser);
 }
 
@@ -297,7 +296,7 @@ void PartMainVisualizer::reset()
     m_currentDrawer = m_codeDrawer;
     ui->visualizer->fitDrawable();
 
-    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    m_selectionDrawer.resetEndPosition();
     m_selectionDrawer.update();
 }
 
@@ -578,7 +577,7 @@ void PartMainVisualizer::loadNewProgram()
     m_currentDrawer = m_codeDrawer;
     ui->visualizer->fitDrawable(m_codeDrawer);
 
-    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    m_selectionDrawer.resetEndPosition();
     m_selectionDrawer.update();
 }
 
@@ -589,33 +588,41 @@ void PartMainVisualizer::resetVisualization()
     m_currentDrawer = m_codeDrawer;
     ui->visualizer->fitDrawable();
 
-    m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+    m_selectionDrawer.resetEndPosition();
     m_selectionDrawer.update();
 }
 
-void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previousRow, GCode& program)
+void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previousRow)
 {
-    if (program.empty()) {
+    if (!m_program || m_program->empty()) {
         return;
     }
 
-    int rowCurrent = qMin(currentRow, program.lastCommandIndex());
-    int rowPrevious = qMax(qMin(previousRow, program.lastCommandIndex()), 0);
+    int rowCurrent = qMin(currentRow, m_program->lastCommandIndex());
+    int rowPrevious = qMax(qMin(previousRow, m_program->lastCommandIndex()), 0);
+
+    qDebug() << "[PartMainVisualizer] Updating toolpath highlighting from row"
+             << rowPrevious << "to" << rowCurrent;
 
     GCodeViewParser *parser = m_currentDrawer->viewParser();
     QList<LineSegment>& list = parser->getLineSegmentList();
-    QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+    QVector<QList<int>>& lineIndexes = parser->getLinesIndexes();
+
+    GCodeItem& currentItem = m_program->at(rowCurrent);
+    GCodeItem& previousItem = m_program->at(rowPrevious);
+
+    qDebug() << "[PartMainVisualizer] Is movment:" << currentItem.isMovement;
 
     // Update linesegments on cell changed
     if (!m_currentDrawer->geometryUpdated()) {
-        int lineCurrent = program[rowCurrent].lineNumber;
+        int lineCurrent = currentItem.commandNumber;
         for (int i = 0; i < list.count(); i++) {
             list[i].setIsHightlight(list[i].getLineNumber() <= lineCurrent);
         }
     } else {
         // Update vertices on current cell changed
-        int lineCurrent = program[rowCurrent].lineNumber;
-        int linePrevious = program[rowPrevious].lineNumber;
+        int lineCurrent = currentItem.commandNumber;
+        int linePrevious = previousItem.commandNumber;
         if (linePrevious < lineCurrent) qSwap(linePrevious, lineCurrent);
 
         QList<int> indexes;
@@ -626,9 +633,15 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
             }
         }
 
-        m_selectionDrawer.setEndPosition(indexes.isEmpty() ? QVector3D(sNan, sNan, sNan) :
-            (m_ignoreZ ? QVector3D(list[indexes.last()].getEnd().x(), list[indexes.last()].getEnd().y(), 0)
-                       : list[indexes.last()].getEnd()));
+        if (indexes.isEmpty()) {
+            m_selectionDrawer.resetEndPosition();
+        } else {
+            QVector3D pos = list[indexes.first()].getEnd();
+            if (m_ignoreZ) {
+                pos.setZ(0);
+            }
+            m_selectionDrawer.setEndPosition(pos);
+        }
         m_selectionDrawer.update();
 
         if (!indexes.isEmpty()) {
@@ -637,17 +650,17 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
     }
 
     // Update selection marker
-    int line = program[rowCurrent].lineNumber;
+    int line = currentItem.commandNumber;
     if (line > 0 && line < lineIndexes.count() && !lineIndexes.at(line).isEmpty()) {
         QVector3D pos = list[lineIndexes.at(line).last()].getEnd();
         m_selectionDrawer.setEndPosition(m_ignoreZ ? QVector3D(pos.x(), pos.y(), 0) : pos);
     } else {
-        m_selectionDrawer.setEndPosition(QVector3D(sNan, sNan, sNan));
+        m_selectionDrawer.resetEndPosition();
     }
     m_selectionDrawer.update();
 }
 
-void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processedLineIndex, GCode& program)
+void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processedLineIndex)
 {
     m_toolDrawer.setToolPosition(m_ignoreZ ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 

@@ -43,10 +43,11 @@ struct GCodeItem
     QString command;
     QString comment;
     QString response;
-    int lineNumber;
+    int commandNumber;
     States state = InQueue;
     QStringList args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
+    bool isMovement = false;
 
     bool isArc() const {
         return command.startsWith('G') && (command == "G2" || command == "G3");

@@ -71,8 +71,8 @@ void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
 
     GcodeParser parser;
     for (auto& item : *gcode) {
-        item.lineNumber = parser.getCommandNumber();
-        parser.addCommand(item.args);
+        item.commandNumber = parser.getCommandNumber();
+        item.isMovement = parser.addCommand(item.args) != nullptr;
 
         remaining--;
         int percentage = 100 - (remaining * 100 / size);
@@ -125,7 +125,8 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
             continue;
         }
 
-        item.lineNumber = parser.getCommandNumber();
+        item.commandNumber = parser.getCommandNumber();
+        item.isMovement = parser.addCommand(item.args) != nullptr;
         parser.addCommand(item.args);
         *gcode << item;
 

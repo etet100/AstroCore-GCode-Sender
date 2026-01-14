@@ -120,7 +120,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
         for (int i = fromLine; i <= toLine; i++) {
             GCodeItem &item = m_program[i];
-            int j = item.lineNumber;
+            int j = item.commandNumber;
             if (j != -1)
             foreach (int l, lineIndexes.at(j)) {
                 if (item.state == GCodeItem::Sent) {
@@ -291,7 +291,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // ui->visualizer = new PartMainVisualizer(this);
     // m_program, m_heightmap
     ui->visualizer->setHeightmap(m_heightmap);
-    ui->visualizer->setCodeParser(&m_viewParser);
+    ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
@@ -948,6 +948,7 @@ void FrmMain::onFileOpen(QString filePath)
 {
     if (!m_communicator->isMachineConfigurationReady()) {
         qWarning() << "[UI] Machine configuration is not ready";
+        ui->console->append("Machine configuration is not ready. Cannot open file.");
 
         return;
     }
@@ -1950,7 +1951,8 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
 
 void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previousIndex)
 {
-    ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row(), *m_currentProgram);
+    qDebug() << currentIndex.row() << previousIndex.row();
+    ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row());
 }
 
 // To be checked later, do we use this property?
@@ -2770,7 +2772,7 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
     ui->visualizer->setEstimatedTime(estimatedTime);
     ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
-    ui->visualizer->setCodeParser(&m_viewParser);
+    ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->updateCodeDrawer();
 
     // m_programLoading = false;
@@ -2861,7 +2863,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->program->selectFirstRow();
 
     //  Update code drawer
-    ui->visualizer->setCodeParser(&m_viewParser);
+    ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->updateCodeDrawer();
     ui->visualizer->fitCodeDrawer();
 
@@ -2950,7 +2952,7 @@ void FrmMain::loadLines(QList<std::string> data)
 
             item.command = QString::fromStdString(trimmed);
             item.state = GCodeItem::InQueue;
-            item.lineNumber = parser.getCommandNumber();
+            item.commandNumber = parser.getCommandNumber();
             item.args = args;
 
             m_program << item;
@@ -3485,7 +3487,7 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
          || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused))
          && deviceState != MachineState::Check) {
         int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(m_program.processedCommandIndex(), 4)).toInt();
-        ui->visualizer->updateToolTracking(toolPosition, lineIndex, m_program);
+        ui->visualizer->updateToolTracking(toolPosition, lineIndex);
     } else {
         ui->visualizer->setToolPosition(toolPosition);
     }

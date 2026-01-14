@@ -4,7 +4,7 @@
 #include "shaderdrawable.h"
 
 class SelectionDrawer : public ShaderDrawable
-{        
+{
 public:
     SelectionDrawer();
 
@@ -16,6 +16,7 @@ public:
 
     QVector3D endPosition() const;
     void setEndPosition(const QVector3D &endPosition);
+    void resetEndPosition();
 
 protected:
     bool updateData(GLPalette &palette) override;

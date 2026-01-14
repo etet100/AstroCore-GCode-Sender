@@ -10,11 +10,14 @@ bool SelectionDrawer::updateData(GLPalette &palette)
 {
     m_points.clear();
 
-    VertexData vertex;
-    vertex.color = palette.color(m_color);
-    vertex.position = m_endPosition;
-    vertex.start = QVector3D(sNan, sNan, m_pointSize);
+    VertexData vertex(m_startPosition, palette.color(m_color));
     m_points.append(vertex);
+
+    float distance = (m_endPosition - m_startPosition).length();
+    if (distance > 0.5f) {
+        vertex.position = m_endPosition;
+        m_points.append(vertex);
+    }
 
     return true;
 }
@@ -27,6 +30,11 @@ QVector3D SelectionDrawer::endPosition() const
 void SelectionDrawer::setEndPosition(const QVector3D &endPosition)
 {
     m_endPosition = endPosition;
+}
+
+void SelectionDrawer::resetEndPosition()
+{
+    m_endPosition = QVector3D(sNan, sNan, sNan);
 }
 
 QColor SelectionDrawer::color() const
