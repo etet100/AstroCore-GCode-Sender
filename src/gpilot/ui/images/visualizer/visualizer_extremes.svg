@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Inner Object (Cube) -->
+    <path d="M12 8L8 10V14L12 16L16 14V10L12 8Z" opacity="0.3" fill="currentColor" />
+    <!-- Bounding Box Corners -->
+    <!-- Top Left -->
+    <path d="M4 9V4H9" />
+    <!-- Top Right -->
+    <path d="M15 4H20V9" />
+    <!-- Bottom Left -->
+    <path d="M4 15V20H9" />
+    <!-- Bottom Right -->
+    <path d="M15 20H20V15" />
+    <!-- Connecting lines (optional dashed) -->
+    <path d="M4 9v6" stroke-dasharray="2 2" opacity="0.3" />
+    <path d="M20 9v6" stroke-dasharray="2 2" opacity="0.3" />
+    <path d="M9 4h6" stroke-dasharray="2 2" opacity="0.3" />
+    <path d="M9 20h6" stroke-dasharray="2 2" opacity="0.3" />
+</svg>

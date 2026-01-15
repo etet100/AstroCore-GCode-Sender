@@ -76,5 +76,7 @@
         <file>../images/visualizer/visualizer_top_view.svg</file>
         <file>../images/visualizer/visualizer_tool.svg</file>
         <file>../images/visualizer/visualizer_gcode.svg</file>
+        <file>../images/visualizer/visualizer_extremes.svg</file>
+        <file>../images/visualizer/visualizer_light.svg</file>
     </qresource>
 </RCC>

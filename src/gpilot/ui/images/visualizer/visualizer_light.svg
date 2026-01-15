@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Bulb -->
+    <path d="M9 18h6" />
+    <path d="M10 22h4" />
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z" />
+    <!-- Rays -->
+    <path d="M12 6v1" opacity="0.3" />
+    <path d="M12 2v-1" opacity="0.3" />
+    <path d="M20 9h1" opacity="0.3" />
+    <path d="M3 9h1" opacity="0.3" />
+    <path d="M18 4l.7-.7" opacity="0.3" />
+    <path d="M5.3 4.7l.7.7" opacity="0.3" />
+</svg>
