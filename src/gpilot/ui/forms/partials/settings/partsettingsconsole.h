@@ -11,13 +11,13 @@ namespace Ui {
 class partSettingsConsole;
 }
 
-class partSettingsConsole : public QWidget
+class PartSettingsConsole : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsConsole(QWidget *parent = nullptr);
-        ~partSettingsConsole();
+        explicit PartSettingsConsole(QWidget *parent = nullptr);
+        ~PartSettingsConsole();
         void setShowProgramCommands(bool value);
         bool showProgramCommands() const;
         void setShowUICommands(bool value);

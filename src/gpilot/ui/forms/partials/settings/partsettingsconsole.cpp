@@ -5,64 +5,64 @@
 #include "partsettingsconsole.h"
 #include "ui_partsettingsconsole.h"
 
-partSettingsConsole::partSettingsConsole(QWidget *parent)
+PartSettingsConsole::PartSettingsConsole(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partSettingsConsole)
 {
     ui->setupUi(this);
 }
 
-partSettingsConsole::~partSettingsConsole()
+PartSettingsConsole::~PartSettingsConsole()
 {
     delete ui;
 }
 
-void partSettingsConsole::setShowProgramCommands(bool value)
+void PartSettingsConsole::setShowProgramCommands(bool value)
 {
     ui->chkConsoleShowProgramCommands->setChecked(value);
 }
 
-bool partSettingsConsole::showProgramCommands() const
+bool PartSettingsConsole::showProgramCommands() const
 {
     return ui->chkConsoleShowProgramCommands->isChecked();
 }
 
-void partSettingsConsole::setShowUICommands(bool value)
+void PartSettingsConsole::setShowUICommands(bool value)
 {
     ui->chkConsoleShowUICommands->setChecked(value);
 }
 
-bool partSettingsConsole::showUICommands() const
+bool PartSettingsConsole::showUICommands() const
 {
     return ui->chkConsoleShowUICommands->isChecked();
 }
 
-void partSettingsConsole::setShowSystemCommands(bool value)
+void PartSettingsConsole::setShowSystemCommands(bool value)
 {
     ui->chkConsoleShowSystemCommands->setChecked(value);
 }
 
-bool partSettingsConsole::showSystemCommands() const
+bool PartSettingsConsole::showSystemCommands() const
 {
     return ui->chkConsoleShowSystemCommands->isChecked();
 }
 
-void partSettingsConsole::setCommandAutoCompletion(bool value)
+void PartSettingsConsole::setCommandAutoCompletion(bool value)
 {
     ui->chkConsoleAutocompletion->setChecked(value);
 }
 
-bool partSettingsConsole::commandAutoCompletion() const
+bool PartSettingsConsole::commandAutoCompletion() const
 {
     return ui->chkConsoleAutocompletion->isChecked();
 }
 
-void partSettingsConsole::setDarkBackgroundMode(bool value)
+void PartSettingsConsole::setDarkBackgroundMode(bool value)
 {
     ui->chkConsoleDarkMode->setChecked(value);
 }
 
-bool partSettingsConsole::darkBackgroundMode() const
+bool PartSettingsConsole::darkBackgroundMode() const
 {
     return ui->chkConsoleDarkMode->isChecked();
 }

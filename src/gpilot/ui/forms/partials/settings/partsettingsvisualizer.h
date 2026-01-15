@@ -11,13 +11,13 @@ namespace Ui {
 class partSettingsVisualizer;
 }
 
-class partSettingsVisualizer : public QWidget
+class PartSettingsVisualizer : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsVisualizer(QWidget *parent = nullptr);
-        ~partSettingsVisualizer();
+        explicit PartSettingsVisualizer(QWidget *parent = nullptr);
+        ~PartSettingsVisualizer();
 
     private:
         Ui::partSettingsVisualizer *ui;

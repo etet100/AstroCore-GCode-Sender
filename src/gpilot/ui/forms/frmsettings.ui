@@ -37,7 +37,7 @@
      <widget class="QListWidget" name="listCategories">
       <property name="styleSheet">
        <string notr="true">QListWidget::item {
-	height: 1.75em;
+        height: 1.75em;
 }</string>
       </property>
       <property name="spacing">
@@ -72,13 +72,13 @@
          <x>0</x>
          <y>-1049</y>
          <width>627</width>
-         <height>1431</height>
+         <height>1490</height>
         </rect>
        </property>
        <property name="styleSheet">
         <string notr="true">QGroupBox {
-	font-size: {2*font-size}px;
-	font-weight: bold
+        font-size: {2*font-size}px;
+        font-weight: bold
 }</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -836,7 +836,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="partSettingsSender" name="sender" native="true"/>
+            <widget class="PartSettingsSender" name="sender" native="true"/>
            </item>
           </layout>
          </widget>
@@ -848,7 +848,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_12">
            <item row="0" column="0">
-            <widget class="partSettingsJogging" name="jogging" native="true"/>
+            <widget class="PartSettingsJogging" name="jogging" native="true"/>
            </item>
           </layout>
          </widget>
@@ -1140,7 +1140,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="partSettingsColors" name="colors" native="true"/>
+            <widget class="PartSettingsColors" name="colors" native="true"/>
            </item>
           </layout>
          </widget>
@@ -1299,7 +1299,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <widget class="partSettingsShortcuts" name="shortcuts" native="true"/>
+            <widget class="PartSettingsShortcuts" name="shortcuts" native="true"/>
            </item>
           </layout>
          </widget>
@@ -1574,25 +1574,25 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>partSettingsColors</class>
+   <class>PartSettingsColors</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingscolors.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>partSettingsSender</class>
+   <class>PartSettingsSender</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingssender.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>partSettingsJogging</class>
+   <class>PartSettingsJogging</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingsjogging.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>partSettingsShortcuts</class>
+   <class>PartSettingsShortcuts</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingsshortcuts.h</header>
    <container>1</container>

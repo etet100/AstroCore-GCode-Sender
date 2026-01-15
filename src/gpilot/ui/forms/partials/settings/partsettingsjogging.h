@@ -13,13 +13,13 @@ namespace Ui {
 class partSettingsJogging;
 }
 
-class partSettingsJogging : public QWidget
+class PartSettingsJogging : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsJogging(QWidget *parent = nullptr);
-        ~partSettingsJogging();
+        explicit PartSettingsJogging(QWidget *parent = nullptr);
+        ~PartSettingsJogging();
         void setStepChoices(const QStringList &choices);
         QStringList stepChoices() const;
         void setFeedChoices(const QStringList &choices);

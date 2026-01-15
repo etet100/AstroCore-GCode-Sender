@@ -82,7 +82,7 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
     ui->cboFpsLock->setValidator(&m_intValidator);
     ui->cboUIScale->setValidator(&m_intValidator);
 
-    connect(ui->jogging, &partSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
+    connect(ui->jogging, &PartSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
     //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &FrmSettings::onWidgetValidity);)
 
     connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](float scale){

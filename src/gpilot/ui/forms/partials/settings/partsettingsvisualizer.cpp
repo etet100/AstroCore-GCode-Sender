@@ -5,14 +5,14 @@
 #include "partsettingsvisualizer.h"
 #include "ui_partsettingsvisualizer.h"
 
-partSettingsVisualizer::partSettingsVisualizer(QWidget *parent)
+PartSettingsVisualizer::PartSettingsVisualizer(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partSettingsVisualizer)
 {
     ui->setupUi(this);
 }
 
-partSettingsVisualizer::~partSettingsVisualizer()
+PartSettingsVisualizer::~PartSettingsVisualizer()
 {
     delete ui;
 }

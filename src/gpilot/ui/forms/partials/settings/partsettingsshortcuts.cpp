@@ -57,7 +57,7 @@ class ShortcutDelegate: public QStyledItemDelegate
         }
 };
 
-partSettingsShortcuts::partSettingsShortcuts(QWidget *parent)
+PartSettingsShortcuts::PartSettingsShortcuts(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::frmSettingsShortcuts)
 {
@@ -74,12 +74,12 @@ partSettingsShortcuts::partSettingsShortcuts(QWidget *parent)
     setShortcuts(actions);
 }
 
-partSettingsShortcuts::~partSettingsShortcuts()
+PartSettingsShortcuts::~PartSettingsShortcuts()
 {
     delete ui;
 }
 
-void partSettingsShortcuts::setShortcuts(QList<QAction*> acts)
+void PartSettingsShortcuts::setShortcuts(QList<QAction*> acts)
 {
     QTableWidget *table = ui->tblShortcuts;
 
@@ -114,7 +114,7 @@ void partSettingsShortcuts::setShortcuts(QList<QAction*> acts)
     table->horizontalHeader()->setStretchLastSection(true);
 }
 
-void partSettingsShortcuts::setDefaults()
+void PartSettingsShortcuts::setDefaults()
 {
     QMap<QString, QString> d;
     d["actFileNew"] = "Ctrl+N";

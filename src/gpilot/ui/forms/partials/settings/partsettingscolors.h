@@ -11,13 +11,13 @@ namespace Ui {
 class partSettingsColors;
 }
 
-class partSettingsColors : public QWidget
+class PartSettingsColors : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsColors(QWidget *parent = nullptr);
-        ~partSettingsColors();
+        explicit PartSettingsColors(QWidget *parent = nullptr);
+        ~PartSettingsColors();
         void setToolpathHighlightColor(const QColor &color);
         void setToolpathZMovementColor(const QColor &color);
         void setToolpathStartColor(const QColor &color);

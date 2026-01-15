@@ -11,13 +11,13 @@ namespace Ui {
 class frmSettingsShortcuts;
 }
 
-class partSettingsShortcuts : public QWidget
+class PartSettingsShortcuts : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsShortcuts(QWidget *parent = nullptr);
-        ~partSettingsShortcuts();
+        explicit PartSettingsShortcuts(QWidget *parent = nullptr);
+        ~PartSettingsShortcuts();
         void setDefaults();
 
     private:

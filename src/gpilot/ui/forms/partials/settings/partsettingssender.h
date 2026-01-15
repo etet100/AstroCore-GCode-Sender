@@ -11,13 +11,13 @@ namespace Ui {
 class partSettingsSender;
 }
 
-class partSettingsSender : public QWidget
+class PartSettingsSender : public QWidget
 {
         Q_OBJECT
 
     public:
-        explicit partSettingsSender(QWidget *parent = nullptr);
-        ~partSettingsSender();
+        explicit PartSettingsSender(QWidget *parent = nullptr);
+        ~PartSettingsSender();
         void setUsePauseCommands(bool use);
         void setBeforePauseCommands(const QString &commands);
         void setAfterPauseCommands(const QString &commands);

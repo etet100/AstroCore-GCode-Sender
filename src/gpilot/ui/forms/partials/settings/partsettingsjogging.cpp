@@ -6,7 +6,7 @@
 #include "ui_partsettingsjogging.h"
 #include <QValidator>
 
-partSettingsJogging::partSettingsJogging(QWidget *parent)
+PartSettingsJogging::PartSettingsJogging(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partSettingsJogging)
     , m_nonDigitsRegex("[^\\d^.]")
@@ -44,27 +44,27 @@ partSettingsJogging::partSettingsJogging(QWidget *parent)
     });
 }
 
-partSettingsJogging::~partSettingsJogging()
+PartSettingsJogging::~PartSettingsJogging()
 {
     delete ui;
 }
 
-void partSettingsJogging::setStepChoices(const QStringList &choices)
+void PartSettingsJogging::setStepChoices(const QStringList &choices)
 {
     ui->txtJoggingStepChoices->setText(choices.join(", "));
 }
 
-QStringList partSettingsJogging::stepChoices() const
+QStringList PartSettingsJogging::stepChoices() const
 {
     return ui->txtJoggingStepChoices->text().split(",").replaceInStrings(m_nonDigitsRegex, "");
 }
 
-void partSettingsJogging::setFeedChoices(const QStringList &choices)
+void PartSettingsJogging::setFeedChoices(const QStringList &choices)
 {
     ui->txtJoggingFeedChoices->setText(choices.join(", "));
 }
 
-QStringList partSettingsJogging::feedChoices() const
+QStringList PartSettingsJogging::feedChoices() const
 {
     return ui->txtJoggingFeedChoices->text().split(",").replaceInStrings(m_nonDigitsRegex, "");
 }

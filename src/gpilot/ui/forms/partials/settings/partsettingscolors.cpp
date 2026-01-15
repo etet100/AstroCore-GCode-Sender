@@ -5,134 +5,134 @@
 #include "partsettingscolors.h"
 #include "ui_partsettingscolors.h"
 
-partSettingsColors::partSettingsColors(QWidget *parent)
+PartSettingsColors::PartSettingsColors(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::partSettingsColors)
 {
     ui->setupUi(this);
 }
 
-partSettingsColors::~partSettingsColors()
+PartSettingsColors::~PartSettingsColors()
 {
     delete ui;
 }
 
-void partSettingsColors::setToolpathHighlightColor(const QColor &color)
+void PartSettingsColors::setToolpathHighlightColor(const QColor &color)
 {
     ui->clpToolpathHighlightColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathZMovementColor(const QColor &color)
+void PartSettingsColors::setToolpathZMovementColor(const QColor &color)
 {
     ui->clpToolpathZMovementColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathStartColor(const QColor &color)
+void PartSettingsColors::setToolpathStartColor(const QColor &color)
 {
     ui->clpToolpathStartColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathEndColor(const QColor &color)
+void PartSettingsColors::setToolpathEndColor(const QColor &color)
 {
     ui->clpToolpathEndColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathNormalColor(const QColor &color)
+void PartSettingsColors::setToolpathNormalColor(const QColor &color)
 {
     ui->clpToolpathNormalColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathDrawnColor(const QColor &color)
+void PartSettingsColors::setToolpathDrawnColor(const QColor &color)
 {
     ui->clpToolpathDrawnColor->setColor(color);
 }
 
-void partSettingsColors::setToolpathRapidMovementColor(const QColor &color)
+void PartSettingsColors::setToolpathRapidMovementColor(const QColor &color)
 {
     ui->clpToolpathRapidMovementColor->setColor(color);
 }
 
-void partSettingsColors::setVisualizerBackgroundColor(const QColor &color)
+void PartSettingsColors::setVisualizerBackgroundColor(const QColor &color)
 {
     ui->clpVisualizerBackgroundColor->setColor(color);
 }
 
-void partSettingsColors::setVisualizerTextColor(const QColor &color)
+void PartSettingsColors::setVisualizerTextColor(const QColor &color)
 {
     ui->clpVisualizerTextColor->setColor(color);
 }
 
-void partSettingsColors::setVisualizerToolColor(const QColor &color)
+void PartSettingsColors::setVisualizerToolColor(const QColor &color)
 {
     ui->clpVisualizerToolColor->setColor(color);
 }
 
-void partSettingsColors::setVisualizerCursorColor(const QColor &color)
+void PartSettingsColors::setVisualizerCursorColor(const QColor &color)
 {
     ui->clpVisualizerCursorColor->setColor(color);
 }
 
-void partSettingsColors::setVisualizerTableGridColor(const QColor &color)
+void PartSettingsColors::setVisualizerTableGridColor(const QColor &color)
 {
     ui->clpVisualizerTableGridColor->setColor(color);
 }
 
-QColor partSettingsColors::toolpathHighlightColor() const
+QColor PartSettingsColors::toolpathHighlightColor() const
 {
     return ui->clpToolpathHighlightColor->color();
 }
 
-QColor partSettingsColors::toolpathZMovementColor() const
+QColor PartSettingsColors::toolpathZMovementColor() const
 {
     return ui->clpToolpathZMovementColor->color();
 }
 
-QColor partSettingsColors::toolpathStartColor() const
+QColor PartSettingsColors::toolpathStartColor() const
 {
     return ui->clpToolpathStartColor->color();
 }
 
-QColor partSettingsColors::toolpathEndColor() const
+QColor PartSettingsColors::toolpathEndColor() const
 {
     return ui->clpToolpathEndColor->color();
 }
 
-QColor partSettingsColors::toolpathNormalColor() const
+QColor PartSettingsColors::toolpathNormalColor() const
 {
     return ui->clpToolpathNormalColor->color();
 }
 
-QColor partSettingsColors::toolpathDrawnColor() const
+QColor PartSettingsColors::toolpathDrawnColor() const
 {
     return ui->clpToolpathDrawnColor->color();
 }
 
-QColor partSettingsColors::toolpathRapidMovementColor() const
+QColor PartSettingsColors::toolpathRapidMovementColor() const
 {
     return ui->clpToolpathRapidMovementColor->color();
 }
 
-QColor partSettingsColors::visualizerBackgroundColor() const
+QColor PartSettingsColors::visualizerBackgroundColor() const
 {
     return ui->clpVisualizerBackgroundColor->color();
 }
 
-QColor partSettingsColors::visualizerTextColor() const
+QColor PartSettingsColors::visualizerTextColor() const
 {
     return ui->clpVisualizerTextColor->color();
 }
 
-QColor partSettingsColors::visualizerToolColor() const
+QColor PartSettingsColors::visualizerToolColor() const
 {
     return ui->clpVisualizerToolColor->color();
 }
 
-QColor partSettingsColors::visualizerCursorColor() const
+QColor PartSettingsColors::visualizerCursorColor() const
 {
     return ui->clpVisualizerCursorColor->color();
 }
 
-QColor partSettingsColors::visualizerTableGridColor() const
+QColor PartSettingsColors::visualizerTableGridColor() const
 {
     return ui->clpVisualizerTableGridColor->color();
 }
