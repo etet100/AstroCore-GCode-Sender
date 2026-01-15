@@ -15,6 +15,7 @@ Configuration::Configuration(QObject *parent, Persister *persister, Provider *pr
     m_machine(parent),
     m_heightmap(parent),
     m_jogging(parent),
+    m_ai(parent),
     m_persister(persister),
     m_provider(provider)
 {
@@ -26,7 +27,8 @@ Configuration::Configuration(QObject *parent, Persister *persister, Provider *pr
         << &m_ui
         << &m_machine
         << &m_heightmap
-        << &m_jogging;
+        << &m_jogging
+        << &m_ai;
 }
 
 QString Configuration::language()

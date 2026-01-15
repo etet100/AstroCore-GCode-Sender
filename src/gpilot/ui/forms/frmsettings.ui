@@ -1493,6 +1493,18 @@
           </layout>
          </widget>
         </item>
+        <item>
+         <widget class="QGroupBox" name="grpAi">
+          <property name="title">
+           <string>AI</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_14">
+           <item>
+            <widget class="PartSettingsAI" name="ai" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -1583,6 +1595,12 @@
    <class>partSettingsShortcuts</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingsshortcuts.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PartSettingsAI</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/settings/partsettingsai.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

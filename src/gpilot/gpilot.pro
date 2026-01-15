@@ -90,6 +90,7 @@ SOURCES += main.cpp\
     core/communicator/communicator_processing_response.cpp \
     core/communicator/communicator_utils.cpp \
     core/config/configuration.cpp \
+    core/config/module/configurationai.cpp \
     core/config/module/configurationconnection.cpp \
     core/config/module/configurationconsole.cpp \
     core/config/module/configurationheightmap.cpp \
@@ -159,6 +160,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmainstatelcd.cpp \
     ui/forms/partials/main/partmainvirtualsettings.cpp \
     ui/forms/partials/main/partmainvisualizer.cpp \
+    ui/forms/partials/settings/partsettingsai.cpp \
     ui/forms/partials/settings/partsettingscolors.cpp \
     ui/forms/partials/settings/partsettingsconsole.cpp \
     ui/forms/partials/settings/partsettingsjogging.cpp \
@@ -212,6 +214,7 @@ SOURCES += main.cpp\
     ui/utils/windowstaskbar.cpp \
     ui/widgets/dockabletitle.cpp \
     ui/widgets/filedropoverlay.cpp \
+    utils/openaimanager.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
     ui/widgets/comboboxkey.cpp \
@@ -229,6 +232,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/communicator.h \
     core/config/configuration.h \
     core/config/implementations.h \
+    core/config/module/configurationai.h \
     core/config/module/configurationconnection.h \
     core/config/module/configurationconsole.h \
     core/config/module/configurationheightmap.h \
@@ -303,6 +307,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmainstatelcd.h \
     ui/forms/partials/main/partmainvirtualsettings.h \
     ui/forms/partials/main/partmainvisualizer.h \
+    ui/forms/partials/settings/partsettingsai.h \
     ui/forms/partials/settings/partsettingscolors.h \
     ui/forms/partials/settings/partsettingsconsole.h \
     ui/forms/partials/settings/partsettingsjogging.h \
@@ -357,6 +362,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/dockabletitle.h \
     ui/widgets/filedropoverlay.h \
     utils/interpolation.h \
+    utils/openaimanager.h \
     utils/utils.h \
     utils/validators.h \
     ui/widgets/combobox.h \
@@ -387,6 +393,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/main/partmainstatelcd.ui \
     ui/forms/partials/main/partmainvirtualsettings.ui \
     ui/forms/partials/main/partmainvisualizer.ui \
+    ui/forms/partials/settings/partsettingsai.ui \
     ui/forms/partials/settings/partsettingscolors.ui \
     ui/forms/partials/settings/partsettingsconsole.ui \
     ui/forms/partials/settings/partsettingsjogging.ui \

@@ -191,6 +191,9 @@ void FrmSettings::initializeWidgets()
     const ConfigurationJogging &jogging = m_configuration.joggingModule();
     ui->jogging->setStepChoices(jogging.stepChoices());
     ui->jogging->setFeedChoices(jogging.feedChoices());
+
+    const ConfigurationAI &ai = m_configuration.aiModule();
+    ui->ai->setOpenAIKey(ai.openAIKey());
 }
 
 void FrmSettings::applySettings()
@@ -282,6 +285,9 @@ void FrmSettings::applySettings()
     ConfigurationJogging &jogging = m_configuration.joggingModule();
     jogging.m_stepChoices = ui->jogging->stepChoices();
     jogging.m_feedChoices = ui->jogging->feedChoices();
+
+    ConfigurationAI &ai = m_configuration.aiModule();
+    ai.m_openAIKey = ui->ai->openAIKey();
 }
 
 void FrmSettings::widgetValidity(QString widgetName, bool valid)

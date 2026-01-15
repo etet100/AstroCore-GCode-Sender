@@ -11,6 +11,7 @@
 #include "module/configurationmachine.h"
 #include "module/configurationheightmap.h"
 #include "module/configurationjogging.h"
+#include "module/configurationai.h"
 #include "persistence/persister.h"
 #include "persistence/provider.h"
 #include <QObject>
@@ -35,6 +36,8 @@ class Configuration : public QObject
         ConfigurationMachine& machineModule() { return m_machine; };
         ConfigurationHeightmap& heightmapModule() { return m_heightmap; };
         ConfigurationJogging& joggingModule() { return m_jogging; };
+        ConfigurationAI& aiModule() { return m_ai; };
+
     private:
         QString m_language;
         QList<ConfigurationModule*> m_modules;
@@ -49,6 +52,7 @@ class Configuration : public QObject
         ConfigurationMachine m_machine;
         ConfigurationHeightmap m_heightmap;
         ConfigurationJogging m_jogging;
+        ConfigurationAI m_ai;
 
         // Read/Write
         Persister* m_persister;
