@@ -59,7 +59,7 @@ public:
     void setDwell(double dwell);
 
 private:
-    ArcProperties *m_arcProperties;
+    ArcProperties *m_arcProperties = nullptr;
     int m_toolhead = 0;
     double m_speed = 0;
     double m_spindleSpeed = 0;

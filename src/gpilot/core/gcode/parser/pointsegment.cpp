@@ -53,9 +53,9 @@ PointSegment::PointSegment(QVector3D *point, int num, QVector3D *center, double 
 
 PointSegment::~PointSegment()
 {
-    if (m_arcProperties != NULL && m_arcProperties->center != NULL) delete m_arcProperties->center;
-    if (m_arcProperties != NULL) delete m_arcProperties;
-    if (m_point != NULL) delete m_point;
+    if (m_arcProperties != nullptr && m_arcProperties->center != nullptr) delete m_arcProperties->center;
+    if (m_arcProperties != nullptr) delete m_arcProperties;
+    if (m_point != nullptr) delete m_point;
 }
 
 QVector3D *PointSegment::point()
@@ -137,7 +137,7 @@ bool PointSegment::isFastTraverse() {
 
 void PointSegment::setArcCenter(QVector3D *center)
 {
-    if (m_arcProperties == NULL) m_arcProperties = new ArcProperties();
+    if (m_arcProperties == nullptr) m_arcProperties = new ArcProperties();
 
     m_arcProperties->center = new QVector3D(center->x(), center->y(), center->z());
     setIsArc(true);
@@ -146,7 +146,7 @@ void PointSegment::setArcCenter(QVector3D *center)
 QVector<double> PointSegment::centerPoints()
 {
     QVector<double> points;
-    if (m_arcProperties != NULL && m_arcProperties->center != NULL) {
+    if (m_arcProperties != nullptr && m_arcProperties->center != nullptr) {
         points.append(m_arcProperties->center->x());
         points.append(m_arcProperties->center->y());
         points.append(m_arcProperties->center->z());
@@ -157,32 +157,32 @@ QVector<double> PointSegment::centerPoints()
 
 QVector3D *PointSegment::center()
 {
-    if (m_arcProperties != NULL && m_arcProperties->center != NULL) return m_arcProperties->center;
+    if (m_arcProperties != nullptr && m_arcProperties->center != nullptr) return m_arcProperties->center;
 
-    return NULL;
+    return nullptr;
 }
 
 void PointSegment::setIsClockwise(bool clockwise)
 {
-    if (m_arcProperties == NULL) m_arcProperties = new ArcProperties();
+    if (m_arcProperties == nullptr) m_arcProperties = new ArcProperties();
     m_arcProperties->isClockwise = clockwise;
 }
 
 bool PointSegment::isClockwise() {
-    if (m_arcProperties != NULL && m_arcProperties->center != NULL) return m_arcProperties->isClockwise;
+    if (m_arcProperties != nullptr && m_arcProperties->center != nullptr) return m_arcProperties->isClockwise;
 
     return false;
 }
 
 void PointSegment::setRadius(double rad)
 {
-    if (m_arcProperties == NULL) m_arcProperties = new ArcProperties();
+    if (m_arcProperties == nullptr) m_arcProperties = new ArcProperties();
     m_arcProperties->radius = rad;
 }
 
 double PointSegment::getRadius()
 {
-    if (m_arcProperties != NULL && m_arcProperties->center != NULL) return m_arcProperties->radius;
+    if (m_arcProperties != nullptr && m_arcProperties->center != nullptr) return m_arcProperties->radius;
 
     return 0;
 }
@@ -198,7 +198,7 @@ void PointSegment::convertToMetric()
     m_point->setY(m_point->y() * 25.4);
     m_point->setZ(m_point->z() * 25.4);
 
-    if (m_isArc && m_arcProperties != NULL) {
+    if (m_isArc && m_arcProperties != nullptr) {
         m_arcProperties->center->setX(m_arcProperties->center->x() * 25.4);
         m_arcProperties->center->setY(m_arcProperties->center->y() * 25.4);
         m_arcProperties->center->setZ(m_arcProperties->center->z() * 25.4);
