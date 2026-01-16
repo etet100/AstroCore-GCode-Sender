@@ -187,8 +187,10 @@ void PartMainConsole::send()
     m_configurationConsole->setCommandHistory(ui->cboCommand->items());
 
     if (command.startsWith(":")) {
+        int space = command.indexOf(' ');
         command = command.mid(1).toLower();
-        if (m_internalCommands.contains(command)) {
+        qDebug() << command << command.mid(0, space - 1);
+        if (m_internalCommands.contains(command.mid(0, space - 1))) {
             emit newCommand(command, true);
         }
         return;

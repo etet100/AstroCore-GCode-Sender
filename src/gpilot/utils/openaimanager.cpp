@@ -19,21 +19,18 @@ void OpenAIManager::setApiKey(const QString &key)
     m_apiKey = key;
 }
 
-QString OpenAIManager::apiKey() const
-{
-    return m_apiKey;
-}
-
-void OpenAIManager::sendRequest(const QString &prompt, const QString &model)
+bool OpenAIManager::sendRequest(const QString &prompt, const QString &model)
 {
     if (m_apiKey.isEmpty()) {
         emit errorOccurred("API key not set");
-        return;
+
+        return false;
     }
 
     if (prompt.isEmpty()) {
         emit errorOccurred("Prompt cannot be empty");
-        return;
+
+        return false;
     }
 
     QUrl url("https://api.openai.com/v1/chat/completions");
@@ -59,6 +56,58 @@ void OpenAIManager::sendRequest(const QString &prompt, const QString &model)
 
     QNetworkReply *reply = m_networkManager->post(request, data);
     connect(reply, &QNetworkReply::finished, this, &OpenAIManager::onReplyFinished);
+
+    return true;
+}
+
+bool OpenAIManager::listModels()
+{
+    if (m_apiKey.isEmpty()) {
+        emit errorOccurred("API key not set");
+
+        return false;
+    }
+
+    QUrl url("https://api.openai.com/v1/models");
+    QNetworkRequest request(url);
+
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(m_apiKey).toUtf8());
+
+    QNetworkReply *reply = m_networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this]() {
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        if (!reply) {
+            return;
+        }
+
+        if (reply->error() != QNetworkReply::NoError) {
+            return;
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        if (!doc.isObject()) {
+            return;
+        }
+
+        QJsonObject obj = doc.object();
+        if (!obj.contains("data")) {
+            return;
+        }
+        QJsonArray data = obj["data"].toArray();
+
+        QStringList models;
+        for (auto i : data) {
+            QJsonObject modelObj = i.toObject();
+            QString modelId = modelObj["id"].toString();
+            models.append(modelId);
+        }
+
+        qDebug() << "Available models:" << models;
+
+        emit modelsListed(models);
+    });
+
+    return true;
 }
 
 void OpenAIManager::onReplyFinished()

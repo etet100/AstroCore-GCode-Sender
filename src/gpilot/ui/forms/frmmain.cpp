@@ -41,6 +41,7 @@
 #include "core/heightmap/loader/heightmaploader.h"
 #include "core/heightmap/exporter/heightmapexporter.h"
 #include "core/utils/filesmanager.h"
+#include "utils/openaimanager.h"
 #include "state_behaviour/action.h"
 #include "state_behaviour/joggingbehavior.h"
 #include "state_behaviour/gotobehavior.h"
@@ -1848,6 +1849,25 @@ void FrmMain::onToolPositionReceived(QVector3D pos)
 void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
 {
     if (isInternal) {
+        if (command.startsWith("ai ")) {
+            QString prompt = command.mid(3);
+
+            OpenAIManager* o = new OpenAIManager(this);
+            o->setApiKey(m_configuration.aiModule().openAIKey());
+            connect(o, &OpenAIManager::responseReceived, this, [this, o](const QString &response) {
+                ui->console->append("[AI] " + response);
+                o->deleteLater();
+            });
+            connect(o, &OpenAIManager::errorOccurred, this, [this, o](const QString &error) {
+                ui->console->append("[AI][Error] " + error);
+                o->deleteLater();
+            });
+            // o->listModels();
+            o->sendRequest(prompt, "gpt-4o");
+
+            return;
+        }
+
         qDebug() << "Internal commands not handled yet:" << command;
 
         return;

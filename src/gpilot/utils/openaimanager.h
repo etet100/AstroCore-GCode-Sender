@@ -15,12 +15,12 @@ public:
     ~OpenAIManager();
 
     void setApiKey(const QString &key);
-    QString apiKey() const;
-
-    void sendRequest(const QString &prompt, const QString &model = "gpt-3.5-turbo");
+    bool sendRequest(const QString &prompt, const QString &model = "gpt-5-mini");
+    bool listModels();
 
 signals:
     void responseReceived(const QString &response);
+    void modelsListed(const QStringList &models);
     void errorOccurred(const QString &error);
 
 private slots:
