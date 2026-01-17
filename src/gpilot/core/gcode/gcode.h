@@ -127,7 +127,7 @@ class GCode : public QObject
 
     signals:
         void progressChanged(int progress);
-        void linesUpdated(int fromLine, int toLine);
+        void linesUpdated(int from, int to);
         void loaded();
         void finished();
         void paused();

@@ -156,13 +156,16 @@ void GCode::replace(int from, int to, GCode &gcode)
         i++;
     }
 
-    // Mark both removed and added lines as updated, does it make sense?
-    for (int i = from; i < std::max(to, from + gcode.count()); i++) {
-        addUpdatedRange(i);
+    addUpdatedRange(from);
+    addUpdatedRange(to);
+
+    if (gcode.count() > (to - from + 1)) {
+        // All lines after 'to' are also updated because their indices have changed
+        addUpdatedRange(m_data.count() - 1);
     }
 
-    // All lines after 'to' are also updated because their indices have changed
-    emit linesUpdated(from, m_data.count() - 1);
+    // Don't do it, addYUpdatedRange already emits the signal
+    // emit linesUpdated(from, m_data.count() - 1);
 }
 
 void GCode::onLinesUpdatedTimer()

@@ -164,6 +164,11 @@ void GCodeTableModel::update()
     endResetModel();
 }
 
+void GCodeTableModel::updateLines(int from, int to)
+{
+    notifyLinesUpdated(from, to);
+}
+
 int GCodeTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)

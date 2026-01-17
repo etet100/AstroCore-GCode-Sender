@@ -31,6 +31,7 @@ public:
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
     void clear();
     void update();
+    void updateLines(int from, int to);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     int columnCount(const QModelIndex& parent = QModelIndex()) const;
