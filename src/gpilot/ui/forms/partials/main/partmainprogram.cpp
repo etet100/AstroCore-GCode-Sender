@@ -249,8 +249,6 @@ void PartMainProgram::insertLines(bool before)
     QModelIndex current = ui->tblProgram->currentIndex();
 
     emit insertLinesRequested(current.row(), before);
-
-    selectRow(current.row() + (before ? 0 : 1));
 }
 
 void PartMainProgram::onEditSelectedTriggered()
@@ -261,8 +259,6 @@ void PartMainProgram::onEditSelectedTriggered()
     }
 
     emit editLinesRequested(range.from, range.to);
-
-    selectRow(range.from);
 }
 
 void PartMainProgram::onDeleteSelectedTriggered()
@@ -277,8 +273,6 @@ void PartMainProgram::onDeleteSelectedTriggered()
     }
 
     emit deleteLinesRequested(range.from, range.to);
-
-    selectRow(range.from);
 }
 
 void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
