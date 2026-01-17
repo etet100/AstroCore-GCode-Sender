@@ -630,10 +630,6 @@ bool PartMainProgram::isCurrentModelProgramModel() const
     return m_currentModel == &m_programModel;
 }
 
-int PartMainProgram::getCurrentModelFilteredIndex(int index) const
-{
-    return m_currentModel ? m_currentModel->toFilteredIndex(index) : -1;
-}
 
 
 

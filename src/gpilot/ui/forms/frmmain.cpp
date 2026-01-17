@@ -111,8 +111,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             return;
         }
 
-        int tableIndex = ui->program->getCurrentModelFilteredIndex(m_program.commandIndex());
-        ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
+        // int tableIndex = ui->program->getCurrentModelFilteredIndex(m_program.commandIndex());
+        // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
 
         GCodeViewParser *parser = &m_viewParser;
         QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
@@ -122,16 +122,17 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         for (int i = fromLine; i <= toLine; i++) {
             GCodeItem &item = m_program[i];
             int j = item.commandNumber;
-            if (j != -1)
-            foreach (int l, lineIndexes.at(j)) {
-                if (item.state == GCodeItem::Sent) {
-                    list[l].setIsHightlight(true);
-                    list[l].setDrawn(false);
-                    indexes.append(l);
-                } else if (item.state == GCodeItem::Processed) {
-                    list[l].setIsHightlight(false);
-                    list[l].setDrawn(true);
-                    indexes.append(l);
+            if (j != -1) {
+                foreach (int l, lineIndexes.at(j)) {
+                    if (item.state == GCodeItem::Sent) {
+                        list[l].setIsHightlight(true);
+                        list[l].setDrawn(false);
+                        indexes.append(l);
+                    } else if (item.state == GCodeItem::Processed) {
+                        list[l].setIsHightlight(false);
+                        list[l].setDrawn(true);
+                        indexes.append(l);
+                    }
                 }
             }
         }
@@ -1908,7 +1909,6 @@ void FrmMain::programEditLines(int from, int to)
 
         updateParser();
     }
-
 }
 
 void FrmMain::programInsertLines(int current, bool before)

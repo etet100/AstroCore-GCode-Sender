@@ -51,7 +51,6 @@ class PartMainProgram : public QWidget
 
         // Current model operations
         bool isCurrentModelProgramModel() const;
-        int getCurrentModelFilteredIndex(int index) const;
         void insertRowInCurrentModel(int row);
         void removeRowsFromCurrentModel(int row, int count);
         int currentModelRowCount() const;
