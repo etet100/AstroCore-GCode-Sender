@@ -33,6 +33,12 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
         rowNumber = m_filteredRows[index.row()];
     }
 
+    // Last, empty line for easier appending new lines
+    if (rowNumber == m_data->count()) {
+        // Show <new command> as grayed comment in the Command column
+        return role == Qt::UserRole + 1  && (GCodeTableColumn)index.column() == GCodeTableColumn::Command ? "<new command>" : QVariant();
+    }
+
     GCodeItem& item = m_data->at(rowNumber);
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         switch ((GCodeTableColumn)index.column())
@@ -80,6 +86,15 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
 {
     if (index.isValid() && role == Qt::EditRole) {
         int row = index.row();
+        if (row == m_data->count()) {
+            // Append new line
+            // beginInsertRows(QModelIndex(), row, row);
+            // m_data->append(GCodeItem());
+            // endInsertRows();
+
+            return false;
+        }
+
         GCodeItem& item = m_data->at(row);
         switch ((GCodeTableColumn)index.column())
         {
