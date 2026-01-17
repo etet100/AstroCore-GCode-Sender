@@ -115,10 +115,10 @@ void GCodeTableModel::setProgram(GCode* data)
 {
     beginResetModel();
     m_data = data;
-    m_filteredRows.clear();
-    m_allRowsToFiltered.clear();
-    m_filtered = false;
-    connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
+    if (m_filtered) {
+        prepareNoCommentFilter();
+    }
+    // connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
     endResetModel();
 }
 
