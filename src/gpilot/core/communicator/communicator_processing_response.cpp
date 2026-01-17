@@ -240,7 +240,7 @@ void Communicator::processWorkOffset(QString line)
 
 void Communicator::processStatus(QString line)
 {
-    qDebug() << "[Communicator] Processing status line:" << line;
+    //qDebug() << "[Communicator] Processing status line:" << line;
 
     // MachineState state = MachineState::Unknown;
     // Remove < and >, split by |
@@ -346,7 +346,7 @@ void Communicator::processSpindleState(QString line)
 void Communicator::processMachineState(QString stateStr)
 {
     MachineState state = m_machineStateDictionary.key(stateStr, MachineState::Unknown);
-    qDebug() << "[Communicator] Machine state:" << stateStr;
+    // qDebug() << "[Communicator] Machine state:" << stateStr;
 
     // Update status
     if (state != m_machineState) {

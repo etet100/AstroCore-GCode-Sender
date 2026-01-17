@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include "styledtoolbutton.h"
 #include "ui/utils/thememanager.h"
+#include "core/utils/programtimeestimator.h"
 
 PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     , ui(new Ui::partMainVisualizer)
@@ -275,21 +276,6 @@ void PartMainVisualizer::setToolPosition(QVector3D pos)
     m_toolDrawer.setToolPosition(pos);
 }
 
-void PartMainVisualizer::setEstimatedTime(QTime t)
-{
-    ui->visualizer->setEstimatedTime(t);
-}
-
-void PartMainVisualizer::setSpendTime(QTime t)
-{
-    ui->visualizer->setSpendTime(t);
-}
-
-QTime PartMainVisualizer::spendTime() const
-{
-    return ui->visualizer->spendTime();
-}
-
 void PartMainVisualizer::reset()
 {
     m_codeDrawer->update();
@@ -471,6 +457,12 @@ void PartMainVisualizer::hideInfoBar()
     m_infoAnimation->setStartValue(m_infoOpacityEffect->opacity());
     m_infoAnimation->setEndValue(0.0);
     m_infoAnimation->start();
+}
+
+void PartMainVisualizer::setTimeEstimation(ProgramTimeEstimator& estimator)
+{
+    ui->visualizer->setEstimatedTime(estimator.estimatedRemainingTimeWithCorrection());
+    ui->visualizer->setSpendTime(estimator.elapsedTime());
 }
 
 void PartMainVisualizer::showButtonInfo(bool hovered)

@@ -4,6 +4,16 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+OpenAIManager &OpenAIManager::instance(QString key)
+{
+    static OpenAIManager instance;
+    if (key != "") {
+        instance.setApiKey(key);
+    }
+
+    return instance;
+}
+
 OpenAIManager::OpenAIManager(QObject *parent)
     : QObject(parent)
     , m_networkManager(new QNetworkAccessManager(this))
@@ -19,17 +29,33 @@ void OpenAIManager::setApiKey(const QString &key)
     m_apiKey = key;
 }
 
-bool OpenAIManager::sendRequest(const QString &prompt, const QString &model)
-{
-    if (m_apiKey.isEmpty()) {
-        emit errorOccurred("API key not set");
+// o.sendRequest(prompt, "gpt-4o",
+//     [this](const QString &response) {
+//         ui->console->append("[AI] " + response);
+//     },
+//     [this](const QString &error) {
+//         ui->console->append("[AI][Error] " + error);
+//     });
 
+bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess, ErrorCallback onError, const QString &model)
+{
+    qDebug() << "[AI] Prompt:" << prompt;
+
+    if (m_apiKey.isEmpty()) {
+        if (onError) {
+            onError("API key not set");
+        } else {
+            emit errorOccurred("API key not set");
+        }
         return false;
     }
 
     if (prompt.isEmpty()) {
-        emit errorOccurred("Prompt cannot be empty");
-
+        if (onError) {
+            onError("Prompt cannot be empty");
+        } else {
+            emit errorOccurred("Prompt cannot be empty");
+        }
         return false;
     }
 
@@ -55,9 +81,36 @@ bool OpenAIManager::sendRequest(const QString &prompt, const QString &model)
     QByteArray data = doc.toJson();
 
     QNetworkReply *reply = m_networkManager->post(request, data);
-    connect(reply, &QNetworkReply::finished, this, &OpenAIManager::onReplyFinished);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, onSuccess, onError]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray response = reply->readAll();
+            QString parsedResponse = parseResponse(response);
+
+            if (!parsedResponse.isEmpty()) {
+                onSuccess(parsedResponse);
+            } else {
+                QString error = "Failed to parse response";
+                onError("Failed to parse response");
+            }
+        } else {
+            QString error = QString("Network error: %1").arg(reply->errorString());
+            if (onError) {
+                onError(error);
+            }
+            emit errorOccurred(error);
+        }
+        reply->deleteLater();
+    });
 
     return true;
+}
+
+bool OpenAIManager::annotateProgram(const QString &program, SuccessCallback onSuccess, ErrorCallback onError)
+{
+    QString prompt = QString("Add short comment to every g-code command. Do not return g-code itself. Return one line for every source line. And nothing else. \n\n%1").arg(program);
+
+    return sendRequest(prompt, onSuccess, onError);
 }
 
 bool OpenAIManager::listModels()

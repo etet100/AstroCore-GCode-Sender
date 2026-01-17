@@ -9,7 +9,6 @@ class FilesManager : public QObject
 
     public:
         static FilesManager& instance();
-
         explicit FilesManager(QObject* parent = nullptr);
 
         QString gcodeFilePath() const;

@@ -282,11 +282,11 @@ private:
 
     // Files/models
     void loadFile(QString filePath);
-    void loadLines(QList<std::string> data);
+    // void loadLines(QList<std::string> data);
     void applyLoaderGCode(GCodeLoaderData *data);
     void applyUpdaterGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
-    void clearTable();
+    // void clearTable();
     void resetHeightmap();
     void newFile();
     void newHeightmap();

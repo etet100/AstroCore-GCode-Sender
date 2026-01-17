@@ -30,10 +30,6 @@ class PartMainProgram : public QWidget
 
         // High-level model operations
         // Program model operations
-        void clearProgramModel();
-        void addProgramModelRow();
-        int programModelRowCount() const;
-        void insertProgramModelRow(int row);
         void switchToProgramModel();
 
         // Probe model operations
@@ -154,6 +150,13 @@ class PartMainProgram : public QWidget
         GCodeTableModel* m_currentModel;
         HeightmapTableModel* m_heightmapModel;
         GCodeItemDelegate m_programItemDelegate;
+
+        // High-level model operations
+        // Program model operations
+        void clearProgramModel();
+        void addProgramModelRow();
+        int programModelRowCount() const;
+        void insertProgramModelRow(int row);
 
         void setupUi();
         void setupTableContextMenu();

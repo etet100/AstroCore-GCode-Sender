@@ -35,13 +35,13 @@ PointSegment::PointSegment(PointSegment *ps)
 
 PointSegment::PointSegment(const QVector3D *b, int num)
 {
-    m_point = new QVector3D(b->x(), b->y(), b->z());
+    m_point = new QVector3D(*b);
     m_lineNumber = num;
 }
 
 PointSegment::PointSegment(QVector3D *point, int num, QVector3D *center, double radius, bool clockwise)
 {
-    m_point = new QVector3D(point->x(), point->y(), point->z());
+    m_point = new QVector3D(*point);
     m_lineNumber = num;
 
     m_isArc = true;
@@ -58,7 +58,7 @@ PointSegment::~PointSegment()
     if (m_point != nullptr) delete m_point;
 }
 
-QVector3D *PointSegment::point()
+QVector3D* PointSegment::point()
 {
     return m_point;
 }

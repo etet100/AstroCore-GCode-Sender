@@ -11,6 +11,7 @@
 HeightMapGridDrawer::HeightMapGridDrawer() : m_model(new Heightmap())
 {
     m_pointSize = 4;
+    m_visible = false;
 }
 
 #define STEPS 25

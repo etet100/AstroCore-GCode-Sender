@@ -18,6 +18,7 @@
 
 class ConfigurationVisualizer;
 class ConfigurationMachine;
+class ProgramTimeEstimator;
 
 namespace Ui {
 class partMainVisualizer;
@@ -46,10 +47,6 @@ class PartMainVisualizer : public QWidget
         void updateCurrentDrawer(const QList<int>& indexes);
 
         void setToolPosition(QVector3D pos);
-
-        void setEstimatedTime(QTime t);
-        void setSpendTime(QTime t);
-        QTime spendTime() const;
 
         void setParserState(QString state);
         void setPinState(QString state);
@@ -111,6 +108,8 @@ class PartMainVisualizer : public QWidget
 
         void showInfoBar(QString text);
         void hideInfoBar();
+
+        void setTimeEstimation(ProgramTimeEstimator& estimator);
 
     protected:
         void resizeEvent(QResizeEvent* event) override;

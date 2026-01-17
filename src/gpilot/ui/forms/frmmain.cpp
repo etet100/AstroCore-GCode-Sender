@@ -245,6 +245,11 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
+    // Initialize OpenAI key
+    if (m_configuration.aiModule().openAIKey() != "") {
+        OpenAIManager::instance(m_configuration.aiModule().openAIKey());
+    }
+
     m_heightmapMode = false;
     m_program.resetProcessed();
     m_programLoading = false;
@@ -328,7 +333,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->program, &PartMainProgram::insertLinesRequested, this, &FrmMain::programInsertLines);
     connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::programDeleteLines);
     connect(ui->program, &PartMainProgram::editLinesRequested, this, &FrmMain::programEditLines);
-    clearTable();
 
     connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
     connect(ui->program, &PartMainProgram::start, this, &FrmMain::onFileSend);
@@ -1102,8 +1106,7 @@ void FrmMain::onFileReset()
 
         m_timer.reset();
         m_timeEstimator.resetEstimation();
-        ui->visualizer->setSpendTime(QTime(0, 0, 0));
-        ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
+        ui->visualizer->setTimeEstimation(m_timeEstimator);
     } else {
         ui->heightmap->setGridUpdateEnabled();
 
@@ -1688,8 +1691,7 @@ void FrmMain::onMachineStateReceived(MachineState state)
 
     // Update elapsed time and remaining time with adaptive correction
     if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) {
-        ui->visualizer->setSpendTime(m_timeEstimator.elapsedTime());
-        ui->visualizer->setEstimatedTime(m_timeEstimator.estimatedRemainingTimeWithCorrection());
+        ui->visualizer->setTimeEstimation(m_timeEstimator);
     }
 
     updateControlsState();
@@ -1852,18 +1854,20 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
         if (command.startsWith("ai ")) {
             QString prompt = command.mid(3);
 
-            OpenAIManager* o = new OpenAIManager(this);
-            o->setApiKey(m_configuration.aiModule().openAIKey());
-            connect(o, &OpenAIManager::responseReceived, this, [this, o](const QString &response) {
-                ui->console->append("[AI] " + response);
-                o->deleteLater();
-            });
-            connect(o, &OpenAIManager::errorOccurred, this, [this, o](const QString &error) {
-                ui->console->append("[AI][Error] " + error);
-                o->deleteLater();
-            });
+            OpenAIManager& o = OpenAIManager::instance();
+            o.setApiKey(m_configuration.aiModule().openAIKey());
+            // connect(&o, &OpenAIManager::responseReceived, this, [this](const QString &response) {
+            //     ui->console->append("[AI] " + response);
+            // });
+            // connect(&o, &OpenAIManager::errorOccurred, this, [this](const QString &error) {
+            //     ui->console->append("[AI][Error] " + error);
+            // });
             // o->listModels();
-            o->sendRequest(prompt, "gpt-4o");
+            o.sendRequest(prompt, [this](const QString &response) {
+                ui->console->append("[AI] " + response);
+            }, [this](const QString &error) {
+                ui->console->append("[AI][Error] " + error);
+            }, "gpt-4o");
 
             return;
         }
@@ -2784,13 +2788,12 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
     // ui->program->addProgramModelRow();
 
     // Calculate initial time estimation
-    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+    m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),
         ui->overrides->targetFeed(),
         ui->overrides->targetRapid()
     );
-    ui->visualizer->setEstimatedTime(estimatedTime);
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+    ui->visualizer->setTimeEstimation(m_timeEstimator);
 
     ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->updateCodeDrawer();
@@ -2822,7 +2825,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     }
 
     // Reset tables
-    clearTable();
+    // clearTable();
     ui->program->clearProbeModel();
     ui->program->clearProgramHeightmapModel();
     // updateCurrentModel(&m_programModel);
@@ -2862,13 +2865,12 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_program << *data->gcode;
 
     // Calculate initial time estimation
-    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+    m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),
         ui->overrides->targetFeed(),
         ui->overrides->targetRapid()
     );
-    ui->visualizer->setEstimatedTime(estimatedTime);
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+    ui->visualizer->setTimeEstimation(m_timeEstimator);
 
     m_programLoading = false;
 
@@ -2889,141 +2891,141 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     updateControlsState();
 }
 
-void FrmMain::loadLines(QList<std::string> data)
-{
-    assert(m_communicator->isMachineConfigurationReady());
-    if (!m_communicator->isMachineConfigurationReady()) {
-        return;
-    }
+// void FrmMain::loadLines(QList<std::string> data)
+// {
+//     assert(m_communicator->isMachineConfigurationReady());
+//     if (!m_communicator->isMachineConfigurationReady()) {
+//         return;
+//     }
 
-    // Reset tables
-    clearTable();
-    ui->program->clearProbeModel();
-    ui->program->clearProgramHeightmapModel();
-    // updateCurrentModel(&m_programModel);
+//     // Reset tables
+//     clearTable();
+//     ui->program->clearProbeModel();
+//     ui->program->clearProgramHeightmapModel();
+//     // updateCurrentModel(&m_programModel);
 
-    // Reset parsers
-    m_viewParser.reset();
-    m_probeParser.reset();
+//     // Reset parsers
+//     m_viewParser.reset();
+//     m_probeParser.reset();
 
-    // Reset code drawer
-    ui->visualizer->resetVisualization();
+//     // Reset code drawer
+//     ui->visualizer->resetVisualization();
 
-    m_timeEstimator.resetEstimation();
-    ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+//     m_timeEstimator.resetEstimation();
+//     ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
+//     ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
-    // Update interface
-    ui->heightmap->resetUseHeighmap();
-    ui->grpHeightmap->setProperty("overrided", false);
-    style()->unpolish(ui->grpHeightmap);
-    ui->grpHeightmap->ensurePolished();
+//     // Update interface
+//     ui->heightmap->resetUseHeighmap();
+//     ui->grpHeightmap->setProperty("overrided", false);
+//     style()->unpolish(ui->grpHeightmap);
+//     ui->grpHeightmap->ensurePolished();
 
-    // Reset tableview
-    QByteArray headerState = ui->program->saveProgramHeaderState();
-    ui->program->setProgramTableModel(nullptr);
+//     // Reset tableview
+//     QByteArray headerState = ui->program->saveProgramHeaderState();
+//     ui->program->setProgramTableModel(nullptr);
 
-    // Prepare parser
-    GcodeParser parser;
-    parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
-    if (m_configuration.visualizerModule().ignoreZ()) {
-        parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
-    }
+//     // Prepare parser
+//     GcodeParser parser;
+//     parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
+//     if (m_configuration.visualizerModule().ignoreZ()) {
+//         parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
+//     }
 
-    // Block parser updates on table changes
-    m_programLoading = true;
+//     // Block parser updates on table changes
+//     m_programLoading = true;
 
-    // Prepare model
-    m_program.clear();
-    m_program.reserve(data.count());
+//     // Prepare model
+//     m_program.clear();
+//     m_program.reserve(data.count());
 
-    QProgressDialog progress(tr("Opening file..."), tr("Abort"), 0, data.count(), this);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setFixedSize(progress.sizeHint());
-    if (data.count() > PROGRESSMINLINES) {
-        progress.show();
-        progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
-    }
+//     QProgressDialog progress(tr("Opening file..."), tr("Abort"), 0, data.count(), this);
+//     progress.setWindowModality(Qt::WindowModal);
+//     progress.setFixedSize(progress.sizeHint());
+//     if (data.count() > PROGRESSMINLINES) {
+//         progress.show();
+//         progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
+//     }
 
-    std::string command;
-    std::string stripped;
-    std::string trimmed;
-    QList<QString> args;
-    GCodeItem item;
+//     std::string command;
+//     std::string stripped;
+//     std::string trimmed;
+//     QList<QString> args;
+//     GCodeItem item;
 
-    QList<std::string>::iterator dataIterator = data.begin();
-    int remaining = data.count();
-    for (dataIterator = data.begin(); dataIterator != data.end(); ++dataIterator)
-    {
-        command = *dataIterator; // data.takeFirst
+//     QList<std::string>::iterator dataIterator = data.begin();
+//     int remaining = data.count();
+//     for (dataIterator = data.begin(); dataIterator != data.end(); ++dataIterator)
+//     {
+//         command = *dataIterator; // data.takeFirst
 
-        // Trim command
+//         // Trim command
 
-        trimmed = GcodePreprocessorUtils::trimCommand(command);
+//         trimmed = GcodePreprocessorUtils::trimCommand(command);
 
-        if (!trimmed.empty()) {
-            // Split command
-            stripped = GcodePreprocessorUtils::removeComment(command);
-            args = GcodePreprocessorUtils::splitCommand(stripped);
+//         if (!trimmed.empty()) {
+//             // Split command
+//             stripped = GcodePreprocessorUtils::removeComment(command);
+//             args = GcodePreprocessorUtils::splitCommand(stripped);
 
-            parser.addCommand(args);
+//             parser.addCommand(args);
 
-            item.command = QString::fromStdString(trimmed);
-            item.state = GCodeItem::InQueue;
-            item.commandNumber = parser.getCommandNumber();
-            item.args = args;
+//             item.command = QString::fromStdString(trimmed);
+//             item.state = GCodeItem::InQueue;
+//             item.commandNumber = parser.getCommandNumber();
+//             item.args = args;
 
-            m_program << item;
-        }
+//             m_program << item;
+//         }
 
-        remaining--;
+//         remaining--;
 
-        if (progress.isVisible() && (remaining % PROGRESSSTEP == 0)) {
-            progress.setValue(progress.maximum() - remaining);
-            qApp->processEvents();
-            if (progress.wasCanceled()) break;
-        }
-    }
-    progress.close();
-    qApp->processEvents();
+//         if (progress.isVisible() && (remaining % PROGRESSSTEP == 0)) {
+//             progress.setValue(progress.maximum() - remaining);
+//             qApp->processEvents();
+//             if (progress.wasCanceled()) break;
+//         }
+//     }
+//     progress.close();
+//     qApp->processEvents();
 
-    ui->program->addProgramModelRow();
+//     ui->program->addProgramModelRow();
 
-    QList<LineSegment> segments = m_viewParser.getLinesFromParser(
-        &parser,
-        m_configuration.parserModule().arcApproximationValue(),
-        m_configuration.parserModule().arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
-    );
+//     QList<LineSegment> segments = m_viewParser.getLinesFromParser(
+//         &parser,
+//         m_configuration.parserModule().arcApproximationValue(),
+//         m_configuration.parserModule().arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+//     );
 
-    QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
-        segments,
-        ui->overrides->targetFeed(),
-        ui->overrides->targetRapid()
-    );
-    ui->visualizer->setEstimatedTime(estimatedTime);
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+//     QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
+//         segments,
+//         ui->overrides->targetFeed(),
+//         ui->overrides->targetRapid()
+//     );
+//     ui->visualizer->setEstimatedTime(estimatedTime);
+//     ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
-    m_programLoading = false;
+//     m_programLoading = false;
 
-    // Set table model
-    ui->program->switchToProgramModel();
-    ui->program->restoreHeaderState(headerState);
+//     // Set table model
+//     ui->program->switchToProgramModel();
+//     ui->program->restoreHeaderState(headerState);
 
-    // Update tableview
-    // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    ui->program->selectFirstRow();
+//     // Update tableview
+//     // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
+//     ui->program->selectFirstRow();
 
-    //  Update code drawer
-    ui->visualizer->updateCodeDrawer();
-    ui->visualizer->fitCodeDrawer();
+//     //  Update code drawer
+//     ui->visualizer->updateCodeDrawer();
+//     ui->visualizer->fitCodeDrawer();
 
-    // m_codeDrawer->update();
-    // m_codeDrawer->updateData();
-    ui->visualizer->exportCodeDrawerToFile("vertexdata.js");
+//     // m_codeDrawer->update();
+//     // m_codeDrawer->updateData();
+//     ui->visualizer->exportCodeDrawerToFile("vertexdata.js");
 
-    resetHeightmap();
-    updateControlsState();
-}
+//     resetHeightmap();
+//     updateControlsState();
+// }
 
 bool FrmMain::saveChanges(bool heightMapMode)
 {
@@ -3055,11 +3057,11 @@ bool FrmMain::saveChanges(bool heightMapMode)
     return true;
 }
 
-void FrmMain::clearTable()
-{
-    ui->program->clearProgramModel();
-    ui->program->insertProgramModelRow(0);
-}
+// void FrmMain::clearTable()
+// {
+//     ui->program->clearProgramModel();
+//     ui->program->insertProgramModelRow(0);
+// }
 
 void FrmMain::resetHeightmap()
 {
@@ -3079,7 +3081,7 @@ void FrmMain::resetHeightmap()
 void FrmMain::newFile()
 {
     // Reset tables
-    clearTable();
+    // clearTable();
     ui->program->clearProbeModel();
     ui->program->clearProgramHeightmapModel();
     // updateCurrentModel(&m_programModel);
@@ -3092,8 +3094,9 @@ void FrmMain::newFile()
     ui->visualizer->reset();
 
     m_timeEstimator.resetEstimation();
-    ui->visualizer->setEstimatedTime(QTime(0, 0, 0));
-    ui->visualizer->setSpendTime(QTime(0, 0, 0));
+    ui->visualizer->setTimeEstimation(m_timeEstimator);
+    //     setEstimatedTime(QTime(0, 0, 0));
+    // ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     FilesManager::instance().resetGcodeFile();
     ui->heightmap->resetUseHeighmap();
@@ -3158,8 +3161,8 @@ void FrmMain::updateControlsState()
     ui->actFileNew->setEnabled(senderState == SenderState::Stopped);
     ui->actFileOpen->setEnabled(senderState == SenderState::Stopped);
     ui->program->setOpenButtonEnabled(senderState == SenderState::Stopped);
-    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && ui->program->programModelRowCount() > 1);
-    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && ui->program->programModelRowCount() > 1);
+    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && !m_program.empty());
+    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && !m_program.empty());
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -3180,8 +3183,8 @@ void FrmMain::updateControlsState()
         (senderState == SenderState::Stopped) &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
     );
-    ui->actFileSave->setEnabled(ui->program->programModelRowCount() > 1);
-    ui->actFileSaveAs->setEnabled(ui->program->programModelRowCount() > 1);
+    ui->actFileSave->setEnabled(!m_program.empty());
+    ui->actFileSaveAs->setEnabled(!m_program.empty());
 
     ui->program->setProgramTableEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
@@ -3226,7 +3229,7 @@ void FrmMain::updateControlsState()
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
     ui->heightmap->updateControlsState(
-        !process && ui->program->programModelRowCount() > 1,
+        !process && !m_program.empty(),
         m_heightmapMode
     );
 
@@ -3614,7 +3617,7 @@ void FrmMain::onTransferCompleted()
     // m_timerConnection.stop();
 
     QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
-                                .arg(ui->visualizer->spendTime().toString("hh:mm:ss")));
+                                .arg(m_timeEstimator.elapsedTime().toString("hh:mm:ss")));
 
     // m_timerConnection.start();
     // m_communicator->startUpdatingState();

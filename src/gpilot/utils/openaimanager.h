@@ -5,17 +5,24 @@
 #include <QString>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <functional>
 
 class OpenAIManager : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit OpenAIManager(QObject *parent = nullptr);
+    using SuccessCallback = std::function<void(const QString&)>;
+    using ErrorCallback = std::function<void(const QString&)>;
+
+    static OpenAIManager& instance(QString key = "");
     ~OpenAIManager();
 
     void setApiKey(const QString &key);
-    bool sendRequest(const QString &prompt, const QString &model = "gpt-5-mini");
+    bool sendRequest(const QString &prompt,
+                     SuccessCallback onSuccess, ErrorCallback onError,
+                     const QString &model = "gpt-5-mini");
+    bool annotateProgram(const QString &program, SuccessCallback onSuccess, ErrorCallback onError = nullptr);
     bool listModels();
 
 signals:
@@ -30,6 +37,7 @@ private:
     QString m_apiKey;
     QNetworkAccessManager *m_networkManager;
 
+    explicit OpenAIManager(QObject *parent = nullptr);
     QString parseResponse(const QByteArray &data);
 };
 
