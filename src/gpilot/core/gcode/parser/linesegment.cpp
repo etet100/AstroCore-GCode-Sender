@@ -85,7 +85,7 @@ QList<double> LineSegment::getPoints()
 }
 
 QVector3D &LineSegment::getStart() {
-    return this->m_first;
+    return m_first;
 }
 
 void LineSegment::setStart(QVector3D vector)
@@ -94,7 +94,7 @@ void LineSegment::setStart(QVector3D vector)
 }
 
 QVector3D &LineSegment::getEnd() {
-    return this->m_second;
+    return m_second;
 }
 
 void LineSegment::setEnd(QVector3D vector)
@@ -103,7 +103,7 @@ void LineSegment::setEnd(QVector3D vector)
 }
 
 void LineSegment::setToolHead(int head) {
-    this->m_toolhead = head;
+    m_toolhead = head;
 }
 
 int LineSegment::getToolhead()
@@ -112,7 +112,7 @@ int LineSegment::getToolhead()
 }
 
 void LineSegment::setSpeed(double s) {
-    this->m_speed = s;
+    m_speed = s;
 }
 
 double LineSegment::getSpeed()
@@ -121,7 +121,7 @@ double LineSegment::getSpeed()
 }
 
 void LineSegment::setIsZMovement(bool isZ) {
-    this->m_isZMovement = isZ;
+    m_isZMovement = isZ;
 }
 
 bool LineSegment::isZMovement() {
@@ -129,7 +129,7 @@ bool LineSegment::isZMovement() {
 }
 
 void LineSegment::setIsArc(bool isA) {
-    this->m_isArc = isA;
+    m_isArc = isA;
 }
 
 bool LineSegment::isArc() {
@@ -137,18 +137,18 @@ bool LineSegment::isArc() {
 }
 
 void LineSegment::setIsFastTraverse(bool isF) {
-    this->m_isFastTraverse = isF;
+    m_isFastTraverse = isF;
 }
 
 bool LineSegment::isFastTraverse() {
-    return this->m_isFastTraverse;
+    return m_isFastTraverse;
 }
 
 bool LineSegment::contains(const QVector3D &point)
 {
     double delta;
-    QVector3D line = this->getEnd() - this->getStart();
-    QVector3D pt = point - this->getStart();
+    QVector3D line = getEnd() - getStart();
+    QVector3D pt = point - getStart();
 
     delta = (line - pt).length() - (line.length() - pt.length());
 

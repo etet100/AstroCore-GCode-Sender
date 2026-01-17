@@ -14,9 +14,9 @@ class ArcProperties
 {
     public:
         explicit ArcProperties();
-        bool isClockwise;
-        double radius;
-        QVector3D *center;
+        bool isClockwise = false;
+        double radius = 0;
+        QVector3D *center = nullptr;
 };
 
 #endif // ARCPROPERTIES_H

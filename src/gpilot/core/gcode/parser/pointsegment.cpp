@@ -17,7 +17,6 @@ PointSegment::PointSegment(PointSegment *ps)
 {
     m_point = new QVector3D(ps->point()->x(), ps->point()->y(), ps->point()->z());
     m_lineNumber = ps->getLineNumber();
-
     m_toolhead = ps->getToolhead();
     m_speed = ps->getSpeed();
     m_isMetric = ps->isMetric();
@@ -43,7 +42,6 @@ PointSegment::PointSegment(QVector3D *point, int num, QVector3D *center, double 
 {
     m_point = new QVector3D(*point);
     m_lineNumber = num;
-
     m_isArc = true;
     m_arcProperties = new ArcProperties();
     m_arcProperties->center = new QVector3D(center->x(), center->y(), center->z());
