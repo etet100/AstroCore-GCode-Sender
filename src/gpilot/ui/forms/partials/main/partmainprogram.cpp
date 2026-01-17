@@ -367,10 +367,12 @@ void PartMainProgram::setRecentFiles(QStringList files)
     QMenu* menu = ui->cmdFileOpen->menu();
     menu->clear();
 
+    QAction* lastAction = nullptr;
     for (auto& file : files) {
         QAction *action = new QAction(file, this);
         connect(action, &QAction::triggered, this, &PartMainProgram::openRecentFile);
-        menu->addAction(action);
+        menu->insertAction(lastAction, action);
+        lastAction = action;
     }
 
     menu->addSeparator();
