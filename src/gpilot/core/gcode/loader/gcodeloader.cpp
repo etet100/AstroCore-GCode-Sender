@@ -127,7 +127,6 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
 
         item.commandNumber = parser.getCommandNumber();
         item.isMovement = parser.addCommand(item.args) != nullptr;
-        parser.addCommand(item.args);
         *gcode << item;
 
         remaining = size - io.pos();
