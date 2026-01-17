@@ -2861,8 +2861,6 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     }
     m_program << *data->gcode;
 
-    ui->program->addProgramModelRow();
-
     // Calculate initial time estimation
     QTime estimatedTime = m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),

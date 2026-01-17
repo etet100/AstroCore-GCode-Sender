@@ -511,10 +511,6 @@ void PartMainProgram::clearProgramModel()
     m_programModel.clear();
 }
 
-void PartMainProgram::addProgramModelRow()
-{
-    m_programModel.insertRow(m_programModel.rowCount());
-}
 
 int PartMainProgram::programModelRowCount() const
 {

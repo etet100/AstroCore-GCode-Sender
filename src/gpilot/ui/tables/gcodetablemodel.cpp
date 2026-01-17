@@ -153,7 +153,8 @@ int GCodeTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
 
-    return m_filtered ? m_filteredRows.size() : m_data->count();
+    // +1 add empty row at the end for easier appending new lines
+    return m_filtered ? m_filteredRows.size() : (m_data->count() + 1);
 }
 
 int GCodeTableModel::columnCount(const QModelIndex &parent) const
