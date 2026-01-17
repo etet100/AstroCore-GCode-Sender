@@ -448,8 +448,8 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
     connect(program, &GCode::loaded, this, [this]() {
         m_programModel.update();
     });
-    connect(program, &GCode::linesUpdated, this, [this]() {
-        m_programModel.update();
+    connect(program, &GCode::linesUpdated, this, [this](int from, int to) {
+        m_programModel.updateLines(from, to);
     });
 
     // Set models to UI
