@@ -337,6 +337,12 @@ PartMainProgram::SelRange PartMainProgram::getSelectedRange() const
 
     range.from = rows.first().row();
     range.to = rows.last().row();
+
+    // exclude last row (placeholder for new line) from selection
+    if (ui->tblProgram->model() && range.to == ui->tblProgram->model()->rowCount() - 1) {
+        range.to--;
+    }
+
     range.count = range.to - range.from + 1;
 
     return range;

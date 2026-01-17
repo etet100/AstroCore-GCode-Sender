@@ -133,9 +133,14 @@ void GCode::deleteLines(int from, int to)
 
 QString GCode::linesAsText(int from, int to)
 {
+    if (to >= m_data.size()) {
+        to = m_data.size() - 1;
+    }
+
     QStringList lines;
-    for (int i = from; i <= to; i++) {
-        lines.append(m_data[i].line);
+
+    for (QList<GCodeItem>::iterator it = m_data.begin() + from; it != m_data.begin() + to + 1; ++it) {
+        lines.append(it->line);
     }
 
     return lines.join("\n");
