@@ -808,3 +808,8 @@ void PartMainVisualizer::toggleToolClicked()
 {
     m_toolDrawer.toggleVisible();
 }
+
+void PartMainVisualizer::toggleLightClicked()
+{
+    ui->visualizer->toggleLight();
+}

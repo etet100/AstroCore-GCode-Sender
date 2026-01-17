@@ -68,6 +68,7 @@ public:
     void setRightView();
     void toggleProjectionType();
     void toggleRotationCube();
+    void toggleLight();
 
     ViewMode viewMode() const;
     void setViewMode(ViewMode mode);
@@ -195,7 +196,7 @@ private:
     QMatrix4x4 m_viewMatrix;
     GLPalette m_palette;
     CubeDrawer m_cubeDrawer;
-
+    bool m_light = false;
     QColor m_colorBackground;
     QColor m_colorText;
 

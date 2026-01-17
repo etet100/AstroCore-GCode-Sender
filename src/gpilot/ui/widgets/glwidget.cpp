@@ -505,6 +505,11 @@ void GLWidget::toggleRotationCube()
     m_rotationCube = !m_rotationCube;
 }
 
+void GLWidget::toggleLight()
+{
+    m_light = !m_light;
+}
+
 void GLWidget::setIsometricView()
 {
     m_mode = ViewMode::Orthogonal;
@@ -838,8 +843,11 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     QOpenGLShaderProgram *currentProgram = nullptr;
 
     static float lightRotation = 0;
-    QVector3D lightPos(100 * cos(lightRotation * M_PI / 180), 100 * sin(lightRotation * M_PI / 180), 40);
-    lightRotation += 1;
+    QVector3D lightPos;
+    if (m_light) {
+        lightPos = QVector3D(100 * cos(lightRotation * M_PI / 180), 100 * sin(lightRotation * M_PI / 180), 40);
+        lightRotation += 1;
+    }
 
     if (m_gcodeShaderProgram) {
         if (currentProgram && currentProgram != m_gcodeShaderProgram) {
@@ -850,6 +858,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
         currentProgram->setUniformValue("u_light_position", lightPos);
+        currentProgram->setUniformValue("u_light", m_light);
         //
         currentProgram->setUniformValue("u_eye", m_eye);
         currentProgram->setUniformValue("u_near", (GLfloat) m_near);
@@ -865,6 +874,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
         currentProgram->setUniformValue("u_light_position", lightPos);
+        currentProgram->setUniformValue("u_light", m_light);
     }
 
     if (m_billboardShaderProgram) {

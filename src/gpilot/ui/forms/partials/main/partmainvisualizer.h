@@ -136,6 +136,7 @@ class PartMainVisualizer : public QWidget
         void showButtonInfo(bool hovered);
         void updateBillboardsScreenPositions();
         void toggleToolClicked();
+        void toggleLightClicked();
 
     private:
         Ui::partMainVisualizer* ui;

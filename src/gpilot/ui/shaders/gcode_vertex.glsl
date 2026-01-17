@@ -11,6 +11,7 @@ uniform mat4 u_mv_matrix;
 uniform vec3 u_light_position;
 uniform vec3 u_eye;
 uniform sampler2D u_palette;
+uniform int u_light;
 
 in vec3 a_position;
 in uint a_color;
@@ -28,8 +29,12 @@ void main()
     vec4 vertex_position = vec4(a_position, 1.0);
     v_normal = a_normal;
 
-    vec3 light_position_ = vec4(u_light_position, 1.0).xyz;
-    v_light_direction = normalize(light_position_ - vertex_position.xyz);
+    if (u_light != 0) {
+        vec3 light_position_ = vec4(u_light_position, 1.0).xyz;
+        v_light_direction = normalize(light_position_ - vertex_position.xyz);
+    } else {
+        v_light_direction = vec3(0.0, 0.0, 0.0);
+    }
 
     gl_Position = u_mvp_matrix * vertex_position;
 
