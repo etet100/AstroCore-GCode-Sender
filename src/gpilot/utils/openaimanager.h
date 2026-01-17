@@ -21,7 +21,7 @@ public:
     void setApiKey(const QString &key);
     bool sendRequest(const QString &prompt,
                      SuccessCallback onSuccess, ErrorCallback onError,
-                     const QString &model = "gpt-5-mini");
+                     const QString &model = "gpt-4o");
     bool annotateProgram(const QString &program, SuccessCallback onSuccess, ErrorCallback onError = nullptr);
     bool listModels();
 

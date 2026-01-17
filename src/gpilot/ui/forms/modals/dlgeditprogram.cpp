@@ -2,6 +2,8 @@
 #include "ui_dlgeditprogram.h"
 #include <QPushButton>
 #include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "utils/openaimanager.h"
 
 DlgEditProgram::DlgEditProgram(QWidget* parent)
@@ -16,7 +18,29 @@ DlgEditProgram::DlgEditProgram(QWidget* parent)
             OpenAIManager& o = OpenAIManager::instance();
             button->setEnabled(false);
             o.annotateProgram(ui->txtProgram->toPlainText(), [this, button](const QString& response) {
-                ui->txtProgram->setPlainText(response);
+                // Comments format: {\"l\": 4, \"d\": \"Move the Z axis to machine home position.\"}
+                QStringList comments = response.split('\n');
+                QStringList lines = ui->txtProgram->toPlainText().split('\n');
+
+                for (auto& comment : comments) {
+                    QJsonObject obj = QJsonDocument::fromJson(comment.toUtf8()).object();
+                    int lineNumber = obj["l"].toInt(-1);
+                    QString description = obj["d"].toString("").trimmed();
+                    if (lineNumber >= lines.size() || description.isEmpty()) {
+                        continue;
+                    }
+
+                    // Remove existing comment
+                    QString line = lines[lineNumber];
+                    int commentIndex = line.indexOf(';');
+                    if (commentIndex != -1) {
+                        line = line.left(commentIndex).trimmed();
+                    }
+                    line += " ; " + description;
+                    lines[lineNumber] = line;
+                }
+
+                ui->txtProgram->setPlainText(lines.join('\n'));
                 button->setEnabled(true);
             }, [this, button](const QString& error) {
                 QMessageBox::warning(this, "AI Annotation Error", error);

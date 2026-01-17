@@ -65,11 +65,15 @@ bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", QString("Bearer %1").arg(m_apiKey).toUtf8());
 
+    QJsonArray messages;
+
     QJsonObject message;
     message["role"] = "user";
     message["content"] = prompt;
+    messages.append(message);
 
-    QJsonArray messages;
+    message["role"] = "system";
+    message["content"] = "You are a CNC specialist";
     messages.append(message);
 
     QJsonObject json;
@@ -86,6 +90,7 @@ bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray response = reply->readAll();
             QString parsedResponse = parseResponse(response);
+            qDebug() << parsedResponse;
 
             if (!parsedResponse.isEmpty()) {
                 onSuccess(parsedResponse);
@@ -108,7 +113,18 @@ bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess
 
 bool OpenAIManager::annotateProgram(const QString &program, SuccessCallback onSuccess, ErrorCallback onError)
 {
-    QString prompt = QString("Add short comment to every g-code command. Do not return g-code itself. Return one line for every source line. And nothing else. \n\n%1").arg(program);
+    QStringList lines = program.split('\n');
+    for (int i=0; i<lines.size(); i++) {
+        lines[i] = QString("%1;%2").arg(i).arg(lines[i]);
+    }
+
+    QString prompt = QString("For each G-code line, write brief (as short as possible) description of what it does. Use lowercase."
+        "Do not describe 'comment only' lines. "
+        "Also describe invalid or incorrect lines. Do not return input line itself."
+        "If input data contains any readable text, try to use its language for all comments."
+        "Every single line return as separate json with line number to which the returned desctription refers (0-based, key=l) and description (key=d)."
+        "Every input line start with line number - use the provided line numbers exactly. Do not infer or change them."
+        "Do not add anything else nor wrap returned date in any tags... \n\n%1").arg(lines.join('\n'));
 
     return sendRequest(prompt, onSuccess, onError);
 }
@@ -155,7 +171,7 @@ bool OpenAIManager::listModels()
             models.append(modelId);
         }
 
-        qDebug() << "Available models:" << models;
+        qDebug() << "[AI] Available models:" << models;
 
         emit modelsListed(models);
     });
