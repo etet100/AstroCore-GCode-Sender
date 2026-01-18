@@ -472,6 +472,15 @@ row: -3.9 2.17 -0.37 3.6 1.8 -4.0 0.9 1.87 0.77 1.2
 
 This example defines a 10×10 grid starting at position (0, 0) with 5mm spacing between measurement points.
 
-Heightmap rendering with bicubic interpolation:
+### Interpolation Methods
 
+The measured table curvature can be interpolated at any point using one of three methods:
+
+- **Linear** - Simple linear interpolation between adjacent points
+- **Bilinear** - Two-dimensional linear interpolation using four surrounding points
+- **Bicubic** - Smooth interpolation using sixteen surrounding points for more accurate surface representation
+
+Heightmap rendering with bilinear and bicubic interpolation:
+
+![bilinear interpolation](/screenshots/screenshot_heightmap_bilinear.png)
 ![bicubic interpolation](/screenshots/screenshot_heightmap_bicubic.png)
