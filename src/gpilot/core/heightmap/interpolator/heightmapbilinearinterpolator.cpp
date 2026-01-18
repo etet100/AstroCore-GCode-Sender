@@ -3,7 +3,7 @@
 
 #include "heightmapbilinearinterpolator.h"
 
-HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap& heightmap) : HeightmapInterpolator(heightmap)
+HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
 {
 }
 
@@ -13,7 +13,7 @@ double HeightmapBilinearInterpolator::interpolate(QPointF ptMm) const
     //     return NAN;
     // }
 
-    QSize gridSize = m_heightmap.gridSize();
+    QSize gridSize = m_heightmap->gridSize();
 
     // Take physical coordinates
     auto [x, y] = ptMm;
@@ -29,10 +29,10 @@ double HeightmapBilinearInterpolator::interpolate(QPointF ptMm) const
     // double z10 = m_heightmap.at(x+1, y);
     // double z01 = m_heightmap.at(x, y+1);
     // double z11 = m_heightmap.at(x+1, y+1);
-    double z00 = m_heightmap.at((int) x, (int) y);
-    double z10 = m_heightmap.at((int) x + 1, (int) y);
-    double z01 = m_heightmap.at((int) x, (int) y + 1);
-    double z11 = m_heightmap.at((int) x + 1, (int) y + 1);
+    double z00 = m_heightmap->at((int) x, (int) y);
+    double z10 = m_heightmap->at((int) x + 1, (int) y);
+    double z01 = m_heightmap->at((int) x, (int) y + 1);
+    double z11 = m_heightmap->at((int) x + 1, (int) y + 1);
 
     // Calculate fractional offset in the grid
     // double dx = (ptMm.x() - x0) / gridSize.width();

@@ -20,13 +20,19 @@ Heightmap::Heightmap() : Heightmap(QSize(20, 20))
 //     m_valuesMinMax = other.m_valuesMinMax;
 // }
 
-Heightmap::Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data)
+Heightmap::Heightmap(
+    QSize size,
+    QPointF startPos,
+    QSizeF stepSize,
+    InterpolationMode interpolationMode,
+    const QList<double>& data
+) : m_size(size),
+    m_startPos(startPos),
+    m_stepSize(stepSize),
+    m_interpolationMode(interpolationMode),
+    m_data(data)
 {
-    m_size = size;
-    m_startPos = startPos;
-    m_stepSize = stepSize;
     updateEndPos();
-    m_data = data;
     updateMinMax();
 }
 

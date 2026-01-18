@@ -4,16 +4,16 @@
 #include "heightmapbicubicinterpolator.h"
 #include <algorithm>
 
-HeightmapBicubicInterpolator::HeightmapBicubicInterpolator(const Heightmap& heightmap) : HeightmapInterpolator(heightmap)
+HeightmapBicubicInterpolator::HeightmapBicubicInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
 {
 }
 
 double HeightmapBicubicInterpolator::getValueAtClampedPoint(int x, int y) const
 {
-    int clampedX = std::clamp(x, 0, m_heightmap.gridWidth() - 1);
-    int clampedY = std::clamp(y, 0, m_heightmap.gridHeight() - 1);
+    int clampedX = std::clamp(x, 0, m_heightmap->gridWidth() - 1);
+    int clampedY = std::clamp(y, 0, m_heightmap->gridHeight() - 1);
 
-    return m_heightmap.at(clampedX, clampedY);
+    return m_heightmap->at(clampedX, clampedY);
 }
 
 double HeightmapBicubicInterpolator::cubicInterpolate(double p0, double p1, double p2, double p3, double t) const

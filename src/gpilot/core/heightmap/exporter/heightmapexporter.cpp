@@ -32,6 +32,7 @@ void HeightmapExporter::exportToFile(const Heightmap& heightmap, const QString f
     out << "size: " << heightmap.gridWidth() << " " << heightmap.gridHeight() << "\n";
     out << "startPos: " << heightmap.startPos().x() << " " << heightmap.startPos().y() << "\n";
     out << "stepSize: " << heightmap.stepWidth() << " " << heightmap.stepHeight() << "\n";
+    out << "interpolationMode: " << interpolationModeToString(heightmap.interpolationMode()) << "\n";
     out << "# data (row = Y, col = X)\n";
     for (int row = 0; row < heightmap.gridHeight(); ++row) {
         out << "row: ";
@@ -45,4 +46,18 @@ void HeightmapExporter::exportToFile(const Heightmap& heightmap, const QString f
     }
 
     file.close();
+}
+
+QString HeightmapExporter::interpolationModeToString(Heightmap::InterpolationMode mode)
+{
+    switch (mode) {
+        case Heightmap::InterpolationMode::Linear:
+            return "linear";
+        case Heightmap::InterpolationMode::Bilinear:
+            return "bilinear";
+        case Heightmap::InterpolationMode::Bicubic:
+            return "bicubic";
+        default:
+            throw std::runtime_error("Unknown interpolation mode");
+    }
 }

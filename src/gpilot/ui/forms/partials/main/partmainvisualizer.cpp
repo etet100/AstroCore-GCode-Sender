@@ -752,6 +752,12 @@ void PartMainVisualizer::showHeightmapInterpolationGrid(bool show)
     m_heightmapInterpolationDrawer.setVisible(show);
 }
 
+void PartMainVisualizer::setHeightmapInterpolationMode(Heightmap::InterpolationMode mode)
+{
+    m_heightmapInterpolationDrawer.setInterpolationMode(mode);
+    m_heightmapGridDrawer.setInterpolationMode(mode);
+}
+
 void PartMainVisualizer::updateHeightmap()
 {
     m_heightmapBorderDrawer.update();

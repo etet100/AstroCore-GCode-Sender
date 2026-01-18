@@ -7,6 +7,7 @@
 
 #include <QWidget>
 #include "core/config/module/configurationheightmap.h"
+#include "core/heightmap/interpolator/heightmapinterpolator.h"
 
 namespace Ui {
 class partMainHeightmap;
@@ -31,6 +32,7 @@ class PartMainHeightmap : public QWidget
         void setOpenFile(QString filePath);
         QRectF areaRectFromTextboxes();
         void setHeightmapAreaRect(QRectF area);
+        void setHeightmap(Heightmap* heightmap);
 
         struct VisualizationDrawers {
             bool border;
@@ -54,6 +56,7 @@ class PartMainHeightmap : public QWidget
         void loadHeightmapRequested();
         void useHeightmapToggled(bool checked);
         void heightmapModeToggled(bool checked);
+        void interpolationModeChanged(Heightmap::InterpolationMode mode);
         void gridParametersChanged(QPoint gridStart, PartMainHeightmap::MinMax zMinMax, int probeFeed, QPoint interpolationStep);
 
     private slots:
@@ -75,6 +78,7 @@ class PartMainHeightmap : public QWidget
 
     private:
         Ui::partMainHeightmap *ui;
+        Heightmap* m_heightmap = nullptr;
         void updateHeightmapGrid(double);
         void updateControlsState();
         void emitAreaChanged();

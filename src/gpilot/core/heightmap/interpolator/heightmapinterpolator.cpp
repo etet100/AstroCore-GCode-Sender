@@ -1,5 +1,5 @@
 #include "heightmapinterpolator.h"
 
-HeightmapInterpolator::HeightmapInterpolator(const Heightmap& heightmap) : m_heightmap(heightmap)
+HeightmapInterpolator::HeightmapInterpolator(const Heightmap* heightmap) : m_heightmap(heightmap)
 {
 }

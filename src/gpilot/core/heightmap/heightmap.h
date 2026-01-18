@@ -14,13 +14,19 @@
 class Heightmap
 {
     public:
+        enum InterpolationMode {
+            Linear = 0,
+            Bilinear,
+            Bicubic,
+        };
+
         Heightmap();
         Heightmap(const Heightmap& other) = delete;
         Heightmap& operator=(const Heightmap& other) = delete;
         Heightmap(Heightmap&& other) noexcept = default;
         Heightmap& operator=(Heightmap&& other) noexcept = default;
         Heightmap(QSize size);
-        Heightmap(QSize size, QPointF startPos, QSizeF stepSize, const QList<double>& data);
+        Heightmap(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data);
 
         struct MinMax {
             double min;
@@ -43,6 +49,7 @@ class Heightmap
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
         QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
+        InterpolationMode interpolationMode() const { return m_interpolationMode; }
         QRectF area() const { return QRectF(m_startPos, m_endPos); }
         void setArea(QRectF area);
         MinMax valuesMinMax() const { return m_valuesMinMax; }
@@ -64,6 +71,7 @@ class Heightmap
         QPointF m_endPos;
         QSizeF m_stepSize;
         QSizeF m_interpolationStepSize;
+        InterpolationMode m_interpolationMode = InterpolationMode::Bicubic;
         // QRectF m_mapArea;
         BottomTop m_zBottomTop = {NAN, NAN};
         MinMax m_valuesMinMax = {NAN, NAN};
@@ -73,6 +81,7 @@ class Heightmap
         QList<double> m_data;
         void setSize(QSize size);
         void updateEndPos();
+
         // just for testing
         void generateRandom();
         void generateSinCos();

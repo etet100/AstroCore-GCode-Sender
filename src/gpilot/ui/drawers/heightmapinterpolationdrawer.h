@@ -10,22 +10,22 @@
 #include <QColor>
 #include "shaderdrawable.h"
 #include "utils/utils.h"
+#include "core/heightmap/heightmap.h"
 
 class HeightMapInterpolationDrawer : public ShaderDrawable
 {
 public:
     explicit HeightMapInterpolationDrawer();
 
-    // QVector<QVector<double> > *data() const;
     void setData(QVector<QVector<double> > *data);
-
-    // QRectF borderRect() const;
     void setBorderRect(const QRectF &borderRect);
+    void setInterpolationMode(Heightmap::InterpolationMode mode);
 
 protected:
     bool updateData(GLPalette &palette) override;
 
 private:
+    Heightmap::InterpolationMode m_interpolationMode;
     QRectF m_borderRect;
     double m_gridSize;
     QVector<QVector<double>> *m_data;

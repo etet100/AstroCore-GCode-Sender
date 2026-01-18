@@ -3,7 +3,7 @@
 
 #include "heightmaplinearinterpolator.h"
 
-HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap& heightmap) : HeightmapInterpolator(heightmap)
+HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
 {
 }
 
@@ -16,7 +16,7 @@ double HeightmapLinearInterpolator::interpolate(QPointF point) const
 
     // return rand() % 500 / 100.0;
 
-    QSize gridSize = m_heightmap.gridSize();
+    QSize gridSize = m_heightmap->gridSize();
 
     // Get grid indices
     // Let's assume that point value is in grid units
@@ -31,10 +31,10 @@ double HeightmapLinearInterpolator::interpolate(QPointF point) const
     double y0 = y;
 
     // Z values at the corners of the grid cell
-    double z00 = m_heightmap.at((int) x, (int) y);
-    double z10 = m_heightmap.at((int) x + 1, (int) y);
-    double z01 = m_heightmap.at((int) x, (int) y + 1);
-    double z11 = m_heightmap.at((int) x + 1, (int) y + 1);
+    double z00 = m_heightmap->at((int) x, (int) y);
+    double z10 = m_heightmap->at((int) x + 1, (int) y);
+    double z01 = m_heightmap->at((int) x, (int) y + 1);
+    double z11 = m_heightmap->at((int) x + 1, (int) y + 1);
 
     // Calculate fractional offset in the grid
     // double dx = (point.x() - x0) / gridSize.width();
@@ -43,18 +43,23 @@ double HeightmapLinearInterpolator::interpolate(QPointF point) const
     double dx = x - (int) x;
     double dy = y - (int) y;
 
-    // Determine which edge to interpolate along
-    if (dx > dy) {
-        // Interpolate along the bottom edge
-        double z0 = z00 * (1 - dx) + z10 * dx;
-        double z1 = z10 * (1 - dy) + z11 * dy;
+    // Divide rectangle into two triangles along diagonal (1,0)-(0,1)
+    // This ensures proper interpolation when 4 points don't lie on same plane
+    if (dx + dy <= 1.0) {
+        // Triangle 1: (0,0), (1,0), (0,1) with values z00, z10, z01
+        // Barycentric interpolation
+        double w0 = 1.0 - dx - dy;
+        double w1 = dx;
+        double w2 = dy;
 
-        return z0 * (1 - dy) + z1 * dy;
+        return z00 * w0 + z10 * w1 + z01 * w2;
     } else {
-        // Interpolate along the left edge
-        double z0 = z00 * (1 - dy) + z01 * dy;
-        double z1 = z01 * (1 - dx) + z11 * dx;
+        // Triangle 2: (1,0), (0,1), (1,1) with values z10, z01, z11
+        // Barycentric interpolation
+        double w0 = 1.0 - dy;
+        double w1 = 1.0 - dx;
+        double w2 = dx + dy - 1.0;
 
-        return z0 * (1 - dx) + z1 * dx;
+        return z10 * w0 + z01 * w1 + z11 * w2;
     }
 }

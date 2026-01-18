@@ -10,13 +10,14 @@
 class HeightmapInterpolator
 {
     public:
-        HeightmapInterpolator(const Heightmap& heightmap);
+        HeightmapInterpolator(const Heightmap* heightmap);
+        virtual ~HeightmapInterpolator() = default;
 
         // Get interpolated height at the given (x, y) coordinates.
         virtual double interpolate(QPointF point) const = 0;
 
     protected:
-        const Heightmap& m_heightmap;
+        const Heightmap* m_heightmap;
 };
 
 #endif // HEIGHTMAPINTERPOLATOR_H

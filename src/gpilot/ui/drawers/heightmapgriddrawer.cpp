@@ -58,8 +58,21 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
 
 void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette &palette)
 {
-    float alpha = 1.0;
-    HeightmapBicubicInterpolator interpolator(*m_model);
+    static constexpr float alpha = 1.0;
+
+    HeightmapInterpolator* interpolator;
+    switch (m_interpolationMode) {
+        case Heightmap::InterpolationMode::Linear:
+            interpolator = new HeightmapLinearInterpolator(m_model);
+            break;
+        case Heightmap::InterpolationMode::Bilinear:
+            interpolator = new HeightmapBilinearInterpolator(m_model);
+            break;
+        default:
+        case Heightmap::InterpolationMode::Bicubic:
+            interpolator = new HeightmapBicubicInterpolator(m_model);
+            break;
+    }
 
     auto setTriangleNormal = [](VertexData &a, VertexData &b, VertexData &c) {
         QVector3D normal = QVector3D::normal(a.position, b.position, c.position);
@@ -76,10 +89,10 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
             const double substep = 0.2;
             for (double x2 = x; x2 < x + 0.9; x2 += substep) {
                 for (double y2 = y; y2 < y + 0.9; y2 += substep) {
-                    double v00 = qBound(minMax.min, interpolator.interpolate(QPointF(x2, y2)), minMax.max);
-                    double v10 = qBound(minMax.min, interpolator.interpolate(QPointF(x2 + substep, y2)), minMax.max);
-                    double v01 = qBound(minMax.min, interpolator.interpolate(QPointF(x2, y2 + substep)), minMax.max);
-                    double v11 = qBound(minMax.min, interpolator.interpolate(QPointF(x2 + substep, y2 + substep)), minMax.max);
+                    double v00 = qBound(minMax.min, interpolator->interpolate(QPointF(x2, y2)), minMax.max);
+                    double v10 = qBound(minMax.min, interpolator->interpolate(QPointF(x2 + substep, y2)), minMax.max);
+                    double v01 = qBound(minMax.min, interpolator->interpolate(QPointF(x2, y2 + substep)), minMax.max);
+                    double v11 = qBound(minMax.min, interpolator->interpolate(QPointF(x2 + substep, y2 + substep)), minMax.max);
 
                     if (qIsNaN(v00) || qIsNaN(v10) || qIsNaN(v01) || qIsNaN(v11)) {
                         continue;
@@ -117,6 +130,8 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
             }
         }
     }
+
+    delete interpolator;
 }
 
 void HeightMapGridDrawer::setModel(Heightmap &model)
@@ -135,6 +150,12 @@ void HeightMapGridDrawer::toggleVisible()
 {
     ShaderDrawable::toggleVisible();
     m_billboardDrawable.setVisible(m_visible);
+}
+
+void HeightMapGridDrawer::setInterpolationMode(Heightmap::InterpolationMode mode)
+{
+    m_interpolationMode = mode;
+    update();
 }
 
 bool HeightMapGridDrawer::updateData(GLPalette &palette)

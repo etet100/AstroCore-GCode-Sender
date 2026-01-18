@@ -280,6 +280,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             ui->visualizer->updateHeightmap();
         }
     });
+    connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
+        ui->visualizer->setHeightmapInterpolationMode(mode);
+        ui->visualizer->updateHeightmap();
+    });
 
     connect(ui->overrides, &PartMainOverride::overrideChanged, this, &FrmMain::onOverrideChanged);
 
@@ -782,6 +786,7 @@ void FrmMain::on_actHeightmapOpen2_triggered()
     ui->console->append(tr("Heightmap %1x%2loaded from %3").arg(m_heightmap.gridWidth()).arg(m_heightmap.gridHeight())
                                   .arg(fileName));
 
+    ui->heightmap->setHeightmap(&m_heightmap);
     ui->visualizer->setHeightmap(m_heightmap);
 }
 

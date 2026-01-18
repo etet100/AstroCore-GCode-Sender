@@ -10,6 +10,9 @@
 #include "utils/utils.h"
 #include "ui/widgets/glpalette.h"
 
+#define QUANTIZE_STEPS 25
+#define QUANTIZE_COLOR(x) (floor(x * QUANTIZE_STEPS) / QUANTIZE_STEPS)
+
 struct VertexData
 {
     VertexData() {}

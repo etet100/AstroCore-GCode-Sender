@@ -11,7 +11,7 @@
 class HeightmapBilinearInterpolator : public HeightmapInterpolator
 {
     public:
-        HeightmapBilinearInterpolator(const Heightmap& heightmap);
+        HeightmapBilinearInterpolator(const Heightmap* heightmap);
         double interpolate(QPointF point) const override;
 };
 

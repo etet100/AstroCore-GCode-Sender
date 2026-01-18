@@ -14,6 +14,7 @@
 #include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/drawers/cursordrawer.h"
 #include "core/gcode/parser/gcodeviewparser.h"
+#include "core/heightmap/interpolator/heightmapinterpolator.h"
 #include "ui/widgets/glwidget.h"
 
 class ConfigurationVisualizer;
@@ -54,12 +55,6 @@ class PartMainVisualizer : public QWidget
 
         void reset();
 
-        void setHeightmap(Heightmap& heightmap);
-        void setHeightmapMode(bool enabled);
-        void updateHeightmapGrid();
-        // void updateHeightmapGrid(QRectF rect, int x, int y, double zBottom, double zTop);
-        void updateHeightmapInterpolation(bool reset = false);
-
         void setInterpolationData(QVector<QVector<double>> *data, QRectF borderRect);
         void setHeightmapInterpolationVisible(bool visible);
         void setSelectionVisible(bool visible);
@@ -92,9 +87,14 @@ class PartMainVisualizer : public QWidget
         void exportCodeDrawerToFile(const QString& filename);
 
         // Heighmap drawers manipulation
+        void setHeightmap(Heightmap& heightmap);
+        void setHeightmapMode(bool enabled);
+        void updateHeightmapGrid();
+        void updateHeightmapInterpolation(bool reset = false);
         void showHeightmapBorder(bool show);
         void showHeightmapProbeGrid(bool show);
         void showHeightmapInterpolationGrid(bool show);
+        void setHeightmapInterpolationMode(Heightmap::InterpolationMode mode);
         void updateHeightmap();
 
         // Line commands generation helper

@@ -340,12 +340,13 @@ GLuint GcodeDrawer::getSegmentColor(LineSegment& segment, GLPalette &palette)
     else if (segment.isFastTraverse()) return m_colorRapidMovementIndex > -1 ? m_colorRapidMovementIndex : getSegmentColorAndUpdateIndex(m_colorRapidMovementIndex, palette.color(m_colorRapidMovement));
     else if (segment.isZMovement()) return m_colorZMovementIndex > -1 ? m_colorZMovementIndex : getSegmentColorAndUpdateIndex(m_colorZMovementIndex, palette.color(m_colorZMovement));
     else if (m_grayscaleSegments) {
-        // switch (m_grayscaleCode) {
-        // case GcodeDrawer::S:
-        //     return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getSpindleSpeed(), 255));
-        // case GcodeDrawer::Z:
-        //     return QColor::fromHsl(0, 0, qBound<int>(0, 255 - 255.0 / (m_grayscaleMax - m_grayscaleMin) * segment.getStart().z(), 255));
-        // }
+        int grayscaleDiff = m_grayscaleMax - m_grayscaleMin;
+        switch (m_grayscaleCode) {
+        case GcodeDrawer::S:
+            return palette.color(QColor::fromHsl(0, 0, QUANTIZE_COLOR(qBound<int>(0, 255 - 255.0 / grayscaleDiff * segment.getSpindleSpeed(), 255))));
+        case GcodeDrawer::Z:
+            return palette.color(QColor::fromHsl(0, 0, QUANTIZE_COLOR(qBound<int>(0, 255 - 255.0 / grayscaleDiff * segment.getStart().z(), 255))));
+        }
     }
 
     return m_colorNormalIndex > -1 ? m_colorNormalIndex : getSegmentColorAndUpdateIndex(m_colorNormalIndex, palette.color(m_colorNormal));

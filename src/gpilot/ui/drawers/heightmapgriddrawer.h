@@ -8,6 +8,7 @@
 #include "shaderdrawable.h"
 #include "billboarddrawable.h"
 #include "core/heightmap/heightmap.h"
+#include "core/heightmap/interpolator/heightmapinterpolator.h"
 
 struct HeightMapGridBillboardContentData : public BillboardContentData
 {
@@ -45,6 +46,7 @@ class HeightMapGridDrawer : public ShaderDrawable
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
         void setVisible(bool visible);
         void toggleVisible();
+        void setInterpolationMode(Heightmap::InterpolationMode mode);
 
     protected:
         bool updateData(GLPalette &palette) override;
@@ -52,6 +54,7 @@ class HeightMapGridDrawer : public ShaderDrawable
     private:
         Heightmap* m_model;
         HeightMapGridBillboardDrawer m_billboardDrawable;
+        Heightmap::InterpolationMode m_interpolationMode;
         void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);

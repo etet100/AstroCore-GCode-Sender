@@ -25,6 +25,11 @@ PartMainHeightmap::PartMainHeightmap(QWidget *parent)
         ui->fraAreaWH->setVisible(checked);
         ui->fraAreaX1X2->setVisible(!checked);
     });
+
+    ui->cboInterpolationMode->setCurrentIndex(Heightmap::Bicubic);
+    connect(ui->cboInterpolationMode, &QComboBox::currentIndexChanged, this, [this](int index){
+        emit interpolationModeChanged(static_cast<Heightmap::InterpolationMode>(index));
+    });
 }
 
 PartMainHeightmap::~PartMainHeightmap()
@@ -72,7 +77,7 @@ void PartMainHeightmap::applyHeightmapConfiguration(ConfigurationHeightmap &conf
 
     ui->txtInterpolationStepX->setValue(configurationHeightmap.interpolationStepX());
     ui->txtInterpolationStepY->setValue(configurationHeightmap.interpolationStepY());
-    ui->cboInterpolationType->setCurrentIndex(configurationHeightmap.interpolationType());
+    ui->cboInterpolationMode->setCurrentIndex(configurationHeightmap.interpolationType());
     ui->chkShowInterpolation->setChecked(configurationHeightmap.interpolationShow());
 }
 
@@ -150,6 +155,22 @@ void PartMainHeightmap::setHeightmapAreaRect(QRectF rect)
     }
 
     emit areaChanged(rect);
+}
+
+void PartMainHeightmap::setHeightmap(Heightmap* heightmap)
+{
+    m_heightmap = heightmap;
+
+    QSignalBlocker blocker(this);
+
+    ui->txtGridX->setValue(heightmap->gridWidth());
+    ui->txtGridY->setValue(heightmap->gridHeight());
+    ui->txtGridZBottom->setValue(heightmap->zBottomTop().bottom);
+    ui->txtGridZTop->setValue(heightmap->zBottomTop().top);
+    ui->txtProbeFeed->setValue(heightmap->probeFeed());
+    ui->txtInterpolationStepX->setValue(heightmap->interpolationStepSize().width());
+    ui->txtInterpolationStepY->setValue(heightmap->interpolationStepSize().height());
+    ui->cboInterpolationMode->setCurrentIndex(static_cast<int>(heightmap->interpolationMode()));
 }
 
 void PartMainHeightmap::resizeEvent(QResizeEvent *event)

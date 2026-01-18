@@ -14,6 +14,9 @@ class HeightmapExporter
         HeightmapExporter();
 
         static void exportToFile(const Heightmap& heightmap, const QString fileName);
+
+    private:
+        static QString interpolationModeToString(Heightmap::InterpolationMode mode);
 };
 
 #endif // HEIGHTMAPEXPORTER_H

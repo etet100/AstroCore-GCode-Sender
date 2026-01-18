@@ -39,7 +39,7 @@ struct State {
 ApplyHeightmap::ApplyHeightmap(GCode &data, Heightmap &heightmap)
     : Converter(data)
     , m_heightmap(heightmap)
-    , m_interpolator(heightmap)
+    , m_interpolator(&heightmap)
 {
     State state;
 
