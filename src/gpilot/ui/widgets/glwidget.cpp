@@ -899,7 +899,6 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         switch (drawable->programType()) {
             case ShaderDrawable::ProgramType::GCode: {
                 GcodeDrawer *gcodeDrawable = static_cast<GcodeDrawer*>(drawable);
-                gcodeDrawable->setEyePos(m_eye);
                 // gcodeDrawable->update();
                 newProgram = m_gcodeShaderProgram;
                 break;
@@ -962,7 +961,6 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         switch (drawable->programType()) {
             case ShaderDrawable::ProgramType::GCode: {
                 GcodeDrawer *gcodeDrawable = static_cast<GcodeDrawer*>(drawable);
-                gcodeDrawable->setEyePos(m_eye);
                 // gcodeDrawable->update();
                 newProgram = m_gcodeShaderProgram;
                 break;

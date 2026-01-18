@@ -71,7 +71,6 @@ public:
 
     ProgramType programType() override { return ProgramType::GCode; };
 
-    void setEyePos(QVector3D eye) { m_eye = eye; }
 
 public slots:
     void onLinesUpdated(int fromLine, int toLine);
@@ -89,8 +88,6 @@ private:
     GrayscaleCode m_grayscaleCode = GcodeDrawer::S;
     int m_grayscaleMin = 0;
     int m_grayscaleMax = 255;
-
-    QVector3D m_eye;
 
     QColor m_colorNormal;
     QColor m_colorDrawn;
