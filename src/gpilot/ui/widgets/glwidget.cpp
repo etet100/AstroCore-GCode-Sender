@@ -266,11 +266,6 @@ void GLWidget::updateExtremes(ShaderDrawable *drawable)
              << m_xSize << m_ySize << m_zSize;
 }
 
-bool GLWidget::antialiasing() const
-{
-    return m_antialiasing;
-}
-
 void GLWidget::setAntialiasing(bool antialiasing)
 {
     m_antialiasing = antialiasing;
@@ -307,11 +302,6 @@ void GLWidget::onAnimation()
     updateView();
 }
 
-QString GLWidget::pinState() const
-{
-    return m_pinState;
-}
-
 void GLWidget::setPinState(const QString &pinState)
 {
     m_pinState = pinState;
@@ -323,19 +313,9 @@ void GLWidget::updateDrawer(ShaderDrawable *drawer)
     drawer->updateData(m_palette);
 }
 
-QString GLWidget::speedState() const
-{
-    return m_speedState;
-}
-
 void GLWidget::setSpeedState(const QString &additionalStatus)
 {
     m_speedState = additionalStatus;
-}
-
-bool GLWidget::vsync() const
-{
-    return m_vsync;
 }
 
 void GLWidget::setVsync(bool vsync)
@@ -343,19 +323,9 @@ void GLWidget::setVsync(bool vsync)
     m_vsync = vsync;
 }
 
-bool GLWidget::msaa() const
-{
-    return m_msaa;
-}
-
 void GLWidget::setMsaa(bool msaa)
 {
     m_msaa = msaa;
-}
-
-bool GLWidget::updatesEnabled() const
-{
-    return m_updatesEnabled;
 }
 
 void GLWidget::setUpdatesEnabled(bool updatesEnabled)
@@ -369,18 +339,9 @@ void GLWidget::setUpdatesEnabled(bool updatesEnabled)
     }
 }
 
-bool GLWidget::zBuffer() const
-{
-    return m_zBuffer;
-}
-
 void GLWidget::setZBuffer(bool zBuffer)
 {
     m_zBuffer = zBuffer;
-}
-
-double GLWidget::fov() {
-    return m_fov;
 }
 
 void GLWidget::setFov(double fov) {
@@ -388,17 +349,9 @@ void GLWidget::setFov(double fov) {
     updateProjection();
 }
 
-double GLWidget::nearPlane() {
-    return m_near;
-}
-
 void GLWidget::setNearPlane(double plane) {
     m_near = plane;
     updateProjection();
-}
-
-double GLWidget::farPlane() {
-    return m_far;
 }
 
 void GLWidget::setFarPlane(double plane) {
@@ -406,30 +359,14 @@ void GLWidget::setFarPlane(double plane) {
     updateProjection();
 }
 
-QString GLWidget::bufferState() const
-{
-    return m_bufferState;
-}
-
 void GLWidget::setBufferState(const QString &bufferState)
 {
     m_bufferState = bufferState;
 }
 
-QString GLWidget::parserState() const
-{
-    return m_parserState;
-}
-
 void GLWidget::setParserState(const QString &parserState)
 {
     m_parserState = parserState;
-}
-
-
-double GLWidget::lineWidth() const
-{
-    return m_lineWidth;
 }
 
 void GLWidget::setLineWidth(double lineWidth)
@@ -477,11 +414,6 @@ void GLWidget::setLeftView()
     m_xRotTarget = 0;
     m_yRotTarget = m_yRot > 90 ? 270 : -90;
     animate();
-}
-
-int GLWidget::fps()
-{
-    return m_targetFps;
 }
 
 void GLWidget::toggleProjectionType() {
@@ -533,11 +465,6 @@ void GLWidget::stopAnimation()
     m_animateView = false;
 }
 
-GLWidget::ViewMode GLWidget::viewMode() const
-{
-    return m_mode;
-}
-
 void GLWidget::setViewMode(ViewMode mode)
 {
     m_mode = mode;
@@ -560,19 +487,9 @@ void GLWidget::set2DView()
     animate();
 }
 
-QColor GLWidget::colorText() const
-{
-    return m_colorText;
-}
-
 void GLWidget::setColorText(const QColor &colorText)
 {
     m_colorText = colorText;
-}
-
-QColor GLWidget::colorBackground() const
-{
-    return m_colorBackground;
 }
 
 void GLWidget::setColorBackground(const QColor &colorBackground)
@@ -587,19 +504,9 @@ void GLWidget::setFps(int fps)
     setUpdatesEnabled(m_updatesEnabled);
 }
 
-QTime GLWidget::estimatedTime() const
-{
-    return m_estimatedTime;
-}
-
 void GLWidget::setEstimatedTime(const QTime &estimatedTime)
 {
     m_estimatedTime = estimatedTime;
-}
-
-QTime GLWidget::spendTime() const
-{
-    return m_spendTime;
 }
 
 void GLWidget::setSpendTime(const QTime &spendTime)

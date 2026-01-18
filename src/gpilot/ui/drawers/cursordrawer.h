@@ -39,7 +39,6 @@ class CursorDrawer : public QObject, public ShaderDrawable
         void setAnimation(float value);
         void createLines(const float z, const int arcs, VertexData &vertex);
         void createTriangles(const float z, const int arcs, VertexData &vertex);
-
 };
 
 #endif // CURSORDRAWER_H

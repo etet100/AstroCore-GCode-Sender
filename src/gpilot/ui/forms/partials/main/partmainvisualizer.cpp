@@ -71,6 +71,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     });
     connect(ui->visualizer, &GLContainer::zoomChanged, this, [this](double zoom) {
         m_originDrawer.setZoom(zoom);
+        m_boundingBoxDrawer.setZoom(zoom);
     });
     // connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
     connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
@@ -132,6 +133,7 @@ void PartMainVisualizer::updateCursorDrawer(QPointF pos)
 void PartMainVisualizer::initDrawables()
 {
     *ui->visualizer << m_codeDrawer << m_probeDrawer
+                    << &m_boundingBoxDrawer
                     << &m_cursorDrawer
                     << &m_heightmapBorderDrawer
                     << m_heightmapBorderDrawer.billboardDrawable()
@@ -247,6 +249,7 @@ void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
 {
     m_program = program;
     m_codeDrawer->setViewParser(parser);
+    m_boundingBoxDrawer.setViewParser(parser);
 }
 
 void PartMainVisualizer::setProbeParser(GCodeViewParser* parser)

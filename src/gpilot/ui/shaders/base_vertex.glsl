@@ -11,6 +11,8 @@ uniform mat4 u_mv_matrix;
 uniform sampler2D u_palette;
 uniform vec3 u_light_position;
 uniform int u_light;
+uniform float u_point_size;
+uniform bool u_flat_shading;
 
 attribute vec3 a_position;
 attribute uint a_color;
@@ -28,6 +30,8 @@ bool isNan(float val)
 
 void main()
 {
+    gl_PointSize = u_point_size;
+
     // Calculate interpolated vertex position & line start point
     v_position = (u_mv_matrix * vec4(a_position, 1.0)).xy;
 
@@ -52,11 +56,13 @@ void main()
 
         // Lambertian diffuse shading
         diffuse = max(dot(transformedNormal, lightDir), 0.0);
-    } else {
+    } else if (!u_flat_shading) {
         // Simple camera-based shading when light is disabled
         vec3 transformedNormal = normalize(mat3(u_mv_matrix) * a_normal);
         // Use normal Z component (facing camera) for shading
         diffuse = abs(transformedNormal.z) * 0.5 + 0.5;
+    } else {
+        diffuse = 1.0;
     }
 
     // Ambient + diffuse

@@ -8,11 +8,6 @@
 
 ShaderDrawable::ShaderDrawable()
 {
-    m_needsUpdateGeometry = true;
-    m_visible = true;
-    m_lineWidth = 1.0;
-    m_pointSize = 1.0;
-    m_depthTestEnabled = true;  // Default: use depth testing
 }
 
 ShaderDrawable::~ShaderDrawable()
@@ -168,14 +163,18 @@ void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1.0f, 1.0f);
     if (!m_triangles.isEmpty()) {
+        shaderProgram->setUniformValue("u_flat_shading", 0);
         glDrawArrays(GL_TRIANGLES, 0, m_triangles.count());
     }
+    shaderProgram->setUniformValue("u_flat_shading", (GLfloat)m_flatShading);
     glDisable(GL_POLYGON_OFFSET_FILL);
     if (!m_lines.isEmpty()) {
         glLineWidth(m_lineWidth);
         glDrawArrays(GL_LINES, m_triangles.count(), m_lines.count());
     }
     if (!m_points.isEmpty()) {
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        shaderProgram->setUniformValue("u_point_size", (GLfloat)m_pointSize);
         glDrawArrays(GL_POINTS, m_triangles.count() + m_lines.count(), m_points.count());
     }
 
@@ -229,21 +228,6 @@ void ShaderDrawable::setVisible(bool visible)
 void ShaderDrawable::toggleVisible()
 {
     m_visible = !m_visible;
-}
-
-// bool ShaderDrawable::depthTestEnabled() const
-// {
-//     return m_depthTestEnabled;
-// }
-
-// void ShaderDrawable::setDepthTestEnabled(bool enabled)
-// {
-//     m_depthTestEnabled = enabled;
-// }
-
-double ShaderDrawable::pointSize() const
-{
-    return m_pointSize;
 }
 
 void ShaderDrawable::setPointSize(double pointSize)

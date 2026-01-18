@@ -5,6 +5,7 @@ OriginDrawer::OriginDrawer()
 {
     m_scale = 1.0;
     m_depthTestEnabled = false;
+    m_flatShading = true;
 }
 
 void OriginDrawer::setZoom(double zoom)

@@ -46,19 +46,10 @@ public:
 
     void updateExtremes(ShaderDrawable *drawable);
     void fitDrawable(ShaderDrawable *drawable = NULL);
-
-    bool antialiasing() const;
     void setAntialiasing(bool antialiasing);
-
-    QTime spendTime() const;
     void setSpendTime(const QTime &spendTime);
-
-    QTime estimatedTime() const;
     void setEstimatedTime(const QTime &estimatedTime);
-
-    double lineWidth() const;
     void setLineWidth(double lineWidth);
-
     void setIsometricView();
     void setTopView();
     void setBottomView();
@@ -69,56 +60,23 @@ public:
     void toggleProjectionType();
     void toggleRotationCube();
     void toggleLight();
-
-    ViewMode viewMode() const;
     void setViewMode(ViewMode mode);
     void set2DView();
-
-    int fps();
     void setFps(int fps);
-
-    QString parserState() const;
     void setParserState(const QString &parserState);
-
-    QString bufferState() const;
     void setBufferState(const QString &bufferState);
-
-    bool zBuffer() const;
     void setZBuffer(bool zBuffer);
-
-    double fov();
     void setFov(double fov);
-
-    double nearPlane();
     void setNearPlane(double plane);
-
-    double farPlane();
     void setFarPlane(double plane);
-
-    bool updatesEnabled() const;
     void setUpdatesEnabled(bool updatesEnabled);
-
-    bool msaa() const;
     void setMsaa(bool msaa);
-
-    QColor colorBackground() const;
     void setColorBackground(const QColor &colorBackground);
-
-    QColor colorText() const;
     void setColorText(const QColor &colorText);
-
-    double pointSize() const;
     void setPointSize(double pointSize);
-
-    bool vsync() const;
     void setVsync(bool vsync);
-
-    QString speedState() const;
     void setSpeedState(const QString &speedState);
-
-    QString pinState() const;
     void setPinState(const QString &pinState);
-
     void updateDrawer(ShaderDrawable *);
 
     void setOffset(double val) {
@@ -156,7 +114,6 @@ private:
     double m_fov, m_near, m_far;
     double m_xMin, m_xMax, m_yMin, m_yMax, m_zMin, m_zMax, m_xSize, m_ySize, m_zSize;
     double m_lineWidth;
-    double m_pointSize;
     double m_offset;
     bool m_error = false;
     bool m_antialiasing;

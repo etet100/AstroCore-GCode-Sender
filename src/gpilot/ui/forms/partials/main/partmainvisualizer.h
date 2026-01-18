@@ -13,6 +13,7 @@
 #include "ui/drawers/machineboundsdrawer.h"
 #include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/drawers/cursordrawer.h"
+#include "ui/drawers/boundingboxdrawer.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include "core/heightmap/interpolator/heightmapinterpolator.h"
 #include "ui/widgets/glwidget.h"
@@ -147,6 +148,7 @@ class PartMainVisualizer : public QWidget
         GcodeDrawer *m_codeDrawer;
         GcodeDrawer *m_probeDrawer;
         GcodeDrawer *m_currentDrawer;
+        BoundingBoxDrawer m_boundingBoxDrawer;
         ToolDrawer m_toolDrawer;
         CursorDrawer m_cursorDrawer;
         HeightMapAreaDrawer m_heightmapBorderDrawer;

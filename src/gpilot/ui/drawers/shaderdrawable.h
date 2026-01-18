@@ -38,7 +38,7 @@ struct VertexData
 
     VertexData(QVector3D pos, GLuint col, GLfloat cumSegPosition, QVector3D sta) {
         position = pos;
-        color = col;
+        color = (GLuint) col;
         start = sta;
         this->cumSegPosition = cumSegPosition;
     }
@@ -90,11 +90,6 @@ public:
     void setVisible(bool visible);
     void toggleVisible();
     bool depthTestEnabled() { return m_depthTestEnabled; }
-
-    // bool depthTestEnabled() const;
-    // void setDepthTestEnabled(bool enabled);
-
-    double pointSize() const;
     void setPointSize(double pointSize);
 
     QList<VertexData>& lines() { return m_lines; }
@@ -105,11 +100,12 @@ public:
 
     virtual bool sort(QMatrix4x4 viewMatrix);
 protected:
-    double m_lineWidth;
-    double m_pointSize;
-    bool m_visible;
-    bool m_needsUpdateGeometry;
-    bool m_depthTestEnabled;
+    double m_lineWidth = 1.0;
+    double m_pointSize = 4.0;
+    bool m_visible = true;
+    bool m_needsUpdateGeometry = true;
+    bool m_flatShading = false;
+    bool m_depthTestEnabled = true;
 
     QVector<VertexData> m_lines;
     QVector<VertexData> m_points;

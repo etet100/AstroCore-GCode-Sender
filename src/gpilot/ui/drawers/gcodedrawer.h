@@ -19,6 +19,7 @@ public:
     enum GrayscaleCode { S, Z };
 
     explicit GcodeDrawer();
+    ProgramType programType() override { return ProgramType::GCode; };
 
     void update();
     void update(QList<int> indexes);
@@ -30,47 +31,23 @@ public:
 
     void setViewParser(GCodeViewParser* viewParser);
     GCodeViewParser* viewParser();
-
-    // bool simplify() const;
     void setSimplify(bool simplify);
-
-    // double simplifyPrecision() const;
     void setSimplifyPrecision(double simplifyPrecision);
 
     bool geometryUpdated();
 
-    // QColor colorNormal() const;
     void setColorNormal(const QColor &colorNormal);
-    // QColor colorHighlight() const;
     void setColorHighlight(const QColor &colorHighlight);
-    // QColor colorZMovement() const;
     void setColorZMovement(const QColor &colorZMovement);
-    // QColor colorRapidMovement() const;
     void setColorRapidMovement(const QColor &colorRapidMovement);
-    // QColor colorDrawn() const;
     void setColorDrawn(const QColor &colorDrawn);
-    // QColor colorStart() const;
     void setColorStart(const QColor &colorStart);
-    // QColor colorEnd() const;
     void setColorEnd(const QColor &colorEnd);
-
-    // bool getIgnoreZ() const;
     void setIgnoreZ(bool ignoreZ);
-
-    // bool getGrayscaleSegments() const;
     void setGrayscaleSegments(bool grayscaleSegments);
-
-    // GrayscaleCode grayscaleCode() const;
     void setGrayscaleCode(const GrayscaleCode &grayscaleCode);
-
-    // int grayscaleMin() const;
     void setGrayscaleMin(int grayscaleMin);
-
-    // int grayscaleMax() const;
     void setGrayscaleMax(int grayscaleMax);
-
-    ProgramType programType() override { return ProgramType::GCode; };
-
 
 public slots:
     void onLinesUpdated(int fromLine, int toLine);
@@ -80,7 +57,6 @@ private slots:
 
 private:
     GCodeViewParser *m_viewParser = nullptr;
-
     bool m_simplify;
     double m_simplifyPrecision;
     bool m_ignoreZ = false;
@@ -119,7 +95,6 @@ private:
     GLuint getSegmentColor(LineSegment& segment, GLPalette &palette);
     GLuint getSegmentColorAndUpdateIndex(GLuint& var, GLuint index);
     void computeNormals();
-    void generateBounds(GLPalette &palette);
 };
 
 #endif // GCODEDRAWER_H

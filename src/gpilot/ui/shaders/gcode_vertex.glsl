@@ -12,6 +12,7 @@ uniform vec3 u_light_position;
 uniform vec3 u_eye;
 uniform sampler2D u_palette;
 uniform int u_light;
+uniform float u_point_size;
 
 in vec3 a_position;
 in uint a_color;
@@ -26,6 +27,8 @@ out float v_cumSegPosition;
 
 void main()
 {
+    gl_PointSize = u_point_size;
+
     vec4 vertex_position = vec4(a_position, 1.0);
     v_normal = a_normal;
 
