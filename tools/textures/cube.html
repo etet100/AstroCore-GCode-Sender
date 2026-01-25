@@ -43,11 +43,24 @@
     }
     /* light pastel colors, different for each side */
     div._1 { background-color: #ffb3b3; } /* light red */
-    div._2 { background-color: #b3ffb3; } /* light green */
-    div._3 { background-color: #b3b3ff; } /* light blue */
-    div._4 { background-color: #ffffb3; } /* light yellow */
+    div._2 {
+        -webkit-transform: scaleX(-1);
+        background-color: #b3ffb3;
+    } /* light green */
+    div._3 {
+        /* -webkit-transform: scaleX(-1); */
+        transform: rotate(-90deg) scaleX(-1);
+        background-color: #b3b3ff;
+    } /* light blue */
+    div._4 {
+        transform: rotate(90deg);
+        background-color: #ffffb3;
+    } /* light yellow */
     div._5 { background-color: #ffb3ff; } /* light magenta */
-    div._6 { background-color: #b3ffff; } /* light cyan */
+    div._6 {
+        background-color: #b3ffff;
+        -webkit-transform: matrix(-1, 0, 0, 1, 0, 0);
+    } /* light cyan */
 
     div.color {
         width: 80px;
@@ -65,7 +78,7 @@
     </i>
     </div>
     <div class="button _2">
-        BACK    
+        BACK
     </div>
     <!-- -->
     <div class="button _3">

@@ -40,7 +40,7 @@ public:
     void draw(QRect, GLPalette &palette);
     void setProjection();
     void updateView();
-    void updateEyePosition(QVector3D eye, QVector3D up);
+    void updateEyePosition(QVector3D eye, const QVector3D& center, QVector3D up);
     CubeClickableFace faceAtPos(QPoint pos);
     CubeClickableFace mouseMoveEvent(QMouseEvent *event);
     void leaveEvent(QEvent *event);
@@ -54,6 +54,7 @@ private:
     bool m_needsUpdateGeometry = true;
     QVector3D m_eye;
     QVector3D m_up;
+    QVector3D m_center;
     QVector<QPoint> m_points2d;
     QVector<CubeVertexData> m_triangles;
     QVector<CubeVertexData> m_lines;

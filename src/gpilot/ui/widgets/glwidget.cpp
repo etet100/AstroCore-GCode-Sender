@@ -678,7 +678,7 @@ void GLWidget::updateView()
 
     up.normalize();
 
-    m_cubeDrawer.updateEyePosition(m_eye, up);
+    m_cubeDrawer.updateEyePosition(m_eye, m_lookAt, up);
 
     m_viewMatrix.lookAt(m_eye, m_lookAt, up);
     // Removed the extra rotate(-90) as we now calculate in Z-up space directly

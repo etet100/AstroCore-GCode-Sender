@@ -105,20 +105,20 @@ void CubeDrawer::updateView()
 {
     m_viewMatrix.setToIdentity();
 
-    // use the eye position of main scene to rotate cube
-    QVector3D normalized = m_eye.normalized();
-    QVector3D eye = normalized * DISTANCE;
+    // Viewing direction from scene (inverted to match scene rotation)
+    QVector3D direction = (m_eye - m_center).normalized();
+    QVector3D eye = direction * DISTANCE;
 
     m_viewMatrix.lookAt(eye, QVector3D(0, 0, 0), m_up);
-    m_viewMatrix.rotate(90, 0.0, 1.0, 0.0);
-    m_viewMatrix.rotate(-90, 1.0, 0.0, 0.0);
+    // m_viewMatrix.rotate(180, 1.0, 0.0, 0.0);
+    m_viewMatrix.rotate(90, 0.0, 0.0, 1.0);
 }
 
-void CubeDrawer::updateEyePosition(QVector3D eye, QVector3D up)
+void CubeDrawer::updateEyePosition(QVector3D eye, const QVector3D& center, QVector3D up)
 {
     m_eye = eye;
     m_up = up;
-    // m_needsUpdateGeometry = true;
+    m_center = center;
 
     updateView();
 
