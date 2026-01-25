@@ -17,8 +17,8 @@ class Pendant : public QObject
         explicit Pendant(QObject *parent, Communicator &communicator);
 
     private:
-        QTcpServer *m_server;
-        QTcpSocket *m_socket;
+        QTcpServer *m_server = nullptr;
+        QTcpSocket *m_socket = nullptr;
         Communicator &m_communicator;
         void sendState();
         void sendWifiConfig();

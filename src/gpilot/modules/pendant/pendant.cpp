@@ -34,7 +34,7 @@ enum class CommunicationMode: uint8_t {
 
 PACK(struct Header
 {
-    uint16_t start; // 0xAA55
+    uint16_t start = 0xAA55;
     uint8_t size;
     uint8_t type;
 });
@@ -87,15 +87,21 @@ class Queue {
 Pendant::Pendant(QObject *parent, Communicator &communicator) : QObject{parent}, m_communicator{communicator}
 {
     qDebug() << "[Pendant] Created";
-    return;
 
-    this->m_server = new QTcpServer(this);
-    this->m_server->listen(QHostAddress::Any, 5555);
+    m_server = new QTcpServer(this);
+    m_server->listen(QHostAddress::Any, 5555);
 
-    connect(this->m_server, &QTcpServer::newConnection, [this]() {
+    connect(m_server, &QTcpServer::newConnection, [this]() {
         qDebug() << "[Pendant] New pendant connection";
+        if (m_socket != nullptr) {
+            qWarning() << "[Pendant] Only one pendant connection is supported";
+            m_server->nextPendingConnection()->disconnectFromHost();
+            return;
+        }
 
-        m_socket = this->m_server->nextPendingConnection();
+        m_socket = m_server->nextPendingConnection();
+        m_server->pauseAccepting();
+
         connect(m_socket, &QTcpSocket::readyRead, [this]() {
             QByteArray data = m_socket->readAll();
             m_socket->write(data);
@@ -104,15 +110,13 @@ Pendant::Pendant(QObject *parent, Communicator &communicator) : QObject{parent},
         QTimer *timer = new QTimer(this);
         timer->setInterval(50);
 
-        sendFeedRateConfig();
-        sendStepSizeConfig();
-        sendWifiConfig();
-
         connect(m_socket, &QTcpSocket::disconnected, [this, timer]() {
             timer->stop();
             timer->deleteLater();
+            m_socket->close();
             m_socket->deleteLater();
             m_socket = nullptr;
+            m_server->resumeAccepting();
             qDebug() << "[Pendant] Pendant disconnected";
         });
 
@@ -130,6 +134,10 @@ Pendant::Pendant(QObject *parent, Communicator &communicator) : QObject{parent},
             // socket->write((char*)&wifiMessage, sizeof(WifiConfigMessage));
         });
         timer->start();
+
+        sendFeedRateConfig();
+        sendStepSizeConfig();
+        sendWifiConfig();
     });
 }
 
