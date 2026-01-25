@@ -402,7 +402,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     updateLayouts();
 
-    // Initialize central widget management
+    // Initialize central widget management, do it before adding dockable windows (camera)
     initializeCentralWidgets();
 
     // Camera
@@ -900,16 +900,6 @@ void FrmMain::on_actAbout_triggered()
     FrmAbout *form = new FrmAbout(this);
     form->exec();
     form->deleteLater();
-}
-
-void FrmMain::on_actSpindleSpeedPlus_triggered()
-{
-    // ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() + 1);
-}
-
-void FrmMain::on_actSpindleSpeedMinus_triggered()
-{
-    // ui->slbSpindle->setSliderPosition(ui->slbSpindle->sliderPosition() - 1);
 }
 
 void FrmMain::on_actViewLockWindows_toggled(bool checked)
@@ -2451,71 +2441,8 @@ void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
 {
     m_connection = m_connectionManager.createConnection(mode);
 
-    //connect(m_connection, SIGNAL(lineReceived(QString)), this, SLOT(onConnectionLineReceived(QString)));
-    connect(m_connection, SIGNAL(error(QString)), this, SLOT(onConnectionError(QString)));
+    connect(m_connection, &Connection::error, this, &FrmMain::onConnectionError);
 }
-
-// void FrmMain::applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
-// {
-//     ui->glwVisualizer->setLineWidth(visualizerConfiguration.lineWidth());
-//     ui->glwVisualizer->setAntialiasing(visualizerConfiguration.antialiasing());
-//     ui->glwVisualizer->setMsaa(visualizerConfiguration.msaa());
-//     ui->glwVisualizer->setZBuffer(visualizerConfiguration.zBuffer());
-//     ui->glwVisualizer->setFov(visualizerConfiguration.fieldOfView());
-//     ui->glwVisualizer->setNearPlane(visualizerConfiguration.nearPlane());
-//     ui->glwVisualizer->setFarPlane(visualizerConfiguration.farPlane());
-//     ui->glwVisualizer->setVsync(visualizerConfiguration.vsync());
-//     ui->glwVisualizer->setFps(visualizerConfiguration.fpsLock());
-//     ui->glwVisualizer->setColorBackground(visualizerConfiguration.backgroundColor());
-//     ui->glwVisualizer->setColorText(visualizerConfiguration.textColor());
-
-//     // Adapt visualizer buttons colors
-//     const int LIGHTBOUND = 140;
-//     const int NORMALSHIFT = 40;
-//     const int HIGHLIGHTSHIFT = 80;
-
-//     QColor base = visualizerConfiguration.backgroundColor();
-//     bool light = base.value() > LIGHTBOUND;
-
-//     // Use background color with some transparency for buttons background
-//     ui->visualizerButtons->setStyleSheet(
-//         ui->visualizerButtons->styleSheet().replace(
-//             QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
-//                         QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(base.red())
-//                                                    .arg(base.green())
-//                                                    .arg(base.blue())
-//                 .arg(std::max(0, base.alpha() - 100))
-//             )
-//         );
-
-//     ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
-//     ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
-//     ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
-//     ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
-//     ui->cmdLeft->setIcon(QIcon(":/images/visualizer_left.png"));
-//     ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
-
-//     if (!light) {
-//         Utils::invertButtonIconColors(ui->cmdToggleProjection);
-//         Utils::invertButtonIconColors(ui->cmdFit);
-//         Utils::invertButtonIconColors(ui->cmdIsometric);
-//         Utils::invertButtonIconColors(ui->cmdFront);
-//         Utils::invertButtonIconColors(ui->cmdLeft);
-//         Utils::invertButtonIconColors(ui->cmdTop);
-//     }
-
-//     QColor normal, highlight;
-
-//     normal.setHsv(base.hue(), base.saturation(), base.value() + (light ? -NORMALSHIFT : NORMALSHIFT));
-//     highlight.setHsv(base.hue(), base.saturation(), base.value() + (light ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
-
-//     ui->glwVisualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
-//                 background-color: %3} QToolButton:hover {border: 1px solid %2;}")
-//                 .arg(normal.name()).arg(highlight.name())
-//                 .arg(base.name()));
-
-//     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
-// }
 
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
 {
@@ -3062,12 +2989,6 @@ bool FrmMain::saveChanges(bool heightMapMode)
     return true;
 }
 
-// void FrmMain::clearTable()
-// {
-//     ui->program->clearProgramModel();
-//     ui->program->insertProgramModelRow(0);
-// }
-
 void FrmMain::resetHeightmap()
 {
     // delete m_heightmapInterpolationDrawer.data();
@@ -3558,7 +3479,6 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 \
 QString FrmMain::lastUsedDirectory()
 {
-    qDebug() << m_configuration.uiModule().currentWorkingDirectory();
     return m_configuration.uiModule().currentWorkingDirectory();
 }
 

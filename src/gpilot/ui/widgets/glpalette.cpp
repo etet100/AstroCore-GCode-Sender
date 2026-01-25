@@ -1,5 +1,4 @@
 #include "glpalette.h"
-#include <QDebug>
 
 // has to be changed in vertex shaders too
 #define MAX_COLORS 100

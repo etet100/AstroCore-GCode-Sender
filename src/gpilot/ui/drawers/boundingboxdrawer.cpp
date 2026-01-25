@@ -12,14 +12,8 @@ bool BoundingBoxDrawer::updateData(GLPalette &palette)
     QVector3D min = minimumExtremes() - border;
     QVector3D max = maximumExtremes() + border;
 
-    // QColor(
-
     GLfloat lineColor = palette.color(QColor(Qt::yellow));
     GLfloat pointColor = palette.color(QColor(Qt::blue));
-
-    for (int i = 0; i < palette.count(); i++) {
-        qDebug() << palette.colorAsHex(i);
-    }
 
     // generate 12 lines
 

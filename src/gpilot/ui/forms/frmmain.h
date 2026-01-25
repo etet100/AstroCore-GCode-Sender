@@ -114,8 +114,6 @@ private slots:
     void on_actServiceSettings_triggered();
     void on_actServiceConfigureGRBL_triggered();
     void on_actAbout_triggered();
-    void on_actSpindleSpeedPlus_triggered();
-    void on_actSpindleSpeedMinus_triggered();
     void on_actViewLockWindows_toggled(bool checked);
     void on_actViewDarkMode_toggled(bool checked);
     void on_actViewCentralProgram_toggled(bool checked);

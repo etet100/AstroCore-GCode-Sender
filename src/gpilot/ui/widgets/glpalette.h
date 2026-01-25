@@ -5,7 +5,6 @@
 #include <QOpenGLTexture>
 #include <QVector4D>
 #include <QMap>
-#include <QDebug>
 
 typedef QVector4D GLColor;
 
