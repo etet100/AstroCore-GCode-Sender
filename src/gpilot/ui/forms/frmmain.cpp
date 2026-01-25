@@ -2312,6 +2312,13 @@ void FrmMain::restoreDockableLayoutState()
 
     // Normal window state
     restoreState(set.value("formMainState").toByteArray());
+
+    // Hide central widget dock
+    for (auto dock : findChildren<QDockWidget*>()) {
+        if (dock->property("cw").toBool() == true) {
+            dock->setVisible(false);
+        }
+    }
 }
 
 void FrmMain::updateUiScaleMenu()
@@ -3635,6 +3642,10 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
     }
 
     if (!currentConfig || currentConfig == requestedConfig) {
+        if (requestedConfig->dock->isVisible()) {
+            qWarning() << "Central widget dock is visible";
+        }
+        requestedConfig->dock->setProperty("cw", true);
         return;
     }
 
