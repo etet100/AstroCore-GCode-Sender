@@ -115,7 +115,6 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
 
     m_cancel = false;
 
-    int remaining = size;
     GcodeParser parser;
     GCode* gcode = new GCode();
 
@@ -129,11 +128,10 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         item.isMovement = parser.addCommand(item.args) != nullptr;
         *gcode << item;
 
-        remaining = size - io.pos();
-
-        int percentage = 100 - (remaining * 100 / size);
+        int percentage = ((float) io.pos() / (float) size) * 100.0f;
         static int lastPercentage = 0;
         if (percentage != lastPercentage) {
+            qDebug() << "[GCodeLoader] Loading GCode:" << size << io.pos() << percentage;
             lastPercentage = percentage;
             emit progress(percentage);
         }
@@ -146,12 +144,16 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         }
     }
 
+    qDebug() << "[GCodeLoader] GCode loaded. Total lines:" << gcode->count();
+
     GCodeViewParser* viewParser = new GCodeViewParser();
     viewParser->getLinesFromParser(
         &parser,
         configuration.arcApproximationValue(),
         configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
     );
+
+    qDebug() << "[GCodeLoader] GCodeViewParser created. Total segments:" << viewParser->getLines().count();
 
     if (m_cancel) {
         delete gcode;
