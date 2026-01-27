@@ -110,8 +110,19 @@ void CubeDrawer::updateView()
     QVector3D eye = direction * DISTANCE;
 
     m_viewMatrix.lookAt(eye, QVector3D(0, 0, 0), m_up);
-    // m_viewMatrix.rotate(180, 1.0, 0.0, 0.0);
     m_viewMatrix.rotate(90, 0.0, 0.0, 1.0);
+}
+
+void CubeDrawer::updateClickableAreas()
+{
+    QMatrix4x4 mvp = m_projectionMatrix * m_viewMatrix;
+    m_points2d.clear();
+    for (auto clickable : clickables) {
+        for (int i = 0; i < 6; i++) {
+            QPointF mapped = (mvp.map(cube[clickable[i]].position) * 50.0).toPointF();
+            m_points2d << QPoint(mapped.x() + (SIZE / 2), SIZE - (mapped.y() + 50));
+        }
+    }
 }
 
 void CubeDrawer::updateEyePosition(QVector3D eye, const QVector3D& center, QVector3D up)
@@ -121,15 +132,7 @@ void CubeDrawer::updateEyePosition(QVector3D eye, const QVector3D& center, QVect
     m_center = center;
 
     updateView();
-
-    QMatrix4x4 mvp = m_projectionMatrix * m_viewMatrix;
-    m_points2d.clear();
-    for (auto clickable : clickables) {
-        for (int i = 0; i < 6; i++) {
-            QPointF mapped = (mvp.map(cube[clickable[i]].position) * 50.0).toPointF();
-            m_points2d << QPoint(mapped.x() + (SIZE / 2), SIZE - (mapped.y() + 50));
-        }
-    }
+    updateClickableAreas();
 }
 
 CubeClickableFace CubeDrawer::faceAtPos(QPoint pos)

@@ -72,6 +72,7 @@ private:
     void setEye(float pos);
     void drawToBuffer(GLPalette &palette);
     void copyToScreen(QRect dest);
+    void updateClickableAreas();
 };
 
 #endif // CUBEDRAWER_H

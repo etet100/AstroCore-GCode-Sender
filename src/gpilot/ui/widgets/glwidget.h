@@ -128,10 +128,9 @@ private:
     QTime m_spendTime;
     QTime m_estimatedTime;
     QBasicTimer m_timerPaint;
-    QTimer *m_viewChangeTimer;
+    QTimer m_viewChangeTimer;
     double m_xRotTarget, m_yRotTarget;
     double m_xRotStored, m_yRotStored;
-    bool m_animateView;
     QString m_parserState;
     QString m_speedState;
     QString m_pinState;
@@ -156,6 +155,7 @@ private:
     bool m_light = false;
     QColor m_colorBackground;
     QColor m_colorText;
+    QTimer m_animationTimer;
 
     QPointF calcPositionOnXYPlane(QPoint mouseClickPosition);
     void drawText(QPainter &painter, QPoint &pos, QString text, int lineHeight, Qt::AlignmentFlag align = Qt::AlignLeft);
@@ -186,8 +186,6 @@ protected:
     void enterEvent(QEnterEvent *event) override;
 #endif
     void wheelEvent(QWheelEvent *we) override;
-
-    void timerEvent(QTimerEvent *) override;
 };
 
 #endif // GLWIDGET_H

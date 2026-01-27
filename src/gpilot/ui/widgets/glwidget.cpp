@@ -42,7 +42,6 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     m_frames = 0;
     m_fps = 0;
 
-    m_animateView = false;
     m_updatesEnabled = false;
     m_viewChanged = false;
 
@@ -85,15 +84,17 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     setMouseTracking(true);
 
     // Timer for delayed viewParametersChanged signal
-    m_viewChangeTimer = new QTimer(this);
-    m_viewChangeTimer->setSingleShot(true);
-    m_viewChangeTimer->setInterval(150);
-    connect(m_viewChangeTimer, &QTimer::timeout, this, &GLWidget::onViewChangeTimerTimeout);
+    m_viewChangeTimer.setSingleShot(true);
+    m_viewChangeTimer.setInterval(150);
+    connect(&m_viewChangeTimer, &QTimer::timeout, this, &GLWidget::onViewChangeTimerTimeout);
 
     // enable antialiasing
     QSurfaceFormat sf = format();
     sf.setSamples(16);
     setFormat(sf);
+
+    m_animationTimer.setInterval(20);
+    connect(&m_animationTimer, &QTimer::timeout, this, &GLWidget::onAnimation);
 }
 
 GLWidget::~GLWidget()
@@ -457,12 +458,12 @@ void GLWidget::animate()
     m_xRotStored = m_xRot;
     m_yRotStored = m_yRot;
     m_animationFrame = 0;
-    m_animateView = true;
+    m_animationTimer.start();
 }
 
 void GLWidget::stopAnimation()
 {
-    m_animateView = false;
+    m_animationTimer.stop();
 }
 
 void GLWidget::setViewMode(ViewMode mode)
@@ -474,7 +475,7 @@ void GLWidget::setViewMode(ViewMode mode)
     updateProjection();
     updateView();
     emit viewModeChanged(m_mode);
-    if (!m_animateView) {
+    if (!m_animationTimer.isActive()) {
         emit viewParametersChanged();
     }
 }
@@ -610,7 +611,7 @@ void GLWidget::resizeGL(int width, int height)
     emit resized();
 
     // Restart timer for delayed viewParametersChanged emission
-    m_viewChangeTimer->start();
+    m_viewChangeTimer.start();
 }
 
 void GLWidget::updateProjection()
@@ -1265,29 +1266,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
 #endif
 
     // Restart timer for delayed viewParametersChanged emission
-    m_viewChangeTimer->start();
-}
-
-void GLWidget::timerEvent(QTimerEvent *te)
-{
-    if (te->timerId() == m_timerPaint.timerId()) {
-        if (m_animateView) {
-            onAnimation();
-        }
-#ifndef GLES
-        update();
-#endif
-    } else {
-#ifdef GLES
-#ifdef USE_GLWINDOW
-        QOpenGLWindow::timerEvent(te);
-#else
-        QOpenGLWidget::timerEvent(te);
-#endif
-#else
-        QGLWidget::timerEvent(te);
-#endif
-    }
+    m_viewChangeTimer.start();
 }
 
 double GLWidget::normalizeAngle(double angle)
