@@ -83,6 +83,10 @@ bool IdleBehavior::doAction(const Action &action)
                 emit transition(this, new RunningBehavior(runAction.program()));
             }
             return true;
+
+        case Action::Type::Probe:
+            emit transition(this, new ProbingBehavior());
+            return true;
     }
 
     return StateBehavior::doAction(action);

@@ -136,8 +136,10 @@ SOURCES += main.cpp\
     state_behaviour/connectingbehavior.cpp \
     state_behaviour/errorbehaviour.cpp \
     state_behaviour/gotobehavior.cpp \
+    state_behaviour/probingbehavior.cpp \
     state_behaviour/reconnectingbehavior.cpp \
     state_behaviour/resetbehavior.cpp \
+    state_behaviour/scantablebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
     ui/drawers/cubedrawer.cpp \
@@ -284,8 +286,10 @@ HEADERS  += ui/forms/frmmain.h \
     state_behaviour/connectingbehavior.h \
     state_behaviour/errorbehaviour.h \
     state_behaviour/gotobehavior.h \
+    state_behaviour/probingbehavior.h \
     state_behaviour/reconnectingbehavior.h \
     state_behaviour/resetbehavior.h \
+    state_behaviour/scantablebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
     ui/drawers/cube.h \
