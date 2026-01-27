@@ -124,7 +124,7 @@ void LineSegment::setIsZMovement(bool isZ) {
     m_isZMovement = isZ;
 }
 
-bool LineSegment::isZMovement() {
+bool LineSegment::isZMovement() const {
     return m_isZMovement;
 }
 
@@ -140,7 +140,7 @@ void LineSegment::setIsFastTraverse(bool isF) {
     m_isFastTraverse = isF;
 }
 
-bool LineSegment::isFastTraverse() {
+bool LineSegment::isFastTraverse() const {
     return m_isFastTraverse;
 }
 

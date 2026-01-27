@@ -54,15 +54,15 @@ void GcodeDrawer::computeNormals()
         QVector3D tangent = m_lines[i + 1].position - m_lines[i].position;
         tangent.normalize();
         if (i == 0) {
-            normal = QVector3D(0, 0, 1); // Dowolny wektor normalny dla pierwszego odcinka
+            normal = QVector3D(0, 0, 1); // Any initial normal
             if (QVector3D::dotProduct(normal, tangent) != 0) {
-                // Korekta normalnej, aby była ortogonalna do tangenta
+                // Correct normal to be orthogonal to tangent
                 normal = QVector3D::crossProduct(tangent, QVector3D(0, 1, 0));
                 normal.normalize();
             }
             m_lines[i].start = normal;
         } else {
-            // Korekcja normalnej na podstawie poprzedniego kierunku
+            // Correct normal based on previous direction
             QVector3D projectedNormal = QVector3D::crossProduct(tangent, lastNormal);
             normal = QVector3D::crossProduct(projectedNormal, tangent);
             normal.normalize();
@@ -80,7 +80,9 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
 
     qDebug() << "[GcodeDrawer] Preparing vectors";
 
-    QList<LineSegment> &list = m_viewParser->getLines();
+    QList<LineSegment> &list = m_simplify
+        ? m_viewParser->getSimplifiedLines(m_simplifyPrecision)
+        : m_viewParser->getLines();
     VertexData vertex;
 
     qDebug() << "[GcodeDrawer] Lines count" << list.count();
@@ -115,58 +117,29 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
             continue;
         }
 
-        // Prepare vertices
-        // if (list[i].isFastTraverse()) vertex.start = list[i].getStart();
-        // else vertex.start = QVector3D(sNan, sNan, sNan);
         bool dashedLine = list[i].isZMovement() || list[i].isFastTraverse();
-
-        // Simplify geometry
-        int j = i;
-        if (m_simplify && i < list.count() - 1) {
-            QVector3D start = list[i].getEnd() - list[i].getStart();
-            QVector3D next;
-            double length = start.length();
-            bool straight = false;
-
-            do {
-                list[i].setVertexIndex(m_lines.count()); // Store vertex index
-                i++;
-                if (i < list.count() - 1) {
-                    next = list[i].getEnd() - list[i].getStart();
-                    length += next.length();
-//                    straight = start.crossProduct(start.normalized(), next.normalized()).length() < 0.025;
-                }
-            // Split short & straight lines
-            } while ((length < m_simplifyPrecision || straight) && i < list.count()
-                     && getSegmentType(list[i]) == getSegmentType(list[j]));
-            i--;
-        } else {
-            list[i].setVertexIndex(m_lines.count()); // Store vertex index
-        }
 
         vertex.color = getSegmentColor(list[i], palette);
 
-        // ignore shorter than 0.0001
-        float segmentLen = (list[i].getEnd() - list[j].getStart()).length();
-        if (segmentLen > 0.0001) {
-            // Line start
-            vertex.position = list[j].getStart();
-            vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
-            if (m_ignoreZ) {
-                vertex.position.setZ(0);
-            }
-            m_lines.append(vertex);
+        float segmentLen = (list[i].getEnd() - list[i].getStart()).length();
 
-            cumSegPosition += segmentLen;
-
-            // Line end
-            vertex.position = list[i].getEnd();
-            vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
-            if (m_ignoreZ) {
-                vertex.position.setZ(0);
-            }
-            m_lines.append(vertex);
+        // Line start
+        vertex.position = list[i].getStart();
+        vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
+        if (m_ignoreZ) {
+            vertex.position.setZ(0);
         }
+        m_lines.append(vertex);
+
+        cumSegPosition += segmentLen;
+
+        // Line end
+        vertex.position = list[i].getEnd();
+        vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
+        if (m_ignoreZ) {
+            vertex.position.setZ(0);
+        }
+        m_lines.append(vertex);
 
         // Draw last toolpath point
         if (i == list.count() - 1) {

@@ -40,11 +40,11 @@ public:
     void setSpeed(double s);
     double getSpeed();
     void setIsZMovement(bool isZ);
-    bool isZMovement();
+    bool isZMovement() const;
     void setIsArc(bool isA);
     bool isArc();
     void setIsFastTraverse(bool isF);
-    bool isFastTraverse();
+    bool isFastTraverse() const;
 
     bool contains(const QVector3D &point);
 

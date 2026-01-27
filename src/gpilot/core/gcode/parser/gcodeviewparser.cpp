@@ -59,16 +59,16 @@ void GCodeViewParser::testLength(const QVector3D &start, const QVector3D &end)
     if (!qIsNaN(length) && length != 0) m_minLength = qIsNaN(m_minLength) ? length : qMin<double>(m_minLength, length);
 }
 
-QList<LineSegment> &GCodeViewParser::toObjRedux(QList<QString> gcode, double arcPrecision, bool arcDegreeMode)
-{
-    GcodeParser parser;
+// QList<LineSegment> &GCodeViewParser::toObjRedux(QList<QString> gcode, double arcPrecision, bool arcDegreeMode)
+// {
+//     GcodeParser parser;
 
-    foreach (QString s, gcode) {
-        parser.addCommand(s);
-    }
+//     foreach (QString s, gcode) {
+//         parser.addCommand(s);
+//     }
 
-    return getLinesFromParser(&parser, arcPrecision, arcDegreeMode);
-}
+//     return getLinesFromParser(&parser, arcPrecision, arcDegreeMode);
+// }
 
 QList<LineSegment> &GCodeViewParser::getLineSegmentList()
 {
@@ -80,6 +80,8 @@ void GCodeViewParser::reset()
     //foreach (LineSegment &ls, m_lines) delete ls;
     m_lines.clear();
     m_lineIndexes.clear();
+    m_simplifiedLines.clear();
+    m_simplifiedLinesReady = false;
     // m_currentLine = 0;
     m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
@@ -187,4 +189,71 @@ QList<LineSegment>& GCodeViewParser::getLines()
 QList<QList<int>>& GCodeViewParser::getLinesIndexes()
 {
     return m_lineIndexes;
+}
+
+int GCodeViewParser::getSegmentType(const LineSegment& segment) const
+{
+    return segment.isFastTraverse() + segment.isZMovement() * 2;
+}
+
+QList<LineSegment>& GCodeViewParser::getSimplifiedLines(double simplifyPrecision)
+{
+    // Check if we need to rebuild simplified lines
+    if (m_simplifiedLinesReady && m_lastSimplifyPrecision == simplifyPrecision) {
+        return m_simplifiedLines;
+    }
+
+    m_simplifiedLines.clear();
+    m_lastSimplifyPrecision = simplifyPrecision;
+
+    if (m_lines.isEmpty()) {
+        m_simplifiedLinesReady = true;
+        return m_simplifiedLines;
+    }
+
+    // Simplify geometry
+    int vertexCount = 0;
+    for (int i = 0; i < m_lines.count(); i++) {
+        int j = i;
+
+        if (i < m_lines.count() - 1) {
+            QVector3D start = m_lines[i].getEnd() - m_lines[i].getStart();
+            QVector3D next;
+            double length = start.length();
+            bool straight = false;
+
+            do {
+                i++;
+                if (i < m_lines.count() - 1) {
+                    next = m_lines[i].getEnd() - m_lines[i].getStart();
+                    length += next.length();
+                }
+            } while ((length < simplifyPrecision || straight) && i < m_lines.count()
+                     && getSegmentType(m_lines[i]) == getSegmentType(m_lines[j]));
+            i--;
+        }
+
+        // Create simplified segment from j to i
+        float segmentLen = (m_lines[i].getEnd() - m_lines[j].getStart()).length();
+        if (segmentLen > 0.0001) {
+            LineSegment simplifiedSegment(m_lines[j].getStart(), m_lines[i].getEnd(), m_lines[j].getLineNumber());
+            simplifiedSegment.setIsArc(m_lines[j].isArc());
+            simplifiedSegment.setIsClockwise(m_lines[j].isClockwise());
+            simplifiedSegment.setPlane(m_lines[j].plane());
+            simplifiedSegment.setIsFastTraverse(m_lines[j].isFastTraverse());
+            simplifiedSegment.setIsZMovement(m_lines[j].isZMovement());
+            simplifiedSegment.setIsMetric(m_lines[j].isMetric());
+            simplifiedSegment.setIsAbsolute(m_lines[j].isAbsolute());
+            simplifiedSegment.setSpeed(m_lines[j].getSpeed());
+            simplifiedSegment.setSpindleSpeed(m_lines[j].getSpindleSpeed());
+            simplifiedSegment.setDwell(m_lines[j].getDwell());
+            simplifiedSegment.setVertexIndex(vertexCount);
+
+            m_simplifiedLines.append(simplifiedSegment);
+            vertexCount++;
+        }
+    }
+
+    m_simplifiedLinesReady = true;
+    return m_simplifiedLines;
 }
