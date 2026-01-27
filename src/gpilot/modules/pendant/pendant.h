@@ -9,21 +9,28 @@
 #include <QTcpServer>
 #include "core/communicator/communicator.h"
 
+class Configuration;
+
 class Pendant : public QObject
 {
     Q_OBJECT
 
     public:
-        explicit Pendant(QObject *parent, Communicator &communicator);
+        explicit Pendant(
+            Configuration &configuration,
+            Communicator &communicator,
+            QObject *parent = nullptr
+        );
 
     private:
         QTcpServer *m_server = nullptr;
         QTcpSocket *m_socket = nullptr;
+        Configuration &m_configuration;
         Communicator &m_communicator;
         void sendState();
         void sendWifiConfig();
-        void sendStepSizeConfig();
-        void sendFeedRateConfig();
+        void sendStepSizeSelections();
+        void sendFeedRateSelections();
 };
 
 #endif // PENDANT_H

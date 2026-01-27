@@ -384,7 +384,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_timerToolAnimation.start(25, this);
 
     // Pendant
-    Pendant *pendant = new Pendant(this, *m_communicator);
+    Pendant *pendant = new Pendant(m_configuration, *m_communicator, this);
 
     // Virtual uCNC settings
     m_partMainVirtualSettings = new PartMainVirtualSettings();

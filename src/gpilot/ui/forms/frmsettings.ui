@@ -72,7 +72,7 @@
          <x>0</x>
          <y>-1049</y>
          <width>627</width>
-         <height>1490</height>
+         <height>1549</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1505,6 +1505,18 @@
           </layout>
          </widget>
         </item>
+        <item>
+         <widget class="QGroupBox" name="grpPendant">
+          <property name="title">
+           <string>Pendant</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_15">
+           <item>
+            <widget class="PartSettingsPendant" name="pendant" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -1601,6 +1613,12 @@
    <class>PartSettingsAI</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingsai.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PartSettingsPendant</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/settings/partsettingspendant.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

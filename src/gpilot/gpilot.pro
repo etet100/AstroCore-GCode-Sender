@@ -98,6 +98,7 @@ SOURCES += main.cpp\
     core/config/module/configurationmachine.cpp \
     core/config/module/configurationmodule.cpp \
     core/config/module/configurationparser.cpp \
+    core/config/module/configurationpendant.cpp \
     core/config/module/configurationsender.cpp \
     core/config/module/configurationui.cpp \
     core/config/module/configurationvisualizer.cpp \
@@ -165,6 +166,7 @@ SOURCES += main.cpp\
     ui/forms/partials/settings/partsettingscolors.cpp \
     ui/forms/partials/settings/partsettingsconsole.cpp \
     ui/forms/partials/settings/partsettingsjogging.cpp \
+    ui/forms/partials/settings/partsettingspendant.cpp \
     ui/forms/partials/settings/partsettingssender.cpp \
     ui/forms/partials/settings/partsettingsshortcuts.cpp \
     ui/forms/partials/settings/partsettingsvisualizer.cpp \
@@ -241,6 +243,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationmachine.h \
     core/config/module/configurationmodule.h \
     core/config/module/configurationparser.h \
+    core/config/module/configurationpendant.h \
     core/config/module/configurationsender.h \
     core/config/module/configurationui.h \
     core/config/module/configurationvisualizer.h \
@@ -313,6 +316,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/settings/partsettingscolors.h \
     ui/forms/partials/settings/partsettingsconsole.h \
     ui/forms/partials/settings/partsettingsjogging.h \
+    ui/forms/partials/settings/partsettingspendant.h \
     ui/forms/partials/settings/partsettingssender.h \
     ui/forms/partials/settings/partsettingsshortcuts.h \
     ui/forms/partials/settings/partsettingsvisualizer.h \
@@ -399,6 +403,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/settings/partsettingscolors.ui \
     ui/forms/partials/settings/partsettingsconsole.ui \
     ui/forms/partials/settings/partsettingsjogging.ui \
+    ui/forms/partials/settings/partsettingspendant.ui \
     ui/forms/partials/settings/partsettingssender.ui \
     ui/forms/partials/settings/partsettingsshortcuts.ui \
     ui/forms/partials/settings/partsettingsvisualizer.ui \

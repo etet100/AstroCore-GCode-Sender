@@ -194,6 +194,11 @@ void FrmSettings::initializeWidgets()
 
     const ConfigurationAI &ai = m_configuration.aiModule();
     ui->ai->setOpenAIKey(ai.openAIKey());
+
+    const ConfigurationPendant &pendant = m_configuration.pendantModule();
+    ui->pendant->setWifiSsid(pendant.wifiSsid());
+    ui->pendant->setWifiPassword(pendant.wifiPassword());
+    ui->pendant->setHostIp(pendant.hostIp());
 }
 
 void FrmSettings::applySettings()
@@ -285,6 +290,11 @@ void FrmSettings::applySettings()
     ConfigurationJogging &jogging = m_configuration.joggingModule();
     jogging.m_stepChoices = ui->jogging->stepChoices();
     jogging.m_feedChoices = ui->jogging->feedChoices();
+
+    ConfigurationPendant &pendant = m_configuration.pendantModule();
+    pendant.m_wifiSsid = ui->pendant->wifiSsid();
+    pendant.m_wifiPassword = ui->pendant->wifiPassword();
+    pendant.m_hostIp = ui->pendant->hostIp();
 
     ConfigurationAI &ai = m_configuration.aiModule();
     ai.m_openAIKey = ui->ai->openAIKey();
