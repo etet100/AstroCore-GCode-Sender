@@ -16,6 +16,25 @@
 
 struct GCodeItem;
 
+struct GcodeParserState
+{
+    bool isMetric;
+    bool inAbsoluteMode;
+    bool inAbsoluteIJKMode;
+    float lastGcodeCommand;
+    QVector3D currentPoint;
+    int commandNumber;
+    PointSegment::planes currentPlane;
+    double lastSpeed;
+    double lastSpindleSpeed;
+    int pointsCount = 0;
+    float activeCannedCycle = -1; // G80-G89, -1 means no active cycle
+    double cannedR = 0.0;  // R - retract plane
+    double cannedZ = 0.0;  // Z - hole depth
+    double cannedQ = 0.0;  // Q - peck increment (for G83)
+    double cannedP = 0.0;  // P - dwell time at bottom (for G82)
+};
+
 class GcodeParser : public QObject
 {
     Q_OBJECT
@@ -50,15 +69,18 @@ public:
     void setTraverseSpeed(double traverseSpeed);
     int getCommandNumber() const;
 
+    // Save and restore parser state using a stack, can be used to rollback after line modification
+    // (e.g. in converters)
+    void pushState();
+    void popState();
+
+    // Legacy methods for backward compatibility
+    GcodeParserState saveState() const;
+    void restoreState(const GcodeParserState &state);
+
 private:
-    // Current state
-    bool m_isMetric;
-    bool m_inAbsoluteMode;
-    bool m_inAbsoluteIJKMode;
-    float m_lastGcodeCommand;
-    QVector3D m_currentPoint;
-    int m_commandNumber;
-    PointSegment::planes m_currentPlane;
+    GcodeParserState m_state;
+    QList<GcodeParserState> m_stateStack;
 
     // Settings
     double m_speedOverride;
@@ -66,12 +88,8 @@ private:
     bool m_removeAllWhitespace;
     bool m_convertArcsToLines;
     double m_smallArcThreshold;
-    // Not configurable outside, but maybe it should be.
     double m_smallArcSegmentLength;
-
-    double m_lastSpeed;
     double m_traverseSpeed;
-    double m_lastSpindleSpeed;
 
     // The gcode.
     QList<PointSegment*> m_points;
@@ -82,6 +100,7 @@ private:
     PointSegment *addLinearPointSegment(const QVector3D &nextPoint, bool fastTraverse);
     PointSegment *addArcPointSegment(const QVector3D &nextPoint, bool clockwise, const QStringList &args);
     void setLastGcodeCommand(float num);
+    void expandCannedCycle(const QVector3D &position);
 };
 
 #endif // GCODEPARSER_H

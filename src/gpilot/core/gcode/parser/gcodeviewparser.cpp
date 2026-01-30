@@ -11,15 +11,7 @@
 
 GCodeViewParser::GCodeViewParser()
 {
-    absoluteMode = true;
-    absoluteIJK = false;
-    // m_currentLine = 0;
-    m_debug = true;
-
-    m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
-    m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
-
-    m_minLength = qQNaN();
+    reset();
 }
 
 GCodeViewParser::~GCodeViewParser()
@@ -82,10 +74,16 @@ void GCodeViewParser::reset()
     m_lineIndexes.clear();
     m_simplifiedLines.clear();
     m_simplifiedLinesReady = false;
+    m_lastSimplifyPrecision = 0.0;
     // m_currentLine = 0;
     m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_minLength = qQNaN();
+
+    // Reset parser state to initial values
+    absoluteMode = true;
+    absoluteIJK = false;
+    m_debug = true;
 }
 
 double GCodeViewParser::getMinLength() const

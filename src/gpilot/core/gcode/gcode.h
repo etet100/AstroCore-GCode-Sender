@@ -110,6 +110,32 @@ class GCode : public QObject
         QList<GCodeItem>::iterator begin() { return m_data.begin(); }
         QList<GCodeItem>::iterator end() { return m_data.end(); }
 
+        // offset is number of lines ahead (1 = next line, 2 = line after next, etc.)
+        GCodeItem* lookAhead(int fromIndex, int offset) {
+            if (fromIndex + offset >= m_data.count() || offset < 1) {
+                return nullptr;
+            }
+
+            return &m_data[fromIndex + offset];
+        }
+
+        // offset is number of lines behind (1 = next line, 2 = line after next, etc.)
+        GCodeItem* lookBehind(int fromIndex, int offset) {
+            if (fromIndex - offset < 0 || offset < 1) {
+                return nullptr;
+            }
+
+            return &m_data[fromIndex - offset];
+        }
+
+        GCodeItem* getLine(int index) {
+            if (index < 0 || index >= m_data.count()) {
+                return nullptr;
+            }
+
+            return &m_data[index];
+        }
+
     private:
         int m_commandIndex;
         int m_processedCommandIndex;
