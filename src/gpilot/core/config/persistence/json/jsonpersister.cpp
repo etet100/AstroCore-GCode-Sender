@@ -22,7 +22,7 @@ bool JsonPersister::open()
             }
             file.close();
         } else {
-            qDebug() << "Failed to open configuration file for reading:" << m_filePath;
+            qDebug() << "[Configuration][JSON] Failed to open configuration file for reading:" << m_filePath;
             return false;
         }
     } else {
@@ -50,7 +50,7 @@ bool JsonPersister::saveDocument()
 
         return true;
     } else {
-        qDebug() << "Failed to open configuration file for writing:" << m_filePath;
+        qDebug() << "[Configuration][JSON] Failed to open configuration file for writing:" << m_filePath;
 
         return false;
     }

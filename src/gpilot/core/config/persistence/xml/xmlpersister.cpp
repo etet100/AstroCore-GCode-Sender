@@ -24,12 +24,12 @@ bool XmlPersister::open()
                 file.close();
                 return true;
             } else {
-                qDebug() << "Failed to parse XML configuration file:" << m_filePath;
+                qDebug() << "[Configuration][XML] Failed to parse XML configuration file:" << m_filePath;
                 file.close();
                 return false;
             }
         } else {
-            qDebug() << "Failed to open XML configuration file for reading:" << m_filePath;
+            qDebug() << "[Configuration][XML] Failed to open XML configuration file for reading:" << m_filePath;
             return false;
         }
     } else {
@@ -58,7 +58,7 @@ bool XmlPersister::saveDocument()
         file.close();
         return true;
     } else {
-        qDebug() << "Failed to open XML configuration file for writing:" << m_filePath;
+        qDebug() << "[Configuration][XML] Failed to open XML configuration file for writing:" << m_filePath;
         return false;
     }
 }

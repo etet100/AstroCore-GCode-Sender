@@ -22,16 +22,16 @@ bool XmlProvider::open()
                 file.close();
                 return true;
             } else {
-                qDebug() << "Failed to parse XML configuration file:" << m_filePath;
+                qDebug() << "[Configuration][XML] Failed to parse XML configuration file:" << m_filePath;
                 file.close();
                 return false;
             }
         } else {
-            qDebug() << "Failed to open XML configuration file for reading:" << m_filePath;
+            qDebug() << "[Configuration][XML] Failed to open XML configuration file for reading:" << m_filePath;
             return false;
         }
     } else {
-        qDebug() << "XML configuration file does not exist:" << m_filePath;
+        qDebug() << "[Configuration][XML] XML configuration file does not exist:" << m_filePath;
         m_doc = QDomDocument();
         return true; // Allow running with defaults
     }

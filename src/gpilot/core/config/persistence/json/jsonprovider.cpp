@@ -22,12 +22,12 @@ bool JsonProvider::open()
             file.close();
             return true;
         } else {
-            qDebug() << "Failed to open configuration file for reading:" << m_filePath;
+            qDebug() << "[Configuration][JSON] Failed to open configuration file for reading:" << m_filePath;
 
             return false;
         }
     } else {
-        qDebug() << "Configuration file does not exist:" << m_filePath;
+        qDebug() << "[Configuration][JSON] Configuration file does not exist:" << m_filePath;
         m_rootObject = QJsonObject();
 
         return true; // Return true to allow the application to run with defaults
