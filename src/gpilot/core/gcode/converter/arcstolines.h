@@ -13,7 +13,7 @@ class ArcsToLines : public Converter
         ArcsToLines(GCode &data);
 
     protected:
-        GCode& convert() override;
+        GCode& convert();
 };
 
 #endif // ARCSTOLINES_H

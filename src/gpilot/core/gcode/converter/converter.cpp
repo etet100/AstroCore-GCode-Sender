@@ -4,6 +4,16 @@
 
 #include "converter.h"
 
-Converter::Converter(GCode &data) : m_data(data)
+Converter::Converter()
 {
+}
+
+Converter::~Converter()
+{
+}
+
+void Converter::reset()
+{
+    // Default implementation does nothing
+    // Override in derived classes if state needs to be reset
 }

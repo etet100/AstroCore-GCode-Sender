@@ -7,14 +7,24 @@
 
 #include "core/gcode/gcode.h"
 
+class GcodeParser;
+
+/**
+ * Converters modify G-Code line by line. Return true from convertLine()
+ * if the line was changed and needs reparsing before next converter.
+ */
 class Converter
 {
     public:
-        Converter(GCode &data);
-        virtual GCode &convert() = 0;
+        Converter();
+        virtual ~Converter();
 
-    protected:
-        GCode &m_data;
+        virtual bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) = 0;
+        virtual void reset();
+
+        virtual bool needsParser() const { return false; }
+        virtual int needsLookahead() const { return 0; }
+        virtual bool needsFullGCode() const { return false; }
 };
 
 #endif // CONVERTER_H

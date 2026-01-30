@@ -5,11 +5,11 @@
 #include "arcstolines.h"
 #include "core/gcode/gcode.h"
 
-ArcsToLines::ArcsToLines(GCode &data) : Converter(data)
+ArcsToLines::ArcsToLines(GCode& data) : Converter()
 {
 }
 
-GCode &ArcsToLines::convert()
+GCode& ArcsToLines::convert()
 {
     // for (auto &cmd : m_data) {
     //     if (cmd.isArc()) {
@@ -24,5 +24,9 @@ GCode &ArcsToLines::convert()
     //     }
     // }
 
-    return m_data;
+    // return m_data;
+
+    GCode gc(nullptr);
+
+    return gc;
 }
