@@ -45,23 +45,34 @@ double ProgramTimeEstimator::calculateSegmentTime(LineSegment& segment,
                                                     int feedOverride,
                                                     int rapidOverride)
 {
+    double timeSeconds = 0.0;
+
+    // Calculate movement time
     double length = (segment.getEnd() - segment.getStart()).length();
 
-    if (qIsNaN(length) || qIsNaN(segment.getSpeed()) || segment.getSpeed() == 0) {
-        return 0.0;
+    if (!qIsNaN(length) && !qIsNaN(segment.getSpeed()) && segment.getSpeed() != 0) {
+        double effectiveSpeed = segment.getSpeed();
+
+        // Apply override based on segment type
+        if (!segment.isFastTraverse() && feedOverride != 100) {
+            effectiveSpeed *= (feedOverride / 100.0);
+        } else if (segment.isFastTraverse() && rapidOverride != 100) {
+            effectiveSpeed *= (rapidOverride / 100.0);
+        }
+
+        // Time = distance / speed, result in minutes, convert to seconds
+        timeSeconds = (length / effectiveSpeed) * 60.0;
     }
 
-    double effectiveSpeed = segment.getSpeed();
-
-    // Apply override based on segment type
-    if (!segment.isFastTraverse() && feedOverride != 100) {
-        effectiveSpeed *= (feedOverride / 100.0);
-    } else if (segment.isFastTraverse() && rapidOverride != 100) {
-        effectiveSpeed *= (rapidOverride / 100.0);
+    // Add dwell time (G4 command)
+    double dwell = segment.getDwell();
+    if (!qIsNaN(dwell) && dwell > 0) {
+        // Dwell is typically in seconds or milliseconds depending on controller
+        // Assuming it's in milliseconds (P parameter), convert to seconds
+        timeSeconds += dwell / 1000.0;
     }
 
-    // Time = distance / speed, result in minutes, convert to seconds
-    return (length / effectiveSpeed) * 60.0;
+    return timeSeconds;
 }
 
 void ProgramTimeEstimator::updateProgress(GCode& program)
