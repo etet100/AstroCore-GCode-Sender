@@ -64,6 +64,12 @@ class Heightmap
         // Sets all values to NAN
         void reset();
         bool anyHeightSet();
+        // Sets the point at (x, y) as zero reference and shifts all heights accordingly
+        void setZeroReference(int x, int y);
+        // Shifts all heights by the given offset
+        void offsetAllPoints(double offset);
+
+        void minMax(double value);
 
     private:
         QSize m_size;

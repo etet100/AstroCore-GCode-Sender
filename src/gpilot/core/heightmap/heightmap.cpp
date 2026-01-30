@@ -167,3 +167,32 @@ void Heightmap::updateMinMax()
         }
     }
 }
+
+void Heightmap::setZeroReference(int x, int y)
+{
+    double referenceValue = at(x, y);
+
+    offsetAllPoints(-referenceValue);
+}
+
+void Heightmap::offsetAllPoints(double offset)
+{
+    m_valuesMinMax = {NAN, NAN};
+
+    for (auto& value : m_data) {
+        if (!qIsNaN(value)) {
+            value += offset;
+            minMax(value);
+        }
+    }
+}
+
+void Heightmap::minMax(double value)
+{
+    if (qIsNaN(m_valuesMinMax.min) || value < m_valuesMinMax.min) {
+        m_valuesMinMax.min = value;
+    }
+    if (qIsNaN(m_valuesMinMax.max) || value > m_valuesMinMax.max) {
+        m_valuesMinMax.max = value;
+    }
+}
