@@ -9,6 +9,9 @@ GcodeDrawer::GcodeDrawer() : QObject()
 
     connect(&m_timerVertexUpdate, &QTimer::timeout, this, &GcodeDrawer::onTimerVertexUpdate);
     m_timerVertexUpdate.start(100);
+
+    connect(&m_prepareVectorsWatcher, &QFutureWatcher<GcodeVectorData>::finished,
+            this, &GcodeDrawer::onPrepareVectorsFinished);
 }
 
 void GcodeDrawer::update()
@@ -26,7 +29,21 @@ void GcodeDrawer::update(QList<int> indexes)
 
 bool GcodeDrawer::updateData(GLPalette &palette)
 {
-    if (m_indexes.isEmpty()) return prepareVectors(palette); else return updateVectors(palette);
+    if (!m_indexes.isEmpty()) {
+        return updateVectors(palette);
+    }
+
+    if (m_isPreparingVectors) {
+        return false;
+    }
+    m_isPreparingVectors = true;
+
+    registerColorIndexes(palette);
+
+    QFuture<GcodeVectorData> future = QtConcurrent::run(&GcodeDrawer::prepareVectorsAsync, this);
+    m_prepareVectorsWatcher.setFuture(future);
+
+    return false;
 }
 
 QVector3D GcodeDrawer::initialNormal(QVector3D p1, QVector3D p2)
@@ -161,6 +178,141 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
     return true;
 }
 
+// Background thread - async
+GcodeVectorData GcodeDrawer::prepareVectorsAsync()
+{
+    GcodeVectorData result;
+    result.success = false;
+
+    if (m_viewParser == nullptr) {
+        return result;
+    }
+
+    qDebug() << "[GcodeDrawer] Preparing vectors asynchronously";
+
+    QList<LineSegment> &list = m_simplify
+        ? m_viewParser->getSimplifiedLines(m_simplifyPrecision)
+        : m_viewParser->getLines();
+    VertexData vertex;
+
+    qDebug() << "[GcodeDrawer] Lines count" << list.count();
+
+    bool drawFirstPoint = true;
+    float cumSegPosition = 0;
+    for (int i = 0; i < list.count(); i++) {
+
+        if (qIsNaN(list[i].getEnd().z())) {
+            continue;
+        }
+
+        // Find first point of toolpath
+        if (drawFirstPoint) {
+            if (qIsNaN(list[i].getEnd().x()) || qIsNaN(list[i].getEnd().y())) continue;
+
+            // Draw first toolpath point
+            vertex.color = m_colorStartIndex;
+            vertex.position = list[i].getEnd();
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
+            vertex.start = QVector3D(sNan, sNan, m_pointSize);
+            result.points.append(vertex);
+
+            drawFirstPoint = false;
+            continue;
+        }
+
+        bool dashedLine = list[i].isZMovement() || list[i].isFastTraverse();
+
+        vertex.color = getSegmentColor(list[i]);
+
+        float segmentLen = (list[i].getEnd() - list[i].getStart()).length();
+
+        // Line start
+        vertex.position = list[i].getStart();
+        vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
+        if (m_ignoreZ) {
+            vertex.position.setZ(0);
+        }
+        result.lines.append(vertex);
+
+        cumSegPosition += segmentLen;
+
+        // Line end
+        vertex.position = list[i].getEnd();
+        vertex.cumSegPosition = dashedLine ? cumSegPosition : -1;
+        if (m_ignoreZ) {
+            vertex.position.setZ(0);
+        }
+        result.lines.append(vertex);
+
+        // Draw last toolpath point
+        if (i == list.count() - 1) {
+            vertex.color = m_colorEndIndex;
+            vertex.position = list[i].getEnd();
+            if (m_ignoreZ) {
+                vertex.position.setZ(0);
+            }
+            vertex.start = QVector3D(sNan, sNan, m_pointSize);
+            result.points.append(vertex);
+        }
+    }
+
+    QVector3D normal;
+    QVector3D lastNormal;
+    for (int i = 0; i < result.lines.count() - 2; i += 2) {
+        QVector3D tangent = result.lines[i + 1].position - result.lines[i].position;
+        tangent.normalize();
+        if (i == 0) {
+            normal = QVector3D(0, 0, 1); // Any initial normal
+            if (QVector3D::dotProduct(normal, tangent) != 0) {
+                // Correct normal to be orthogonal to tangent
+                normal = QVector3D::crossProduct(tangent, QVector3D(0, 1, 0));
+                normal.normalize();
+            }
+            result.lines[i].start = normal;
+        } else {
+            // Correct normal based on previous direction
+            QVector3D projectedNormal = QVector3D::crossProduct(tangent, lastNormal);
+            normal = QVector3D::crossProduct(projectedNormal, tangent);
+            normal.normalize();
+            result.lines[i - 1].start = normal;
+            result.lines[i].start = normal;
+        }
+        normal.normalize();
+        lastNormal = normal;
+    }
+
+    result.success = true;
+
+    return result;
+}
+
+// Main thread
+void GcodeDrawer::onPrepareVectorsFinished()
+{
+    m_isPreparingVectors = false;
+
+    GcodeVectorData result = m_prepareVectorsWatcher.result();
+
+    if (!result.success) {
+        qDebug() << "[GcodeDrawer] Failed to prepare vectors";
+
+        return;
+    }
+
+    qDebug() << "[GcodeDrawer] Vectors prepared successfully, updating main thread data";
+
+    m_lines = result.lines;
+    m_points = result.points;
+    m_triangles = result.triangles;
+
+    m_geometryUpdated = true;
+    m_indexes.clear();
+
+    updateVerticesBuffers();
+}
+
 bool GcodeDrawer::updateVectors(GLPalette &palette)
 {
     // Update vertices
@@ -193,6 +345,22 @@ bool GcodeDrawer::updateVectors(GLPalette &palette)
     return !data;
 }
 
+void GcodeDrawer::registerColorIndexes(GLPalette &palette)
+{
+    getSegmentColorAndUpdateIndex(m_colorNormalIndex, palette.color(m_colorNormal));
+    getSegmentColorAndUpdateIndex(m_colorDrawnIndex, palette.color(m_colorDrawn));
+    getSegmentColorAndUpdateIndex(m_colorHighlightIndex, palette.color(m_colorHighlight));
+    getSegmentColorAndUpdateIndex(m_colorRapidMovementIndex, palette.color(m_colorRapidMovement));
+    getSegmentColorAndUpdateIndex(m_colorZMovementIndex, palette.color(m_colorZMovement));
+    getSegmentColorAndUpdateIndex(m_colorStartIndex, palette.color(m_colorStart));
+    getSegmentColorAndUpdateIndex(m_colorEndIndex, palette.color(m_colorEnd));
+
+    for (int i = 0; i < QUANTIZE_COLOR_STEPS; i++) {
+        QColor grayColor = QColor::fromHsl(0, 0, i * (255 / (QUANTIZE_COLOR_STEPS - 1)));
+        m_colorGrayscaleIndex[i] = palette.color(grayColor);
+    }
+}
+
 GLuint GcodeDrawer::getSegmentColor(LineSegment& segment, GLPalette &palette)
 {
     if (segment.drawn()) return m_colorDrawnIndex > -1 ? m_colorDrawnIndex : getSegmentColorAndUpdateIndex(m_colorDrawnIndex, palette.color(m_colorDrawn));
@@ -210,6 +378,26 @@ GLuint GcodeDrawer::getSegmentColor(LineSegment& segment, GLPalette &palette)
     }
 
     return m_colorNormalIndex > -1 ? m_colorNormalIndex : getSegmentColorAndUpdateIndex(m_colorNormalIndex, palette.color(m_colorNormal));
+}
+
+// without palette, use stored indexes
+GLuint GcodeDrawer::getSegmentColor(LineSegment& segment)
+{
+    if (segment.drawn()) return m_colorDrawnIndex;
+    else if (segment.isHightlight()) return m_colorHighlightIndex;
+    else if (segment.isFastTraverse()) return m_colorRapidMovementIndex;
+    else if (segment.isZMovement()) return m_colorZMovementIndex;
+    else if (m_grayscaleSegments) {
+        int grayscaleDiff = m_grayscaleMax - m_grayscaleMin;
+        switch (m_grayscaleCode) {
+            case GcodeDrawer::S:
+                return m_colorGrayscaleIndex[QUANTIZE_COLOR(qBound<int>(0, 255 - 255.0 / grayscaleDiff * segment.getSpindleSpeed(), 255))];
+            case GcodeDrawer::Z:
+                return m_colorGrayscaleIndex[QUANTIZE_COLOR(qBound<int>(0, 255 - 255.0 / grayscaleDiff * segment.getStart().z(), 255))];
+        }
+    }
+
+    return m_colorNormalIndex;
 }
 
 int GcodeDrawer::getSegmentType(LineSegment& segment)

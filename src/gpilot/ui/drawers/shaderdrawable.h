@@ -10,8 +10,8 @@
 #include "utils/utils.h"
 #include "ui/widgets/glpalette.h"
 
-#define QUANTIZE_STEPS 25
-#define QUANTIZE_COLOR(x) (floor(x * QUANTIZE_STEPS) / QUANTIZE_STEPS)
+#define QUANTIZE_COLOR_STEPS 25
+#define QUANTIZE_COLOR(x) ((int) floor(x * QUANTIZE_COLOR_STEPS) / QUANTIZE_COLOR_STEPS)
 
 struct VertexData
 {
@@ -99,6 +99,7 @@ public:
     virtual ProgramType programType() { return ProgramType::Default; };
 
     virtual bool sort(QMatrix4x4 viewMatrix);
+
 protected:
     double m_lineWidth = 1.0;
     double m_pointSize = 4.0;
@@ -115,6 +116,8 @@ protected:
     QOpenGLBuffer m_vbo; // Protected for direct vbo access
 
     void init();
+    // it has to be called if asynchronous update of geometry is used
+    void updateVerticesBuffers();
     virtual void bindAttributes(QOpenGLShaderProgram *&shaderProgram);
 };
 

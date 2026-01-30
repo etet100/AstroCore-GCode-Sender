@@ -7,10 +7,19 @@
 
 #include <QObject>
 #include <QVector3D>
+#include <QFutureWatcher>
+#include <QtConcurrent/QtConcurrent>
 #include "core/gcode/parser/linesegment.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include "shaderdrawable.h"
 #include "ui/widgets/glpalette.h"
+
+struct GcodeVectorData {
+    QVector<VertexData> lines;
+    QVector<VertexData> points;
+    QVector<VertexData> triangles;
+    bool success;
+};
 
 class GcodeDrawer : public QObject, public ShaderDrawable
 {
@@ -54,6 +63,7 @@ public slots:
 
 private slots:
     void onTimerVertexUpdate();
+    void onPrepareVectorsFinished();
 
 private:
     GCodeViewParser *m_viewParser = nullptr;
@@ -80,6 +90,8 @@ private:
     GLuint m_colorStartIndex = -1;
     GLuint m_colorEndIndex = -1;
     GLuint m_colorRapidMovementIndex = -1;
+    GLuint m_colorGrayscaleIndex[QUANTIZE_COLOR_STEPS];
+    void registerColorIndexes(GLPalette &palette);
 
     QTimer m_timerVertexUpdate;
 
@@ -87,12 +99,18 @@ private:
     QList<int> m_indexes;
     bool m_geometryUpdated;
 
+    QFutureWatcher<GcodeVectorData> m_prepareVectorsWatcher;
+    bool m_isPreparingVectors = false;
+
     bool prepareVectors(GLPalette &palette);
+    GcodeVectorData prepareVectorsAsync();
     bool updateVectors(GLPalette &palette);
+    GcodeVectorData updateVectorsAsync();
 
     QVector3D initialNormal(QVector3D p1, QVector3D p2);
     int getSegmentType(LineSegment& segment);
     GLuint getSegmentColor(LineSegment& segment, GLPalette &palette);
+    GLuint getSegmentColor(LineSegment& segment);
     GLuint getSegmentColorAndUpdateIndex(GLuint& var, GLuint index);
     void computeNormals();
 };

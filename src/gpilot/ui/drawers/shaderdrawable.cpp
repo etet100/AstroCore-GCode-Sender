@@ -68,9 +68,9 @@ void ShaderDrawable::bindAttributes(QOpenGLShaderProgram *&shaderProgram)
     }
 }
 
-void ShaderDrawable::updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette)
+void ShaderDrawable::updateGeometry(QOpenGLShaderProgram* shaderProgram, GLPalette& palette)
 {
-    // Init in context
+    // Init in context, it has to be done before updateData is called
     if (!m_vbo.isCreated() || !m_vao.isCreated()) {
         init();
     }
@@ -78,7 +78,8 @@ void ShaderDrawable::updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalet
     m_vao.bind();
     m_vbo.bind();
 
-    // Update vertex buffer
+    // Update vertex buffer, if async data update is used, updateData will return false and
+    // updateVerticesBuffers will be called later
     if (updateData(palette)) {
         // Fill vertices buffer
         QVector<VertexData> vertexData(m_triangles);
@@ -86,8 +87,30 @@ void ShaderDrawable::updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalet
         vertexData += m_points;
         m_vbo.allocate(vertexData.constData(),
                        vertexData.count() * sizeof(VertexData));
-        bindAttributes(shaderProgram);
     }
+    bindAttributes(shaderProgram);
+
+    m_vbo.release();
+    m_vao.release();
+    m_needsUpdateGeometry = false;
+}
+
+void ShaderDrawable::updateVerticesBuffers()
+{
+    // Init in context, it has to be done before updateData is called
+    if (!m_vbo.isCreated() || !m_vao.isCreated()) {
+        init();
+    }
+
+    m_vao.bind();
+    m_vbo.bind();
+
+    // Fill vertices buffer
+    QVector<VertexData> vertexData(m_triangles);
+    vertexData += m_lines;
+    vertexData += m_points;
+    m_vbo.allocate(vertexData.constData(),
+                   vertexData.count() * sizeof(VertexData));
 
     m_vbo.release();
     m_vao.release();
