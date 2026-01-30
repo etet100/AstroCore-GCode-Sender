@@ -217,7 +217,7 @@ void VirtualFluidNCWorkerThread::run() {
     }
     FluidNCFunction FluidNC = (FluidNCFunction) lib.resolve("FluidNC");
     if (FluidNC != nullptr) {
-        qDebug() << "Calling FluidNC() function";
+        qDebug() << "[IO][FluidNC] Calling FluidNC() function";
         FluidNC(m_serverName.toStdString().c_str());
     } else {
         qInfo() << "[IO][FluidNC] FluidNC not initialized. FluidNC() not found!";

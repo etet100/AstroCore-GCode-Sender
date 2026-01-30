@@ -217,7 +217,7 @@ void VirtualGRBLWorkerThread::run() {
         }
         GRBLFunction GRBL = (GRBLFunction) lib.resolve("GRBL");
         if (GRBL != nullptr) {
-            qDebug() << "Calling GRBL() function";
+            qDebug() << "[IO][GRBL] Calling GRBL() function";
             GRBL(m_serverName.toStdString().c_str(), m_stopFlag);
         } else {
             qInfo() << "[IO][GRBL] GRBL not initialized. GRBL() not found!";

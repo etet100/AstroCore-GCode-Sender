@@ -93,7 +93,7 @@ void GLFramebuffer::dumpDepthTexture(QString filename)
     max = 1.0;
 
 
-    qDebug() << "Min: " << min << "Max: " << max;
+    qDebug() << "[GLFramebuffer] Min: " << min << "Max: " << max;
 
     GLfloat mul =
         (max > min) ? 1.0 / (max - min) : 1.0;

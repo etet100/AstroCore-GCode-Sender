@@ -366,7 +366,7 @@ void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
     m_currentSettings = rawConfiguration;
 
     setInfo("Updated", Qt::black);
-    qDebug() << "Settings received" << rawConfiguration;
+    qDebug() << "[GRBLConfigurator] Settings received" << rawConfiguration;
 
     // ugly hack! split status report setting into two separate settings
     int statusReportSetting = rawConfiguration[10];
@@ -536,7 +536,7 @@ void FrmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)
         m_communicator->stateBehavior()->action(SaveMachineConfigurationParamAction(it.key(), it.value()));
         // QString command = QString("$%1=%2").arg(it.key()).arg(it.value());
         // qDebug() << (int) m_communicator->sendCommand(CommandSource::System, command);
-        // qDebug() << "Sending command" << command;
+        // qDebug() << "[GRBLConfigurator] Sending command" << command;
     }
 
     QDialog::accept();

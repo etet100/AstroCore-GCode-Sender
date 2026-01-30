@@ -189,7 +189,7 @@ void PartMainConsole::send()
     if (command.startsWith(":")) {
         int space = command.indexOf(' ');
         command = command.mid(1).toLower();
-        qDebug() << command << command.mid(0, space - 1);
+        qDebug() << "[FrmMain]" << command << command.mid(0, space - 1);
         if (m_internalCommands.contains(command.mid(0, space - 1))) {
             emit newCommand(command, true);
         }

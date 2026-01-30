@@ -643,7 +643,7 @@ void Communicator::completeTransfer()
 
 void Communicator::onConnectionError(QString message)
 {
-    qDebug() << "Connection error: " << message;
+    qDebug() << "[Communicator] Connection error: " << message;
 }
 
 void Communicator::onConnectionStateChanged(ConnectionState state)
@@ -671,7 +671,7 @@ void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *n
 
 void Communicator::onStateError(StateBehavior *sb, QString message)
 {
-    qDebug() << "State error: " << message;
+    qDebug() << "[Communicator] State error: " << message;
     // execute(new StateError(sb, message));
 }
 

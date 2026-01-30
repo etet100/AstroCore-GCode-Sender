@@ -43,7 +43,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 
 StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ReconnectingBehavior] Entry";
+    qDebug() << "[ProbingBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     //CommandSource source, QString commandLine, int tableIndex = TABLE_INDEX_UI, bool wait = false

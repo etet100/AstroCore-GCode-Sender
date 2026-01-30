@@ -948,7 +948,7 @@ void FrmMain::increaseUiScale()
 void FrmMain::onFileOpen(QString filePath)
 {
     if (!m_communicator->isMachineConfigurationReady()) {
-        qWarning() << "[UI] Machine configuration is not ready";
+        qWarning() << "[FrmMain] Machine configuration is not ready";
         ui->console->append("Machine configuration is not ready. Cannot open file.");
 
         return;
@@ -1868,7 +1868,7 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
             return;
         }
 
-        qDebug() << "Internal commands not handled yet:" << command;
+        qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
 
         return;
     }
@@ -1970,7 +1970,7 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
 
 void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previousIndex)
 {
-    qDebug() << currentIndex.row() << previousIndex.row();
+    qDebug() << "[FrmMain]" << currentIndex.row() << previousIndex.row();
     ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row());
 }
 
@@ -2419,7 +2419,7 @@ void FrmMain::saveSettings()
     uiConfiguration.setPanelModificationState(ui->scrollContentsModification->saveState());
     uiConfiguration.setPanelDeviceState(ui->scrollContentsDevice->saveState());
     uiConfiguration.setPanelUserState(ui->scrollContentsUser->saveState());
-    qDebug() << "Saving panels state:" << ui->scrollContentsUser->saveState();
+    qDebug() << "[FrmMain] Saving panels state:" << ui->scrollContentsUser->saveState();
 
     QStringList panels;
     QStringList hiddenPanels;
@@ -3643,7 +3643,7 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
 
     if (!currentConfig || currentConfig == requestedConfig) {
         if (requestedConfig->dock->isVisible()) {
-            qWarning() << "Central widget dock is visible";
+            qWarning() << "[FrmMain] Central widget dock is visible";
         }
         requestedConfig->dock->setProperty("cw", true);
         return;

@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         provider = new XmlProvider(nullptr, configFilePath + "xml");
         persister = new XmlPersister(nullptr, configFilePath + "xml");
     } else {
-        qCritical() << "Unknown config type specified:" << parser.value(configTypeOption);
+        qCritical() << "[Main] Unknown config type specified:" << parser.value(configTypeOption);
         return -1;
     }
 

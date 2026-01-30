@@ -24,6 +24,7 @@ StateBehavior::Result HomingBehavior::onEntry(CommunicatorApi *communicator, Sta
     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", TABLE_INDEX_UI);
     m_homingStarted = true;
     m_homingCompleted = false;
+
     m_communicator->startQueryingMachineState();
 
     return Result::Ok;
@@ -72,9 +73,9 @@ StateBehavior::Result HomingBehavior::onCommandResponse(QString command, Command
             // Some controllers don't give direct response about homing completion
             // So we check machine state in onMachineStateChanged
 
-            qDebug() << "Test";
-            qDebug() << "Test" << response;
-            qDebug() << "Test" << fullResponse;
+            qDebug() << "[HomingBehavior] Test";
+            qDebug() << "[HomingBehavior] Test" << response;
+            qDebug() << "[HomingBehavior] Test" << fullResponse;
 
             emit transition(this, new IdleBehavior(this));
         }

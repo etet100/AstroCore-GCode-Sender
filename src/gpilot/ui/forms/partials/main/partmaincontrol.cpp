@@ -79,7 +79,7 @@ void PartMainControl::onCmdUnlockClicked()
 
 void PartMainControl::onCmdHoldClicked(bool checked)
 {
-    qDebug() << "Hold" << checked;
+    qDebug() << "[FrmMain] Hold" << checked;
 }
 
 void PartMainControl::onCmdSleepClicked()

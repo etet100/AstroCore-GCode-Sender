@@ -45,7 +45,7 @@ void Configuration::setLanguage(QString language)
 
 void Configuration::save()
 {
-    qDebug() << "Save configurations";
+    qDebug() << "[Configuration] Save configurations";
 
     m_persister->open();
     for (ConfigurationModule* module : std::as_const(m_modules)) {
@@ -167,7 +167,7 @@ void Configuration::load()
     }
     m_provider->close();
 
-    qDebug() << "Configurations loaded";
+    qDebug() << "[Configuration] Configurations loaded";
 }
 
 void Configuration::setDefaults()
@@ -183,7 +183,7 @@ void Configuration::loadModule(ConfigurationModule *module)
 {
     QMap<QString, QVariant> defaults = module->getDefaults();
 
-    qDebug() << "Loading config module" << module->getSectionName();
+    qDebug() << "[Configuration] Loading config module" << module->getSectionName();
 
     const QMetaObject *metaObj = module->metaObject();
 
@@ -209,12 +209,12 @@ void Configuration::loadModule(ConfigurationModule *module)
             QStringList typeNameElements = QString(prop.typeName()).split("::");
             int indexOfEnum = metaObj->indexOfEnumerator(typeNameElements.last().toStdString().c_str());
             if (indexOfEnum == -1) {
-                qDebug() << "Enum not found" << prop.typeName() << prop.name() << "; trying to find in registry..";
+                qDebug() << "[Configuration] Enum not found" << prop.typeName() << prop.name() << "; trying to find in registry..";
                 auto registryItem = ConfigurationRegistry::getInfo(prop.typeName());
                 if (registryItem.type == ConfigurationRegistry::Type::Enum) {
                     prop.write(module, m_provider->getInt(module->getSectionName(), QString(prop.name()), defaults[prop.name()].toInt()));
                 } else {
-                    qDebug() << "Enum not found in registry" << prop.typeName() << prop.name();
+                    qDebug() << "[Configuration] Enum not found in registry" << prop.typeName() << prop.name();
                 }
 
                 continue;
@@ -230,7 +230,7 @@ void Configuration::loadModule(ConfigurationModule *module)
 
             enumValue = metaEnum.keyToValue(value.toStdString().c_str(), &ok);
             if (!ok) {
-                qDebug() << "Enum value not found" << value << prop.name();
+                qDebug() << "[Configuration] Enum value not found" << value << prop.name();
                 continue;
             }
 
@@ -240,7 +240,7 @@ void Configuration::loadModule(ConfigurationModule *module)
 
             switch (registryItem.type) {
                 case ConfigurationRegistry::Type::Unknown:
-                    qDebug() << "Unknown type" << prop.typeName();
+                    qDebug() << "[Configuration] Unknown type" << prop.typeName();
                     break;
                 case ConfigurationRegistry::Type::Value: {
                     QVariant denormalized = registryItem.denormalizeValue(

@@ -90,7 +90,7 @@ bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray response = reply->readAll();
             QString parsedResponse = parseResponse(response);
-            qDebug() << parsedResponse;
+            qDebug() << "[AI]" << parsedResponse;
 
             if (!parsedResponse.isEmpty()) {
                 onSuccess(parsedResponse);
