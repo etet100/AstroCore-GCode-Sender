@@ -202,11 +202,13 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         m_configuration.save();
 
         if (dir != JoggindDir::None) {
+            ConfigurationJogging& jogging = m_configuration.joggingModule();
             JoggingBehavior *joggingBehavior = new JoggingBehavior(
                 dir,
-                m_configuration.joggingModule().step(),
-                m_configuration.joggingModule().feed(),
-                m_configuration.joggingModule().finalFeedZ()
+                jogging.step(),
+                jogging.continuous(),
+                jogging.feed(),
+                jogging.finalFeedZ()
             );
             m_communicator->execute(joggingBehavior);
         }
@@ -3083,7 +3085,7 @@ void FrmMain::updateControlsState()
     ui->jog->setEnabled(portOpened && ((senderState == SenderState::Stopped)
         || (senderState == SenderState::ChangingTool)));
 
-    ui->console->setEnabled(portOpened && (!ui->jog->keyboardControl()));
+    ui->console->setEnabled(portOpened && !m_configuration.joggingModule().keyboardControl());
     // ui->cmdCommandSend->setEnabled(portOpened);
 
     ui->control->updateControlsState(portOpened, process);
@@ -3208,12 +3210,14 @@ void FrmMain::updateRecentFilesMenus()
 
 void FrmMain::updateJogTitle()
 {
-    if (ui->grpJog->isChecked() || !ui->jog->keyboardControl()) {
+    ConfigurationJogging& jogging = m_configuration.joggingModule();
+
+    if (ui->grpJog->isChecked() || !jogging.keyboardControl()) {
         ui->grpJog->setTitle(tr("Jog"));
-    } else if (ui->jog->keyboardControl()) {
+    } else if (jogging.keyboardControl()) {
         ui->grpJog->setTitle(tr("Jog") + QString(tr(" (%1/%2)"))
-                                             .arg((ui->jog->stepSize() != JoggingContinuous) ? QString::number(ui->jog->stepSize()) : tr("C"))
-                            .arg(ui->jog->feedRate()));
+                .arg((!jogging.continuous()) ? QString::number(jogging.step()) : tr("C"))
+                .arg(jogging.feed()));
     }
 }
 
@@ -3335,7 +3339,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
         }
 
         if ((m_communicator->senderState() != SenderState::Transferring) && (m_communicator->senderState() != SenderState::Stopping)
-            && ui->jog->keyboardControl() && !ev->isAutoRepeat())
+            && m_configuration.joggingModule().keyboardControl() && !ev->isAutoRepeat())
         {
             static QList<QAction*> acts;
             // if (acts.isEmpty()) acts << ui->actJogXMinus << ui->actJogXPlus

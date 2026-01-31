@@ -6,6 +6,7 @@
 
 const QVariantMap DEFAULTS = {
     {"step", 0.1},
+    {"continuous", false},
     {"stepChoices", QStringList{"0.01", "0.1", "1.0", "10.0", "50.0", "100.0"}},
     {"feed", 100},
     {"feedz", 100},

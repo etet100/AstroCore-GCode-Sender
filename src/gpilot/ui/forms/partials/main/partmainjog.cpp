@@ -23,6 +23,19 @@ PartMainJog::PartMainJog(QWidget *parent)
     ui->cmdXPlus->setBackColor(backgroundColor);
     ui->cmdYMinus->setBackColor(backgroundColor);
     ui->cmdYPlus->setBackColor(backgroundColor);
+
+    connect(ui->jogParameters, &PartMainJogParameters2::stepSizeChanged, this, [this](double val) {
+        m_configurationJogging->setStep(val);
+    });
+    connect(ui->jogParameters, &PartMainJogParameters2::feedRateXYChanged, this, [this](double val) {
+        m_configurationJogging->setFeed(static_cast<int>(val));
+    });
+    connect(ui->jogParameters, &PartMainJogParameters2::feedRateZChanged, this, [this](double val) {
+        m_configurationJogging->setFeedZ(static_cast<int>(val));
+    });
+    connect(ui->chkContinuous, &QCheckBox::toggled, this, [this](bool checked) {
+        m_configurationJogging->setContinuous(checked);
+    });
 }
 
 void PartMainJog::configurationUpdated()
@@ -32,7 +45,7 @@ void PartMainJog::configurationUpdated()
     // Sep. feed settings for Z axis
 
     ui->chkSeparateZFeed->setChecked(m_configurationJogging->separateFeedZ());
-    // ui->middlePartLayout->setRowVisible(2, m_configurationJogging->separateFeedZ());
+    ui->chkContinuous->setChecked(m_configurationJogging->continuous());
 
     //
 
@@ -78,7 +91,7 @@ void PartMainJog::configurationUpdated()
 
 void PartMainJog::restoreKeyboardControl()
 {
-    ui->chkKeyboardControl->setChecked(m_storedKeyboardControl);
+    // ui->chkContinuous->setChecked(m_storedKeyboardControl);
 }
 
 void PartMainJog::initialize(ConfigurationJogging &configurationJogging)
@@ -93,18 +106,13 @@ PartMainJog::~PartMainJog()
 
 void PartMainJog::storeAndResetKeyboardControl()
 {
-    m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
-    ui->chkKeyboardControl->setChecked(false);
-}
-
-bool PartMainJog::keyboardControl()
-{
-    return ui->chkKeyboardControl->isChecked();
+    m_storedKeyboardControl = ui->chkContinuous->isChecked();
+    // ui->chkContinuous->setChecked(false);
 }
 
 void PartMainJog::setKeyboardControl(bool value)
 {
-    ui->chkKeyboardControl->setChecked(value);
+    ui->chkContinuous->setChecked(value);
 }
 
 void PartMainJog::onCmdYPlusPressed()
@@ -123,7 +131,7 @@ void PartMainJog::stopJogging()
 
 void PartMainJog::stopJoggingIfContinuous()
 {
-    if (m_configurationJogging->feedZ() == JoggingContinuous) {
+    if (m_configurationJogging->continuous()) {
         stopJogging();
     }
 }

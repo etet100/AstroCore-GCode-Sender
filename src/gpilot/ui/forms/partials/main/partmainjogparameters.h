@@ -59,7 +59,7 @@ class PartMainJogParameters : public PartMainJogParametersInterface
     signals:
         void jog(JoggindDir dir, JoggingVector vector);
         void command(GRBLCommand command);
-        void parametersChanged(int feed, double step);
+        void parametersChanged(int feed, double step, bool continuous);
         void stop();
 };
 

@@ -175,8 +175,6 @@ enum class JoggindDir {
 
 typedef QVector3D JoggingVector;
 
-const double JoggingContinuous = -1.0;
-
 enum class SenderState {
     Unknown = -1,
     Transferring = 0,

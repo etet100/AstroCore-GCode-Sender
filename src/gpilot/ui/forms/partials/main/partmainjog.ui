@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>226</width>
+    <width>240</width>
     <height>274</height>
    </rect>
   </property>
@@ -302,14 +302,27 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="chkKeyboardControl">
+      <widget class="QCheckBox" name="chkContinuous">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
-        <string>Keyboard control</string>
+        <string>Continuous</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
@@ -322,10 +335,9 @@
    <header>styledtoolbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>partMainJogParameters2</class>
+   <class>PartMainJogParameters2</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainjogparameters2.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

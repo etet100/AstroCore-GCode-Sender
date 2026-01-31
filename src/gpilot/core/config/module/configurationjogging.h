@@ -7,6 +7,7 @@
 
 #include "configurationmodule.h"
 #include <QObject>
+#include "core/globals.h"
 
 class ConfigurationJogging : public ConfigurationModule
 {
@@ -15,6 +16,7 @@ class ConfigurationJogging : public ConfigurationModule
     Q_OBJECT
     Q_PROPERTY(double step MEMBER m_step NOTIFY changed)
     Q_PROPERTY(QStringList stepChoices MEMBER m_stepChoices NOTIFY changed)
+    Q_PROPERTY(bool continuous MEMBER m_continuous NOTIFY changed)
     Q_PROPERTY(int feed MEMBER m_feed NOTIFY changed)
     Q_PROPERTY(int feedz MEMBER m_feedz NOTIFY changed)
     Q_PROPERTY(QStringList feedChoices MEMBER m_feedChoices NOTIFY changed)
@@ -26,6 +28,8 @@ class ConfigurationJogging : public ConfigurationModule
         QString getSectionName() override { return "jogging"; }
 
         double step() const { return m_step; }
+        bool continuous() const { return m_continuous; }
+        void setContinuous(bool continuous) { m_continuous = continuous; emit changed(); }
         void setStep(double step) { m_step = step; emit changed(); }
         const QStringList &stepChoices() const { return m_stepChoices; }
         int feed() const { return m_feed; }
@@ -41,6 +45,7 @@ class ConfigurationJogging : public ConfigurationModule
 
     private:
         double m_step;
+        bool m_continuous;
         bool m_sepFeedZ;
         QStringList m_stepChoices;
         int m_feed;

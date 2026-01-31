@@ -118,12 +118,13 @@ void PartMainJogParameters::onCmdFeedChanged(int index)
         return;
     }
 
-    int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-    m_configurationJogging->setFeed(feedRate);
+    m_configurationJogging->setFeed(m_configurationJogging->feedChoices().at(index).toInt());
 
-    qDebug() << "[Jog UI] Feed rate changed" << index << feedRate;
-
-    emit this->parametersChanged(feedRate, m_configurationJogging->step());
+    emit this->parametersChanged(
+        m_configurationJogging->feed(),
+        m_configurationJogging->step(),
+        m_configurationJogging->continuous()
+    );
 }
 
 void PartMainJogParameters::onCmdFeedZChanged(int index)
@@ -137,12 +138,13 @@ void PartMainJogParameters::onCmdFeedZChanged(int index)
         return;
     }
 
-    int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-    m_configurationJogging->setFeedZ(feedRate);
+    m_configurationJogging->setFeedZ(m_configurationJogging->feedChoices().at(index).toInt());
 
-    qDebug() << "[Jog UI] Feed rate for Z changed" << index << feedRate;
-
-    emit this->parametersChanged(feedRate, m_configurationJogging->step());
+    emit this->parametersChanged(
+        m_configurationJogging->feedZ(),
+        m_configurationJogging->step(),
+        m_configurationJogging->continuous()
+    );
 }
 
 void PartMainJogParameters::onCmdStepChanged(int index)
@@ -156,17 +158,17 @@ void PartMainJogParameters::onCmdStepChanged(int index)
         return;
     }
 
-    double stepSize;
     if (index == 0) {
-        stepSize = JoggingContinuous;
+        m_configurationJogging->setContinuous(true);
     } else {
-        stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
+        m_configurationJogging->setStep(m_configurationJogging->stepChoices().at(index - 1).toDouble());
     }
-    m_configurationJogging->setStep(stepSize);
 
-    qDebug() << "[Jog UI] Step size changed" << index << stepSize;
-
-    emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
+    emit this->parametersChanged(
+        m_configurationJogging->feed(),
+        m_configurationJogging->step(),
+        m_configurationJogging->continuous()
+    );
 }
 
 void PartMainJogParameters::onChkSeparateZFeedToggled(bool checked)
@@ -204,10 +206,6 @@ void PartMainJogParameters::setFeedRateZ(float value) {
 void PartMainJogParameters::setSeparateZFeedrate(bool enabled) {
     ui->middlePartLayout->setRowVisible(2, enabled);
 }
-
-// bool PartMainJogParameters::isSeparateZFeedrate() const {
-//     return ui->cboJogFeedZ->isVisible();
-// }
 
 float PartMainJogParameters::stepSize() const {
     return ui->cboJogStep->currentText().toFloat();

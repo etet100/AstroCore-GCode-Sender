@@ -18,12 +18,11 @@ public:
     void initialize(ConfigurationJogging &configurationJogging);
     ~PartMainJog();
 
-    int feedRate() const { return m_configurationJogging->feed(); };
-    int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
-    double stepSize() const { return m_configurationJogging->step(); };
+    // int feedRate() const { return m_configurationJogging->feed(); };
+    // int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
+    // double stepSize() const { return m_configurationJogging->step(); };
     JoggingVector jogVector() const { return m_jogVector; };
     void storeAndResetKeyboardControl();
-    bool keyboardControl();
     void setKeyboardControl(bool value);
     void configurationUpdated();
     void restoreKeyboardControl();

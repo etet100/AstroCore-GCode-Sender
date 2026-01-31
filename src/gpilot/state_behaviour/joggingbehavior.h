@@ -13,7 +13,7 @@ class JoggingBehavior : public StateBehavior
     Q_OBJECT
 
     public:
-        explicit JoggingBehavior(JoggindDir direction, double distance, int feedRate, int feedRateZ, QObject *parent = nullptr);
+        explicit JoggingBehavior(JoggindDir direction, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent = nullptr);
         explicit JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString description() override { return "Jogging"; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
@@ -36,6 +36,7 @@ class JoggingBehavior : public StateBehavior
         int m_feedRate;
         int m_feedRateZ;
         double m_distance; // 0 means continuous jogging
+        bool m_continuous = false;
         bool m_isJogging = false;
         bool m_isJoggingState = false;
         bool m_firstCommand = true;

@@ -9,11 +9,12 @@
 // #include "pausebehavior.h"
 #include "alarmbehavior.h"
 
-JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, int feedRate, int feedRateZ, QObject *parent)
+JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
     , m_currentDirection(direction)
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
+    , m_continuous(continuous)
     , m_distance(distance)
 {
 }
@@ -91,7 +92,7 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
 
     m_acked++;
     if (response == "ok") {
-        if (m_distance == JoggingContinuous && !m_stopping) {
+        if (m_continuous && !m_stopping) {
             // Fill buffer with more jogging commands
             while (m_sent - m_acked < 5) {
                 continueJogging();
@@ -164,13 +165,11 @@ void JoggingBehavior::startJogging()
         stopJogging();
 
         return;
-        // Use m_vector to determine jogging direction and distance
-        // ...
     }
 
     double distance = m_distance;
 
-    if (m_distance == JoggingContinuous) {
+    if (m_continuous) {
         qDebug() << "[JoggingBehavior] Continuous mode";
 
         // Sent multiple small moves to simulate continuous jogging
