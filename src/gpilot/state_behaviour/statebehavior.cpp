@@ -77,6 +77,7 @@ StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
     Q_UNUSED(next);
     m_communicator->stopQueryingMachineState();
     stopTimer();
+    stopTimeoutTimer();
     emit asyncCompleted();
 
     return Result::Ok;
@@ -86,8 +87,17 @@ void StateBehavior::stopTimer()
 {
     if (m_timer) {
         m_timer->stop();
-        m_timer->deleteLater();
+        delete m_timer;
         m_timer = nullptr;
+    }
+}
+
+void StateBehavior::stopTimeoutTimer()
+{
+    if (m_timeoutTimer) {
+        m_timeoutTimer->stop();
+        delete m_timeoutTimer;
+        m_timeoutTimer = nullptr;
     }
 }
 
@@ -141,6 +151,23 @@ bool StateBehavior::dataIsReset(QString data)
     return data.contains(re);
 }
 
+void StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
+{
+    stopTimeoutTimer();
+
+    m_timeoutTimer = new QTimer(this);
+    m_timeoutTimer->setSingleShot(true);
+    m_timeoutTimer->setInterval(milliseconds);
+    if (callback != nullptr) {
+        connect(m_timeoutTimer, &QTimer::timeout, this, [this, callback]() {
+            stopTimeoutTimer();
+            callback();
+        });
+    } else {
+        connect(m_timeoutTimer, &QTimer::timeout, this, &StateBehavior::onTimeoutSlot);
+    }
+}
+
 QString StateBehavior::enrichErrorMessage(QString message) {
     if (message.startsWith("error:")) {
         int code = message.mid(6).toInt();
@@ -149,6 +176,11 @@ QString StateBehavior::enrichErrorMessage(QString message) {
     }
 
     return message;
+}
+
+void StateBehavior::onTimeoutSlot()
+{
+    timeout();
 }
 
 bool StateBehavior::action(const Action &action)

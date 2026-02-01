@@ -106,6 +106,7 @@ class StateBehavior : public QObject
 
         virtual QString name() const = 0;
         void stopTimer();
+        void stopTimeoutTimer();
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
         // This is something we will need in almost every behavior
@@ -116,11 +117,18 @@ class StateBehavior : public QObject
             return false;
         }
 
+        void setTimeout(int milliseconds, std::function<void()> callback = nullptr);
+        virtual void timeout() {};
+
         QString enrichErrorMessage(QString message);
         static const QMap<int, QString> ERRORS;
         static const QMap<int, QString> ALARMS;
 
+    private slots:
+        void onTimeoutSlot();
+
     private:
+        QTimer *m_timeoutTimer = nullptr;
         bool m_eventsAttached = false; // used by Communicator
 };
 
