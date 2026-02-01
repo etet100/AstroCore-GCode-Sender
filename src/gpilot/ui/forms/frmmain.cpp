@@ -196,15 +196,11 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
-    connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D jog) {
-        //m_communicator->jogger().jog(dir);
-
-        m_configuration.save();
-
+    connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
         if (dir != JoggindDir::None) {
             ConfigurationJogging& jogging = m_configuration.joggingModule();
             JoggingBehavior *joggingBehavior = new JoggingBehavior(
-                dir,
+                vector,
                 jogging.step(),
                 jogging.continuous(),
                 jogging.feed(),
@@ -212,22 +208,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             );
             m_communicator->execute(joggingBehavior);
         }
-
-        // Q_UNUSED(dir)
-        // qDebug() << "Jog: " << jog;
-        // jogStep(jog);
     });
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
         JoggingBehavior *joggingBehavior = dynamic_cast<JoggingBehavior*>(m_communicator->stateBehavior());
         if (joggingBehavior) {
             joggingBehavior->stopJogging();
         }
-
-        // m_communicator->clearQueue();
-        // m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
-        // while (m_communicator->deviceState() == DeviceState::Jog) {
-        //     qApp->processEvents();
-        // }
     });
 
     // Drag&drop placeholders

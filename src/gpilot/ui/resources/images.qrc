@@ -9,12 +9,6 @@
         <file>../images/power4.png</file>
         <file>../images/handle_horizontal_light.png</file>
         <file>../images/handle_vertical_light.png</file>
-        <file>../images/1401562699_icon-arrow-up-b.png</file>
-        <file>../images/1401562699_icon-arrow-down-b.png</file>
-        <file>../images/1401562173_chevron-down.png</file>
-        <file>../images/1401562173_chevron-up.png</file>
-        <file>../images/1401562173_chevron-right.png</file>
-        <file>../images/1401561986_chevron-left.png</file>
         <file>../images/cutter.png</file>
         <file>../images/handle2s.png</file>
         <file>../images/handle2sh.png</file>
@@ -78,5 +72,14 @@
         <file>../images/visualizer/visualizer_gcode.svg</file>
         <file>../images/visualizer/visualizer_extremes.svg</file>
         <file>../images/visualizer/visualizer_light.svg</file>
+        <file>../images/jogging/arrow_up.svg</file>
+        <file>../images/jogging/arrow_down.svg</file>
+        <file>../images/jogging/arrow_left.svg</file>
+        <file>../images/jogging/arrow_right.svg</file>
+        <file>../images/jogging/arrow_left_up.svg</file>
+        <file>../images/jogging/arrow_right_up.svg</file>
+        <file>../images/jogging/arrow_left_down.svg</file>
+        <file>../images/jogging/arrow_right_down.svg</file>
+        <file>../images/jogging/stop.svg</file>
     </qresource>
 </RCC>

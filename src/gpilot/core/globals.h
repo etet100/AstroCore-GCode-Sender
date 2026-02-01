@@ -169,6 +169,10 @@ enum class JoggindDir {
     XMinus,
     YPlus,
     YMinus,
+    XMinusYMinus,
+    XMinusYPlus,
+    XPlusYPlus,
+    XPlusYMinus,
     ZPlus,
     ZMinus
 };

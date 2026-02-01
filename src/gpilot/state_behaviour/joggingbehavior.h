@@ -1,6 +1,6 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
+// Copyright 2026 BTS
 
 #ifndef JOGGINGBEHAVIOR_H
 #define JOGGINGBEHAVIOR_H
@@ -15,7 +15,7 @@ class JoggingBehavior : public StateBehavior
     Q_OBJECT
 
     public:
-        explicit JoggingBehavior(JoggindDir direction, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent = nullptr);
+        explicit JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent = nullptr);
         explicit JoggingBehavior(int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString description() override { return "Jogging"; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
@@ -40,7 +40,8 @@ class JoggingBehavior : public StateBehavior
             qint64 timestamp;
         };
 
-        JoggindDir m_currentDirection;
+        // JoggindDir m_currentDirection;
+        QVector3D m_joggingVector;
         int m_feedRate;
         int m_feedRateZ;
         double m_distance;
@@ -68,6 +69,7 @@ class JoggingBehavior : public StateBehavior
 
         void continueJogging();
         void performDynamicCompensation(double distance);
+        void buildJogCommand(double distance);
 };
 
 #endif // JOGGINGBEHAVIOR_H

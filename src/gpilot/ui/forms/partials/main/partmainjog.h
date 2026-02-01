@@ -18,9 +18,6 @@ public:
     void initialize(ConfigurationJogging &configurationJogging);
     ~PartMainJog();
 
-    // int feedRate() const { return m_configurationJogging->feed(); };
-    // int feedRateZ() const { return m_configurationJogging->finalFeedZ(); };
-    // double stepSize() const { return m_configurationJogging->step(); };
     JoggingVector jogVector() const { return m_jogVector; };
     void storeAndResetKeyboardControl();
     void setKeyboardControl(bool value);
@@ -46,14 +43,19 @@ private slots:
     void onCmdXPlusReleased();
     void onCmdXMinusPressed();
     void onCmdXMinusReleased();
+    void onCmdXMinusYMinusPressed();
+    void onCmdXMinusYMinusReleased();
+    void onCmdXMinusYPlusPressed();
+    void onCmdXMinusYPlusReleased();
+    void onCmdXPlusYPlusPressed();
+    void onCmdXPlusYPlusReleased();
+    void onCmdXPlusYMinusPressed();
+    void onCmdXPlusYMinusReleased();
     void onCmdZPlusPressed();
     void onCmdZPlusReleased();
     void onCmdZMinusPressed();
     void onCmdZMinusReleased();
     void onCmdStopClicked();
-    // void onCmdFeedChanged(int index);
-    // void onCmdFeedZChanged(int index);
-    // void onCmdStepChanged(int index);
     void onChkSeparateZFeedToggled(bool);
 
 signals:
@@ -64,3 +66,4 @@ signals:
 };
 
 #endif // PARTMAINJOG_H
+

@@ -17,12 +17,12 @@ PartMainJog::PartMainJog(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QColor backgroundColor = QColor(153, 180, 209);
+    // QColor backgroundColor = QColor(153, 180, 209);
 
-    ui->cmdXMinus->setBackColor(backgroundColor);
-    ui->cmdXPlus->setBackColor(backgroundColor);
-    ui->cmdYMinus->setBackColor(backgroundColor);
-    ui->cmdYPlus->setBackColor(backgroundColor);
+    // ui->cmdXMinus->setBackColor(backgroundColor);
+    // ui->cmdXPlus->setBackColor(backgroundColor);
+    // ui->cmdYMinus->setBackColor(backgroundColor);
+    // ui->cmdYPlus->setBackColor(backgroundColor);
 
     connect(ui->jogParameters, &PartMainJogParameters2::stepSizeChanged, this, [this](double val) {
         m_configurationJogging->setStep(val);
@@ -46,36 +46,6 @@ void PartMainJog::configurationUpdated()
 
     ui->chkSeparateZFeed->setChecked(m_configurationJogging->separateFeedZ());
     ui->chkContinuous->setChecked(m_configurationJogging->continuous());
-
-    //
-
-    // double stepSize = m_configurationJogging->step();
-    // int feedRate = m_configurationJogging->feed();
-    // int feedRateZ = m_configurationJogging->feedZ();
-
-    // ui->cboJogStep->setItems(QStringList("Continuous") + m_configurationJogging->stepChoices());
-    // for (const QString &ch : m_configurationJogging->stepChoices()) {
-    //     if (ch.toDouble() == stepSize) {
-    //         ui->cboJogStep->setCurrentText(ch);
-    //         break;
-    //     }
-    // }
-
-    // ui->cboJogFeed->setItems(m_configurationJogging->feedChoices());
-    // for (const QString &ch : m_configurationJogging->feedChoices()) {
-    //     if (ch.toInt() == feedRate) {
-    //         ui->cboJogFeed->setCurrentText(ch);
-    //         break;
-    //     }
-    // }
-
-    // ui->cboJogFeedZ->setItems(m_configurationJogging->feedChoices());
-    // for (const QString &ch : m_configurationJogging->feedChoices()) {
-    //     if (ch.toInt() == feedRateZ) {
-    //         ui->cboJogFeedZ->setCurrentText(ch);
-    //         break;
-    //     }
-    // }
 
     ui->jogParameters->setFeedRateXYOptions(m_configurationJogging->feedChoices());
     ui->jogParameters->setFeedRateXY(m_configurationJogging->feed());
@@ -174,6 +144,50 @@ void PartMainJog::onCmdXMinusReleased()
     stopJoggingIfContinuous();
 }
 
+void PartMainJog::onCmdXMinusYMinusPressed()
+{
+    m_jogVector = JoggingVector(-1, -1, 0);
+    emit this->jog(JoggindDir::XMinusYMinus, m_jogVector);
+}
+
+void PartMainJog::onCmdXMinusYMinusReleased()
+{
+    stopJoggingIfContinuous();
+}
+
+void PartMainJog::onCmdXMinusYPlusPressed()
+{
+    m_jogVector = JoggingVector(-1, 1, 0);
+    emit this->jog(JoggindDir::XMinusYPlus, m_jogVector);
+}
+
+void PartMainJog::onCmdXMinusYPlusReleased()
+{
+    stopJoggingIfContinuous();
+}
+
+void PartMainJog::onCmdXPlusYPlusPressed()
+{
+    m_jogVector = JoggingVector(1, 1, 0);
+    emit this->jog(JoggindDir::XPlusYPlus, m_jogVector);
+}
+
+void PartMainJog::onCmdXPlusYPlusReleased()
+{
+    stopJoggingIfContinuous();
+}
+
+void PartMainJog::onCmdXPlusYMinusPressed()
+{
+    m_jogVector = JoggingVector(1, -1, 0);
+    emit this->jog(JoggindDir::XPlusYMinus, m_jogVector);
+}
+
+void PartMainJog::onCmdXPlusYMinusReleased()
+{
+    stopJoggingIfContinuous();
+}
+
 void PartMainJog::onCmdZPlusPressed()
 {
     m_jogVector = JoggingVector(0, 0, 1);
@@ -200,68 +214,6 @@ void PartMainJog::onCmdStopClicked()
 {
     stopJogging();
 }
-
-// void PartMainJog::onCmdFeedChanged(int index)
-// {
-//     if (!m_initialized) {
-//         return;
-//     }
-
-//     // should not happen in real life, only during initialization (clear old items)
-//     if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
-//         return;
-//     }
-
-//     int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-//     m_configurationJogging->setFeed(feedRate);
-
-//     qDebug() << "[Jog UI] Feed rate changed" << index << feedRate;
-
-//     emit this->parametersChanged(feedRate, m_configurationJogging->step());
-// }
-
-// void PartMainJog::onCmdFeedZChanged(int index)
-// {
-//     if (!m_initialized) {
-//         return;
-//     }
-
-//     // should not happen in real life, only during initialization (clear old items)
-//     if (index < 0 || index >= m_configurationJogging->feedChoices().count()) {
-//         return;
-//     }
-
-//     int feedRate = m_configurationJogging->feedChoices().at(index).toInt();
-//     m_configurationJogging->setFeedZ(feedRate);
-
-//     qDebug() << "[Jog UI] Feed rate for Z changed" << index << feedRate;
-
-//     emit this->parametersChanged(feedRate, m_configurationJogging->step());
-// }
-
-// void PartMainJog::onCmdStepChanged(int index)
-// {
-//     if (!m_initialized) {
-//         return;
-//     }
-
-//     // should not happen in real life, only during initialization (clear old items)
-//     if (index < 0 || index >= m_configurationJogging->stepChoices().count()) {
-//         return;
-//     }
-
-//     double stepSize;
-//     if (index == 0) {
-//         stepSize = JoggingContinuous;
-//     } else {
-//         stepSize = m_configurationJogging->stepChoices().at(index - 1).toDouble();
-//     }
-//     m_configurationJogging->setStep(stepSize);
-
-//     qDebug() << "[Jog UI] Step size changed" << index << stepSize;
-
-//     emit this->parametersChanged(m_configurationJogging->feed(), stepSize);
-// }
 
 void PartMainJog::onChkSeparateZFeedToggled(bool checked)
 {

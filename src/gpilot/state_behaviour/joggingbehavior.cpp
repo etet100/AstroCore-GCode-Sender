@@ -9,9 +9,9 @@
 // #include "pausebehavior.h"
 #include "alarmbehavior.h"
 
-JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
+JoggingBehavior::JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
-    , m_currentDirection(direction)
+    , m_joggingVector(vector)
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
     , m_continuous(continuous)
@@ -21,7 +21,7 @@ JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, bool con
 
 JoggingBehavior::JoggingBehavior(int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
-    , m_currentDirection(JoggindDir::None)
+    , m_joggingVector(QVector3D(0, 0, 0))
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
 {
@@ -153,13 +153,30 @@ void JoggingBehavior::continueJogging()
     m_sent++;
 }
 
+void JoggingBehavior::buildJogCommand(double distance)
+{
+    m_jogCommand = "$J=G91 G21";
+    if (m_joggingVector.z() != 0) {
+        m_jogCommand += " Z" + QString::number(distance * m_joggingVector.z());
+        m_jogCommand += " F" + QString::number(m_feedRateZ);
+    } else {
+        if (m_joggingVector.x() != 0) {
+            m_jogCommand += " X" + QString::number(distance * m_joggingVector.x());
+        }
+        if (m_joggingVector.y() != 0) {
+            m_jogCommand += " Y" + QString::number(distance * m_joggingVector.y());
+        }
+        m_jogCommand += " F" + QString::number(m_feedRate);
+    }
+}
+
 void JoggingBehavior::startJogging()
 {
     if (!m_communicator) {
         return;
     }
 
-    if (m_currentDirection == JoggindDir::None) {
+    if (m_joggingVector.length() == 0) {
         stopJogging();
 
         return;
@@ -173,6 +190,10 @@ void JoggingBehavior::startJogging()
         // Time = 0.1s
         // 0.1/60 min, so distance = m_feedRate * (0.1/60) = m_feedRate / 600
         distance = std::max(m_feedRate / 600.0, 0.05);
+        if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
+            // diagonal movement, reduce distance by sqrt(2)
+            distance /= std::sqrt(2.0);
+        }
 
         // Timer interval should be slightly less than the move duration to ensure continuity
         // Move duration: 100ms
@@ -206,36 +227,14 @@ void JoggingBehavior::startJogging()
             }
         });
         m_joggingTimer.start(timerInterval);
+    } else {
+        if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
+            // diagonal movement, reduce distance by sqrt(2)
+            distance /= std::sqrt(2.0);
+        }
     }
 
-    int feedRate = m_feedRate;
-
-    m_jogCommand = "$J=";
-    switch (m_currentDirection) {
-        case JoggindDir::XPlus:
-            m_jogCommand += "G91 G21 X" + QString::number(distance > 0 ? distance : 100);
-            break;
-        case JoggindDir::XMinus:
-            m_jogCommand += "G91 G21 X-" + QString::number(distance > 0 ? distance : 100);
-            break;
-        case JoggindDir::YPlus:
-            m_jogCommand += "G91 G21 Y" + QString::number(distance > 0 ? distance : 100);
-            break;
-        case JoggindDir::YMinus:
-            m_jogCommand += "G91 G21 Y-" + QString::number(distance > 0 ? distance : 100);
-            break;
-        case JoggindDir::ZPlus:
-            m_jogCommand += "G91 G21 Z" + QString::number(distance > 0 ? distance : 100);
-            feedRate = m_feedRateZ;
-            break;
-        case JoggindDir::ZMinus:
-            m_jogCommand += "G91 G21 Z-" + QString::number(distance > 0 ? distance : 100);
-            feedRate = m_feedRateZ;
-            break;
-        default:
-            return; // Nieznany kierunek
-    }
-    m_jogCommand += " F" + QString::number(feedRate);
+    buildJogCommand(distance);
 
     m_startMachinePos = m_communicator->machinePos();
 
@@ -272,11 +271,10 @@ void JoggingBehavior::setJoggingFeedRate(double feedRate)
 {
     m_feedRate = feedRate;
 
-    // Jeśli jesteśmy w trakcie joggingu, możemy chcieć zaktualizować prędkość
-    // Jednak w większości kontrolerów, aby zmienić prędkość joggingu,
-    // trzeba zatrzymać aktualny jogging i rozpocząć nowy z nową prędkością
+    // If we are currently jogging, we may want to update the speed
+    // However, in most controllers, to change the jogging speed,
+    // we need to stop the current jogging and start a new one with the new speed
     if (m_isJogging) {
-        JoggindDir currentDir = m_currentDirection;
         stopJogging();
         startJogging();
     }
