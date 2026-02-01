@@ -6,10 +6,7 @@
 #define VIRTUALGRBLCONNECTION_H
 
 #include <QObject>
-#include "connection.h"
-#include <QLocalSocket>
-#include <QLocalServer>
-#include <QThread>
+#include "virtualconnection.h"
 
 class VirtualGRBLWorkerThread : public QThread
 {
@@ -22,35 +19,21 @@ class VirtualGRBLWorkerThread : public QThread
         QAtomicInt* m_stopFlag;
 };
 
-class VirtualGRBLConnection : public Connection
+class VirtualGRBLConnection : public VirtualConnection
 {
     Q_OBJECT
 
 public:
-    VirtualGRBLConnection(QObject*);
+    VirtualGRBLConnection(QObject* parent = nullptr);
     ~VirtualGRBLConnection();
-    bool open() override;
-    void sendByteArray(QByteArray) override;
-    void sendLine(QString) override;
-    void close() override;
+
     ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_GRBL; }
     QString name() override { return "Virtual GRBL"; }
 
-private:
-    QLocalSocket* m_socket;
-    QLocalServer* m_server;
-    QAtomicInt m_stopFlag;
-    VirtualGRBLWorkerThread* m_thread;
-    QString m_incoming;
-    void flushOutgoingData();
-    void processIncomingData();
-    void startLocalServer();
-    void startWorkerThread();
-
-private slots:
-    void onNewConnection();
-    void onDisconnected();
-    void onReadyRead();
+protected:
+    QString deviceName() const override { return "GRBL"; }
+    QString serverPrefix() const override { return "gpilotgrbl_"; }
+    QThread* createWorkerThread(const QString& serverName) override;
 };
 
 #endif // VIRTUALGRBLCONNECTION_H

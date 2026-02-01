@@ -6,49 +6,34 @@
 #define VIRTUALUCNCCONNECTION_H
 
 #include <QObject>
-#include "connection.h"
-#include <QLocalSocket>
-#include <QLocalServer>
-#include <QThread>
+#include "virtualconnection.h"
 
 class VirtualUCNCWorkerThread : public QThread
 {
     public:
-        VirtualUCNCWorkerThread(QString serverName);
+        VirtualUCNCWorkerThread(QString serverName, QAtomicInt* stopFlag);
 
         void run() override;
     private:
         QString m_serverName;
+        QAtomicInt* m_stopFlag;
 };
 
-class VirtualUCNCConnection : public Connection
+class VirtualUCNCConnection : public VirtualConnection
 {
     Q_OBJECT
 
 public:
-    VirtualUCNCConnection(QObject*);
+    VirtualUCNCConnection(QObject* parent = nullptr);
     ~VirtualUCNCConnection();
-    bool open() override;
-    void sendByteArray(QByteArray) override;
-    void sendLine(QString) override;
-    void close() override;
+
     ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_UCNC; }
     QString name() override { return "Virtual UCNC"; }
 
-private:
-    QLocalSocket* m_socket;
-    QLocalServer* m_server;
-    VirtualUCNCWorkerThread* m_thread;
-    QString m_incoming;
-    void flushOutgoingData();
-    void processIncomingData();
-    void startLocalServer();
-    void startWorkerThread();
-
-private slots:
-    void onNewConnection();
-    void onDisconnected();
-    void onReadyRead();
+protected:
+    QString deviceName() const override { return "uCNC"; }
+    QString serverPrefix() const override { return "gpilotucnc_"; }
+    QThread* createWorkerThread(const QString& serverName) override;
 };
 
 #endif // VIRTUALUCNCCONNECTION_H

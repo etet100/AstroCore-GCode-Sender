@@ -20,178 +20,38 @@ Q_OS_WIN
 #ifdef STATIC_UCNC
 extern "C" {
     // Q_DECL_IMPORT
-    void uCNC(QString serverName);
+    void uCNC(QString serverName, QAtomicInt* stopFlag);
 }
 #else
-typedef void (*uCNCFunction)(QString serverName);
+typedef void (*uCNCFunction)(QString serverName, QAtomicInt* stopFlag);
 #endif
 
-VirtualUCNCConnection::VirtualUCNCConnection(QObject *parent) : Connection(parent)
+VirtualUCNCConnection::VirtualUCNCConnection(QObject *parent)
+    : VirtualConnection("uCNC", parent)
 {
-    m_socket = nullptr;
-    m_server = nullptr;
 }
 
 VirtualUCNCConnection::~VirtualUCNCConnection()
 {
 }
 
-void VirtualUCNCConnection::startLocalServer()
+QThread* VirtualUCNCConnection::createWorkerThread(const QString& serverName)
 {
-    m_server = new QLocalServer(this);
-    connect(m_server, &QLocalServer::newConnection, this, &VirtualUCNCConnection::onNewConnection);
-    m_server->listen("gpilotucnc_" + QUuid::createUuid().toString());
+    return new VirtualUCNCWorkerThread(serverName, &m_stopFlag);
 }
 
-void VirtualUCNCConnection::startWorkerThread()
+VirtualUCNCWorkerThread::VirtualUCNCWorkerThread(QString serverName, QAtomicInt* stopFlag)
+    : QThread(nullptr)
+    , m_serverName(serverName)
+    , m_stopFlag(stopFlag)
 {
-    m_thread = new VirtualUCNCWorkerThread(m_server->serverName());
-    m_thread->start();
-}
-
-bool VirtualUCNCConnection::open()
-{
-    if (m_state == ConnectionState::Connecting) {
-        return false;
-    }
-    if (m_state == ConnectionState::Connected) {
-        return true;
-    }
-
-    setState(ConnectionState::Connecting);
-
-    startLocalServer();
-    startWorkerThread();
-
-    // still waiting for connection, return 'not connected'
-    return false;
-}
-
-void VirtualUCNCConnection::flushOutgoingData()
-{
-    if (!m_socket) {
-        qDebug() << "[IO][uCNC] No socket connection!";
-        return;
-    }
-    if (m_socket->bytesToWrite()) {
-        m_socket->waitForBytesWritten(5);
-    }
-}
-
-void VirtualUCNCConnection::sendByteArray(QByteArray byteArray)
-{
-    assert(m_socket != nullptr);
-
-    flushOutgoingData();
-
-    #ifdef DEBUG_UCNC_COMMUNICATION
-        qDebug() << "[IO][uCNC] (byte) >> " << byteArray.toHex();
-    #endif
-
-    m_socket->write(byteArray.data(), 1);
-    m_socket->flush();
-}
-
-void VirtualUCNCConnection::sendLine(QString line)
-{
-    flushOutgoingData();
-
-    #ifdef DEBUG_UCNC_COMMUNICATION
-        qDebug() << "[IO][uCNC] >> " << line;
-    #endif
-
-    std::string str = QString(line + "\n").toStdString();
-    m_socket->write(str.c_str(), str.length());
-
-    m_socket->flush();
-}
-
-void VirtualUCNCConnection::close()
-{
-    qDebug() << "[IO][uCNC] Closing connection";
-
-    m_thread->terminate();
-    m_thread->wait();
-    delete m_thread;
-    m_thread = nullptr;
-
-    if (m_socket != nullptr) {
-        if (m_socket->isOpen()) {
-            disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualUCNCConnection::onDisconnected);
-            m_socket->abort();
-        }
-        delete m_socket;
-        m_socket = nullptr;
-    }
-    if (m_server != nullptr && m_server->isListening()) {
-        m_server->close();
-        delete m_server;
-        m_server = nullptr;
-    }
-
-    setState(ConnectionState::Disconnected);
-}
-
-void VirtualUCNCConnection::onNewConnection()
-{
-    if (m_socket != nullptr) {
-        qWarning() << "Virtual uCNC connection already exists!";
-        return;
-    }
-
-    m_socket = m_server->nextPendingConnection();
-    connect(m_socket, &QIODevice::readyRead, this, &VirtualUCNCConnection::onReadyRead);
-    connect(m_socket, &QLocalSocket::disconnected, this, &VirtualUCNCConnection::onDisconnected);
-
-    setState(ConnectionState::Connected);
-}
-
-void VirtualUCNCConnection::onDisconnected()
-{
-    close();
-}
-
-void VirtualUCNCConnection::onReadyRead()
-{
-    while (m_socket->bytesAvailable() > 0) {
-        m_incoming += m_socket->readAll();
-        processIncomingData();
-    }
-}
-
-void VirtualUCNCConnection::processIncomingData()
-{
-    while (true) {
-        #ifdef DEBUG_UCNC_COMMUNICATION
-            qDebug() << "[IO][uCNC] == " << m_incoming;
-        #endif
-        if (m_incoming.isEmpty()) {
-            return;
-        }
-        int pos = m_incoming.indexOf("\n");
-        if (pos == -1) {
-            return;
-        }
-
-        QString line = m_incoming.left(pos).trimmed();
-        m_incoming.remove(0, pos + 1);
-
-        #ifdef DEBUG_UCNC_COMMUNICATION
-            qDebug() << "[IO][uCNC] << " << line;
-        #endif
-
-        emit this->lineReceived(line);
-    }
-}
-
-VirtualUCNCWorkerThread::VirtualUCNCWorkerThread(QString serverName) : QThread(nullptr), m_serverName(serverName) {
 }
 
 void VirtualUCNCWorkerThread::run() {
     qInfo() << "Starting virtual uCNC, server " << m_serverName;
     #ifdef STATIC_UCNC
         #ifdef WINDOWS
-             uCNC(m_serverName.toStdString().c_str());
+             uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
         #endif
     #else
         qDebug() << "[IO][uCNC] Dynamic mode";
@@ -203,11 +63,13 @@ void VirtualUCNCWorkerThread::run() {
         uCNCFunction uCNC = (uCNCFunction) lib.resolve("uCNC");
         if (uCNC != nullptr) {
             qDebug() << "[IO][uCNC] Calling uCNC() function";
-            uCNC(m_serverName.toStdString().c_str()); // Wywołanie funkcji z biblioteki
+            uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
         } else {
             qInfo() << "[IO][uCNC] uCNC not initialized. uCNC() not found!";
         }
         lib.unload();
     #endif
     qInfo() << "uCNC stopped!";
+
+    *m_stopFlag = 3;
 }

@@ -25,174 +25,17 @@ typedef void (*GRBLFunction)(QString serverName, QAtomicInt* stopFlag);
 #endif
 
 VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent)
-    : Connection(parent)
-    , m_stopFlag(0)
+    : VirtualConnection("GRBL", parent)
 {
-    m_socket = nullptr;
-    m_server = nullptr;
 }
 
 VirtualGRBLConnection::~VirtualGRBLConnection()
 {
-    close();
 }
 
-void VirtualGRBLConnection::startLocalServer()
+QThread* VirtualGRBLConnection::createWorkerThread(const QString& serverName)
 {
-    m_server = new QLocalServer(this);
-    connect(m_server, &QLocalServer::newConnection, this, &VirtualGRBLConnection::onNewConnection);
-    m_server->listen("gpilotgrbl_" + QUuid::createUuid().toString());
-}
-
-void VirtualGRBLConnection::startWorkerThread()
-{
-    m_thread = new VirtualGRBLWorkerThread(m_server->serverName(), &m_stopFlag);
-    m_thread->start();
-}
-
-bool VirtualGRBLConnection::open()
-{
-    if (m_state == ConnectionState::Connecting) {
-        return false;
-    }
-    if (m_state == ConnectionState::Connected) {
-        return true;
-    }
-
-    setState(ConnectionState::Connecting);
-
-    startLocalServer();
-    startWorkerThread();
-
-    // still waiting for connection, return 'not connected'
-    return false;
-}
-
-void VirtualGRBLConnection::flushOutgoingData()
-{
-    if (!m_socket) {
-        qDebug() << "[IO][GRBL] No socket connection!";
-        return;
-    }
-    if (m_socket->bytesToWrite()) {
-        m_socket->waitForBytesWritten(5);
-    }
-}
-
-void VirtualGRBLConnection::sendByteArray(QByteArray byteArray)
-{
-    assert(m_socket != nullptr);
-
-    flushOutgoingData();
-
-    #ifdef DEBUG_GRBL_COMMUNICATION
-        qDebug() << "[IO][GRBL] GRBL (byte) >> " << byteArray.toHex();
-    #endif
-
-    m_socket->write(byteArray.data(), 1);
-    m_socket->flush();
-}
-
-void VirtualGRBLConnection::sendLine(QString line)
-{
-    flushOutgoingData();
-
-    #ifdef DEBUG_GRBL_COMMUNICATION
-        qDebug() << "[IO][GRBL] GRBL >> " << line;
-    #endif
-
-    std::string str = QString(line + "\n").toStdString();
-    m_socket->write(str.c_str(), str.length());
-
-    m_socket->flush();
-}
-
-void VirtualGRBLConnection::close()
-{
-    qDebug() << "[IO][GRBL] Closing connection";
-
-    if (m_state == ConnectionState::Disconnected) {
-        return;
-    }
-
-    setState(ConnectionState::Disconnected);
-    m_stopFlag = 2;
-
-    if (m_socket != nullptr) {
-        if (m_socket->isOpen()) {
-            disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualGRBLConnection::onDisconnected);
-            m_socket->abort();
-        }
-        delete m_socket;
-        m_socket = nullptr;
-    }
-    if (m_server != nullptr && m_server->isListening()) {
-        m_server->close();
-        delete m_server;
-        m_server = nullptr;
-    }
-
-    if (m_thread != nullptr) {
-        qDebug() << "[IO][GRBL] Stopping GRBL thread...";
-        if (!m_thread->wait(1500)) {
-            m_thread->terminate();
-        }
-        m_thread->deleteLater();
-        m_thread = nullptr;
-    }
-}
-
-void VirtualGRBLConnection::onNewConnection()
-{
-    if (m_socket != nullptr) {
-        qWarning() << "[IO][GRBL] Connection already exists!";
-        return;
-    }
-
-    qDebug() << "[IO][GRBL] New connection received.";
-
-    m_socket = m_server->nextPendingConnection();
-    connect(m_socket, &QIODevice::readyRead, this, &VirtualGRBLConnection::onReadyRead);
-    connect(m_socket, &QLocalSocket::disconnected, this, &VirtualGRBLConnection::onDisconnected);
-
-    setState(ConnectionState::Connected);
-}
-
-void VirtualGRBLConnection::onDisconnected()
-{
-    qDebug() << "[IO][GRBL] Disconnected from GRBL.";
-
-    close();
-}
-
-void VirtualGRBLConnection::onReadyRead()
-{
-    while (m_socket->bytesAvailable() > 0) {
-        m_incoming += m_socket->readAll();
-        processIncomingData();
-    }
-}
-
-void VirtualGRBLConnection::processIncomingData()
-{
-    while (true) {
-        if (m_incoming.isEmpty()) {
-            return;
-        }
-        int pos = m_incoming.indexOf("\n");
-        if (pos == -1) {
-            return;
-        }
-
-        QString line = m_incoming.left(pos).trimmed();
-        m_incoming.remove(0, pos + 1);
-
-        #ifdef DEBUG_GRBL_COMMUNICATION
-            qDebug() << "[IO][GRBL] GRBL << " << line;
-        #endif
-
-        emit this->lineReceived(line);
-    }
+    return new VirtualGRBLWorkerThread(serverName, &m_stopFlag);
 }
 
 VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName, QAtomicInt* stopFlag)

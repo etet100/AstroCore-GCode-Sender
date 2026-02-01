@@ -2,7 +2,7 @@
 #define VIRTUALFLUIDNCCONNECTION_H
 
 #include <QThread>
-#include "connection.h"
+#include "virtualconnection.h"
 #include <QLocalSocket>
 #include <QLocalServer>
 
@@ -17,33 +17,21 @@ class VirtualFluidNCWorkerThread : public QThread
         QAtomicInt* m_stopFlag;
 };
 
-class VirtualFluidNCConnection : public Connection
+class VirtualFluidNCConnection : public VirtualConnection
 {
-    public:
-        VirtualFluidNCConnection(QObject*);
-        ~VirtualFluidNCConnection();
-        bool open() override;
-        void sendByteArray(QByteArray) override;
-        void sendLine(QString) override;
-        void close() override;
-        ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_FLUIDNC; }
-        QString name() override { return "Virtual FluidNC"; }
+    Q_OBJECT
 
-    private:
-        QLocalSocket* m_socket;
-        QLocalServer* m_server;
-        QAtomicInt m_stopFlag;
-        VirtualFluidNCWorkerThread* m_thread;
-        QString m_incoming;
-        void flushOutgoingData();
-        void processIncomingData();
-        void startLocalServer();
-        void startWorkerThread();
+public:
+    VirtualFluidNCConnection(QObject* parent = nullptr);
+    ~VirtualFluidNCConnection();
 
-    private slots:
-        void onNewConnection();
-        void onDisconnected();
-        void onReadyRead();
+    ConfigurationConnection::ConnectionMode supportedMode() override { return ConfigurationConnection::ConnectionMode::VIRTUAL_FLUIDNC; }
+    QString name() override { return "Virtual FluidNC"; }
+
+protected:
+    QString deviceName() const override { return "FluidNC"; }
+    QString serverPrefix() const override { return "gpilotfluidnc_"; }
+    QThread* createWorkerThread(const QString& serverName) override;
 };
 
 #endif // VIRTUALFLUIDNCCONNECTION_H
