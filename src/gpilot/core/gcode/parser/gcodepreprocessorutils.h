@@ -12,7 +12,7 @@
 #include <QMatrix4x4>
 #include "pointsegment.h"
 
-class GCodeItem;
+struct GCodeItem;
 class GCode;
 
 class GcodePreprocessorUtils : public QObject
