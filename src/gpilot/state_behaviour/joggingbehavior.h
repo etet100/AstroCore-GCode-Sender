@@ -7,6 +7,8 @@
 
 #include "statebehavior.h"
 #include "core/globals.h"
+#include <QQueue>
+#include <QElapsedTimer>
 
 class JoggingBehavior : public StateBehavior
 {
@@ -14,7 +16,7 @@ class JoggingBehavior : public StateBehavior
 
     public:
         explicit JoggingBehavior(JoggindDir direction, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent = nullptr);
-        explicit JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent = nullptr);
+        explicit JoggingBehavior(int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString description() override { return "Jogging"; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
@@ -32,21 +34,40 @@ class JoggingBehavior : public StateBehavior
         QString name() const override { return "JoggingBehavior"; }
 
     private:
+        struct JogCommand {
+            double feedRate;
+            double distance;
+            qint64 timestamp;
+        };
+
         JoggindDir m_currentDirection;
         int m_feedRate;
         int m_feedRateZ;
-        double m_distance; // 0 means continuous jogging
+        double m_distance;
         bool m_continuous = false;
         bool m_isJogging = false;
         bool m_isJoggingState = false;
         bool m_firstCommand = true;
         bool m_stopping = false;
         QString m_jogCommand;
-        QVector3D m_vector;
+        QVector3D m_startMachinePos;
         QTimer m_joggingTimer;
         int m_sent = 0;
         int m_acked = 0;
+
+        struct SendingIntervalCompensation {
+            static const int HISTORY_SIZE = 3;
+            double diffHistory[HISTORY_SIZE];
+            int historyIndex = 0;
+            int historyCount = 0;
+            void reset();
+            double addDiff(double diff);
+            double smoothedDiff() const;
+        };
+        SendingIntervalCompensation m_compensation;
+
         void continueJogging();
+        void performDynamicCompensation(double distance);
 };
 
 #endif // JOGGINGBEHAVIOR_H

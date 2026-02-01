@@ -19,12 +19,11 @@ JoggingBehavior::JoggingBehavior(JoggindDir direction, double distance, bool con
 {
 }
 
-JoggingBehavior::JoggingBehavior(QVector3D vector, int feedRate, int feedRateZ, QObject *parent)
+JoggingBehavior::JoggingBehavior(int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
     , m_currentDirection(JoggindDir::None)
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
-    , m_vector(vector)
 {
 }
 
@@ -93,10 +92,8 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
     m_acked++;
     if (response == "ok") {
         if (m_continuous && !m_stopping) {
-            // Fill buffer with more jogging commands
-            while (m_sent - m_acked < 5) {
-                continueJogging();
-            }
+            // In timer-based continuous mode, we don't refill buffer here based on ack.
+            //The timer handles the periodic sending.
         }
 
         // if (m_stopping && !m_isJoggingState) {
@@ -151,6 +148,7 @@ void JoggingBehavior::continueJogging()
     }
 
     qDebug() << "[JoggingBehavior] Continuing jogging: " << m_sent << m_jogCommand << m_sent << m_acked;
+
     m_communicator->sendCommand(CommandSource::GeneralUI, m_jogCommand, TABLE_INDEX_UI);
     m_sent++;
 }
@@ -172,12 +170,42 @@ void JoggingBehavior::startJogging()
     if (m_continuous) {
         qDebug() << "[JoggingBehavior] Continuous mode";
 
-        // Sent multiple small moves to simulate continuous jogging
-        // Each move will be 1% of the feed rate distance
-        distance = m_feedRate / 500.0;
-        if (distance < 1.0) {
-            distance = 1.0;
-        }
+        // Time = 0.1s
+        // 0.1/60 min, so distance = m_feedRate * (0.1/60) = m_feedRate / 600
+        distance = std::max(m_feedRate / 600.0, 0.05);
+
+        // Timer interval should be slightly less than the move duration to ensure continuity
+        // Move duration: 100ms
+        // Timer interval: 50ms
+        // This means we send command every 50ms, adding 100ms of motion.
+        // The buffer will grow by 50ms every 50ms.
+        // To prevent buffer overflow and run-on, we stop filling if we are too far ahead.
+        // But since we can't easily check buffer depth, we rely on the user releasing the key
+        // and sending Jog Cancel.
+        // Or better: match the timer to the duration closely.
+        // Interval: 80ms. Move: 100ms. Growth: 20ms/tick. Fills 1s buffer in 4s.
+        // Let's use 50ms timer and recalculate distance for ~70ms motion?
+        // Let's try: Timer 50ms, Motion 0.1s (100ms).
+        int timerInterval = 80;
+
+        m_compensation.reset();
+
+        disconnect(&m_joggingTimer, &QTimer::timeout, nullptr, nullptr);
+        connect(&m_joggingTimer, &QTimer::timeout, this, [this, distance]() {
+            m_communicator->queryMachineState();
+
+            if (m_stopping || !m_isJogging) {
+                m_joggingTimer.stop();
+                return;
+            }
+
+            performDynamicCompensation(distance);
+
+            if (!m_communicator->willOverflowBuffer(m_jogCommand)) {
+                continueJogging();
+            }
+        });
+        m_joggingTimer.start(timerInterval);
     }
 
     int feedRate = m_feedRate;
@@ -207,11 +235,16 @@ void JoggingBehavior::startJogging()
         default:
             return; // Nieznany kierunek
     }
-
     m_jogCommand += " F" + QString::number(feedRate);
 
+    m_startMachinePos = m_communicator->machinePos();
+
     m_isJogging = true;
+    m_sent = 0;
     continueJogging();
+    if (m_continuous) {
+        m_communicator->stopQueryingMachineState();
+    }
 }
 
 void JoggingBehavior::stopJogging()
@@ -227,10 +260,12 @@ void JoggingBehavior::stopJogging()
         return;
     }
 
-    m_communicator->clearQueue(); // Delete unsent jog commands
+    qDebug() << "[JoggingBehavior] Send JOG CANCEL and clear queue";
+    m_communicator->clearQueue();
     m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
     m_isJogging = false;
     m_stopping = true;
+    m_communicator->startQueryingMachineState();
 }
 
 void JoggingBehavior::setJoggingFeedRate(double feedRate)
@@ -247,107 +282,77 @@ void JoggingBehavior::setJoggingFeedRate(double feedRate)
     }
 }
 
+void JoggingBehavior::performDynamicCompensation(double distance)
+{
+    QVector3D m_machinePosDiff = m_communicator->machinePos() - m_startMachinePos;
+    double realDistance = m_machinePosDiff.length();
+    // TODO: Units conversion
+    // if (m_communicator->machineConfiguration().unitsInches()) {
+    //     realDistance *= 25.4;
+    // }
 
-// void frmMain::jogStep(QVector3D vector)
-// {
-//     assert(m_communicator->isMachineConfigurationReady());
+    double sentDistance = m_sent * distance;
 
-//     if (ui->jog->isContinuous()) {
-//         return;
-//     }
+    // Target strategy: Maintain buffer of ~2.5 segments.
+    // We virtually increase the real distance by 2.5 segments.
+    // We want SentDistance to be equal to this AugmentedRealDistance.
+    double augmentedRealDistance = realDistance + (2.5 * distance);
 
-//     bool unitsInches = m_communicator->machineConfiguration().unitsInches();
-//     vector *= ui->jog->stepSize();
+    // Error = Sent - AugmentedTarget.
+    // Positive means Sent > AugmentedTarget (Buffer too big) -> Slow down
+    // Negative means Sent < AugmentedTarget (Buffer too small) -> Speed up
+    double currentDiff = sentDistance - augmentedRealDistance;
 
-//     m_communicator->sendCommand(
-//         CommandSource::System,
-//         QString("$J=%5G91X%1Y%2Z%3F%4")
-//             .arg(vector.x(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(vector.y(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(vector.z(), 0, 'f', unitsInches ? 4 : 3)
-//             .arg(m_configuration.joggingModule().jogFeed())
-//             .arg(unitsInches ? "G20" : "G21"),
-//         -3
-//     );
-// }
+    double smoothedDiff = m_compensation.addDiff(currentDiff);
 
-// void frmMain::jogStart(QVector3D vector)
-// {
-//     bool unitsInches = m_communicator->machineConfiguration().unitsInches();
+    int currentInterval = m_joggingTimer.interval();
+    int newInterval = currentInterval;
 
-//     // Bounds
-//     QVector3D b = m_communicator->machineConfiguration().machineBounds();
-//     // Current machine coords
-//     // @TODO use m_communicator storedVars
-//     QVector3D m(
-//         m_communicator->toMetric(m_communicator->m_storedVars.Mx()),
-//         m_communicator->toMetric(m_communicator->m_storedVars.My()),
-//         m_communicator->toMetric(m_communicator->m_storedVars.Mz())
-//         );
-//     // Distance to bounds
-//     QVector3D t;
-//     // Minimum distance to bounds
-//     double d = 0;
-//     if (m_communicator->machineConfiguration().softLimitsEnabled()) {
-//         t = QVector3D(vector.x() * b.x() < 0 ? 0 - m.x() : b.x() - m.x(),
-//                       vector.y() * b.y() < 0 ? 0 - m.y() : b.y() - m.y(),
-//                       vector.z() * b.z() < 0 ? 0 - m.z() : b.z() - m.z());
-//         for (int i = 0; i < 3; i++) if ((vector[i] && (qAbs(t[i]) < d)) || (vector[i] && !d)) d = qAbs(t[i]);
-//         // Coords not aligned, add some bounds offset
-//         d -= unitsInches ? m_communicator->toMetric(0.0005) : 0.005;
-//     } else {
-//         for (int i = 0; i < 3; i++) if (vector[i] && (qAbs(b[i]) > d)) d = qAbs(b[i]);
-//     }
+    // Simple incremental control loop
+    double deadband = 0.1 * distance;
 
-//     // Jog vector
-//     QVector3D vec = vector * m_communicator->toInches(d);
+    if (smoothedDiff > deadband) {
+        newInterval += 1;
+    } else if (smoothedDiff < -deadband) {
+        newInterval -= 1;
+    }
 
-//     if (vec.length()) {
-//         m_communicator->sendCommand(CommandSource::System, QString("$J=%5G91X%1Y%2Z%3F%4")
-//                                         .arg(vec.x(), 0, 'f', unitsInches ? 4 : 3)
-//                                         .arg(vec.y(), 0, 'f', unitsInches ? 4 : 3)
-//                                         .arg(vec.z(), 0, 'f', unitsInches ? 4 : 3)
-//                                         .arg(m_configuration.joggingModule().feed())
-//                                         .arg(unitsInches ? "G20" : "G21")
-//                                         , -2);
-//     }
-// }
+    if (smoothedDiff > distance) newInterval += 2;
+    else if (smoothedDiff < -distance) newInterval -= 2;
+    newInterval = qBound(20, newInterval, 200);
 
-// void frmMain::jogContinuous()
-// {
-//     static bool block = false;
-//     static QVector3D lastVector(0, 0, 0);
+    if (newInterval != currentInterval) {
+        m_joggingTimer.setInterval(newInterval);
+    }
 
-//     if ((ui->jog->isContinuous()) && !block) {
-//         if (ui->jog->jogVector() != lastVector) {
-//             // Store jog vector before block
-//             QVector3D vector = ui->jog->jogVector();
+    qDebug() << "[JoggingBehavior] Real:" << realDistance << "Target(Adj):" << augmentedRealDistance
+             << "Sent:" << sentDistance << "Error:" << smoothedDiff << "Interval:" << newInterval;
+}
 
-//             // Stop jogging
-//             if (lastVector.length()) {
-//                 lastVector = vector;
-//                 block = true;
+void JoggingBehavior::SendingIntervalCompensation::reset()
+{
+    historyIndex = 0;
+    historyCount = 0;
+}
 
-//                 m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
+double JoggingBehavior::SendingIntervalCompensation::addDiff(double diff)
+{
+    diffHistory[historyIndex] = diff;
+    historyIndex = (historyIndex + 1) % HISTORY_SIZE;
+    if (historyCount < HISTORY_SIZE) {
+        historyCount++;
+    }
 
-//                 if (!vector.length()) {
-//                     return;
-//                 }
+    return smoothedDiff();
+}
 
-//                 QObject *obj = new QObject(this);
-//                 connect(m_communicator, &Communicator::deviceStateChanged, obj, [this, obj, vector] (DeviceState state) {
-//                     qDebug() << "deviceStateChanged" << (int) state;
-//                     if (state != DeviceState::Jog) {
-//                         jogStart(vector);
-//                         obj->deleteLater();
-//                     }
-//                 });
+double JoggingBehavior::SendingIntervalCompensation::smoothedDiff() const
+{
+    if (historyCount == 0) return 0.0;
+    double sum = 0.0;
+    for (int i = 0; i < historyCount; ++i) {
+        sum += diffHistory[i];
+    }
 
-//                 block = false;
-//             } else {
-//                 lastVector = vector;
-//                 jogStart(vector);
-//             }
-//         }
-//     }
-// }
+    return sum / historyCount;
+}

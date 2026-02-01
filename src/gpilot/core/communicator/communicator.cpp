@@ -686,7 +686,7 @@ void Communicator::startQueryingMachineState()
         queryMachineState();
     });
 
-    m_queryMachineStateTimer->start(100); // 100 ms interval
+    m_queryMachineStateTimer->start(m_configuration->connectionModule().queryStateInterval());
 }
 
 void Communicator::stopQueryingMachineState()

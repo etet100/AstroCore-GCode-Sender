@@ -225,6 +225,9 @@ class CommunicatorApi : public QObject
         void stopQueryingMachineState() { m_communicator->stopQueryingMachineState(); }
         void queryMachineConfiguration() { m_communicator->queryMachineConfiguration(); }
 
+        PhysicalMachineConfiguration& machineConfiguration() { return m_communicator->machineConfiguration(); }
+        QVector3D machinePos() { return m_communicator->machinePos(); }
+
         // Command
         SendCommandResult sendCommand(CommandSource source, QString commandLine, int tableIndex = TABLE_INDEX_UI, bool wait = false, CommandCallback callback = nullptr) {
             return m_communicator->sendCommand(source, commandLine, tableIndex, wait, callback);
