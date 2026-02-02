@@ -47,7 +47,8 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
         }
     });
     connect(ui->visualizer, &GLContainer::mouseDoubleClicked, this, [this](QPoint pos) {
-        if (m_heightmapGridDrawer.visible()) {
+        // Ignore clicks if heightmap markers are not visible
+        if (m_heightmapGridDrawer.billboardDrawable()->visible()) {
             HeightMapGridBillboardContentData* contentData = static_cast<HeightMapGridBillboardContentData*>(
                 m_heightmapGridDrawer.billboardDrawable()->hitTest(pos)
             );
@@ -73,7 +74,12 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
         m_originDrawer.setZoom(zoom);
         m_boundingBoxDrawer.setZoom(zoom);
     });
-    // connect(ui->visualizer, &GLContainer::goToCursor, this, &PartMainVisualizer::goToCursor);
+    connect(ui->visualizer, &GLContainer::goToCursor, this, [this](QPointF pos) {
+        // Do not go to cursor if heightmap markers are visible
+        if (!m_heightmapGridDrawer.billboardDrawable()->visible()) {
+            emit goToCursor(pos);
+        }
+    });
     connect(ui->visualizer, &GLContainer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         emit viewModeChanged(mode);
     });
