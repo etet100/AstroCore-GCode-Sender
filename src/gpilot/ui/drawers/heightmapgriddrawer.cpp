@@ -147,13 +147,19 @@ void HeightMapGridDrawer::setModel(Heightmap &model)
 void HeightMapGridDrawer::setVisible(bool visible)
 {
     ShaderDrawable::setVisible(visible);
-    m_billboardDrawable.setVisible(visible);
+    // Hide billboards when grid is hidden, do not show them when grid is shown (they will be shown if needed)
+    if (!m_visible) {
+        m_billboardDrawable.setVisible(false);
+    }
 }
 
 void HeightMapGridDrawer::toggleVisible()
 {
     ShaderDrawable::toggleVisible();
-    m_billboardDrawable.setVisible(m_visible);
+    // Hide billboards when grid is hidden, do not show them when grid is shown (they will be shown if needed)
+    if (!m_visible) {
+        m_billboardDrawable.setVisible(false);
+    }
 }
 
 void HeightMapGridDrawer::setInterpolationMode(Heightmap::InterpolationMode mode)
@@ -250,6 +256,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
 HeightMapGridBillboardDrawer::HeightMapGridBillboardDrawer() : BillboardDrawable()
 {
     m_scaleWithDistance = false;
+    m_visible = false;
 }
 
 QSize HeightMapGridBillboardDrawer::measureBillboard(const BillboardContentData *data_)
