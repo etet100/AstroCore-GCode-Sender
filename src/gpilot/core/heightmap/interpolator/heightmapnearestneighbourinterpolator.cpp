@@ -14,7 +14,7 @@ double HeightmapNearestNeighbourInterpolator::interpolate(QPointF point) const
     auto [x, y] = point;
 
     return m_heightmap->at(
-        static_cast<int>(std::round(x))
-        static_cast<int>(std::round(y)
+        static_cast<int>(std::round(x)),
+        static_cast<int>(std::round(y))
     );
 }

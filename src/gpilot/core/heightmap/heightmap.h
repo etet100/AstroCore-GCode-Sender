@@ -15,8 +15,8 @@ class Heightmap
 {
     public:
         enum InterpolationMode {
-            Linear = 0,
-            NearestNeighbour,
+            NearestNeighbour = 0,
+            Linear,
             Bilinear,
             Bicubic,
         };

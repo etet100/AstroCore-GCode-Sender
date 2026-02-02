@@ -2,6 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmapgriddrawer.h"
+#include "core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h"
 #include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
@@ -62,6 +63,9 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
 
     HeightmapInterpolator* interpolator;
     switch (m_interpolationMode) {
+        case Heightmap::InterpolationMode::NearestNeighbour:
+            interpolator = new HeightmapNearestNeighbourInterpolator(m_model);
+            break;
         case Heightmap::InterpolationMode::Linear:
             interpolator = new HeightmapLinearInterpolator(m_model);
             break;
