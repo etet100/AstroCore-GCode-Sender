@@ -57,6 +57,18 @@ public:
     void setBackView();
     void setLeftView();
     void setRightView();
+    void setBackLeftView();
+    void setBackRightView();
+    void setBackBottomView();
+    void setLeftTopView();
+    void setFrontLeftView();
+    void setLeftBottomView();
+    void setFrontRightView();
+    void setFrontBottomView();
+    void setRightBottomView();
+    void setRightTopView();
+    void setFrontTopView();
+    void setBackTopView();
     void toggleProjectionType();
     void toggleRotationCube();
     void toggleLight();

@@ -410,6 +410,91 @@ void GLWidget::setRightView()
     animate();
 }
 
+void GLWidget::setBackLeftView()
+{
+    m_xRotTarget = 0;
+    m_yRotTarget = m_yRot > 135 ? 315 : -45;
+    animate();
+}
+
+void GLWidget::setBackRightView()
+{
+    m_xRotTarget = 0;
+    m_yRotTarget = m_yRot > 225 ? 405 : 135;
+    animate();
+}
+
+void GLWidget::setBackBottomView()
+{
+    m_xRotTarget = -45;
+    m_yRotTarget = 180;
+    animate();
+}
+
+void GLWidget::setLeftTopView()
+{
+    m_xRotTarget = 45;
+    m_yRotTarget = m_yRot > 90 ? 270 : -90;
+    animate();
+}
+
+// ustaw. między setLeft a setFront
+void GLWidget::setFrontLeftView()
+{
+    m_xRotTarget = 0;
+    m_yRotTarget = m_yRot > 45 ? 315 : -45;
+    animate();
+}
+
+void GLWidget::setLeftBottomView()
+{
+    m_xRotTarget = -45;
+    m_yRotTarget = m_yRot > 90 ? 270 : -90;
+    animate();
+}
+
+void GLWidget::setFrontRightView()
+{
+    m_xRotTarget = 0;
+    m_yRotTarget = m_yRot > 315 ? 495 : 45;
+    animate();
+}
+
+void GLWidget::setFrontBottomView()
+{
+    m_xRotTarget = -45;
+    m_yRotTarget = m_yRot > 0 ? 360 : 0;
+    animate();
+}
+
+void GLWidget::setRightBottomView()
+{
+    m_xRotTarget = -45;
+    m_yRotTarget = m_yRot > 270 ? 450 : 90;
+    animate();
+}
+
+void GLWidget::setRightTopView()
+{
+    m_xRotTarget = 45;
+    m_yRotTarget = m_yRot > 270 ? 450 : 90;
+    animate();
+}
+
+void GLWidget::setFrontTopView()
+{
+    m_xRotTarget = 45;
+    m_yRotTarget = m_yRot > 0 ? 360 : 0;
+    animate();
+}
+
+void GLWidget::setBackTopView()
+{
+    m_xRotTarget = 45;
+    m_yRotTarget = 180;
+    animate();
+}
+
 void GLWidget::setLeftView()
 {
     m_xRotTarget = 0;
@@ -491,6 +576,11 @@ void GLWidget::set2DView()
 void GLWidget::setColorText(const QColor &colorText)
 {
     m_colorText = colorText;
+}
+
+void GLWidget::setPointSize(double pointSize)
+{
+
 }
 
 void GLWidget::setColorBackground(const QColor &colorBackground)
@@ -1015,6 +1105,42 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                 break;
             case CubeClickableFace::Right:
                 setRightView();
+                break;
+            case CubeClickableFace::BackLeft:
+                setBackLeftView();
+                break;
+            case CubeClickableFace::BackRight:
+                setBackRightView();
+                break;
+            case CubeClickableFace::FrontLeft:
+                setFrontLeftView();
+                break;
+            case CubeClickableFace::LeftBottom:
+                setLeftBottomView();
+                break;
+            case CubeClickableFace::FrontRight:
+                setFrontRightView();
+                break;
+            case CubeClickableFace::FrontBottom:
+                setFrontBottomView();
+                break;
+            case CubeClickableFace::RightBottom:
+                setRightBottomView();
+                break;
+            case CubeClickableFace::RightTop:
+                setRightTopView();
+                break;
+            case CubeClickableFace::FrontTop:
+                setFrontTopView();
+                break;
+            case CubeClickableFace::BackBottom:
+                setBackBottomView();
+                break;
+            case CubeClickableFace::LeftTop:
+                setLeftTopView();
+                break;
+            case CubeClickableFace::BackTop:
+                setBackTopView();
                 break;
             case CubeClickableFace::None:
                 break;
