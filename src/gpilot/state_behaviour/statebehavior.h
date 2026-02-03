@@ -117,6 +117,8 @@ class StateBehavior : public QObject
             return false;
         }
 
+        bool transitionToPreviousState();
+
         void setTimeout(int milliseconds, std::function<void()> callback = nullptr);
         virtual void timeout() {};
 

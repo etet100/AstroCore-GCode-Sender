@@ -151,6 +151,14 @@ bool StateBehavior::dataIsReset(QString data)
     return data.contains(re);
 }
 
+bool StateBehavior::transitionToPreviousState() {
+    if (m_previous) {
+        emit transition(this, m_previous);
+    }
+
+    return (bool) m_previous;
+}
+
 void StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
 {
     stopTimeoutTimer();

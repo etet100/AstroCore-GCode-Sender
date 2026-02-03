@@ -35,6 +35,15 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
     Q_UNUSED(cmdStatus);
     Q_UNUSED(fullResponse);
 
+    if (!cmdStatus.ok) {
+        qDebug() << "[GoToBehavior] Command Error:" << cmdStatus.errorCode;
+        log("Go to command failed with error " + QString::number(cmdStatus.errorCode), {"GoToBehavior"});
+
+        transitionToPreviousState();
+
+        return Result::Ok;
+    }
+
     qDebug() << "[GoToBehavior] Command Response:" << command << response;
 
     return Result::Ok;
@@ -45,7 +54,8 @@ StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, State
     qDebug() << "[GoToBehavior] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    QString cmd = QString("G1 X%1 Y%2 F%3")
+    // QString cmd = QString("G1 X%1 Y%2 F%3")
+    QString cmd = QString("$J=G90 X%1 Y%2 F%3")
         .arg(m_target.x())
         .arg(m_target.y())
         .arg(m_feedRate);
