@@ -13,7 +13,7 @@ GoToBehavior::GoToBehavior(QPointF target, int feedRate, QObject *parent)
 
 void GoToBehavior::onMachineState(MachineState state)
 {
-    if (m_stage == CommandSent && state == MachineState::Run) {
+    if (m_stage == CommandSent && (state == MachineState::Jog || state == MachineState::Run)) {
         m_stage = WaitingForMovementEnd;
         // // Movement completed, return to previous state or idle
         // if (m_previous) {
@@ -25,8 +25,15 @@ void GoToBehavior::onMachineState(MachineState state)
         m_stage = Completed;
         m_communicator->stopQueryingMachineState();
 
-        emit transition(this, new IdleBehavior(this));
+        transitionToPreviousState();
     }
+}
+
+void GoToBehavior::onAlarm(int code)
+{
+    qDebug() << "[GoToBehavior] Alarm during go to:" << code;
+
+    emit transition(this, new AlarmBehavior(code));
 }
 
 StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
@@ -61,6 +68,7 @@ StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, State
         .arg(m_feedRate);
 
     communicator->sendCommand(CommandSource::System, cmd, TABLE_INDEX_UI);
+    communicator->queryMachineState();
     communicator->startQueryingMachineState();
 
     m_stage = CommandSent;

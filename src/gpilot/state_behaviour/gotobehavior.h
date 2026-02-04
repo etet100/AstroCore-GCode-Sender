@@ -16,6 +16,7 @@ class GoToBehavior : public StateBehavior
         void onMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        void onAlarm(int code) override;
 
     protected:
         QString name() const override { return "GoToBehavior"; }
