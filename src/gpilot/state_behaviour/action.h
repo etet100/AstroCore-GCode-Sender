@@ -35,7 +35,10 @@ class Action
         Action(Type type);
         Type type() const { return m_type; }
         QString name() const {
-            return NAMES.value(static_cast<int>(m_type), "Unknown");
+            return NAMES.value(
+                static_cast<int>(m_type),
+                QString("Unknown: %1").arg(static_cast<int>(m_type))
+            );
         }
 
     private:
