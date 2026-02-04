@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>246</width>
-    <height>89</height>
+    <height>119</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,59 +47,15 @@
    <property name="spacing">
     <number>3</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="labelX">
-     <property name="text">
-      <string>X</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLabel" name="labelY">
-     <property name="text">
-      <string>Y</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="editZ"/>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="editY"/>
-   </item>
    <item row="1" column="0">
-    <widget class="QLineEdit" name="editX"/>
-   </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="labelZ">
+    <widget class="QLineEdit" name="editX">
      <property name="text">
-      <string>Z</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QLabel" name="labelProbe">
-     <property name="text">
-      <string>Probe</string>
+      <string>-5</string>
      </property>
     </widget>
    </item>
    <item row="1" column="3">
     <widget class="QLineEdit" name="editProbe"/>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Automatically set virtual limit:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="QLabel" name="labelActions">
-     <property name="text">
-      <string>Actions</string>
-     </property>
-    </widget>
    </item>
    <item row="3" column="3">
     <widget class="StyledToolButton" name="btnEStop">
@@ -117,29 +73,10 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="StyledToolButton" name="btnSet1">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="2" column="3">
+    <widget class="QLabel" name="labelActions">
      <property name="text">
-      <string>10mm</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="StyledToolButton" name="btnSet2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>50mm</string>
+      <string>Actions</string>
      </property>
     </widget>
    </item>
@@ -153,6 +90,131 @@
      </property>
      <property name="text">
       <string>100mm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="labelZ">
+     <property name="text">
+      <string>Z</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelX">
+     <property name="text">
+      <string>X</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="labelY">
+     <property name="text">
+      <string>Y</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="editZ">
+     <property name="text">
+      <string>5</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="StyledToolButton" name="btnSetHomeAbs">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Set absolute home position</string>
+     </property>
+     <property name="text">
+      <string>Home a</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="StyledToolButton" name="btnSetHomeRel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Set relative home position</string>
+     </property>
+     <property name="text">
+      <string>Home r</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="3">
+    <widget class="QLabel" name="labelProbe">
+     <property name="text">
+      <string>Probe</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="editY">
+     <property name="text">
+      <string>-5</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Automatically set virtual limit:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="StyledToolButton" name="btnLockProbe">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Lock probe at current height</string>
+     </property>
+     <property name="text">
+      <string>L.probe</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="StyledToolButton" name="btnResetProbe">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Reset probe position</string>
+     </property>
+     <property name="text">
+      <string>R.probe</string>
      </property>
     </widget>
    </item>

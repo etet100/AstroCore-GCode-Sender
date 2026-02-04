@@ -21,8 +21,12 @@ class PartMainVirtualSettings : public QWidget
         explicit PartMainVirtualSettings(QWidget *parent = nullptr);
         ~PartMainVirtualSettings();
 
-        void extracted();
         void deviceConfigurationReceived(PhysicalMachineConfiguration &machineConfiguration);
+
+    signals:
+        void lockProbeAtCurrentPosition();
+        void resetProbePosition();
+        void setHome(bool abs, double x, double y, double z);
 
     protected:
         void resizeEvent(QResizeEvent *event) override;

@@ -5,6 +5,8 @@
 #include "virtualconnection.h"
 #include <QDebug>
 #include <QUuid>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 VirtualConnection::VirtualConnection(QString deviceName, QObject *parent)
     : Connection(parent)
@@ -85,15 +87,78 @@ void VirtualConnection::sendLine(QString line)
     m_socket->flush();
 }
 
-void VirtualConnection::sendControlCommand(QString command)
+// void VirtualConnection::sendControlCommand(QString command)
+// {
+//     if (!m_controlSocket || !m_controlSocket->isOpen()) {
+//         qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+//         return;
+//     }
+
+//     qDebug() << "[IO][" + deviceName() + "]" << "Control >>" << command;
+//     m_controlSocket->flush();
+// }
+
+void VirtualConnection::sendControlCommand(QJsonObject cmd)
+{
+    QByteArray json = QJsonDocument(cmd).toJson(QJsonDocument::Compact);
+    json.append("\n");
+    m_controlSocket->write(json);
+    m_controlSocket->flush();
+
+    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Control >>" << QString::fromUtf8(json).trimmed();
+}
+
+void VirtualConnection::lockProbeAtCurrentPosition()
 {
     if (!m_controlSocket || !m_controlSocket->isOpen()) {
         qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+
         return;
     }
 
-    qDebug() << "[IO][" + deviceName() + "]" << "Control >>" << command;
-    m_controlSocket->flush();
+    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Locking probe at current position.";
+
+    QJsonObject cmd;
+    cmd["cmd"] = "probe_at_current";
+
+    sendControlCommand(cmd);
+}
+
+void VirtualConnection::resetProbePosition()
+{
+    if (!m_controlSocket || !m_controlSocket->isOpen()) {
+        qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+
+        return;
+    }
+
+    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Resetting probe position.";
+
+    QJsonObject cmd;
+    cmd["cmd"] = "reset_probe";
+
+    sendControlCommand(cmd);
+}
+
+void VirtualConnection::setHome(bool abs, double x, double y, double z)
+{
+    if (!m_controlSocket || !m_controlSocket->isOpen()) {
+        qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+
+        return;
+    }
+
+    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Setting home position to"
+             << (abs ? "absolute" : "relative") << "(" << x << "," << y << "," << z << ")";
+
+    QJsonObject cmd;
+    cmd["cmd"] = "set_home";
+    cmd["abs"] = abs;
+    cmd["x"] = x;
+    cmd["y"] = y;
+    cmd["z"] = z;
+
+    sendControlCommand(cmd);
 }
 
 QString VirtualConnection::deviceName() const
@@ -107,7 +172,7 @@ void VirtualConnection::cleanupThread()
         return;
     }
 
-    qDebug() << "[IO][" << deviceName() << "]" << "Stopping thread...";
+    qDebug() << "[IO][" + deviceName() + "]" << "Stopping thread...";
 
     if (!m_thread->wait(1500)) {
         m_thread->terminate();
@@ -123,7 +188,7 @@ void VirtualConnection::close()
 
 void VirtualConnection::cleanup()
 {
-    qDebug() << "[IO][" << deviceName() << "]" << "Closing connection";
+    qDebug() << "[IO][" + deviceName() + "]" << "Closing connection";
 
     if (m_state == ConnectionState::Disconnected) {
         return;

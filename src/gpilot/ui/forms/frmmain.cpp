@@ -394,6 +394,24 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         "Virtual uCNC settings",
         m_partMainVirtualSettings
     );
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::lockProbeAtCurrentPosition, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->lockProbeAtCurrentPosition();
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::resetProbePosition, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->resetProbePosition();
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setHome, this, [this](bool abs, double x, double y, double z) {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->setHome(abs, x, y, z);
+        }
+    });
 
     appendSpacer(
         ui->scrollContentsDevice

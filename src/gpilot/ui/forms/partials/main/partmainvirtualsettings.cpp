@@ -11,6 +11,15 @@ PartMainVirtualSettings::PartMainVirtualSettings(QWidget *parent)
     , ui(new Ui::partMainVirtualSettings)
 {
     ui->setupUi(this);
+
+    connect(ui->btnLockProbe, &StyledToolButton::clicked, this, &PartMainVirtualSettings::lockProbeAtCurrentPosition);
+    connect(ui->btnResetProbe, &StyledToolButton::clicked, this, &PartMainVirtualSettings::resetProbePosition);
+    connect(ui->btnSetHomeAbs, &StyledToolButton::clicked, this, [this]() {
+        emit setHome(true, ui->editX->text().toDouble(), ui->editY->text().toDouble(), ui->editZ->text().toDouble());
+    });
+    connect(ui->btnSetHomeRel, &StyledToolButton::clicked, this, [this]() {
+        emit setHome(false, ui->editX->text().toDouble(), ui->editY->text().toDouble(), ui->editZ->text().toDouble());
+    });
 }
 
 PartMainVirtualSettings::~PartMainVirtualSettings()

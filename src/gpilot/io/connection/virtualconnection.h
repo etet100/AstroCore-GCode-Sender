@@ -23,7 +23,11 @@ public:
     void sendByteArray(QByteArray byteArray) override;
     void sendLine(QString line) override;
     void close() override;
-    void sendControlCommand(QString command);
+
+    // Control commands
+    void lockProbeAtCurrentPosition();
+    void resetProbePosition();
+    void setHome(bool abs, double x, double y, double z);
 
 protected:
     virtual QString deviceName() const;
@@ -38,6 +42,9 @@ protected:
     QString m_incoming;
     QAtomicInt m_stopFlag;
     QString m_deviceName;
+
+    // void sendControlCommand(QString command);
+    void sendControlCommand(QJsonObject cmd);
 
 private:
     void flushOutgoingData();
