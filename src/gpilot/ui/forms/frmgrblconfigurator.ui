@@ -3,7 +3,7 @@
  <class>frmGrblConfigurator</class>
  <widget class="QDialog" name="frmGrblConfigurator">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -32,7 +32,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="btnRefresh">
        <property name="text">
         <string>Refresh</string>
        </property>
@@ -47,7 +47,7 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="text">
         <string>Loading...</string>
@@ -60,13 +60,13 @@
         <bool>true</bool>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
        </property>
        <property name="centerButtons">
         <bool>false</bool>
@@ -119,7 +119,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>btnRefresh</sender>
    <signal>clicked()</signal>
    <receiver>frmGrblConfigurator</receiver>
    <slot>onUpdateClicked()</slot>

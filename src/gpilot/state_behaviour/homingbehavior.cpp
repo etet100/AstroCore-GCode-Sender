@@ -92,3 +92,12 @@ void HomingBehavior::onAlarm(int code)
 
     emit transition(this, new AlarmBehavior(code));
 }
+
+bool HomingBehavior::action(const Action &action)
+{
+    if (handleMachineConfigurationActions(action)) {
+        return true;
+    }
+
+    return StateBehavior::action(action);
+}

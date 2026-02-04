@@ -105,6 +105,8 @@ class StateBehavior : public QObject
         QList<StateResponseCallback> m_stateResponseCallbacks;
 
         virtual QString name() const = 0;
+        bool handleMachineConfigurationActions(const Action &action);
+        bool handleSaveMachineConfigurationParamAction(const Action &action);
         void stopTimer();
         void stopTimeoutTimer();
         void log(QString message, QStringList context = QStringList());

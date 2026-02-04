@@ -347,14 +347,9 @@ void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
 {
     Q_UNUSED(configuration);
 
-    QMap<int, double> rawConfiguration = configuration.raw();
+    disconnectConfReceivedEvent();
 
-    disconnect(
-        m_communicator,
-        &Communicator::machineConfigurationReceived,
-        this,
-        &FrmGrblConfigurator::onConfigurationReceived
-    );
+    QMap<int, double> rawConfiguration = configuration.raw();
 
     if (m_isSaving) {
         m_isSaving = false;
@@ -407,6 +402,9 @@ void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
             }
         }
     }
+
+    m_updating = false;
+    ui->btnRefresh->setEnabled(true);
 }
 
 void FrmGrblConfigurator::onUpdateClicked()
@@ -440,9 +438,21 @@ void FrmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
     }
 }
 
+void FrmGrblConfigurator::disconnectConfReceivedEvent()
+{
+    disconnect(
+        m_communicator,
+        &Communicator::machineConfigurationReceived,
+        this,
+        &FrmGrblConfigurator::onConfigurationReceived
+        );
+}
+
 void FrmGrblConfigurator::update()
 {
-    setInfo("Updating...", Qt::red);
+    m_updating = true;
+    setInfo("Updating...", Qt::blue);
+    ui->btnRefresh->setEnabled(false);
 
     connect(
         m_communicator,
@@ -450,8 +460,18 @@ void FrmGrblConfigurator::update()
         this,
         &FrmGrblConfigurator::onConfigurationReceived
     );
-    QTimer::singleShot(100, this, [this]() {
+    QTimer::singleShot(50, this, [this]() {
         m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
+    });
+    QTimer::singleShot(250, this, [this]() {
+        if (!m_updating) {
+            return;
+        }
+
+        disconnectConfReceivedEvent();
+        m_updating = false;
+        setInfo("Error: No response from machine", Qt::red);
+        ui->btnRefresh->setEnabled(true);
     });
 }
 

@@ -200,3 +200,28 @@ bool StateBehavior::action(const Action &action)
 
     return false;
 }
+
+bool StateBehavior::handleMachineConfigurationActions(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::QueryMachineConfiguration:
+            m_communicator->queryMachineConfiguration();
+            return true;
+
+        case Action::Type::SaveMachineConfigurationParam:
+            return handleSaveMachineConfigurationParamAction(action);
+
+        default:
+            return false;
+    }
+}
+
+bool StateBehavior::handleSaveMachineConfigurationParamAction(const Action &action)
+{
+    SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
+    QString command = QString("$%1=%2").arg(saveAction.index()).arg(saveAction.value());
+    qDebug() << "[" << name() << "] Saving machine configuration parameter:" << command;
+    m_communicator->sendCommand(CommandSource::System, command);
+
+    return true;
+}

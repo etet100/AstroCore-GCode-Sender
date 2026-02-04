@@ -50,6 +50,7 @@ class FrmGrblConfigurator : public QDialog
         Communicator *m_communicator;
         QMap<int, double> m_currentSettings;
         bool m_isSaving = false;
+        bool m_updating = false;
         void setInfo(QString text, QColor color);
         bool m_firstShow = true;
         QMap<Axis, CBaseProperty*> addAxesProperty(CPropertyHeader *, ConfigEntry);
@@ -60,10 +61,12 @@ class FrmGrblConfigurator : public QDialog
         void setSettingsBit(int, int, bool);
         void accept() override;
         void findParametersToBeSaved(QMap<int, double>);
+        void update();
+
+        void disconnectConfReceivedEvent();
 
     private slots:
         void onConfigurationReceived(PhysicalMachineConfiguration);
-        void update();
         void onUpdateClicked();
         void itemChanged(QTreeWidgetItem *item, int column);
 };

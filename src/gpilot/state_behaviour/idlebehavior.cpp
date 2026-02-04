@@ -59,22 +59,14 @@ StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAt
 
 bool IdleBehavior::doAction(const Action &action)
 {
+    if (handleMachineConfigurationActions(action)) {
+        return true;
+    }
+
     switch (action.type()) {
-        case Action::Type::QueryMachineConfiguration:
-            m_communicator->queryMachineConfiguration();
-            return true;
-
-        case Action::Type::SaveMachineConfigurationParam:
-            {
-                SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
-                QString command = QString("$%1=%2").arg(saveAction.index()).arg(saveAction.value());
-                qDebug() << "[IdleBehavior] Saving machine configuration parameter:" << command;
-                m_communicator->sendCommand(CommandSource::System, command);
-            }
-            return true;
-
         case Action::Type::Home:
             emit transition(this, new HomingBehavior());
+
             return true;
 
         case Action::Type::Run:
@@ -109,6 +101,7 @@ bool IdleBehavior::doAction(const Action &action)
 
         case Action::Type::Probe:
             emit transition(this, new ProbingBehavior());
+
             return true;
     }
 

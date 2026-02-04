@@ -98,13 +98,13 @@ void AlarmBehavior::unlock()
 
 bool AlarmBehavior::doAction(const Action &action)
 {
+    if (handleMachineConfigurationActions(action)) {
+        return true;
+    }
+
     switch (action.type()) {
         case Action::Type::Unlock:
             unlock();
-            return true;
-
-        case Action::Type::QueryMachineConfiguration:
-            m_communicator->queryMachineConfiguration();
             return true;
     }
 
