@@ -199,14 +199,24 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
         if (dir != JoggindDir::None) {
             ConfigurationJogging& jogging = m_configuration.joggingModule();
-            JoggingBehavior *joggingBehavior = new JoggingBehavior(
+            // JoggingBehavior *joggingBehavior = new JoggingBehavior(
+            //     vector,
+            //     jogging.step(),
+            //     jogging.continuous(),
+            //     jogging.feed(),
+            //     jogging.finalFeedZ()
+            // );
+            // m_communicator->execute(
+
+            //     );
+
+            m_communicator->sb()->action(JoggingAction(
                 vector,
                 jogging.step(),
                 jogging.continuous(),
                 jogging.feed(),
                 jogging.finalFeedZ()
-            );
-            m_communicator->execute(joggingBehavior);
+            ));
         }
     });
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
@@ -307,7 +317,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         dialog->open();
     });
     connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
-        m_communicator->execute(new GoToBehavior(pos, m_configuration.joggingModule().feed()));
+        m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
 
     // Initialize program models in PartMainProgram
@@ -454,9 +464,6 @@ void FrmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
-    // connect(m_communicator, &Communicator::statusReceived, this, [this]() {
-    //     jogContinuous();
-    // });
     connect(m_communicator, &Communicator::stateBehaviorChanged, this, &FrmMain::onStateBehaviorChanged);
     connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
         ui->state->setConName(connection->name());
@@ -2531,7 +2538,7 @@ void FrmMain::applySettings()
         initializeConnection(m_configuration.connectionModule().connectionMode());
 
         if (m_communicator->connection()) {
-            if (!m_communicator->execute(new ReconnectingBehavior(m_connection))) {
+            if (!m_communicator->startReconnecting(m_connection)) {
                 ui->console->appendSystem("Couldn't update connection. Restart application.");
             }
         } else {

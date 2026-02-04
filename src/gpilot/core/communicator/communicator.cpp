@@ -6,6 +6,7 @@
 #include <QTextCursor>
 #include <QRegularExpression>
 #include "state_behaviour/initializationbehavior.h"
+#include "state_behaviour/reconnectingbehavior.h"
 #include "state_behaviour/homingbehavior.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 
@@ -347,6 +348,11 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     emit connectionChanged(m_connection);
 
     return true;
+}
+
+bool Communicator::startReconnecting(Connection *connection)
+{
+    return execute(new ReconnectingBehavior(connection));
 }
 
 StateBehavior *Communicator::sb() const

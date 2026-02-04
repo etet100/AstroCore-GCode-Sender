@@ -84,6 +84,29 @@ bool IdleBehavior::doAction(const Action &action)
             }
             return true;
 
+        case Action::Type::Jog:
+            {
+                JoggingAction joggingAction = static_cast<const JoggingAction&>(action);
+                emit transition(
+                    this,
+                    new JoggingBehavior(
+                        joggingAction.vector(),
+                        joggingAction.distance(),
+                        joggingAction.continuous(),
+                        joggingAction.feedRate(),
+                        joggingAction.feedRateZ()
+                    )
+                );
+            }
+            return true;
+
+        case Action::Type::GoTo:
+            {
+                GoToAction goToAction = static_cast<const GoToAction&>(action);
+                emit transition(this, new GoToBehavior(goToAction.target(), goToAction.feedRate()));
+            }
+            return true;
+
         case Action::Type::Probe:
             emit transition(this, new ProbingBehavior());
             return true;

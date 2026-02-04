@@ -7,6 +7,8 @@
 
 #include <QMap>
 #include <QString>
+#include <QPointF>
+#include <QVector3D>
 #include "core/gcode/gcode.h"
 
 class Action
@@ -22,6 +24,7 @@ class Action
             FeedHold,
             CycleStart,
             Jog,
+            GoTo,
             Home,
             Probe,
             Unlock,
@@ -66,6 +69,42 @@ class SaveMachineConfigurationParamAction : public Action
     private:
         int m_index;
         double m_value;
+};
+
+class JoggingAction : public Action
+{
+    public:
+        JoggingAction(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ)
+            : Action(Action::Type::Jog), m_vector(vector), m_distance(distance), m_continuous(continuous), m_feedRate(feedRate), m_feedRateZ(feedRateZ) {
+        }
+
+        QVector3D vector() const { return m_vector; }
+        double distance() const { return m_distance; }
+        bool continuous() const { return m_continuous; }
+        int feedRate() const { return m_feedRate; }
+        int feedRateZ() const { return m_feedRateZ; }
+
+    private:
+        QVector3D m_vector;
+        double m_distance;
+        bool m_continuous;
+        int m_feedRate;
+        int m_feedRateZ;
+};
+
+class GoToAction : public Action
+{
+    public:
+        GoToAction(const QPointF &target, int feedRate)
+            : Action(Action::Type::GoTo), m_target(target), m_feedRate(feedRate) {
+        }
+
+        QPointF target() const { return m_target; }
+        int feedRate() const { return m_feedRate; }
+
+    private:
+        QPointF m_target;
+        int m_feedRate;
 };
 
 #endif // ACTION_H

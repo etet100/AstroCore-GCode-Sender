@@ -43,7 +43,9 @@ class Communicator : public QObject
         void abort();
         // may be used to set connection for the first time, if m_connection is no null,
         // ReconnectingBehavior should be used instead!!
+
         bool setConnection(Connection *, bool force);
+        bool startReconnecting(Connection *connection);
         StateBehavior *sb() const;
         // bool openConnection();
         Connection* connection();
@@ -61,7 +63,6 @@ class Communicator : public QObject
             return isSenderState(state) || isSenderState(args...);
         }
         // void probe();
-        bool execute(StateBehavior *stateBehaviour, bool force = false);
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
@@ -126,6 +127,7 @@ class Communicator : public QObject
         //
         int m_lastAlarmCode = 0;
 
+        bool execute(StateBehavior *stateBehaviour, bool force = false);
         void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
         void restoreOffsets();
