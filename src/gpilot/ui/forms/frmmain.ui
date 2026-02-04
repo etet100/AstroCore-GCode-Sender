@@ -163,97 +163,6 @@ QSlider::handle:horizontal:hover {
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1469</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <widget class="QMenu" name="menuRecent">
-     <property name="title">
-      <string>&amp;Recent files</string>
-     </property>
-    </widget>
-    <addaction name="actFileNew"/>
-    <addaction name="actFileOpen"/>
-    <addaction name="menuRecent"/>
-    <addaction name="separator"/>
-    <addaction name="actFileSave"/>
-    <addaction name="actFileSaveAs"/>
-    <addaction name="actFileSaveTransformedAs"/>
-    <addaction name="separator"/>
-    <addaction name="actFileExit"/>
-   </widget>
-   <widget class="QMenu" name="menuService">
-    <property name="title">
-     <string>&amp;Service</string>
-    </property>
-    <addaction name="actServiceSettings"/>
-    <addaction name="actServiceConfigureGRBL"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>&amp;Help</string>
-    </property>
-    <addaction name="actAbout"/>
-    <addaction name="actDebug"/>
-   </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>&amp;View</string>
-    </property>
-    <widget class="QMenu" name="menuViewWindows">
-     <property name="title">
-      <string>&amp;Windows</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuViewPanels">
-     <property name="title">
-      <string>&amp;Panels</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuUIScale">
-     <property name="title">
-      <string>UI scale</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuCentralWidget">
-     <property name="title">
-      <string>Central widget</string>
-     </property>
-     <addaction name="actViewCentralProgram"/>
-     <addaction name="actViewCentralVisualizer"/>
-    </widget>
-    <addaction name="menuViewWindows"/>
-    <addaction name="menuViewPanels"/>
-    <addaction name="separator"/>
-    <addaction name="actViewLockWindows"/>
-    <addaction name="actViewLockPanels"/>
-    <addaction name="separator"/>
-    <addaction name="actViewDarkMode"/>
-    <addaction name="menuUIScale"/>
-    <addaction name="menuCentralWidget"/>
-   </widget>
-   <widget class="QMenu" name="menuHeightmap">
-    <property name="title">
-     <string>Heightmap</string>
-    </property>
-    <addaction name="actHeightmapOpen2"/>
-    <addaction name="actHeightmapSave"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuHeightmap"/>
-   <addaction name="menuView"/>
-   <addaction name="menuService"/>
-   <addaction name="menuHelp"/>
-  </widget>
   <widget class="QDockWidget" name="dockModification">
    <property name="allowedAreas">
     <set>Qt::DockWidgetArea::LeftDockWidgetArea|Qt::DockWidgetArea::RightDockWidgetArea</set>
@@ -882,6 +791,99 @@ QSlider::handle:horizontal:hover {
     </layout>
    </widget>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1469</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menuRecent">
+     <property name="title">
+      <string>&amp;Recent files</string>
+     </property>
+    </widget>
+    <addaction name="actFileNew"/>
+    <addaction name="actFileOpen"/>
+    <addaction name="menuRecent"/>
+    <addaction name="separator"/>
+    <addaction name="actFileSave"/>
+    <addaction name="actFileSaveAs"/>
+    <addaction name="actFileSaveTransformedAs"/>
+    <addaction name="separator"/>
+    <addaction name="actFileSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actFileExit"/>
+   </widget>
+   <widget class="QMenu" name="menuService">
+    <property name="title">
+     <string>&amp;Service</string>
+    </property>
+    <addaction name="actServiceConfigureGRBL"/>
+    <addaction name="actServiceResetGRBLConfiguration"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actAbout"/>
+    <addaction name="actDebug"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menuViewWindows">
+     <property name="title">
+      <string>&amp;Windows</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuViewPanels">
+     <property name="title">
+      <string>&amp;Panels</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuUIScale">
+     <property name="title">
+      <string>UI scale</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuCentralWidget">
+     <property name="title">
+      <string>Central widget</string>
+     </property>
+     <addaction name="actViewCentralProgram"/>
+     <addaction name="actViewCentralVisualizer"/>
+    </widget>
+    <addaction name="menuViewWindows"/>
+    <addaction name="menuViewPanels"/>
+    <addaction name="separator"/>
+    <addaction name="actViewLockWindows"/>
+    <addaction name="actViewLockPanels"/>
+    <addaction name="separator"/>
+    <addaction name="actViewDarkMode"/>
+    <addaction name="menuUIScale"/>
+    <addaction name="menuCentralWidget"/>
+   </widget>
+   <widget class="QMenu" name="menuHeightmap">
+    <property name="title">
+     <string>Heightmap</string>
+    </property>
+    <addaction name="actHeightmapOpen2"/>
+    <addaction name="actHeightmapSave"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuHeightmap"/>
+   <addaction name="menuView"/>
+   <addaction name="menuService"/>
+   <addaction name="menuHelp"/>
+  </widget>
   <action name="actFileNew">
    <property name="text">
     <string>&amp;New</string>
@@ -917,7 +919,7 @@ QSlider::handle:horizontal:hover {
     <string>E&amp;xit</string>
    </property>
   </action>
-  <action name="actServiceSettings">
+  <action name="actFileSettings">
    <property name="text">
     <string>&amp;Settings</string>
    </property>
@@ -1156,6 +1158,11 @@ QSlider::handle:horizontal:hover {
   <action name="actHeightmapSave">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actServiceResetGRBLConfiguration">
+   <property name="text">
+    <string>Reset configuration</string>
    </property>
   </action>
  </widget>

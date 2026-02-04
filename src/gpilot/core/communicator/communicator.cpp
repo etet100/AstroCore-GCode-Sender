@@ -468,6 +468,11 @@ void Communicator::probe()
     m_sb->action(Action::Probe);
 }
 
+void Communicator::resetGRBLConfiguration()
+{
+    sendCommand(CommandSource::GeneralUI, "$RST=$", TABLE_INDEX_UI);
+}
+
 void Communicator::home()
 {
     m_sb->action(Action::Home);

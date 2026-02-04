@@ -39,6 +39,7 @@ class Communicator : public QObject
         void unlock();
         void home();
         void probe();
+        void resetGRBLConfiguration();
         // @TODO abort what?? find more self descriptive name, move to streamer??
         void abort();
         // may be used to set connection for the first time, if m_connection is no null,

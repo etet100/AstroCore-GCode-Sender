@@ -263,7 +263,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
         ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
     });
-    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::on_actFileNew_triggered);
+    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::fileNew);
     connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
     connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
     connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
@@ -305,6 +305,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->visualizer->initDrawables();
 
     initializeVisualizer();
+    initializeMainMenu();
 
     connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
         DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, m_heightmap.at(point), this);
@@ -486,6 +487,24 @@ void FrmMain::initializeVisualizer()
                 break;
         }
     });
+}
+
+void FrmMain::initializeMainMenu()
+{
+    connect(ui->actFileNew, &QAction::triggered, this, &FrmMain::fileNew);
+    connect(ui->actFileOpen, &QAction::triggered, this, &FrmMain::fileOpen);
+    connect(ui->actFileSave, &QAction::triggered, this, &FrmMain::fileSave);
+    connect(ui->actFileSaveAs, &QAction::triggered, this, &FrmMain::fileSaveAs);
+    connect(ui->actFileSaveTransformedAs, &QAction::triggered, this, &FrmMain::fileSaveTransformedAs);
+    connect(ui->actFileExit, &QAction::triggered, this, &FrmMain::fileExit);
+    connect(ui->actFileSettings, &QAction::triggered, this, &FrmMain::fileSettings);
+    connect(ui->actServiceConfigureGRBL, &QAction::triggered, this, &FrmMain::serviceConfigureGRBL);
+    connect(ui->actServiceResetGRBLConfiguration, &QAction::triggered, this, &FrmMain::serviceResetGRBLConfiguration);
+    connect(ui->actAbout, &QAction::triggered, this, &FrmMain::aboutShow);
+    connect(ui->actViewLockWindows, &QAction::toggled, this, &FrmMain::viewLockWindowsToggled);
+    connect(ui->actViewDarkMode, &QAction::toggled, this, &FrmMain::viewDarkModeToggled);
+    connect(ui->actViewCentralProgram, &QAction::toggled, this, &FrmMain::viewCentralProgramToggled);
+    connect(ui->actViewCentralVisualizer, &QAction::toggled, this, &FrmMain::viewCentralVisualizerToggled);
 }
 
 bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -680,7 +699,7 @@ QMenu *FrmMain::createPopupMenu()
     return menu;
 }
 
-void FrmMain::on_actFileNew_triggered()
+void FrmMain::fileNew()
 {
     if (!saveChanges(m_heightmapMode)) return;
 
@@ -691,31 +710,31 @@ void FrmMain::on_actFileNew_triggered()
     }
 }
 
-void FrmMain::on_actFileOpen_triggered()
+void FrmMain::fileOpen()
 {
     onFileOpen();
 }
 
-void FrmMain::on_actFileSave_triggered()
+void FrmMain::fileSave()
 {
     FilesManager& fm = FilesManager::instance();
     if (!m_heightmapMode) {
         // G-code saving
-        if (fm.gcodeOpened()) on_actFileSaveAs_triggered(); else {
+        if (fm.gcodeOpened()) fileSaveAs(); else {
             GCodeExporter exporter;
             exporter.exportToFile(m_program, fm.gcodeFilePath());
             fm.setGcodeModified(false);
         }
     } else {
         // Height map saving
-        if (fm.heightmapOpened()) on_actFileSaveAs_triggered(); else {
+        if (fm.heightmapOpened()) fileSaveAs(); else {
             HeightmapExporter exporter;
             exporter.exportToFile(m_heightmap, fm.heightmapFilePath());
         }
     }
 }
 
-void FrmMain::on_actFileSaveAs_triggered()
+void FrmMain::fileSaveAs()
 {
     FilesManager& fm = FilesManager::instance();
 
@@ -754,7 +773,7 @@ void FrmMain::on_actFileSaveAs_triggered()
     }
 }
 
-void FrmMain::on_actFileSaveTransformedAs_triggered()
+void FrmMain::fileSaveTransformedAs()
 {
     QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT)));
 
@@ -813,12 +832,12 @@ void FrmMain::clearRecentFiles()
     updateRecentFilesMenus();
 }
 
-void FrmMain::on_actFileExit_triggered()
+void FrmMain::fileExit()
 {
     close();
 }
 
-void FrmMain::on_actServiceSettings_triggered()
+void FrmMain::fileSettings()
 {
     QList<QAction*> acts = findChildren<QAction*>(QRegularExpression("act.*"));
 
@@ -883,21 +902,30 @@ void FrmMain::on_actServiceSettings_triggered()
     }
 }
 
-void FrmMain::on_actServiceConfigureGRBL_triggered()
+void FrmMain::serviceConfigureGRBL()
 {
     FrmGrblConfigurator *form = new FrmGrblConfigurator(this, m_configuration.uiModule(), m_communicator);
     form->exec();
     form->deleteLater();
 }
 
-void FrmMain::on_actAbout_triggered()
+void FrmMain::serviceResetGRBLConfiguration()
+{
+    int res = QMessageBox::warning(this, this->windowTitle(), tr("This will reset GRBL configuration to defaults. Continue?"),
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (res == QMessageBox::No) return;
+
+    m_communicator->resetGRBLConfiguration();
+}
+
+void FrmMain::aboutShow()
 {
     FrmAbout *form = new FrmAbout(this);
     form->exec();
     form->deleteLater();
 }
 
-void FrmMain::on_actViewLockWindows_toggled(bool checked)
+void FrmMain::viewLockWindowsToggled(bool checked)
 {
     QList<QDockWidget*> dl = findChildren<QDockWidget*>();
 
@@ -908,19 +936,19 @@ void FrmMain::on_actViewLockWindows_toggled(bool checked)
     m_configuration.uiModule().setLockWindows(checked);
 }
 
-void FrmMain::on_actViewDarkMode_toggled(bool checked)
+void FrmMain::viewDarkModeToggled(bool checked)
 {
     m_configuration.uiModule().setDarkMode(checked);
     ThemeManager::instance().setDark(checked);
 }
 
-void FrmMain::on_actViewCentralProgram_toggled(bool checked)
+void FrmMain::viewCentralProgramToggled(bool checked)
 {
     centralWidgetActionTriggered(checked);
 }
 
 // Visualiser in central widget, program docked, hide empty visualizer dock
-void FrmMain::on_actViewCentralVisualizer_toggled(bool checked)
+void FrmMain::viewCentralVisualizerToggled(bool checked)
 {
     centralWidgetActionTriggered(checked);
 }
@@ -2969,7 +2997,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
         int res = QMessageBox::warning(this, this->windowTitle(), tr("G-code program file was changed. Save?"),
                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (res == QMessageBox::Cancel) return false;
-        else if (res == QMessageBox::Yes) on_actFileSave_triggered();
+        else if (res == QMessageBox::Yes) fileSave();
 
         fm.setGcodeModified(false);
     }
@@ -2980,7 +3008,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
         if (res == QMessageBox::Cancel) return false;
         else if (res == QMessageBox::Yes) {
             m_heightmapMode = true;
-            on_actFileSave_triggered();
+            fileSave();
             m_heightmapMode = heightMapMode;
             updateRecentFilesMenus(); // Restore g-code files recent menu
         }

@@ -102,22 +102,23 @@ signals:
     void pluginsLoaded();
 
 private slots:
-    void on_actFileNew_triggered();
-    void on_actFileOpen_triggered();
-    void on_actFileSave_triggered();
-    void on_actFileSaveAs_triggered();
-    void on_actFileSaveTransformedAs_triggered();
+    void fileNew();
+    void fileOpen();
+    void fileSave();
+    void fileSaveAs();
+    void fileSaveTransformedAs();
+    void fileExit();
+    void fileSettings();
+    void serviceConfigureGRBL();
+    void serviceResetGRBLConfiguration();
+    void aboutShow();
+    void viewLockWindowsToggled(bool checked);
+    void viewDarkModeToggled(bool checked);
+    void viewCentralProgramToggled(bool checked);
+    void viewCentralVisualizerToggled(bool checked);
     void on_actHeightmapOpen2_triggered();
     void on_actHeightmapSave_triggered();
     void clearRecentFiles();
-    void on_actFileExit_triggered();
-    void on_actServiceSettings_triggered();
-    void on_actServiceConfigureGRBL_triggered();
-    void on_actAbout_triggered();
-    void on_actViewLockWindows_toggled(bool checked);
-    void on_actViewDarkMode_toggled(bool checked);
-    void on_actViewCentralProgram_toggled(bool checked);
-    void on_actViewCentralVisualizer_toggled(bool checked);
     // UI Scale
     void decreaseUiScale();
     void increaseUiScale();
@@ -319,6 +320,7 @@ private:
 
     void initializeConnection(ConfigurationConnection::ConnectionMode mode);
     void initializeVisualizer();
+    void initializeMainMenu();
 
     void applySpindleConfiguration(ConfigurationMachine &machineConfiguration);
     void applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration);
