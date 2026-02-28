@@ -2,46 +2,38 @@
 // Copyright 2026 BTS
 
 #include "heightmaplinearinterpolator.h"
+#include <algorithm>
 
 HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
 {
 }
 
-// linear interpolation
 double HeightmapLinearInterpolator::interpolate(QPointF point) const
 {
-    // if (!m_heightmap.isInside(point)) {
-    //     return NAN;
-    // }
-
-    // return rand() % 500 / 100.0;
-
-    QSize gridSize = m_heightmap->gridSize();
-
-    // Get grid indices
-    // Let's assume that point value is in grid units
     auto [x, y] = point;
-        //m_heightmap.gridIndices(point);
 
-    // gridSize is a size
+    // Clamp coordinates to valid grid range
+    int xi = static_cast<int>(x);
+    int yi = static_cast<int>(y);
+    int xi1 = std::min(xi + 1, m_heightmap->gridWidth() - 1);
+    int yi1 = std::min(yi + 1, m_heightmap->gridHeight() - 1);
 
-    // double x0 = m_heightmap.startPos().x() + x * gridSize.width();
-    // double y0 = m_heightmap.startPos().y() + y * gridSize.height();
-    double x0 = x;
-    double y0 = y;
+    xi = std::clamp(xi, 0, m_heightmap->gridWidth() - 1);
+    yi = std::clamp(yi, 0, m_heightmap->gridHeight() - 1);
 
     // Z values at the corners of the grid cell
-    double z00 = m_heightmap->at((int) x, (int) y);
-    double z10 = m_heightmap->at((int) x + 1, (int) y);
-    double z01 = m_heightmap->at((int) x, (int) y + 1);
-    double z11 = m_heightmap->at((int) x + 1, (int) y + 1);
+    double z00 = m_heightmap->at(xi, yi);
+    double z10 = m_heightmap->at(xi1, yi);
+    double z01 = m_heightmap->at(xi, yi1);
+    double z11 = m_heightmap->at(xi1, yi1);
 
     // Calculate fractional offset in the grid
-    // double dx = (point.x() - x0) / gridSize.width();
-    // double dy = (point.y() - y0) / gridSize.height();
-    // double dx = point.x() - x0;
-    double dx = x - (int) x;
-    double dy = y - (int) y;
+    double dx = x - static_cast<double>(xi);
+    double dy = y - static_cast<double>(yi);
+
+    // Clamp fractional parts to [0, 1]
+    dx = std::clamp(dx, 0.0, 1.0);
+    dy = std::clamp(dy, 0.0, 1.0);
 
     // Divide rectangle into two triangles along diagonal (1,0)-(0,1)
     // This ensures proper interpolation when 4 points don't lie on same plane

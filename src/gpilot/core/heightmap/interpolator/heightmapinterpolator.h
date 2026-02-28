@@ -1,5 +1,5 @@
 // This file is a part of "G-Pilot" application.
-// Copyright 2024 BTS
+// Copyright 2026 BTS
 
 #ifndef HEIGHTMAPINTERPOLATOR_H
 #define HEIGHTMAPINTERPOLATOR_H

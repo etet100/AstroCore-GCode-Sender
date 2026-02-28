@@ -2,6 +2,8 @@
 // Copyright 2026 BTS
 
 #include "heightmapbilinearinterpolator.h"
+#include <algorithm>
+#include <cmath>
 
 HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
 {
@@ -9,41 +11,35 @@ HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* he
 
 double HeightmapBilinearInterpolator::interpolate(QPointF ptMm) const
 {
-    // if (!m_heightmap.isInside(ptMm)) {
-    //     return NAN;
-    // }
-
-    QSize gridSize = m_heightmap->gridSize();
-
-    // Take physical coordinates
     auto [x, y] = ptMm;
-    //m_heightmap.gridIndices(ptMm);
 
-    // double x0 = m_heightmap.startPos().x() + x * gridSize.width();
-    // double y0 = m_heightmap.startPos().y() + y * gridSize.height();
-    double x0 = x;
-    double y0 = y;
+    // Clamp coordinates to valid grid range
+    int xi = static_cast<int>(x);
+    int yi = static_cast<int>(y);
+    int xi1 = std::min(xi + 1, m_heightmap->gridWidth() - 1);
+    int yi1 = std::min(yi + 1, m_heightmap->gridHeight() - 1);
+
+    xi = std::clamp(xi, 0, m_heightmap->gridWidth() - 1);
+    yi = std::clamp(yi, 0, m_heightmap->gridHeight() - 1);
 
     // Z values at the corners of the grid cell
-    // double z00 = m_heightmap.at(x, y);
-    // double z10 = m_heightmap.at(x+1, y);
-    // double z01 = m_heightmap.at(x, y+1);
-    // double z11 = m_heightmap.at(x+1, y+1);
-    double z00 = m_heightmap->at((int) x, (int) y);
-    double z10 = m_heightmap->at((int) x + 1, (int) y);
-    double z01 = m_heightmap->at((int) x, (int) y + 1);
-    double z11 = m_heightmap->at((int) x + 1, (int) y + 1);
+    double z00 = m_heightmap->at(xi, yi);
+    double z10 = m_heightmap->at(xi1, yi);
+    double z01 = m_heightmap->at(xi, yi1);
+    double z11 = m_heightmap->at(xi1, yi1);
 
     // Calculate fractional offset in the grid
-    // double dx = (ptMm.x() - x0) / gridSize.width();
-    // double dy = (ptMm.y() - y0) / gridSize.height();
-    double dx = x - (int) x;
-    double dy = y - (int) y;
+    double dx = x - static_cast<double>(xi);
+    double dy = y - static_cast<double>(yi);
+
+    // Clamp fractional parts to [0, 1]
+    dx = std::clamp(dx, 0.0, 1.0);
+    dy = std::clamp(dy, 0.0, 1.0);
 
     // Bilinear interpolation
-    double z0 = z00 * (1 - dx) + z10 * dx;
-    double z1 = z01 * (1 - dx) + z11 * dx;
-    double z = z0 * (1 - dy) + z1 * dy;
+    double z0 = z00 * (1.0 - dx) + z10 * dx;
+    double z1 = z01 * (1.0 - dx) + z11 * dx;
+    double z = z0 * (1.0 - dy) + z1 * dy;
 
     return z;
 }
