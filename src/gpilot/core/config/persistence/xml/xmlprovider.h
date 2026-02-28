@@ -9,7 +9,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "../provider.h"
+#include "core/config/persistence/provider.h"
 
 class XmlProvider : public Provider
 {

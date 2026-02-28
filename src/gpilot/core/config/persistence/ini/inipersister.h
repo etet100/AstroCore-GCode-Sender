@@ -3,7 +3,7 @@
 
 #include <QSettings>
 #include <QObject>
-#include "../persister.h"
+#include "core/config/persistence/persister.h"
 
 class IniPersister : public Persister
 {

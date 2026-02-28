@@ -5,10 +5,10 @@
 #include "core/gcode/gcode.h"
 #include "core/config/configuration.h"
 #include "io/connection/connection.h"
-#include "scripting/scriptvars.h"
+#include "core/scripting/scriptvars.h"
 #include "core/machine/physicalmachineconfiguration.h"
 #include "core/jogger/jogger.h"
-#include "state_behaviour/statebehavior.h"
+#include "state_behavior/statebehavior.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -128,7 +128,7 @@ class Communicator : public QObject
         //
         int m_lastAlarmCode = 0;
 
-        bool execute(StateBehavior *stateBehaviour, bool force = false);
+        bool execute(StateBehavior *statebehavior, bool force = false);
         void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
         void restoreOffsets();

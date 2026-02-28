@@ -1,5 +1,5 @@
 #include "inipersister.h"
-#include "../../../globals.h"
+#include "core/globals.h"
 #include <QJsonDocument>
 #include <QGuiApplication>
 #include <QStringList>

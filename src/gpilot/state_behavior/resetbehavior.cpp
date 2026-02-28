@@ -5,7 +5,7 @@
 #include "core/globals.h"
 #include <QRegularExpression>
 #include "core/communicator/communicator.h"
-#include "state_behaviour/behaviors.h"
+#include "state_behavior/behaviors.h"
 
 ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -104,7 +104,7 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
         if (!cmdStatus.ok) {
             qDebug() << "[ResetBehavior] Error receiving offsets.";
             if (cmdStatus.errorCode != 7) {
-                emit transition(this, new ErrorBehaviour(cmdStatus.errorCode));
+                emit transition(this, new ErrorBehavior(cmdStatus.errorCode));
 
                 return Result::Ok;
             }

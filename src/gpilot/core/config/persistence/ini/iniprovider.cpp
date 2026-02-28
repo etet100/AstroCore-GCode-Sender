@@ -1,5 +1,5 @@
 #include "iniprovider.h"
-#include "../../../globals.h"
+#include "core/globals.h"
 #include "qguiapplication.h"
 #include <QDebug>
 

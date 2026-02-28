@@ -1,25 +1,25 @@
-#ifndef ERRORBEHAVIOUR_H
-#define ERRORBEHAVIOUR_H
+#ifndef ERRORBEHAVIOR_H
+#define ERRORBEHAVIOR_H
 
 #include "statebehavior.h"
 
-class ErrorBehaviour : public StateBehavior
+class ErrorBehavior : public StateBehavior
 {
     Q_OBJECT
 
     public:
-        explicit ErrorBehaviour(int code, QObject *parent = nullptr);
-        ~ErrorBehaviour();
+        explicit ErrorBehavior(int code, QObject *parent = nullptr);
+        ~ErrorBehavior();
 
         QString description() override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
 
     protected:
-        QString name() const override { return "ErrorBehaviour"; }
+        QString name() const override { return "ErrorBehavior"; }
 
     private:
         int m_errorCode;
 };
 
-#endif // ERRORBEHAVIOUR_H
+#endif // ERRORBEHAVIOR_H

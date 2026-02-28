@@ -55,7 +55,7 @@ class StateBehavior : public QObject
         virtual Result onExit(StateBehavior *next = nullptr);
 
         virtual void onAlarm(int code) {
-            qDebug() << QString("[%1] Alarm: %2").arg(this->name()).arg(code);
+            qDebug() << QString("[%1] Alarm: %2").arg(this->name()).arg(ALARMS.value(code, QString("Unknown (%1)").arg(code)));
         }
 
         virtual void onMachineStateChanged(MachineState state) {

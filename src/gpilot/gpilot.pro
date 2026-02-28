@@ -135,14 +135,17 @@ SOURCES += main.cpp\
     io/connection/virtualfluidncconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
-    state_behaviour/action.cpp \
-    state_behaviour/connectingbehavior.cpp \
-    state_behaviour/errorbehaviour.cpp \
-    state_behaviour/gotobehavior.cpp \
-    state_behaviour/probingbehavior.cpp \
-    state_behaviour/reconnectingbehavior.cpp \
-    state_behaviour/resetbehavior.cpp \
-    state_behaviour/scantablebehavior.cpp \
+    state_behavior/action.cpp \
+    state_behavior/checkmodebehavior.cpp \
+    state_behavior/connectingbehavior.cpp \
+    state_behavior/errorbehavior.cpp \
+    state_behavior/gotobehavior.cpp \
+    state_behavior/holdbehavior.cpp \
+    state_behavior/probingbehavior.cpp \
+    state_behavior/reconnectingbehavior.cpp \
+    state_behavior/resetbehavior.cpp \
+    state_behavior/scantablebehavior.cpp \
+    state_behavior/toolchangebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
     ui/drawers/cubedrawer.cpp \
@@ -203,17 +206,17 @@ SOURCES += main.cpp\
     core/gcode/parser/gcodeviewparser.cpp \
     core/gcode/parser/linesegment.cpp \
     core/gcode/parser/pointsegment.cpp \
-    state_behaviour/alarmbehavior.cpp \
-    # state_behaviour/checkmodebehavior.cpp \
-    state_behaviour/homingbehavior.cpp \
-    state_behaviour/idlebehavior.cpp \
-    state_behaviour/initializationbehavior.cpp \
-    state_behaviour/joggingbehavior.cpp \
-    state_behaviour/pausebehavior.cpp \
-    # state_behaviour/probingbehavior.cpp \
-    state_behaviour/runningbehavior.cpp \
-    state_behaviour/statebehavior.cpp \
-    # state_behaviour/toolchangebehavior.cpp \
+    state_behavior/alarmbehavior.cpp \
+    # state_behavior/checkmodebehavior.cpp \
+    state_behavior/homingbehavior.cpp \
+    state_behavior/idlebehavior.cpp \
+    state_behavior/initializationbehavior.cpp \
+    state_behavior/joggingbehavior.cpp \
+    state_behavior/pausebehavior.cpp \
+    # state_behavior/probingbehavior.cpp \
+    state_behavior/runningbehavior.cpp \
+    state_behavior/statebehavior.cpp \
+    # state_behavior/toolchangebehavior.cpp \
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
@@ -222,7 +225,7 @@ SOURCES += main.cpp\
     ui/utils/windowstaskbar.cpp \
     ui/widgets/dockabletitle.cpp \
     ui/widgets/filedropoverlay.cpp \
-    utils/openaimanager.cpp \
+    modules/ai/openaimanager.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
     ui/widgets/comboboxkey.cpp \
@@ -231,7 +234,7 @@ SOURCES += main.cpp\
     ui/widgets/glpalette.cpp \
     ui/widgets/glwidget.cpp \
     ui/drawers/selectiondrawer.cpp \
-    scripting/scriptvars.cpp \
+    core/scripting/scriptvars.cpp \
     ui/widgets/dropwidget.cpp \
     ui/widgets/glzminmax.cpp \
     ui/widgets/qpushbuttonwithmenu.cpp
@@ -289,14 +292,17 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualfluidncconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
-    state_behaviour/action.h \
-    state_behaviour/connectingbehavior.h \
-    state_behaviour/errorbehaviour.h \
-    state_behaviour/gotobehavior.h \
-    state_behaviour/probingbehavior.h \
-    state_behaviour/reconnectingbehavior.h \
-    state_behaviour/resetbehavior.h \
-    state_behaviour/scantablebehavior.h \
+    state_behavior/action.h \
+    state_behavior/checkmodebehavior.h \
+    state_behavior/connectingbehavior.h \
+    state_behavior/errorbehavior.h \
+    state_behavior/gotobehavior.h \
+    state_behavior/holdbehavior.h \
+    state_behavior/probingbehavior.h \
+    state_behavior/reconnectingbehavior.h \
+    state_behavior/resetbehavior.h \
+    state_behavior/scantablebehavior.h \
+    state_behavior/toolchangebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
     ui/drawers/cube.h \
@@ -359,17 +365,17 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/parser/gcodeviewparser.h \
     core/gcode/parser/linesegment.h \
     core/gcode/parser/pointsegment.h \
-    state_behaviour/alarmbehavior.h \
-    state_behaviour/behaviors.h \
-    # state_behaviour/checkmodebehavior.h \
-    state_behaviour/homingbehavior.h \
-    state_behaviour/idlebehavior.h \
-    state_behaviour/initializationbehavior.h \
-    state_behaviour/joggingbehavior.h \
-    state_behaviour/pausebehavior.h \
-    # state_behaviour/probingbehavior.h \
-    state_behaviour/runningbehavior.h \
-    state_behaviour/statebehavior.h \
+    state_behavior/alarmbehavior.h \
+    state_behavior/behaviors.h \
+    # state_behavior/checkmodebehavior.h \
+    state_behavior/homingbehavior.h \
+    state_behavior/idlebehavior.h \
+    state_behavior/initializationbehavior.h \
+    state_behavior/joggingbehavior.h \
+    state_behavior/pausebehavior.h \
+    # state_behavior/probingbehavior.h \
+    state_behavior/runningbehavior.h \
+    state_behavior/statebehavior.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
@@ -379,7 +385,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/dockabletitle.h \
     ui/widgets/filedropoverlay.h \
     utils/interpolation.h \
-    utils/openaimanager.h \
+    modules/ai/openaimanager.h \
     utils/utils.h \
     utils/validators.h \
     ui/widgets/combobox.h \
@@ -389,7 +395,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/glpalette.h \
     ui/widgets/glwidget.h \
     ui/drawers/selectiondrawer.h \
-    scripting/scriptvars.h \
+    core/scripting/scriptvars.h \
     ui/widgets/dropwidget.h \
     ui/widgets/glzminmax.h \
     ui/widgets/qpushbuttonwithmenu.h

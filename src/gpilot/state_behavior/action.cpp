@@ -23,4 +23,5 @@ const QMap<int, QString> Action::NAMES = {
     {Unlock, "Unlock"},
     {QueryMachineConfiguration, "QueryMachineConfiguration"},
     {SaveMachineConfigurationParam, "SaveMachineConfigurationParam"},
+    {ToolChange, "Tool Change"},
 };

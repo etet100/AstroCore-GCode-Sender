@@ -5,7 +5,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
-#include "../provider.h"
+#include "core/config/persistence/provider.h"
 
 class JsonProvider : public Provider
 {

@@ -5,9 +5,9 @@
 #include <QMessageBox>
 #include <QTextCursor>
 #include <QRegularExpression>
-#include "state_behaviour/initializationbehavior.h"
-#include "state_behaviour/reconnectingbehavior.h"
-#include "state_behaviour/homingbehavior.h"
+#include "state_behavior/initializationbehavior.h"
+#include "state_behavior/reconnectingbehavior.h"
+#include "state_behavior/homingbehavior.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 
 Communicator::Communicator(

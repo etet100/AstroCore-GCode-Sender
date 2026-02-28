@@ -79,6 +79,10 @@ enum class GrblError {
 #define GRBL_ALARM_HOMING_FAIL_2        7
 #define GRBL_ALARM_HOMING_FAIL_3        8
 #define GRBL_ALARM_HOMING_FAIL_4        9
+#define UCNC_ALARM_FAILED_AUTOLEVEL     10
+#define UCNC_ALARM_LIMITS_ACTIVE        11
+#define UCNC_ALARM_TOOL_SYNC_FAIL       12
+#define UCNC_ALARM_LIMITS_TRIPPED       13
 
 enum class GrblAlarm {
     HardLimits = 1,

@@ -5,7 +5,7 @@
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
 #include <QRegularExpression>
-#include "state_behaviour/resetbehavior.h"
+#include "state_behavior/resetbehavior.h"
 
 const QMap<int, QString> StateBehavior::ERRORS = {
     { GRBL_ERROR_EXPECTED_COMMAND_LETTER,     "Missing letter" },
@@ -26,16 +26,6 @@ const QMap<int, QString> StateBehavior::ERRORS = {
     { GRBL_ERROR_UNDEFINED_FEED_RATE,         "No feed rate" }
 };
 
-#define GRBL_ALARM_HARD_LIMITS          1
-#define GRBL_ALARM_SOFT_LIMITS          2
-#define GRBL_ALARM_RESET                3
-#define GRBL_ALARM_PROBE_FAIL_1         4
-#define GRBL_ALARM_PROBE_FAIL_2         5
-#define GRBL_ALARM_HOMING_FAIL_1        6
-#define GRBL_ALARM_HOMING_FAIL_2        7
-#define GRBL_ALARM_HOMING_FAIL_3        8
-#define GRBL_ALARM_HOMING_FAIL_4        9
-
 const QMap<int, QString> StateBehavior::ALARMS = {
     { GRBL_ALARM_HARD_LIMITS,      "Hard limits" },
     { GRBL_ALARM_SOFT_LIMITS,      "Soft limits" },
@@ -45,7 +35,11 @@ const QMap<int, QString> StateBehavior::ALARMS = {
     { GRBL_ALARM_HOMING_FAIL_1,    "Homing fail" },
     { GRBL_ALARM_HOMING_FAIL_2,    "Homing fail" },
     { GRBL_ALARM_HOMING_FAIL_3,    "Homing fail" },
-    { GRBL_ALARM_HOMING_FAIL_4,    "Homing fail" }
+    { GRBL_ALARM_HOMING_FAIL_4,    "Homing fail" },
+    { UCNC_ALARM_FAILED_AUTOLEVEL, "Auto-level fail (uCNC)" },
+    { UCNC_ALARM_LIMITS_ACTIVE,    "Limits active (uCNC)" },
+    { UCNC_ALARM_TOOL_SYNC_FAIL,   "Tool sync fail (uCNC)" },
+    { UCNC_ALARM_LIMITS_TRIPPED,   "Limits tripped (uCNC)" }
 };
 
 StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)

@@ -3,7 +3,7 @@
 
 #include "reconnectingbehavior.h"
 #include "core/communicator/communicator.h"
-#include "state_behaviour/behaviors.h"
+#include "state_behavior/behaviors.h"
 
 ReconnectingBehavior::ReconnectingBehavior(Connection *newConnection)
     : StateBehavior{nullptr}

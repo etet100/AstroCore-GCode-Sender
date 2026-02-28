@@ -43,7 +43,7 @@
 #include "styledtoolbutton.h"
 #include "ui/forms/frmsettings.h"
 #include "ui/forms/frmabout.h"
-#include "scripting/scriptvars.h"
+#include "core/scripting/scriptvars.h"
 #include "ui/widgets/dropwidget.h"
 #include "ui/utils/windowstaskbar.h"
 #include "ui/widgets/filedropoverlay.h"

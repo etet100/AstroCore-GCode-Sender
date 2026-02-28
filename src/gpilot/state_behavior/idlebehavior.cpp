@@ -4,7 +4,7 @@
 
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
-#include "state_behaviour/behaviors.h"
+#include "state_behavior/behaviors.h"
 
 IdleBehavior::IdleBehavior(QObject *parent)
     : StateBehavior{parent}
@@ -100,8 +100,26 @@ bool IdleBehavior::doAction(const Action &action)
             return true;
 
         case Action::Type::Probe:
-            emit transition(this, new ProbingBehavior());
+            {
+                // Use default parameters or extract from ProbeAction if provided
+                ProbingBehavior::ProbeParameters params;
 
+                // Try to cast to ProbeAction to get custom parameters
+                const ProbeAction* probeAction = dynamic_cast<const ProbeAction*>(&action);
+                if (probeAction) {
+                    // Convert ProbeAction::ProbeParameters to ProbingBehavior::ProbeParameters
+                    auto actionParams = probeAction->params();
+                    params.fastFeedRate = actionParams.fastFeedRate;
+                    params.slowFeedRate = actionParams.slowFeedRate;
+                    params.maxDistance = actionParams.maxDistance;
+                    params.retractDistance = actionParams.retractDistance;
+                    params.safeDistance = actionParams.safeDistance;
+                    params.setZeroAtProbe = actionParams.setZeroAtProbe;
+                    params.useAbsolute = actionParams.useAbsolute;
+                }
+
+                emit transition(this, new ProbingBehavior(params));
+            }
             return true;
     }
 

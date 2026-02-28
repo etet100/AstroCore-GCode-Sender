@@ -1,5 +1,5 @@
 #include "jsonprovider.h"
-#include "../../../globals.h"
+#include "core/globals.h"
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QVariant>

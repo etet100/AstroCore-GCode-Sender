@@ -30,6 +30,7 @@ class Action
             Unlock,
             QueryMachineConfiguration,
             SaveMachineConfigurationParam,
+            ToolChange,
         };
 
         Action(Type type);
@@ -108,6 +109,32 @@ class GoToAction : public Action
     private:
         QPointF m_target;
         int m_feedRate;
+};
+
+// Forward declaration
+class ProbingBehavior;
+
+class ProbeAction : public Action
+{
+    public:
+        struct ProbeParameters {
+            double fastFeedRate = 200.0;
+            double slowFeedRate = 50.0;
+            double maxDistance = 30.0;
+            double retractDistance = 2.0;
+            double safeDistance = 5.0;
+            bool setZeroAtProbe = true;
+            bool useAbsolute = false;
+        };
+
+        ProbeAction(ProbeParameters params = ProbeParameters())
+            : Action(Action::Type::Probe), m_params(params) {
+        }
+
+        ProbeParameters params() const { return m_params; }
+
+    private:
+        ProbeParameters m_params;
 };
 
 #endif // ACTION_H

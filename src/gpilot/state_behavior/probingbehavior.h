@@ -12,6 +12,7 @@ class ProbingBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
         void onAlarm(int code) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
+        void onMachineStateChanged(MachineState state) override;
 
     protected:
         QString name() const override { return "ProbingBehavior"; }

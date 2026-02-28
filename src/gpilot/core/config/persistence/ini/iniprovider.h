@@ -3,7 +3,7 @@
 
 #include <QSettings>
 #include <QObject>
-#include "../provider.h"
+#include "core/config/persistence/provider.h"
 
 class IniProvider : public Provider
 {

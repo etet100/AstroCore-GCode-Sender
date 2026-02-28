@@ -3,6 +3,7 @@
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include "core/machine/physicalmachineconfigurationparser.h"
+#include "statusprocessor.h"
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>
@@ -10,7 +11,7 @@
 
 void Communicator::onConnectionLineReceived(QString data)
 {
-    // qDebug() << "[Communicator][Resp] " + data;
+    qDebug() << "[Communicator][Resp] " + data;
 
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
     //The longest line i have seen is 94 characters:
@@ -248,6 +249,9 @@ void Communicator::processStatus(QString line)
     QStringList sections(line.mid(1, line.length() - 2).split("|"));
     m_statusReceived = true;
 
+    // static StatusProcessor statusProcessor;
+    // qDebug() << statusProcessor.parse(line);
+
     // processMachinePosition()
     // // Update machine coordinates
     // static QRegularExpression mpx("MPos:([^,]*),([^,]*),([^,^>^|]*)");
@@ -288,7 +292,7 @@ void Communicator::processStatus(QString line)
             processSpindleState(line.remove(0, 2));
         } else if (line.startsWith("H:")) {
             // processHoldState(line.remove(0, 2));
-            qDebug() << "[Communicator] Unhandled status section:" << line;
+            // qDebug() << "[Communicator] Unhandled status section:" << line;
         } else {
             qDebug() << "[Communicator] Unhandled status section:" << line;
         }
@@ -907,7 +911,7 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
 void Communicator::processMessage(QString data)
 {
-    // qDebug() << "< MSG <" << data;
+    qDebug() << "< MSG <" << data;
     // static QRegularExpression msg("\\[MSG:([^\\]]+)\\]");
     // if (msg.indexIn(data) != -1) {
     //     QString message = msg.cap(1);
