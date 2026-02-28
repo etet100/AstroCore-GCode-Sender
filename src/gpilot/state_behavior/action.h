@@ -34,6 +34,7 @@ class Action
         };
 
         Action(Type type);
+        virtual ~Action() = default;
         Type type() const { return m_type; }
         QString name() const {
             return NAMES.value(
@@ -127,7 +128,11 @@ class ProbeAction : public Action
             bool useAbsolute = false;
         };
 
-        ProbeAction(ProbeParameters params = ProbeParameters())
+        ProbeAction()
+            : Action(Action::Type::Probe), m_params{} {
+        }
+
+        ProbeAction(ProbeParameters params)
             : Action(Action::Type::Probe), m_params(params) {
         }
 

@@ -217,6 +217,7 @@ class CommunicatorApi : public QObject
         CommunicatorApi(Communicator *communicator) : QObject(), m_communicator(communicator) {}
 
         Connection *connection() { return m_communicator->m_connection; }
+        const MachineState& machineState() const { return m_communicator->machineState(); }
         void queryMachineState() { m_communicator->queryMachineState(); }
         void processDeviceConfiguration(QStringList response) { m_communicator->processDeviceConfiguration(response); }
         void processOffsetsVars(QStringList response) { m_communicator->processOffsetsVars(response); }

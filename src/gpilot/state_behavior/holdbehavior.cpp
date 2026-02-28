@@ -56,7 +56,7 @@ void HoldBehavior::onMachineStateChanged(MachineState state)
         qDebug() << "[HoldBehavior] Machine resumed. Checking previous state.";
 
         // Return to previous state if it was running
-        if (m_previous && m_previous->name() == "RunningBehavior") {
+        if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {
             // Don't create new behavior, just signal that hold is released
             emit transition(this, m_previous);
         } else {

@@ -158,7 +158,7 @@ void ToolChangeBehavior::complete()
     emit toolChangeCompleted(m_toolNumber);
 
     // Return to previous state (usually RunningBehavior) or IdleBehavior
-    if (m_previous && m_previous->name() == "RunningBehavior") {
+    if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {
         emit transition(this, m_previous);
     } else {
         emit transition(this, new IdleBehavior());

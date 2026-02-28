@@ -114,6 +114,7 @@ SOURCES += main.cpp\
     core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/converter.cpp \
     core/gcode/converter/pipeline.cpp \
+    core/gcode/converter/shakinggcode.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/interpolator/heightmapbicubicinterpolator.cpp \
     core/heightmap/interpolator/heightmapbilinearinterpolator.cpp \
@@ -271,6 +272,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/arcstolines.h \
     core/gcode/converter/converter.h \
     core/gcode/converter/pipeline.h \
+    core/gcode/converter/shakinggcode.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/interpolator/heightmapbicubicinterpolator.h \
     core/heightmap/interpolator/heightmapbilinearinterpolator.h \

@@ -92,11 +92,32 @@ bool CheckModeBehavior::doAction(const Action &action)
 
 void CheckModeBehavior::sendStreamerCommandsUntilBufferIsFull()
 {
-    if (!m_communicator) {
+    if (!m_communicator || !m_communicator->isQueueEmpty()) {
         return;
     }
 
-    m_communicator->sendStreamerCommandsUntilBufferIsFull(m_program);
+    // Pass empty commands through loop too, we will skip them inside
+    QString command = m_program.command();
+    int sent = 0;
+
+    while (command.isEmpty() || (!m_communicator->willOverflowBuffer(command) && m_program.hasMoreCommands())) {
+        if (command.isEmpty()) {
+            m_program.setCommandSkipped();
+        } else {
+            m_program.setCommandSent();
+            m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
+            sent++;
+        }
+
+        if (!m_program.isLastCommand()) {
+            m_program.advanceCommandIndex();
+            command = m_program.command();
+        } else {
+            break;
+        }
+    }
+
+    qDebug() << "[CheckModeBehavior] Sent " << sent << " commands in check mode; buffer length:" << m_communicator->bufferLength();
 }
 
 void CheckModeBehavior::stop()
