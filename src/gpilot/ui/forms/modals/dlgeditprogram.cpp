@@ -4,7 +4,7 @@
 #include <QMessageBox>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "utils/openaimanager.h"
+#include "modules/ai/openaimanager.h"
 
 DlgEditProgram::DlgEditProgram(QWidget* parent)
     : QDialog(parent)
