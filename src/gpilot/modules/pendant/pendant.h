@@ -31,6 +31,7 @@ class Pendant : public QObject
         void sendWifiConfig();
         void sendStepSizeSelections();
         void sendFeedRateSelections();
+        void updateLastMessageTime();
 };
 
 #endif // PENDANT_H

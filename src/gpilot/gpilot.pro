@@ -294,6 +294,7 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualfluidncconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
+    modules/pendant/circularbuffer.h \
     state_behavior/action.h \
     state_behavior/checkmodebehavior.h \
     state_behavior/connectingbehavior.h \
