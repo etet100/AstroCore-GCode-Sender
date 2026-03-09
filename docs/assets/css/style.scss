@@ -6,7 +6,7 @@
 
 // Custom header background image
 .page-header {
-  background-image: url("/screenshots/gpilot_big.jpg");
+  background-image: url("{{ '/screenshots/gpilot_big.jpg' | relative_url }}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

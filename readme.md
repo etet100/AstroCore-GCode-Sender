@@ -48,7 +48,7 @@ For editing multiple lines, a simple editor with syntax highlighting is availabl
 
 You can also save the edited file at any time.
 
-![gcode editor](docs/screenshots/screenshot_gcode_editor.png)
+![gcode editor](docs/screenshots/screenshot_edit_gcode.png)
 
 ## Download & Install (prerelease)
 
