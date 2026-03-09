@@ -1,6 +1,6 @@
 G-Pilot G-Code Sender
 -----------
-<img src="screenshots/gpilot_big.jpg" width="200" height="200" align="right">
+<img src="docs/screenshots/gpilot_big.jpg" width="200" height="200" align="right">
 What G stands for?
 
 - G-code Pilot: G-code is a programming language used to control CNC machines, so "G-Pilot" may suggest that the program is used for piloting or controlling using G-code.
@@ -42,7 +42,7 @@ For editing multiple lines, a simple editor with syntax highlighting is availabl
 
 You can also save the edited file at any time.
 
-![gcode editor](/screenshots/screenshot_edit_gcode.png)](/screenshots/screenshot_gcode_editor.png)
+![gcode editor](docs/screenshots/screenshot_gcode_editor.png)
 
 ## Download & Install (prerelease)
 
@@ -116,7 +116,7 @@ G-Pilot supports the following connection modes:
 * grblHAL virtual mode, no real hardware needed
 * FluidNC virtual mode, no real hardware needed
 
-![screenshot](/screenshots/screenshot_connection_modes.png)
+![screenshot](docs/screenshots/screenshot_connection_modes.png)
 
 Architecture:
 -------------
@@ -384,32 +384,32 @@ How it looks:
 
 Main window:
 
-![main](/screenshots/screenshot_main_light.png)
+![main](docs/screenshots/screenshot_main_light.png)
 
 Dark mode:
 
-![main](/screenshots/screenshot_main_dark.png)
+![main](docs/screenshots/screenshot_main_dark.png)
 
 New style dark mode - scaled view:
 
-![main](/screenshots/screenshot_main_newstyle_scaled.png)
+![main](docs/screenshots/screenshot_main_newstyle_scaled.png)
 
 Heightmap preview:
 
-![heightmap](/screenshots/screenshot_main_dark_heightmap.png)
+![heightmap](docs/screenshots/screenshot_main_dark_heightmap.png)
 
 Heightmap with height markers:
 
-![heigmtmap markers](/screenshots/screenshot_main_heightmap_markers.png)
-![heigmtmap markers](/screenshots/screenshot_main_heightmap_markers_2d.png)
+![heigmtmap markers](docs/screenshots/screenshot_main_heightmap_markers.png)
+![heigmtmap markers](docs/screenshots/screenshot_main_heightmap_markers_2d.png)
 
 Settings:
 
-![settings](/screenshots/screenshot_settings.png)
+![settings](docs/screenshots/screenshot_settings.png)
 
 GRBL configurator:
 
-![grbl configurator](/screenshots/screenshot_grbl_configurator.png)
+![grbl configurator](docs/screenshots/screenshot_grbl_configurator.png)
 
 Heightmap
 -------------------
@@ -482,5 +482,5 @@ The measured table curvature can be interpolated at any point using one of three
 
 Heightmap rendering with bilinear and bicubic interpolation:
 
-![bilinear interpolation](/screenshots/screenshot_heightmap_bilinear.png)
-![bicubic interpolation](/screenshots/screenshot_heightmap_bicubic.png)
+![bilinear interpolation](docs/screenshots/screenshot_heightmap_bilinear.png)
+![bicubic interpolation](docs/screenshots/screenshot_heightmap_bicubic.png)

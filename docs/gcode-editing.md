@@ -25,4 +25,4 @@ You can save the edited file at any time.
 
 G-code editor view:
 
-![G-code editor](../screenshots/screenshot_gcode_editor.png)
+![G-code editor](screenshots/screenshot_gcode_editor.png)

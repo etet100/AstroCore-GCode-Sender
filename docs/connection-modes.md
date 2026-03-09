@@ -20,4 +20,4 @@ These virtual modes allow you to test and experiment without connecting to a rea
 
 Connection modes selection:
 
-![Connection modes](../screenshots/screenshot_connection_modes.png)
+![Connection modes](screenshots/screenshot_connection_modes.png)

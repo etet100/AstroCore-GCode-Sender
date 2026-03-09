@@ -22,16 +22,16 @@ Scale changes take effect immediately, so you can quickly find a comfortable siz
 
 Main window (light theme):
 
-![Main window light](../screenshots/screenshot_main_light.png)
+![Main window light](screenshots/screenshot_main_light.png)
 
 Dark mode:
 
-![Main window dark](../screenshots/screenshot_main_dark.png)
+![Main window dark](screenshots/screenshot_main_dark.png)
 
 New style dark mode (scaled view):
 
-![Main window new style scaled](../screenshots/screenshot_main_newstyle_scaled.png)
+![Main window new style scaled](screenshots/screenshot_main_newstyle_scaled.png)
 
 Heightmap preview:
 
-![Heightmap preview](../screenshots/screenshot_main_dark_heightmap.png)
+![Heightmap preview](screenshots/screenshot_main_dark_heightmap.png)
