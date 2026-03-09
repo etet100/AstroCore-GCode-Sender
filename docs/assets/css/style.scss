@@ -1,0 +1,13 @@
+---
+---
+
+// Import default Cayman theme styles
+@import "{{ site.theme }}";
+
+// Custom header background image
+.page-header {
+  background-image: url("/screenshots/gpilot_big.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

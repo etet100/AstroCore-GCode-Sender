@@ -4,52 +4,31 @@ title: G-Pilot G-Code Sender
 
 # G-Pilot G-Code Sender
 
+What G stands for?
+
+- G-code Pilot: G-code is a programming language used to control CNC machines, so "G-Pilot" may suggest that the program is used for piloting or controlling using G-code.
+- Guided Pilot: "G-Pilot" may also suggest that the program provides guidance or leads the user through processes related to CNC machining, similar to how a pilot guides an airplane.
+- Global Pilot: This may suggest that the program offers solutions on a global scale, able to handle various types of CNC machines and be a versatile tool for controlling them.
+- Genius Pilot: "G-Pilot" may suggest that the program is smart or advanced, similar to a pilot with high piloting skills.
+- Graphical Pilot: If the program offers a graphical interface for controlling CNC machines, the name "G-Pilot" may suggest that it is a graphics-based tool.
+
+*This fork is based on the Candle `experimental` branch. The main goal is to add joystick/joypad support. Other than that, I'm making improvements/bugfixes at my discretion.*
+
+*Any help is welcome!*
+
+## What is G-Pilot?
+
 GRBL/uCNC/FluidNC controller application with G-Code visualizer written in Qt.
 
-G-Pilot is a fork of the Candle experimental branch. The main goal is to add joystick/joypad support and improve the application step by step.
-
-## Key features
-
-- Control GRBL/uCNC/FluidNC-based CNC machines using console, buttons, and numpad
-- Monitor machine state in real time
-- Load, edit, save and stream G-code files
-- Built-in G-code visualizer
-- Camera support
-- Joystick / joypad / controller support
-- Customizable user interface with scaling
-- Virtual modes for uCNC, grblHAL and FluidNC (no real hardware required)
-
-## Download & install
-
-Automatic builds (portable zip and installer) are available as prereleases:
-
-- Latest version: https://github.com/etet100/G-Pilot-GCode-Sender/releases/latest
-- Debug builds – with extra logging, useful for testing and bug reports
-- Release builds – optimized for everyday use
-
-> Note: builds are for testing and preview. Feedback and bug reports are welcome.
-
-## System requirements
-
-- Windows 10 or Linux x86 (Linux not fully tested)
-- OpenGL 3.0 capable GPU
-- ~150 MB free disk space
-
-## Build from source (Windows, Qt, MinGW/LLVM)
-
-Basic steps:
-
-1. Clone repository with submodules:
-	```
-	git clone --recurse-submodules https://github.com/etet100/G-Pilot-GCode-Sender
-	cd G-Pilot-GCode-Sender
-	git submodule update --init --recursive
-	```
-2. Open `gpilot.pro` in Qt Creator
-3. Use Qt 6.8 with LLVM/Clang or MinGW 64-bit (MSVC is not supported)
-4. Build the project – binaries will appear in the `bin` directory
-
-More detailed build instructions will be available on a separate page.
+Supported functions:
+* Controlling GRBL-based cnc-machine via console commands, buttons on form, numpad.
+* Monitoring cnc-machine state.
+* Loading, editing, saving and sending of G-code files to cnc-machine.
+* Visualizing G-code files.
+* Camera.
+* Joystick/Joypad/Controller support.
+* Customizable interface.
+* uCNC/grblHAL/FluidNC virtual modes (cnc machine simulator).
 
 ## Documentation
 

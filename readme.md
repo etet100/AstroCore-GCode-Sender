@@ -13,6 +13,12 @@ What G stands for?
 
 *Any help is welcome!*
 
+Documentation
+-------------
+
+Online documentation is available at:
+https://etet100.github.io/G-Pilot-GCode-Sender/
+
 What is G-Pilot?
 ----------------
 
