@@ -7,7 +7,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include "core/communicator/communicator.h"
-#include "state_behavior/behaviors.h"
+#include "core/state_behavior/behaviors.h"
 
 ConnectingBehavior::ConnectingBehavior(QObject *parent)
     : StateBehavior{parent}

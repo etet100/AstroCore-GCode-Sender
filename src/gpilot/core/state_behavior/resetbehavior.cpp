@@ -5,7 +5,7 @@
 #include "core/globals.h"
 #include <QRegularExpression>
 #include "core/communicator/communicator.h"
-#include "state_behavior/behaviors.h"
+#include "core/state_behavior/behaviors.h"
 
 ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}

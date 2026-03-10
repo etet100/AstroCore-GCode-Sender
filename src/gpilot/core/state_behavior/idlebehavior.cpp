@@ -4,7 +4,7 @@
 
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
-#include "state_behavior/behaviors.h"
+#include "core/state_behavior/behaviors.h"
 
 IdleBehavior::IdleBehavior(QObject *parent)
     : StateBehavior{parent}

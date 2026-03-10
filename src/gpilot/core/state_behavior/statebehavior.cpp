@@ -5,7 +5,7 @@
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
 #include <QRegularExpression>
-#include "state_behavior/resetbehavior.h"
+#include "core/state_behavior/resetbehavior.h"
 
 const QMap<int, QString> StateBehavior::ERRORS = {
     { GRBL_ERROR_EXPECTED_COMMAND_LETTER,     "Missing letter" },

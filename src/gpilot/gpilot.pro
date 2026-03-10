@@ -136,17 +136,17 @@ SOURCES += main.cpp\
     io/connection/virtualfluidncconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
-    state_behavior/action.cpp \
-    state_behavior/checkmodebehavior.cpp \
-    state_behavior/connectingbehavior.cpp \
-    state_behavior/errorbehavior.cpp \
-    state_behavior/gotobehavior.cpp \
-    state_behavior/holdbehavior.cpp \
-    state_behavior/probingbehavior.cpp \
-    state_behavior/reconnectingbehavior.cpp \
-    state_behavior/resetbehavior.cpp \
-    state_behavior/scantablebehavior.cpp \
-    state_behavior/toolchangebehavior.cpp \
+    core/state_behavior/action.cpp \
+    core/state_behavior/checkmodebehavior.cpp \
+    core/state_behavior/connectingbehavior.cpp \
+    core/state_behavior/errorbehavior.cpp \
+    core/state_behavior/gotobehavior.cpp \
+    core/state_behavior/holdbehavior.cpp \
+    core/state_behavior/probingbehavior.cpp \
+    core/state_behavior/reconnectingbehavior.cpp \
+    core/state_behavior/resetbehavior.cpp \
+    core/state_behavior/scantablebehavior.cpp \
+    core/state_behavior/toolchangebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
     ui/drawers/cubedrawer.cpp \
@@ -207,17 +207,17 @@ SOURCES += main.cpp\
     core/gcode/parser/gcodeviewparser.cpp \
     core/gcode/parser/linesegment.cpp \
     core/gcode/parser/pointsegment.cpp \
-    state_behavior/alarmbehavior.cpp \
-    # state_behavior/checkmodebehavior.cpp \
-    state_behavior/homingbehavior.cpp \
-    state_behavior/idlebehavior.cpp \
-    state_behavior/initializationbehavior.cpp \
-    state_behavior/joggingbehavior.cpp \
-    state_behavior/pausebehavior.cpp \
-    # state_behavior/probingbehavior.cpp \
-    state_behavior/runningbehavior.cpp \
-    state_behavior/statebehavior.cpp \
-    # state_behavior/toolchangebehavior.cpp \
+    core/state_behavior/alarmbehavior.cpp \
+    # core/state_behavior/checkmodebehavior.cpp \
+    core/state_behavior/homingbehavior.cpp \
+    core/state_behavior/idlebehavior.cpp \
+    core/state_behavior/initializationbehavior.cpp \
+    core/state_behavior/joggingbehavior.cpp \
+    core/state_behavior/pausebehavior.cpp \
+    # core/state_behavior/probingbehavior.cpp \
+    core/state_behavior/runningbehavior.cpp \
+    core/state_behavior/statebehavior.cpp \
+    # core/state_behavior/toolchangebehavior.cpp \
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
@@ -295,17 +295,17 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
     modules/pendant/circularbuffer.h \
-    state_behavior/action.h \
-    state_behavior/checkmodebehavior.h \
-    state_behavior/connectingbehavior.h \
-    state_behavior/errorbehavior.h \
-    state_behavior/gotobehavior.h \
-    state_behavior/holdbehavior.h \
-    state_behavior/probingbehavior.h \
-    state_behavior/reconnectingbehavior.h \
-    state_behavior/resetbehavior.h \
-    state_behavior/scantablebehavior.h \
-    state_behavior/toolchangebehavior.h \
+    core/state_behavior/action.h \
+    core/state_behavior/checkmodebehavior.h \
+    core/state_behavior/connectingbehavior.h \
+    core/state_behavior/errorbehavior.h \
+    core/state_behavior/gotobehavior.h \
+    core/state_behavior/holdbehavior.h \
+    core/state_behavior/probingbehavior.h \
+    core/state_behavior/reconnectingbehavior.h \
+    core/state_behavior/resetbehavior.h \
+    core/state_behavior/scantablebehavior.h \
+    core/state_behavior/toolchangebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
     ui/drawers/cube.h \
@@ -368,17 +368,17 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/parser/gcodeviewparser.h \
     core/gcode/parser/linesegment.h \
     core/gcode/parser/pointsegment.h \
-    state_behavior/alarmbehavior.h \
-    state_behavior/behaviors.h \
-    # state_behavior/checkmodebehavior.h \
-    state_behavior/homingbehavior.h \
-    state_behavior/idlebehavior.h \
-    state_behavior/initializationbehavior.h \
-    state_behavior/joggingbehavior.h \
-    state_behavior/pausebehavior.h \
-    # state_behavior/probingbehavior.h \
-    state_behavior/runningbehavior.h \
-    state_behavior/statebehavior.h \
+    core/state_behavior/alarmbehavior.h \
+    core/state_behavior/behaviors.h \
+    # core/state_behavior/checkmodebehavior.h \
+    core/state_behavior/homingbehavior.h \
+    core/state_behavior/idlebehavior.h \
+    core/state_behavior/initializationbehavior.h \
+    core/state_behavior/joggingbehavior.h \
+    core/state_behavior/pausebehavior.h \
+    # core/state_behavior/probingbehavior.h \
+    core/state_behavior/runningbehavior.h \
+    core/state_behavior/statebehavior.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \

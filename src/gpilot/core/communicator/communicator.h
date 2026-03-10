@@ -8,7 +8,7 @@
 #include "core/scripting/scriptvars.h"
 #include "core/machine/physicalmachineconfiguration.h"
 #include "core/jogger/jogger.h"
-#include "state_behavior/statebehavior.h"
+#include "core/state_behavior/statebehavior.h"
 #include <QTimer>
 #include <QPointer>
 

@@ -42,10 +42,10 @@
 #include "core/heightmap/exporter/heightmapexporter.h"
 #include "core/utils/filesmanager.h"
 #include "modules/ai/openaimanager.h"
-#include "state_behavior/action.h"
-#include "state_behavior/joggingbehavior.h"
-#include "state_behavior/gotobehavior.h"
-#include "state_behavior/reconnectingbehavior.h"
+#include "core/state_behavior/action.h"
+#include "core/state_behavior/joggingbehavior.h"
+#include "core/state_behavior/gotobehavior.h"
+#include "core/state_behavior/reconnectingbehavior.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
