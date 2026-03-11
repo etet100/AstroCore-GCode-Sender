@@ -22,16 +22,25 @@ class Pendant : public QObject
             QObject *parent = nullptr
         );
 
+        bool isConnectionTimedOut(qint64 timeoutMs = 100) const;
+
     private:
         QTcpServer *m_server = nullptr;
         QTcpSocket *m_socket = nullptr;
         Configuration &m_configuration;
         Communicator &m_communicator;
+        qint64 m_lastMessageTime = 0;
         void sendState();
-        void sendWifiConfig();
+        void sendWifiConfig(const QString &ssid, const QString &password);
         void sendStepSizeSelections();
         void sendFeedRateSelections();
         void updateLastMessageTime();
+
+        void handlePingMessage(const uint8_t* data, uint8_t size);
+        void handleCmdMessage(const uint8_t* data, uint8_t size);
+        void handleStepSizeChangedMessage(const uint8_t* data, uint8_t size);
+        void handleFeedRateChangedMessage(const uint8_t* data, uint8_t size);
+        void handleJogMessage(const uint8_t* data, uint8_t size);
 };
 
 #endif // PENDANT_H

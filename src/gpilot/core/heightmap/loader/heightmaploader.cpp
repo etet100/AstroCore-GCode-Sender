@@ -103,6 +103,8 @@ Heightmap::InterpolationMode HeightmapLoader::parseInterpolationMode(const QStri
         return Heightmap::InterpolationMode::Bilinear;
     } else if (modeStr == "bicubic") {
         return Heightmap::InterpolationMode::Bicubic;
+    } else if (modeStr == "nearest") {
+        return Heightmap::InterpolationMode::NearestNeighbour;
     } else {
         throw std::runtime_error("Invalid interpolation mode in heightmap file");
     }

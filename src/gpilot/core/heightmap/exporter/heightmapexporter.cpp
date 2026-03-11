@@ -57,6 +57,8 @@ QString HeightmapExporter::interpolationModeToString(Heightmap::InterpolationMod
             return "bilinear";
         case Heightmap::InterpolationMode::Bicubic:
             return "bicubic";
+        case Heightmap::InterpolationMode::NearestNeighbour:
+            return "nearest";
         default:
             throw std::runtime_error("Unknown interpolation mode");
     }
