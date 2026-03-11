@@ -18,6 +18,7 @@ Communicator::Communicator(
     m_connection(connection),
     m_configuration(configuration),
     m_jogger(*this, configuration->joggingModule()),
+    m_sbManager(this),
     m_queryMachineStateTimer(nullptr),
     m_machineStateDictionary({
         {MachineState::Unknown, "Unknown"},
@@ -44,7 +45,7 @@ Communicator::Communicator(
     m_spindleCW = true;
     m_comApi = new CommunicatorApi(this);
 
-    execute(new InitializationBehavior());
+    m_sbManager.execute(new InitializationBehavior(), false, m_comApi);
 
     resetStateVariables();
 
@@ -96,7 +97,7 @@ SendCommandResult Communicator::sendCommand(
     if (source == CommandSource::Console) {
         QString trimmed = GcodePreprocessorUtils::removeComment(commandLine);
         if (trimmed == "$H") {
-            m_sb->action(Action::Home);
+            m_sbManager.current()->action(Action::Home);
             return SendCommandResult::Done;
         }
     }
@@ -206,12 +207,12 @@ void Communicator::queryMachineConfiguration()
 // Process new state requested be current state behavior
 void Communicator::processStateBehaviorTransition()
 {
-    if (m_nsb != nullptr) {
-        assert(!m_sb.isNull());
+    if (m_sbManager.hasPendingTransition()) {
+        assert(m_sbManager.current() != nullptr);
         // Clear to avoid re-entrance
-        StateBehavior *nsb = m_nsb;
-        m_nsb = nullptr;
-        execute(nsb, true);
+        StateBehavior *nsb = m_sbManager.next();
+        m_sbManager.requestTransition(nullptr); // Clear pending
+        m_sbManager.execute(nsb, true, m_comApi);
     }
 }
 
@@ -264,10 +265,10 @@ void Communicator::clearQueue()
 
 void Communicator::reset()
 {
-    assert(m_sb != nullptr && !m_sb.isNull());
+    assert(m_sbManager.current() != nullptr);
 
     //m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
-    m_sb->reset();
+    m_sbManager.current()->reset();
 
 //     assert(m_connection != nullptr);
 
@@ -312,9 +313,9 @@ void Communicator::reset()
 
 void Communicator::unlock()
 {
-    assert(m_sb != nullptr && !m_sb.isNull());
+    assert(m_sbManager.current() != nullptr);
 
-    m_sb->action(Action::Unlock);
+    m_sbManager.current()->action(Action::Unlock);
 }
 
 void Communicator::abort()
@@ -357,7 +358,7 @@ bool Communicator::startReconnecting(Connection *connection)
 
 StateBehavior *Communicator::sb() const
 {
-    return m_sb;
+    return m_sbManager.current();
 }
 
 // bool Communicator::openConnection()
@@ -465,7 +466,7 @@ bool Communicator::isSenderState(SenderState state) const
 
 void Communicator::probe()
 {
-    m_sb->action(Action::Probe);
+    m_sbManager.current()->action(Action::Probe);
 }
 
 void Communicator::resetGRBLConfiguration()
@@ -475,74 +476,18 @@ void Communicator::resetGRBLConfiguration()
 
 void Communicator::home()
 {
-    m_sb->action(Action::Home);
+    m_sbManager.current()->action(Action::Home);
     // execute(new HomingBehavior());
 }
 
 bool Communicator::execute(StateBehavior *sb, bool force)
 {
-    if (m_sb != nullptr) {
-        if (!m_sb->onAboutToChange(sb, force)) {
-            qDebug() << "[Communicator][Behavior] Transition from" << m_sb->description() << "to" << sb->description() << "is not allowed";
-
-            return false;
-        }
-
-        // if (m_sb->exitAsync()) {
-        //     connect(m_sb, &StateBehavior::exitCompleted, this, [this, sb]() {
-        //         qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->name() << "to" << sb->name() << ". (async exit!!)";;
-
-        //         this->finalizeExecute(sb);
-        //     }, Qt::ConnectionType::SingleShotConnection);
-        // }
-
-        if (m_sb->onExit(sb) == StateBehavior::Result::WaitForAsyncResult) {
-            connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
-                qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description() << ". (async exit!!)";;
-
-                this->finalizeExecute(sb);
-            }, Qt::ConnectionType::SingleShotConnection);
-
-            return true;
-        }
-
-        qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description();
-    } else {
-        qDebug() << "[Communicator][Behavior] State behavior set to" << sb->description();
-    }
-
-    return finalizeExecute(sb);
+    return m_sbManager.execute(sb, force, m_comApi);
 }
 
 bool Communicator::finalizeExecute(StateBehavior *sb)
 {
-    if (!sb->eventsAttached()) {
-        connect(sb, &StateBehavior::transition, this, &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
-        connect(sb, &StateBehavior::error, this, &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
-        connect(sb, &StateBehavior::logSignal, this, &Communicator::log, Qt::ConnectionType::UniqueConnection);
-        connect(sb, &QObject::destroyed, this, [](){
-            qDebug() << "[Communicator][Behavior] State behavior destroyed";
-        });
-
-        sb->markEventsAttached();
-    }
-
-    QPointer<StateBehavior> psb = m_sb;
-    if (sb->onEntry(m_comApi, psb) == StateBehavior::Result::WaitForAsyncResult) {
-        connect(m_sb, &StateBehavior::asyncCompleted, this, [this, sb]() {
-            qDebug() << "[Communicator][Behavior] State behavior changed from" << m_sb->description() << "to" << sb->description() << ". (async enter!!)";;
-
-            m_sb = sb;
-            emit stateBehaviorChanged(sb);
-        }, Qt::ConnectionType::SingleShotConnection);
-
-        return true;
-    }
-
-    m_sb = sb;
-    emit stateBehaviorChanged(sb);
-
-    return true;
+    return m_sbManager.finalizeExecute(sb, m_comApi);
 }
 
 void Communicator::processConnectionTimer()
@@ -669,14 +614,14 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
     // if (state == ConnectionState::Connected) {
     //     reset();
     // }
-    m_sb->onConnectionStateChanged(state);
+    m_sbManager.current()->onConnectionStateChanged(state);
     // processStateBehaviorTransition();
 }
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
 {
     qDebug() << "[Communicator] State transition requested from " << sb->description() << " to " << nsb->description();
-    m_nsb = nsb;
+    m_sbManager.requestTransition(nsb);
     //execute(nsb, true);
 }
 
