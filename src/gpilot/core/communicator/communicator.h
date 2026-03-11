@@ -9,6 +9,7 @@
 #include "core/machine/physicalmachineconfiguration.h"
 #include "core/jogger/jogger.h"
 #include "state_behaviour/statebehavior.h"
+#include "statebehaviormanager.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -72,7 +73,7 @@ class Communicator : public QObject
         void queryMachineConfiguration();
         void processStateBehaviorTransition();
 
-        StateBehavior* stateBehavior() const { return m_sb.data(); }
+        StateBehavior* stateBehavior() const { return m_sbManager.current(); }
     private:
         static const int BUFFERLENGTH = 127;
 
@@ -90,8 +91,7 @@ class Communicator : public QObject
         // States
         SenderState m_senderState;
         MachineState m_machineState;
-        QPointer<StateBehavior> m_sb = nullptr;
-        QPointer<StateBehavior> m_nsb = nullptr; // next state behavior to be set
+        StateBehaviorManager m_sbManager;
 
         ScriptVars m_storedVars;
 
