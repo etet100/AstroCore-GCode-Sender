@@ -1,142 +1,16 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
-// Copyright 2024 BTS
+// Copyright 2026 BTS
 
 #include "core/globals.h"
 #include "pendant.h"
+#include "defines.h"
 #include "core/config/configuration.h"
 #include <QTcpSocket>
 #include "circularbuffer.h"
 #include <QTimer>
+#include <QDateTime>
 #include <CRC.h>
-
-#ifdef __GNUC__
-#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
-#endif
-
-#ifdef _MSC_VER
-#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
-#endif
-
-enum class CommPacketType: uint8_t {
-    STATE = 0,
-    WIFI_CONFIG = 1,
-    PING = 2,
-    STEP_SIZE_CONFIG = 3,
-    FEED_RATE_CONFIG = 4,
-    CMD = 5,
-    MAX,
-};
-
-enum class CommunicationMode: uint8_t {
-    NONE = 0,
-    SERIAL_,
-    WIFI,
-};
-
-enum class CmdType: uint8_t {
-    START = 0,
-    STOP,
-    PAUSE,
-    HOME,
-    RESET,
-    SPINDLE,
-};
-
-#define COMM_PACKET_VERSION 1
-#define COMM_PREAMBLE 0xAA55
-#define COMM_START 0xAA55
-#define COMM_START_BYTE_1 0x55
-#define COMM_START_BYTE_2 0xAA
-#define COMM_HEAD_START_1_POS 0
-#define COMM_HEAD_START_2_POS 1
-#define COMM_HEAD_VERSION_POS 2
-#define COMM_HEAD_SIZE_POS 3
-#define COMM_HEAD_TYPE_POS 4
-
-PACK(struct CommHeader
-{
-    uint16_t start = COMM_PREAMBLE;
-    uint8_t version = COMM_PACKET_VERSION;
-    uint8_t size;
-    uint8_t type;
-});
-
-PACK(struct CommFooter
-{
-    uint8_t crc;
-});
-
-PACK(struct StateMessage
-{
-    CommHeader header;
-    float x;
-    float y;
-    float z;
-    uint8_t machineState;
-    CommunicationMode mode;
-    char selectedAxis;
-    CommFooter footer;
-});
-
-PACK(struct WifiConfigMessage
-{
-    CommHeader header;
-    char ssid[20];
-    char password[20];
-    char clientIp[16];
-    CommFooter footer;
-});
-
-#define CHOICES_COUNT 12
-
-PACK(struct StepSizeConfigMessage
-{
-    CommHeader header;
-    float selections[CHOICES_COUNT];
-    bool separateZ;
-    CommFooter footer;
-});
-
-PACK(struct PingMessage
-     {
-         CommHeader header;
-         float selections[CHOICES_COUNT];
-         bool separateZ;
-         CommFooter footer;
-     });
-
-PACK(struct FeedRateConfigMessage
-{
-    CommHeader header;
-    float selections[CHOICES_COUNT];
-    bool separateZ;
-    CommFooter footer;
-});
-
-PACK(struct CmdMessage
-{
-    CommHeader header;
-    CmdType cmd;
-    CommFooter footer;
-});
-
-template <typename T>
-T vmax(T a) {
-    return a;
-}
-
-template <typename T, typename... Args>
-T vmax(T a, Args... args) {
-    T b = vmax(args...);
-
-    return (a > b) ? a : b;
-}
-
-#define COMM_MAX_PACKET_SIZE vmax(sizeof(StateMessage), \
-        sizeof(WifiConfigMessage), sizeof(PingMessage), \
-        sizeof(StepSizeConfigMessage), sizeof(FeedRateConfigMessage), sizeof(CmdMessage) \
-)
 
 Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObject *parent)
     : QObject{parent}
@@ -164,6 +38,7 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 
             static uint8_t packetType = 255;
             static uint8_t packetSize;
+            static qint64 packetTypeSetTime = 0;
 
             if (buffer.free() < (size_t) m_socket->bytesAvailable()) {
                 qDebug() << "[Pendant] Buffer overflow";
@@ -186,92 +61,52 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 
                         packetType = buffer[COMM_HEAD_TYPE_POS];
                         packetSize = buffer[COMM_HEAD_SIZE_POS];
+                        packetTypeSetTime = QDateTime::currentMSecsSinceEpoch();
                         break;
                     }
                 }
 
+                if (packetType < 255) {
+                    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+                    if ((currentTime - packetTypeSetTime) > 50) {
+                        qDebug() << "[Pendant] Packet timeout, resetting";
+                        packetType = 255;
+                        buffer.skip(1);
+                        continue;
+                    }
+                }
+
                 if (packetType < 255 && buffer.size() >= packetSize) {
+                    uint8_t packetData[COMM_MAX_PACKET_SIZE];
+                    buffer.get(packetData, packetSize);
+
+                    uint8_t receivedCrc = packetData[packetSize - 1];
+                    uint8_t calculatedCrc = calcCRC8(packetData, packetSize - 1);
+                    if (receivedCrc != calculatedCrc) {
+                        qDebug() << "[Pendant] CRC error for packet type:" << packetType;
+                        packetType = 255;
+                        continue;
+                    }
+
                     switch (packetType) {
-                        // case (uint8_t)CommPacketType::STATE: {
-                        //     StateMessage msg;
-                        //     buffer.get((uint8_t*)&msg, packetSize);
-                        //     //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
-                        //     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                        //         Serial.printf("State CRC: %d != %d, %d", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter)), packetSize);
-                        //         break;
-                        //     }
-                        //     //Serial.printf("State: %6.2f %6.2f %6.2f %d\n", msg.x, msg.y, msg.z, (int)msg.mode);
-
-                        //     state.setPos(Axis::X, msg.x);
-                        //     state.setPos(Axis::Y, msg.y);
-                        //     state.setPos(Axis::Z, msg.z);
-                        //     state.setMachineState(msg.machineState);
-                        //     state.triggerUpdatedEvent();
-
-                        //     this->updateLastMessageTime();
-                        //     break;
-                        // }
-                        // case (uint8_t)CommPacketType::WIFI_CONFIG: {
-                        //     WifiConfigMessage msg;
-                        //     buffer.get((uint8_t*)&msg, packetSize);
-                        //     //Serial.printf("CRC: %d %d %d\n", msg.footer.crc, calcCRC8((uint8_t*)&msg, packetSize - sizeof(Footer)), packetSize);
-                        //     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                        //         Serial.println("Wifi cfg CRC error");
-                        //         break;
-                        //     }
-                        //     //Serial.printf("Wifi config: %s %s %s\n", msg.ssid, msg.password, msg.clientIp);
-
-                        //     this->updateLastMessageTime();
-                        //     break;
-                        // }
-                        // case (uint8_t)CommPacketType::STEP_SIZE_CONFIG: {
-                        //     StepSizeConfigMessage msg;
-                        //     buffer.get((uint8_t*)&msg, packetSize);
-                        //     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                        //         qDebug() << "[Pendant] Step size CRC error";
-                        //         break;
-                        //     }
-                        //     this->updateLastMessageTime();
-                        //     break;
-                        // }
-                        // case (uint8_t)CommPacketType::FEED_RATE_CONFIG: {
-                        //     FeedRateConfigMessage msg;
-                        //     buffer.get((uint8_t*)&msg, packetSize);
-                        //     if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                        //         qDebug() << "[Pendant] Feed rate CRC error";
-                        //         break;
-                        //     }
-                        //     this->updateLastMessageTime();
-                        //     break;
-                        // }
-                        case (uint8_t)CommPacketType::PING: {
-                            PingMessage msg;
-                            buffer.get((uint8_t*)&msg, packetSize);
-                            if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                                qDebug() << "[Pendant] Ping CRC error";
-                                break;
-                            }
-                            this->updateLastMessageTime();
+                        case (uint8_t)CommPacketType::PING:
+                            handlePingMessage(packetData, packetSize);
                             break;
-                        }
-                        case (uint8_t)CommPacketType::CMD: {
-                            CmdMessage msg;
-                            buffer.get((uint8_t*)&msg, packetSize);
-                            if (msg.footer.crc != calcCRC8((uint8_t*)&msg, packetSize - sizeof(CommFooter))) {
-                                qDebug() << "[Pendant] Cmd CRC error";
-                                break;
-                            }
-                            qDebug() << "[Pendant] Received command:" << (int)msg.cmd;
-                            // Command received (echo or confirmation from server)
-                            this->updateLastMessageTime();
+                        case (uint8_t)CommPacketType::CMD:
+                            handleCmdMessage(packetData, packetSize);
                             break;
-                        }
-                        default: {
-                            // Unknown packet type - skip it to avoid infinite loop
+                        case (uint8_t)CommPacketType::STEP_SIZE_CHANGED:
+                            handleStepSizeChangedMessage(packetData, packetSize);
+                            break;
+                        case (uint8_t)CommPacketType::FEED_RATE_CHANGED:
+                            handleFeedRateChangedMessage(packetData, packetSize);
+                            break;
+                        case (uint8_t)CommPacketType::JOG:
+                            handleJogMessage(packetData, packetSize);
+                            break;
+                        default:
                             qDebug() << "[Pendant] Unknown packet type:" << packetType;
-                            buffer.skip(packetSize);
                             break;
-                        }
                     }
 
                     packetType = 255;
@@ -311,7 +146,7 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 
         sendFeedRateSelections();
         sendStepSizeSelections();
-        sendWifiConfig();
+        sendWifiConfig("", "");
     });
 }
 
@@ -331,17 +166,25 @@ void Pendant::sendState()
     m_socket->write((char*)&message, sizeof(StateMessage));
 }
 
-void Pendant::sendWifiConfig()
+void Pendant::sendWifiConfig(const QString &ssid, const QString &password)
 {
     qDebug() << "[Pendant] Sending wifi config";
+
+    if (ssid.length() >= COMM_SSID_PASSWORD_MAX_LEN || password.length() >= COMM_SSID_PASSWORD_MAX_LEN) {
+        qWarning() << "[Pendant] SSID or password too long to send";
+        return;
+    }
 
     WifiConfigMessage message;
 
     message.header.size = sizeof(WifiConfigMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::WIFI_CONFIG);
 
-    strcpy(message.ssid, "ssid");
-    strcpy(message.password, "password");
+    strncpy(message.ssid, ssid.toUtf8().constData(), sizeof(message.ssid) - 1);
+    message.ssid[sizeof(message.ssid) - 1] = '\0';
+
+    strncpy(message.password, password.toUtf8().constData(), sizeof(message.password) - 1);
+    message.password[sizeof(message.password) - 1] = '\0';
 
     message.footer.crc = calcCRC8((uint8_t*)&message, sizeof(WifiConfigMessage) - sizeof(CommFooter));
     m_socket->write((char*)&message, sizeof(WifiConfigMessage));
@@ -349,10 +192,7 @@ void Pendant::sendWifiConfig()
 
 void Pendant::sendStepSizeSelections()
 {
-    // qDebug() << "[Pendant] Sending step size config";
-
     StepSizeConfigMessage message;
-
     message.header.start = 0xAA55;
     message.header.size = sizeof(StepSizeConfigMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::STEP_SIZE_CONFIG);
@@ -370,10 +210,7 @@ void Pendant::sendStepSizeSelections()
 
 void Pendant::sendFeedRateSelections()
 {
-    // qDebug() << "[Pendant] Sending feed rate config";
-
     FeedRateConfigMessage message;
-
     message.header.size = sizeof(FeedRateConfigMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::FEED_RATE_CONFIG);
 
@@ -390,5 +227,60 @@ void Pendant::sendFeedRateSelections()
 
 void Pendant::updateLastMessageTime()
 {
+    m_lastMessageTime = QDateTime::currentMSecsSinceEpoch();
+}
 
+bool Pendant::isConnectionTimedOut(qint64 timeoutMs) const
+{
+    if (m_lastMessageTime == 0) {
+        return false; // No messages received yet
+    }
+
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+    return (currentTime - m_lastMessageTime) > timeoutMs;
+}
+
+void Pendant::handlePingMessage(const uint8_t* data, uint8_t size)
+{
+    PingMessage msg;
+    memcpy(&msg, data, size);
+
+    this->updateLastMessageTime();
+}
+
+void Pendant::handleCmdMessage(const uint8_t* data, uint8_t size)
+{
+    CmdMessage msg;
+    memcpy(&msg, data, size);
+
+    qDebug() << "[Pendant] Received command:" << (int)msg.cmd;
+    this->updateLastMessageTime();
+}
+
+void Pendant::handleStepSizeChangedMessage(const uint8_t* data, uint8_t size)
+{
+    StepSizeChangedMessage msg;
+    memcpy(&msg, data, size);
+
+    qDebug() << "[Pendant] Step size changed:" << msg.value;
+    this->updateLastMessageTime();
+}
+
+void Pendant::handleFeedRateChangedMessage(const uint8_t* data, uint8_t size)
+{
+    FeedRateChangedMessage msg;
+    memcpy(&msg, data, size);
+
+    qDebug() << "[Pendant] Feed rate changed:" << msg.value;
+    this->updateLastMessageTime();
+}
+
+void Pendant::handleJogMessage(const uint8_t* data, uint8_t size)
+{
+    JogMessage msg;
+    memcpy(&msg, data, size);
+
+    qDebug() << "[Pendant] Jog - X:" << (int)msg.x << "Y:" << (int)msg.y << "Z:" << (int)msg.z;
+    this->updateLastMessageTime();
 }
