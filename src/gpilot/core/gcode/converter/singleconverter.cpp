@@ -13,12 +13,8 @@ SingleConverter::SingleConverter(Converter *converter)
 
 SingleConverter::~SingleConverter()
 {
-    if (m_converter) {
-        delete m_converter;
-    }
-    if (m_parser) {
-        delete m_parser;
-    }
+    delete m_converter;
+    delete m_parser;
 }
 
 void SingleConverter::setGCode(GCode *gcode)
@@ -65,35 +61,23 @@ bool SingleConverter::processLine(int index)
         return false;
     }
 
-    GCodeItem &item = (*m_gcode)[index];
+    // Local copy prevents dangling reference if the converter calls gcode->insert(),
+    // which may cause QList to reallocate its internal buffer.
+    GCodeItem item = (*m_gcode)[index];
     GcodeParser *parserPtr = m_converter->needsParser() ? m_parser : nullptr;
 
-    if (parserPtr) {
-        parserPtr->pushState();
-    }
-
+    if (parserPtr) parserPtr->pushState();
     bool modified = m_converter->convertLine(item, m_gcode, index, parserPtr);
+    if (parserPtr) parserPtr->popState();
 
     if (modified) {
-        if (parserPtr) {
-            parserPtr->popState();
-        }
-        reparseLine(index);
-    } else if (parserPtr) {
-        parserPtr->popState();
+        (*m_gcode)[index] = item;
     }
+
+    // Must run for every line so the parser position stays correct for the next call.
+    m_parser->addCommand((*m_gcode)[index]);
 
     return modified;
-}
-
-void SingleConverter::reparseLine(int index)
-{
-    if (!m_parser || index < 0 || index >= m_gcode->count()) {
-        return;
-    }
-
-    GCodeItem &item = (*m_gcode)[index];
-    m_parser->addCommand(item.line);
 }
 
 bool SingleConverter::hasMore() const
@@ -108,29 +92,27 @@ int SingleConverter::totalLines() const
 
 GCode* SingleConverter::convertAll()
 {
-    if (!m_gcode) {
+    if (!m_gcode || !m_converter) {
         return nullptr;
     }
 
     GCode *result = new GCode();
     *result << *m_gcode;
+    m_parser->reset();
 
     for (int i = 0; i < result->count(); ++i) {
-        GCodeItem &item = (*result)[i];
+        GCodeItem item = (*result)[i]; // local copy - see processLine()
         GcodeParser *parserPtr = m_converter->needsParser() ? m_parser : nullptr;
 
-        if (parserPtr) {
-            parserPtr->pushState();
-        }
-
+        if (parserPtr) parserPtr->pushState();
         bool modified = m_converter->convertLine(item, result, i, parserPtr);
+        if (parserPtr) parserPtr->popState();
 
-        if (modified && parserPtr) {
-            parserPtr->popState();
-            parserPtr->addCommand(item.line);
-        } else if (parserPtr) {
-            parserPtr->popState();
+        if (modified) {
+            (*result)[i] = item;
         }
+
+        m_parser->addCommand((*result)[i]);
     }
 
     return result;

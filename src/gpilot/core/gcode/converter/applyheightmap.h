@@ -61,7 +61,8 @@ class ApplyHeightmap : public QObject, public ConverterInterface
                                      bool clockwise, PointSegment::planes plane);
         void applyHeightmapToPoint(QVector3D &point);
         QString generateGCodeLine(const QVector3D &start, const QVector3D &end,
-                                  const GCodeItem &originalItem, bool isFirstSegment);
+                                  const GCodeItem &originalItem, bool isFirstSegment,
+                                  const QString &commandOverride = QString());
 };
 
 #endif // APPLYHEIGHTMAP_H

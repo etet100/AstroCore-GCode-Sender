@@ -33,7 +33,6 @@ private:
     int m_currentIndex;
 
     bool processLine(int index);
-    void reparseLine(int index);
 };
 
 #endif // SINGLECONVERTER_H

@@ -12,14 +12,6 @@
 #include <QRegularExpression>
 #include <QtMath>
 
-// This converter applies a heightmap to the G-code commands.
-// - Splits long movement lines into segments (default 1mm)
-// - Applies Z offset from heightmap at each segment point
-// - Handles both linear movements (G0/G1) and arcs (G2/G3)
-// - Preserves G90/G91 mode and other parser state
-//
-// Implementation note: This converter creates new lines during processing,
-// so it implements ConverterInterface directly rather than using Pipeline.
 
 ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, QObject *parent)
     : QObject(parent)
@@ -161,17 +153,14 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
 {
     QList<GCodeItem> result;
 
-    // Non-movement commands pass through unchanged
     if (!item.isMovement) {
         result.append(item);
         m_parser->addCommand(item);
         return result;
     }
 
-    // Get start point (current parser position)
     QVector3D startPoint = *m_parser->getCurrentPoint();
 
-    // Parse command to get end point and segment info
     m_parser->pushState();
     PointSegment *ps = m_parser->addCommand(item);
 
@@ -183,32 +172,33 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
 
     QVector3D endPoint = *ps->point();
 
-    // Generate segmented points with heightmap applied
+    // isArc must be saved before popState() deletes ps.
+    bool isArc = ps->isArc();
+
+    // segmentLine() and segmentArc() apply the heightmap to every returned point.
     QList<QVector3D> points;
 
-    if (ps->isArc()) {
-        // Handle arc (G2/G3)
+    if (isArc) {
         points = segmentArc(startPoint, endPoint, *ps->center(),
                            ps->getRadius(), ps->isClockwise(), ps->plane());
     } else {
-        // Handle linear movement (G0/G1)
         points = segmentLine(startPoint, endPoint);
     }
 
-    m_parser->popState();
+    m_parser->popState(); // deletes ps
 
-    // If only 2 points (start and end), no segmentation needed
+    // Arcs are linearised by segmentation, so their segments use G1.
+    QString outputCmd = isArc ? "G1" : QString();
+
     if (points.size() <= 2) {
         if (points.size() == 2) {
-            QVector3D modifiedEnd = points[1];
-            applyHeightmapToPoint(modifiedEnd);
-
+            // points[1] already has heightmap applied - do not apply again.
             GCodeItem modifiedItem = item;
-            modifiedItem.line = generateGCodeLine(startPoint, modifiedEnd, item, true);
+            modifiedItem.line = generateGCodeLine(startPoint, points[1], item, true, outputCmd);
             modifiedItem.args = GcodePreprocessorUtils::splitCommand(modifiedItem.line);
+            if (!outputCmd.isEmpty()) modifiedItem.command = outputCmd;
             result.append(modifiedItem);
 
-            // Update parser with the actual processed line
             m_parser->addCommand(modifiedItem);
         } else {
             result.append(item);
@@ -217,20 +207,18 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
         return result;
     }
 
-    // Multiple segments needed - create one GCodeItem per segment
     for (int i = 0; i < points.size() - 1; i++) {
         GCodeItem segmentItem;
-        segmentItem.line = generateGCodeLine(points[i], points[i + 1], item, i == 0);
-        segmentItem.command = item.command;
+        segmentItem.line = generateGCodeLine(points[i], points[i + 1], item, i == 0, outputCmd);
+        segmentItem.command = outputCmd.isEmpty() ? item.command : outputCmd;
         segmentItem.state = GCodeItem::InQueue;
         segmentItem.args = GcodePreprocessorUtils::splitCommand(segmentItem.line);
         segmentItem.isMovement = true;
-        segmentItem.group = item.group;
+        segmentItem.group = GCodeItemGroup::Movement;
         segmentItem.commandNumber = item.commandNumber;
 
         result.append(segmentItem);
 
-        // Update parser state
         m_parser->addCommand(segmentItem);
     }
 
@@ -244,7 +232,6 @@ QList<QVector3D> ApplyHeightmap::segmentLine(const QVector3D &start, const QVect
 
     double length = (end - start).length();
 
-    // If line is short enough, no segmentation needed
     if (length <= m_segmentLength) {
         QVector3D endWithHeight = end;
         applyHeightmapToPoint(endWithHeight);
@@ -252,12 +239,10 @@ QList<QVector3D> ApplyHeightmap::segmentLine(const QVector3D &start, const QVect
         return points;
     }
 
-    // Calculate number of segments
     int numSegments = qCeil(length / m_segmentLength);
     QVector3D direction = (end - start).normalized();
     double segmentLen = length / numSegments;
 
-    // Generate intermediate points
     for (int i = 1; i <= numSegments; i++) {
         QVector3D point = start + direction * (segmentLen * i);
         applyHeightmapToPoint(point);
@@ -273,15 +258,11 @@ QList<QVector3D> ApplyHeightmap::segmentArc(const QVector3D &start, const QVecto
 {
     QList<QVector3D> points;
 
-    // Use existing arc generation utility
     QList<QVector3D> arcPoints = GcodePreprocessorUtils::generatePointsAlongArcBDring(
         plane, start, end, center, clockwise, radius,
-        m_segmentLength, // minArcLength
-        m_segmentLength, // arcPrecision
-        false            // arcDegreeMode
+        m_segmentLength, m_segmentLength, false
     );
 
-    // Apply heightmap to all points
     for (QVector3D &point : arcPoints) {
         applyHeightmapToPoint(point);
         points.append(point);
@@ -296,46 +277,32 @@ void ApplyHeightmap::applyHeightmapToPoint(QVector3D &point)
         return;
     }
 
-    // Check if point is within heightmap area
     QPointF xyPoint(point.x(), point.y());
     if (!m_heightmap->isInside(xyPoint)) {
         return;
     }
 
-    // Get Z offset from heightmap
     double zOffset = m_interpolator->interpolate(xyPoint);
-
     if (!qIsNaN(zOffset)) {
         point.setZ(point.z() + zOffset);
     }
 }
 
 QString ApplyHeightmap::generateGCodeLine(const QVector3D &start, const QVector3D &end,
-                                          const GCodeItem &originalItem, bool isFirstSegment)
+                                          const GCodeItem &originalItem, bool isFirstSegment,
+                                          const QString &commandOverride)
 {
-    QString line;
-
-    // Extract command (G0, G1, etc.)
-    QString command = originalItem.command;
+    QString command = commandOverride.isEmpty() ? originalItem.command : commandOverride;
     if (command.isEmpty() && !originalItem.args.isEmpty()) {
         command = originalItem.args.first();
     }
 
-    // Start with command
-    line = command;
+    QString line = command;
 
-    // Add coordinates - only specify coordinates that changed
-    if (qAbs(end.x() - start.x()) > 0.0001) {
-        line += QString(" X%1").arg(end.x(), 0, 'f', 3);
-    }
-    if (qAbs(end.y() - start.y()) > 0.0001) {
-        line += QString(" Y%1").arg(end.y(), 0, 'f', 3);
-    }
-    if (qAbs(end.z() - start.z()) > 0.0001) {
-        line += QString(" Z%1").arg(end.z(), 0, 'f', 3);
-    }
+    if (qAbs(end.x() - start.x()) > 0.0001) line += QString(" X%1").arg(end.x(), 0, 'f', 3);
+    if (qAbs(end.y() - start.y()) > 0.0001) line += QString(" Y%1").arg(end.y(), 0, 'f', 3);
+    if (qAbs(end.z() - start.z()) > 0.0001) line += QString(" Z%1").arg(end.z(), 0, 'f', 3);
 
-    // For first segment, preserve feed rate if present
     if (isFirstSegment) {
         static QRegularExpression feedRegex("F([0-9.]+)", QRegularExpression::CaseInsensitiveOption);
         QRegularExpressionMatch match = feedRegex.match(originalItem.line);

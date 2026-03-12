@@ -18,7 +18,6 @@ Pipeline::~Pipeline()
     qDeleteAll(m_converters);
     m_converters.clear();
 
-    // Clean up parser if we created it
     if (m_parser) {
         delete m_parser;
         m_parser = nullptr;
@@ -44,21 +43,11 @@ bool Pipeline::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, Gcod
     for (Converter *converter : m_converters) {
         GcodeParser *parserPtr = (parser && converter->needsParser()) ? parser : nullptr;
 
-        if (parserPtr) {
-            parserPtr->pushState();
-        }
-
+        if (parserPtr) parserPtr->pushState();
         bool modified = converter->convertLine(item, gcode, currentIndex, parserPtr);
+        if (parserPtr) parserPtr->popState();
 
-        if (modified) {
-            wasModified = true;
-            if (parserPtr) {
-                parserPtr->popState();
-                parserPtr->addCommand(item.line);
-            }
-        } else if (parserPtr) {
-            parserPtr->popState();
-        }
+        if (modified) wasModified = true;
     }
 
     return wasModified;
@@ -67,9 +56,7 @@ bool Pipeline::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, Gcod
 bool Pipeline::needsParser() const
 {
     for (const Converter *converter : m_converters) {
-        if (converter->needsParser()) {
-            return true;
-        }
+        if (converter->needsParser()) return true;
     }
     return false;
 }
@@ -84,12 +71,10 @@ void Pipeline::reset()
 {
     m_currentIndex = 0;
 
-    // Reset all converters
     for (Converter *converter : m_converters) {
         converter->reset();
     }
 
-    // Create or reset parser
     if (!m_parser) {
         m_parser = new GcodeParser(this);
     }
@@ -106,17 +91,10 @@ int Pipeline::convertNext(int count)
     int endIndex = qMin(m_currentIndex + count, m_gcode->count());
 
     for (int i = m_currentIndex; i < endIndex; ++i) {
-        bool modified = processLine(i);
-
-        // If line was modified, reparse it before next converter
-        if (modified) {
-            reparseLine(i);
-        }
-
+        processLine(i);
         converted++;
         m_currentIndex++;
 
-        // Emit progress every 10 lines or at the end
         if (converted % 10 == 0 || m_currentIndex >= m_gcode->count()) {
             emit progressChanged(m_currentIndex, m_gcode->count());
         }
@@ -131,40 +109,29 @@ bool Pipeline::processLine(int index)
         return false;
     }
 
-    GCodeItem &item = (*m_gcode)[index];
+    // Local copy prevents dangling reference if a converter calls gcode->insert(),
+    // which may cause QList to reallocate its internal buffer.
+    GCodeItem item = (*m_gcode)[index];
     bool wasModified = false;
 
     for (Converter *converter : m_converters) {
         GcodeParser *parserPtr = converter->needsParser() ? m_parser : nullptr;
 
-        if (parserPtr) {
-            parserPtr->pushState();
-        }
-
+        if (parserPtr) parserPtr->pushState();
         bool modified = converter->convertLine(item, m_gcode, index, parserPtr);
+        if (parserPtr) parserPtr->popState();
 
-        if (modified) {
-            wasModified = true;
-            if (parserPtr) {
-                parserPtr->popState();
-            }
-            reparseLine(index);
-        } else if (parserPtr) {
-            parserPtr->popState();
-        }
+        if (modified) wasModified = true;
     }
+
+    if (wasModified) {
+        (*m_gcode)[index] = item;
+    }
+
+    // Must run for every line so the parser position stays correct for the next call.
+    m_parser->addCommand((*m_gcode)[index]);
 
     return wasModified;
-}
-
-void Pipeline::reparseLine(int index)
-{
-    if (!m_parser || index < 0 || index >= m_gcode->count()) {
-        return;
-    }
-
-    GCodeItem &item = (*m_gcode)[index];
-    m_parser->addCommand(item.line);
 }
 
 bool Pipeline::hasMore() const
@@ -185,26 +152,29 @@ GCode* Pipeline::convertAll()
 
     GCode *result = new GCode();
     *result << *m_gcode;
+    m_parser->reset();
 
+    // result->count() may grow when a converter inserts lines (e.g. ArcsToLines).
+    // The loop condition is re-evaluated each iteration so inserted lines are processed too.
     for (int i = 0; i < result->count(); ++i) {
-        GCodeItem &item = (*result)[i];
+        GCodeItem item = (*result)[i]; // local copy - see processLine()
+        bool wasModified = false;
 
         for (Converter *converter : m_converters) {
             GcodeParser *parserPtr = converter->needsParser() ? m_parser : nullptr;
 
-            if (parserPtr) {
-                parserPtr->pushState();
-            }
-
+            if (parserPtr) parserPtr->pushState();
             bool modified = converter->convertLine(item, result, i, parserPtr);
+            if (parserPtr) parserPtr->popState();
 
-            if (modified && parserPtr) {
-                parserPtr->popState();
-                parserPtr->addCommand(item.line);
-            } else if (parserPtr) {
-                parserPtr->popState();
-            }
+            if (modified) wasModified = true;
         }
+
+        if (wasModified) {
+            (*result)[i] = item;
+        }
+
+        m_parser->addCommand((*result)[i]);
     }
 
     return result;
