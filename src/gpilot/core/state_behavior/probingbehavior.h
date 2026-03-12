@@ -28,7 +28,8 @@ class ProbingBehavior : public StateBehavior
             double maxDistance = 30.0;       // Maximum probe distance (mm)
             double retractDistance = 2.0;    // Retract distance between probes (mm)
             double safeDistance = 5.0;       // Safe distance to move up after probing (mm)
-            bool setZeroAtProbe = true;      // Set Z=0 at probed position
+            bool doubleProbe = false;        // Whether to do a second slow probe for precision
+            bool setZeroAtProbe = false;     // Set Z=0 at probed position
             bool useAbsolute = false;        // Return to absolute positioning
         };
 

@@ -1,5 +1,5 @@
 #include "statebehaviormanager.h"
-#include "state_behaviour/statebehavior.h"
+#include "core/state_behavior/statebehavior.h"
 #include "communicator.h"
 #include <QDebug>
 

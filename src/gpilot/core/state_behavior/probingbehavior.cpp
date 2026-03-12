@@ -152,7 +152,21 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
         case ProbeStage::RetractWait:
             if (command.contains("G0") || command.contains("G1")) {
                 qDebug() << "[ProbingBehavior] Retract complete, starting slow probe";
-                startSlowProbe();
+                if (m_params.doubleProbe) {
+                    startSlowProbe();
+                } else {
+                    // If not doing double probe, use fast probe result as final
+                    m_probedPosition = m_fastProbePosition;
+                    m_success = true;
+                    log("Probing completed (single probe mode)", {"Probing"});
+                    emit probeCompleted(m_probedPosition);
+
+                    if (m_params.setZeroAtProbe) {
+                        setZeroPosition();
+                    } else {
+                        moveToSafePosition();
+                    }
+                }
             }
             break;
 

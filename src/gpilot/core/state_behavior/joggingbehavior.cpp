@@ -147,10 +147,24 @@ void JoggingBehavior::continueJogging()
         return;
     }
 
-    qDebug() << "[JoggingBehavior] Continuing jogging: " << m_sent << m_jogCommand << m_sent << m_acked;
-
     m_communicator->sendCommand(CommandSource::GeneralUI, m_jogCommand, TABLE_INDEX_UI);
     m_sent++;
+}
+
+void JoggingBehavior::fillBuffer()
+{
+    double realDistance = (m_communicator->machinePos() - m_startMachinePos).length();
+    double remaining = m_sent * m_segmentDist - realDistance;
+
+    qDebug() << "[JoggingBehavior] fillBuffer: real=" << realDistance
+             << "sent=" << m_sent << "remaining=" << remaining
+             << "target=" << m_targetLookahead;
+
+    while (!m_stopping && remaining < m_targetLookahead
+           && !m_communicator->willOverflowBuffer(m_jogCommand)) {
+        continueJogging();
+        remaining += m_segmentDist;
+    }
 }
 
 void JoggingBehavior::buildJogCommand(double distance)
@@ -178,41 +192,35 @@ void JoggingBehavior::startJogging()
 
     if (m_joggingVector.length() == 0) {
         stopJogging();
-
         return;
     }
-
-    double distance = m_distance;
 
     if (m_continuous) {
         qDebug() << "[JoggingBehavior] Continuous mode";
 
-        // Time = 0.1s
-        // 0.1/60 min, so distance = m_feedRate * (0.1/60) = m_feedRate / 600
-        distance = std::max(m_feedRate / 600.0, 0.05);
+        // Segment covers exactly one timer interval of travel at the configured feed rate.
+        // This gives the shortest possible segments while maintaining continuous motion.
+        double effectiveFeedRate = (m_joggingVector.z() != 0) ? m_feedRateZ : m_feedRate;
+        m_segmentDist = std::max(effectiveFeedRate / 60000.0 * TIMER_INTERVAL_MS, 0.05);
         if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
-            // diagonal movement, reduce distance by sqrt(2)
-            distance /= std::sqrt(2.0);
+            m_segmentDist /= std::sqrt(2.0);
         }
 
-        // Timer interval should be slightly less than the move duration to ensure continuity
-        // Move duration: 100ms
-        // Timer interval: 50ms
-        // This means we send command every 50ms, adding 100ms of motion.
-        // The buffer will grow by 50ms every 50ms.
-        // To prevent buffer overflow and run-on, we stop filling if we are too far ahead.
-        // But since we can't easily check buffer depth, we rely on the user releasing the key
-        // and sending Jog Cancel.
-        // Or better: match the timer to the duration closely.
-        // Interval: 80ms. Move: 100ms. Growth: 20ms/tick. Fills 1s buffer in 4s.
-        // Let's use 50ms timer and recalculate distance for ~70ms motion?
-        // Let's try: Timer 50ms, Motion 0.1s (100ms).
-        int timerInterval = 80;
+        // Keep 2.5 segments ahead: enough to cover one full poll cycle with margin,
+        // so the planner never empties between timer ticks.
+        m_targetLookahead = 2.5 * m_segmentDist;
 
-        m_compensation.reset();
+        buildJogCommand(m_segmentDist);
+
+        m_startMachinePos = m_communicator->machinePos();
+        m_isJogging = true;
+        m_sent = 0;
+
+        // Pre-fill to target lookahead before the first timer tick.
+        fillBuffer();
 
         disconnect(&m_joggingTimer, &QTimer::timeout, nullptr, nullptr);
-        connect(&m_joggingTimer, &QTimer::timeout, this, [this, distance]() {
+        connect(&m_joggingTimer, &QTimer::timeout, this, [this]() {
             m_communicator->queryMachineState();
 
             if (m_stopping || !m_isJogging) {
@@ -220,30 +228,25 @@ void JoggingBehavior::startJogging()
                 return;
             }
 
-            performDynamicCompensation(distance);
-
-            if (!m_communicator->willOverflowBuffer(m_jogCommand)) {
-                continueJogging();
-            }
+            fillBuffer();
         });
-        m_joggingTimer.start(timerInterval);
-    } else {
-        if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
-            // diagonal movement, reduce distance by sqrt(2)
-            distance /= std::sqrt(2.0);
-        }
+
+        m_communicator->stopQueryingMachineState();
+        m_joggingTimer.start(TIMER_INTERVAL_MS);
+        return;
+    }
+
+    // Non-continuous: single fixed-distance command.
+    double distance = m_distance;
+    if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
+        distance /= std::sqrt(2.0);
     }
 
     buildJogCommand(distance);
-
     m_startMachinePos = m_communicator->machinePos();
-
     m_isJogging = true;
     m_sent = 0;
     continueJogging();
-    if (m_continuous) {
-        m_communicator->stopQueryingMachineState();
-    }
 }
 
 void JoggingBehavior::stopJogging()
@@ -280,77 +283,3 @@ void JoggingBehavior::setJoggingFeedRate(double feedRate)
     }
 }
 
-void JoggingBehavior::performDynamicCompensation(double distance)
-{
-    QVector3D m_machinePosDiff = m_communicator->machinePos() - m_startMachinePos;
-    double realDistance = m_machinePosDiff.length();
-    // TODO: Units conversion
-    // if (m_communicator->machineConfiguration().unitsInches()) {
-    //     realDistance *= 25.4;
-    // }
-
-    double sentDistance = m_sent * distance;
-
-    // Target strategy: Maintain buffer of ~2.5 segments.
-    // We virtually increase the real distance by 2.5 segments.
-    // We want SentDistance to be equal to this AugmentedRealDistance.
-    double augmentedRealDistance = realDistance + (2.5 * distance);
-
-    // Error = Sent - AugmentedTarget.
-    // Positive means Sent > AugmentedTarget (Buffer too big) -> Slow down
-    // Negative means Sent < AugmentedTarget (Buffer too small) -> Speed up
-    double currentDiff = sentDistance - augmentedRealDistance;
-
-    double smoothedDiff = m_compensation.addDiff(currentDiff);
-
-    int currentInterval = m_joggingTimer.interval();
-    int newInterval = currentInterval;
-
-    // Simple incremental control loop
-    double deadband = 0.1 * distance;
-
-    if (smoothedDiff > deadband) {
-        newInterval += 1;
-    } else if (smoothedDiff < -deadband) {
-        newInterval -= 1;
-    }
-
-    if (smoothedDiff > distance) newInterval += 2;
-    else if (smoothedDiff < -distance) newInterval -= 2;
-    newInterval = qBound(20, newInterval, 200);
-
-    if (newInterval != currentInterval) {
-        m_joggingTimer.setInterval(newInterval);
-    }
-
-    qDebug() << "[JoggingBehavior] Real:" << realDistance << "Target(Adj):" << augmentedRealDistance
-             << "Sent:" << sentDistance << "Error:" << smoothedDiff << "Interval:" << newInterval;
-}
-
-void JoggingBehavior::SendingIntervalCompensation::reset()
-{
-    historyIndex = 0;
-    historyCount = 0;
-}
-
-double JoggingBehavior::SendingIntervalCompensation::addDiff(double diff)
-{
-    diffHistory[historyIndex] = diff;
-    historyIndex = (historyIndex + 1) % HISTORY_SIZE;
-    if (historyCount < HISTORY_SIZE) {
-        historyCount++;
-    }
-
-    return smoothedDiff();
-}
-
-double JoggingBehavior::SendingIntervalCompensation::smoothedDiff() const
-{
-    if (historyCount == 0) return 0.0;
-    double sum = 0.0;
-    for (int i = 0; i < historyCount; ++i) {
-        sum += diffHistory[i];
-    }
-
-    return sum / historyCount;
-}

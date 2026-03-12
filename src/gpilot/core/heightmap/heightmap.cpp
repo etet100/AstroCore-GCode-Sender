@@ -89,6 +89,84 @@ QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const
     return QPair<int, int>(i, j);
 }
 
+QList<QPointF> Heightmap::probePoints(QPointF currentPos, ScanMode mode) const
+{
+    // Find nearest grid vertex to current position
+    int sx = qBound(0, qRound((currentPos.x() - m_startPos.x()) / m_stepSize.width()),  m_size.width()  - 1);
+    int sy = qBound(0, qRound((currentPos.y() - m_startPos.y()) / m_stepSize.height()), m_size.height() - 1);
+
+    auto gridPt = [&](int x, int y) {
+        return QPointF(m_startPos.x() + x * m_stepSize.width(),
+                       m_startPos.y() + y * m_stepSize.height());
+    };
+
+    QList<QPointF> points;
+    points.reserve(m_size.width() * m_size.height());
+
+    if (mode == ScanMode::Rows) {
+        // Step 1: rest of starting row, going right from sx
+        for (int x = sx; x < m_size.width(); x++)
+            points << gridPt(x, sy);
+
+        // Step 2: rows after sy, full serpentine (next row goes left)
+        bool goRight = false;
+        for (int y = sy + 1; y < m_size.height(); y++) {
+            for (int x = goRight ? 0 : m_size.width() - 1;
+                 goRight ? x < m_size.width() : x >= 0;
+                 goRight ? x++ : x--)
+                points << gridPt(x, y);
+            goRight = !goRight;
+        }
+
+        // Step 3: rows before sy, continuing serpentine
+        for (int y = sy - 1; y >= 0; y--) {
+            for (int x = goRight ? 0 : m_size.width() - 1;
+                 goRight ? x < m_size.width() : x >= 0;
+                 goRight ? x++ : x--)
+                points << gridPt(x, y);
+            goRight = !goRight;
+        }
+
+        // Step 4: remaining points in starting row (0 to sx-1), continuing direction
+        for (int x = goRight ? 0 : sx - 1;
+             goRight ? x < sx : x >= 0;
+             goRight ? x++ : x--)
+            points << gridPt(x, sy);
+
+    } else { // ScanMode::Columns
+        // Step 1: rest of starting column, going up from sy
+        for (int y = sy; y < m_size.height(); y++)
+            points << gridPt(sx, y);
+
+        // Step 2: columns after sx, full serpentine (next column goes down)
+        bool goUp = false;
+        for (int x = sx + 1; x < m_size.width(); x++) {
+            for (int y = goUp ? 0 : m_size.height() - 1;
+                 goUp ? y < m_size.height() : y >= 0;
+                 goUp ? y++ : y--)
+                points << gridPt(x, y);
+            goUp = !goUp;
+        }
+
+        // Step 3: columns before sx, continuing serpentine
+        for (int x = sx - 1; x >= 0; x--) {
+            for (int y = goUp ? 0 : m_size.height() - 1;
+                 goUp ? y < m_size.height() : y >= 0;
+                 goUp ? y++ : y--)
+                points << gridPt(x, y);
+            goUp = !goUp;
+        }
+
+        // Step 4: remaining points in starting column (0 to sy-1), continuing direction
+        for (int y = goUp ? 0 : sy - 1;
+             goUp ? y < sy : y >= 0;
+             goUp ? y++ : y--)
+            points << gridPt(sx, y);
+    }
+
+    return points;
+}
+
 double& Heightmap::at(int x, int y)
 {
     return m_data[y * m_size.width() + x];

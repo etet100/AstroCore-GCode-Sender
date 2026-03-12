@@ -11,7 +11,7 @@
 
 void Communicator::onConnectionLineReceived(QString data)
 {
-    qDebug() << "[Communicator][Resp] " + data;
+    // qDebug() << "[Communicator][Resp] " + data;
 
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
     //The longest line i have seen is 94 characters:
@@ -60,9 +60,9 @@ void Communicator::onConnectionLineReceived(QString data)
     //     qDebug() << "< RST <" << data;
     // }
 
-    if (m_sb) {
-        assert(m_sb != nullptr && !m_sb.isNull());
-        if (m_sb->onRawResponse(data) == StateBehavior::Result::Ok) {
+    if (m_sbManager.hasCurrent()) {
+        StateBehavior* sb = m_sbManager.current();
+        if (sb->onRawResponse(data) == StateBehavior::Result::Ok) {
             processStateBehaviorTransition();
 
             return;
@@ -353,11 +353,12 @@ void Communicator::processMachineState(QString stateStr)
     // qDebug() << "[Communicator] Machine state:" << stateStr;
 
     // Update status
+    StateBehavior* sb = m_sbManager.current();
     if (state != m_machineState) {
         // emit deviceStateChanged(state);
-        m_sb->onMachineStateChanged(state);
+        sb->onMachineStateChanged(state);
     }
-    m_sb->onMachineState(state);
+    sb->onMachineState(state);
 
     emit machineStateReceived(state);
 
@@ -588,9 +589,9 @@ bool Communicator::processCommandResponse(QString data)
 
     QString command = GcodePreprocessorUtils::removeComment(commandAttributes.commandLine).toUpper();
 
-    if (m_sb != nullptr) {
-        assert(m_sb != nullptr && !m_sb.isNull());
-        StateBehavior::Result sbResult = m_sb->onCommandResponse(command, commandAttributes, cmdStatus, data, lines);
+    if (m_sbManager.hasCurrent()) {
+        StateBehavior* sb = m_sbManager.current();
+        StateBehavior::Result sbResult = sb->onCommandResponse(command, commandAttributes, cmdStatus, data, lines);
         switch (sbResult) {
             case StateBehavior::Result::Ok:
                 result = true;
@@ -933,8 +934,8 @@ void Communicator::processAlarm(QString data)
 
         emit alarm(m_lastAlarmCode);
 
-        if (m_sb != nullptr) {
-            m_sb->onAlarm(m_lastAlarmCode);
+        if (m_sbManager.hasCurrent()) {
+            m_sbManager.current()->onAlarm(m_lastAlarmCode);
         }
     }
 }

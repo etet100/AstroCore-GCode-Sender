@@ -25,5 +25,6 @@
 #include "toolchangebehavior.h"
 #include "resetbehavior.h"
 #include "gotobehavior.h"
+#include "scantablebehavior.h"
 
 #endif // BEHAVIORS_H

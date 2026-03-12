@@ -1,5 +1,5 @@
 #include "statebehaviorgarbagecollector.h"
-#include "state_behaviour/statebehavior.h"
+#include "core/state_behavior/statebehavior.h"
 #include <QDebug>
 
 StateBehaviorGarbageCollector::StateBehaviorGarbageCollector(int maxRetainedObjects)

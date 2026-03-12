@@ -17,6 +17,7 @@ class Communicator : public QObject
 {
     friend class Jogger;
     friend class CommunicatorApi;
+    friend class StateBehaviorManager;
 
     Q_OBJECT
 

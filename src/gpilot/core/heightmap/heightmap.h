@@ -21,6 +21,11 @@ class Heightmap
             Bicubic,
         };
 
+        enum class ScanMode {
+            Rows,
+            Columns,
+        };
+
         Heightmap();
         Heightmap(const Heightmap& other) = delete;
         Heightmap& operator=(const Heightmap& other) = delete;
@@ -57,6 +62,7 @@ class Heightmap
         BottomTop zBottomTop() const { return m_zBottomTop; }
         int probeFeed() const { return m_probeFeed; }
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
+        QList<QPointF> probePoints(QPointF currentPos, ScanMode mode) const;
         double& at(int x, int y);
         double at(QPoint pt) const;
         double at(int x, int y) const;

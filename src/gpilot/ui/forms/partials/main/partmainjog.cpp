@@ -201,7 +201,7 @@ void PartMainJog::onCmdZPlusReleased()
 
 void PartMainJog::onCmdZMinusPressed()
 {
-    m_jogVector = JoggingVector(-1, 0, 0);
+    m_jogVector = JoggingVector(0, 0, -1);
     emit this->jog(JoggindDir::ZMinus, m_jogVector);
 }
 

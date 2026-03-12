@@ -7,8 +7,6 @@
 
 #include "statebehavior.h"
 #include "core/globals.h"
-#include <QQueue>
-#include <QElapsedTimer>
 
 class JoggingBehavior : public StateBehavior
 {
@@ -34,13 +32,8 @@ class JoggingBehavior : public StateBehavior
         QString name() const override { return "JoggingBehavior"; }
 
     private:
-        struct JogCommand {
-            double feedRate;
-            double distance;
-            qint64 timestamp;
-        };
+        static constexpr int TIMER_INTERVAL_MS = 50;
 
-        // JoggindDir m_currentDirection;
         QVector3D m_joggingVector;
         int m_feedRate;
         int m_feedRateZ;
@@ -55,20 +48,11 @@ class JoggingBehavior : public StateBehavior
         QTimer m_joggingTimer;
         int m_sent = 0;
         int m_acked = 0;
-
-        struct SendingIntervalCompensation {
-            static const int HISTORY_SIZE = 3;
-            double diffHistory[HISTORY_SIZE];
-            int historyIndex = 0;
-            int historyCount = 0;
-            void reset();
-            double addDiff(double diff);
-            double smoothedDiff() const;
-        };
-        SendingIntervalCompensation m_compensation;
+        double m_segmentDist = 0.0;
+        double m_targetLookahead = 0.0;
 
         void continueJogging();
-        void performDynamicCompensation(double distance);
+        void fillBuffer();
         void buildJogCommand(double distance);
 };
 
