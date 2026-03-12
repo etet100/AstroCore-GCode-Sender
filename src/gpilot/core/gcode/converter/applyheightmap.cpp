@@ -293,8 +293,8 @@ QString ApplyHeightmap::generateGCodeLine(const QVector3D &start, const QVector3
                                           const QString &commandOverride)
 {
     QString command = commandOverride.isEmpty() ? originalItem.command : commandOverride;
-    if (command.isEmpty() && !originalItem.args.isEmpty()) {
-        command = originalItem.args.first();
+    if (command.isEmpty() && !originalItem.args.empty()) {
+        command = QString::fromStdString(originalItem.args.front());
     }
 
     QString line = command;

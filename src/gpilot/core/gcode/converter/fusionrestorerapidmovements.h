@@ -5,6 +5,8 @@
 #define FUSIONRESTORERAPIDMOVEMENTS_H
 
 #include "converter.h"
+#include <vector>
+#include <string>
 
 /**
  * Detects G1 moves that Fusion 360 generated as feed moves but should be G0,
@@ -96,7 +98,7 @@ class FusionRestoreRapidMovements : public Converter
 
         static QString formatZ(double z);
         static QString formatF(double f);
-        static QString extractXY(const QStringList &args);
+        static QString extractXY(const std::vector<std::string> &args);
 };
 
 #endif // FUSIONRESTORERAPIDMOVEMENTS_H

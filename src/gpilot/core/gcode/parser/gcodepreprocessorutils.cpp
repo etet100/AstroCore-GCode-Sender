@@ -47,8 +47,8 @@ static inline std::string &trim(std::string &s)
 
 void GcodePreprocessorUtils::parseLines(QStringList& lines, GCode& gcode)
 {
-    for (auto& line : lines) {
-        GCodeItem item = GcodePreprocessorUtils::parseLine(line.toStdString());
+    for (const auto& line : lines) {
+        GCodeItem item = GcodePreprocessorUtils::parseLine(line);
         if (item.state == GCodeItem::EmptyLine) {
             continue;
         }
@@ -56,41 +56,41 @@ void GcodePreprocessorUtils::parseLines(QStringList& lines, GCode& gcode)
     }
 }
 
-GCodeItem GcodePreprocessorUtils::parseLine(std::string line)
+GCodeItem GcodePreprocessorUtils::parseLine(const QString &line)
 {
-    line = GcodePreprocessorUtils::trimCommand(line);
-
-    if (line.empty()) {
-        return {
-            .state = GCodeItem::EmptyLine
-        };
+    const QString trimmed = line.trimmed();
+    if (trimmed.isEmpty()) {
+        return { .state = GCodeItem::EmptyLine };
     }
 
-    // Split command
-    std::string command = GcodePreprocessorUtils::removeComment(line);
-    QStringList args = GcodePreprocessorUtils::splitCommand(command);
-    std::string comment = GcodePreprocessorUtils::getComment(line);
-    if (command.empty() && comment.empty()) {
-        return {
-            .state = GCodeItem::EmptyLine
-        };
+    // removeComment returns trimmed+uppercased command with comments stripped
+    const QString command = GcodePreprocessorUtils::removeComment(trimmed);
+    const QString comment = GcodePreprocessorUtils::parseComment(trimmed);
+
+    if (command.isEmpty() && comment.isEmpty()) {
+        return { .state = GCodeItem::EmptyLine };
     }
 
-    GCodeItemGroup group = GCodeItemGroup::Unknown; // TODO: determine group
+    GCodeItemGroup group = GCodeItemGroup::Unknown;
     GCodeItem::States state = GCodeItem::InQueue;
-    if (command.empty()) {
+    if (command.isEmpty()) {
         state = GCodeItem::Comment;
         group = GCodeItemGroup::Comment;
     }
 
     return {
-        .line = QString::fromStdString(line),
-        .command = QString::fromStdString(command),
-        .comment = QString::fromStdString(comment),
+        .line = trimmed,
+        .command = command,
+        .comment = comment,
         .state = state,
-        .args = args,
+        .args = GcodePreprocessorUtils::splitCommand(command),
         .group = group
     };
+}
+
+GCodeItem GcodePreprocessorUtils::parseLine(std::string line)
+{
+    return parseLine(QString::fromLatin1(line.c_str(), (qsizetype)line.size()));
 }
 
 /**
@@ -125,17 +125,21 @@ std::string GcodePreprocessorUtils::trimCommand(std::string command)
 
 /**
 * Removes any comments within parentheses or beginning with a semi-colon.
+* Uses plain string operations instead of regex for performance.
 */
 QString GcodePreprocessorUtils::removeComment(QString command)
 {
-    static QRegularExpression rx1("\\(+[^\\(]*\\)+");
-    static QRegularExpression rx2(";.*");
+    // Remove semicolon comment (everything from ; to end)
+    int semi = command.indexOf(';');
+    if (semi >= 0) command.truncate(semi);
 
-    // Remove any comments within ( parentheses ) using regex "\([^\(]*\)"
-    if (command.contains('(')) command.remove(rx1);
-
-    // Remove any comment beginning with ';' using regex ";.*"
-    if (command.contains(';')) command.remove(rx2);
+    // Remove parenthesized comments (may be multiple)
+    int open;
+    while ((open = command.indexOf('(')) >= 0) {
+        int close = command.indexOf(')', open);
+        if (close < 0) { command.truncate(open); break; }
+        command.remove(open, close - open + 1);
+    }
 
     return command.trimmed().toUpper();
 }
@@ -231,14 +235,13 @@ QString GcodePreprocessorUtils::removeAllWhitespace(QString command)
     return command.remove(rx);
 }
 
-QList<float> GcodePreprocessorUtils::parseCodes(const QStringList &args, char code)
+QList<float> GcodePreprocessorUtils::parseCodes(const std::vector<std::string> &args, char code)
 {
     QList<float> l;
-
-    foreach (QString s, args) {
-        if (s.length() > 0 && s[0].toUpper() == code) l.append(s.mid(1).toDouble());
+    const char cu = toUpper(code);
+    for (const std::string &s : args) {
+        if (!s.empty() && s[0] == cu) l.append((float)std::strtod(s.c_str() + 1, nullptr));
     }
-
     return l;
 }
 
@@ -283,7 +286,7 @@ QList<int> GcodePreprocessorUtils::parseMCodes(QString command)
 */
 QVector3D GcodePreprocessorUtils::updatePointWithCommand(const QString &command, const QVector3D &initial, bool absoluteMode)
 {
-    QStringList l = splitCommand(command);
+    auto l = splitCommand(command);
 
     return updatePointWithCommand(l, initial, absoluteMode);
 }
@@ -291,28 +294,19 @@ QVector3D GcodePreprocessorUtils::updatePointWithCommand(const QString &command,
 /**
 * Update a point given the arguments of a command, using a pre-parsed list.
 */
-QVector3D GcodePreprocessorUtils::updatePointWithCommand(const QStringList &commandArgs, const QVector3D &initial,
+QVector3D GcodePreprocessorUtils::updatePointWithCommand(const std::vector<std::string> &commandArgs, const QVector3D &initial,
                                                          bool absoluteMode)
 {
     double x = qQNaN();
     double y = qQNaN();
     double z = qQNaN();
-    char c;
 
-    for (int i = 0; i < commandArgs.length(); i++) {
-        if (commandArgs.at(i).length() > 0) {
-            c = commandArgs.at(i).at(0).toUpper().toLatin1();
-            switch (c) {
-            case 'X':
-                x = commandArgs.at(i).mid(1).toDouble();;
-                break;
-            case 'Y':
-                y = commandArgs.at(i).mid(1).toDouble();;
-                break;
-            case 'Z':
-                z = commandArgs.at(i).mid(1).toDouble();;
-                break;
-            }
+    for (const std::string &arg : commandArgs) {
+        if (arg.empty()) continue;
+        switch (arg[0]) {
+        case 'X': x = std::strtod(arg.c_str() + 1, nullptr); break;
+        case 'Y': y = std::strtod(arg.c_str() + 1, nullptr); break;
+        case 'Z': z = std::strtod(arg.c_str() + 1, nullptr); break;
         }
     }
 
@@ -339,32 +333,20 @@ QVector3D GcodePreprocessorUtils::updatePointWithCommand(const QVector3D &initia
     return newPoint;
 }
 
-QVector3D GcodePreprocessorUtils::updateCenterWithCommand(QStringList commandArgs, QVector3D initial, QVector3D nextPoint, bool absoluteIJKMode, bool clockwise)
+QVector3D GcodePreprocessorUtils::updateCenterWithCommand(const std::vector<std::string> &commandArgs, QVector3D initial, QVector3D nextPoint, bool absoluteIJKMode, bool clockwise)
 {
     double i = qQNaN();
     double j = qQNaN();
     double k = qQNaN();
     double r = qQNaN();
-    char c;
 
-    foreach (QString t, commandArgs)
-    {
-        if (t.length() > 0) {
-            c = t[0].toUpper().toLatin1();
-            switch (c) {
-            case 'I':
-                i = t.mid(1).toDouble();
-                break;
-            case 'J':
-                j = t.mid(1).toDouble();
-                break;
-            case 'K':
-                k = t.mid(1).toDouble();
-                break;
-            case 'R':
-                r = t.mid(1).toDouble();
-                break;
-            }
+    for (const std::string &t : commandArgs) {
+        if (t.empty()) continue;
+        switch (t[0]) {
+        case 'I': i = std::strtod(t.c_str() + 1, nullptr); break;
+        case 'J': j = std::strtod(t.c_str() + 1, nullptr); break;
+        case 'K': k = std::strtod(t.c_str() + 1, nullptr); break;
+        case 'R': r = std::strtod(t.c_str() + 1, nullptr); break;
         }
     }
 
@@ -397,30 +379,30 @@ QString GcodePreprocessorUtils::generateG1FromPoints(QVector3D start, QVector3D 
  * This command is about the same speed as the string.split(" ") command,
  * but might be a little faster using precompiled regex.
  */
-QStringList GcodePreprocessorUtils::splitCommand(const QString &command) {
-    QStringList l;
+std::vector<std::string> GcodePreprocessorUtils::splitCommand(const QString &command) {
+    std::vector<std::string> l;
     bool readNumeric = false;
-    QString sb;
+    char buf[32];
+    int bufLen = 0;
 
     QByteArray ba(command.toLatin1());
-    const char *cmd = ba.constData(); // Direct access to string data
-    char c;
+    const char *cmd = ba.constData();
 
-    for (int i = 0; i < command.length(); i++) {
-        c = cmd[i];
+    for (int i = 0; i < ba.size(); i++) {
+        char c = cmd[i];
 
         if (readNumeric && !isDigit(c) && c != '.') {
             readNumeric = false;
-            l.append(sb);
-            sb.clear();
-            if (isLetter(c)) sb.append(c);
+            l.emplace_back(buf, bufLen);
+            bufLen = 0;
+            if (isLetter(c)) buf[bufLen++] = c;
         } else if (isDigit(c) || c == '.' || c == '-') {
-            sb.append(c);
+            buf[bufLen++] = c;
             readNumeric = true;
-        } else if (isLetter(c)) sb.append(c);
+        } else if (isLetter(c)) buf[bufLen++] = c;
     }
 
-    if (sb.length() > 0) l.append(sb);
+    if (bufLen > 0) l.emplace_back(buf, bufLen);
 
 //    QChar c;
 
@@ -443,46 +425,40 @@ QStringList GcodePreprocessorUtils::splitCommand(const QString &command) {
     return l;
 }
 
-QStringList GcodePreprocessorUtils::splitCommand(const std::string &command)
+std::vector<std::string> GcodePreprocessorUtils::splitCommand(const std::string &command)
 {
     bool readNumeric = false;
-    char* c_ = (char*)command.c_str();
-    std::string sb;
-    QStringList l;
+    const char *c_ = command.c_str();
+    char buf[32];
+    int bufLen = 0;
+    std::vector<std::string> l;
 
     while (*c_) {
         char c = *c_++;
         if (readNumeric && !isDigit(c) && c != '.') {
             readNumeric = false;
-            l.append(QString::fromStdString(sb));
-            sb.clear();
-            if (isLetter(c)) sb.append(1, c);
+            l.emplace_back(buf, bufLen);
+            bufLen = 0;
+            if (isLetter(c)) buf[bufLen++] = c;
         } else if (isDigit(c) || c == '.' || c == '-') {
-            sb.append(1, c);
+            buf[bufLen++] = c;
             readNumeric = true;
-        } else if (isLetter(c)) sb.append(1, c);
+        } else if (isLetter(c)) {
+            buf[bufLen++] = c;
+        }
     }
 
-    if (sb.length() > 0) l.append(QString::fromStdString(sb));
+    if (bufLen > 0) l.emplace_back(buf, bufLen);
 
     return l;
 }
 
-// TODO: Replace everything that uses this with a loop that loops through
-// the string and creates a hash with all the values.
-double GcodePreprocessorUtils::parseCoord(QStringList argList, char c)
+double GcodePreprocessorUtils::parseCoord(const std::vector<std::string> &argList, char c)
 {
-//    int n = argList.length();
-
-//    for (int i = 0; i < n; i++) {
-//        if (argList[i].length() > 0 && argList[i][0].toUpper() == c) return argList[i].mid(1).toDouble();
-//    }
-
-    foreach (QString t, argList)
-    {
-        if (!t.isEmpty() && t[0].toUpper() == c) return t.mid(1).toDouble();
+    const char cu = toUpper(c);
+    for (const std::string &s : argList) {
+        if (!s.empty() && s[0] == cu) return std::strtod(s.c_str() + 1, nullptr);
     }
-
     return qQNaN();
 }
 

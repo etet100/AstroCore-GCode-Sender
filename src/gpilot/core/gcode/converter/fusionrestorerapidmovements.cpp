@@ -37,7 +37,7 @@ bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int
         return false;
     }
 
-    const QStringList &args = item.args;
+    const auto &args = item.args;
 
     // Handle M49/M48 (disable/enable speed overrides)
     for (float mc : GcodePreprocessorUtils::parseCodes(args, 'M')) {
@@ -188,14 +188,15 @@ QString FusionRestoreRapidMovements::formatF(double f)
     return QString::number(f, 'f', 1);
 }
 
-QString FusionRestoreRapidMovements::extractXY(const QStringList &args)
+QString FusionRestoreRapidMovements::extractXY(const std::vector<std::string> &args)
 {
     QString xy;
-    for (const QString &arg : args) {
-        if (!arg.isEmpty() && (arg[0].toUpper() == 'X' || arg[0].toUpper() == 'Y')) {
-            if (!xy.isEmpty()) xy += " ";
-            xy += arg;
+    for (const std::string &arg : args) {
+        if (!arg.empty() && (arg[0] == 'X' || arg[0] == 'Y')) {
+            if (!xy.isEmpty()) xy += ' ';
+            xy += QString::fromLatin1(arg.c_str(), (qsizetype)arg.size());
         }
     }
+
     return xy;
 }

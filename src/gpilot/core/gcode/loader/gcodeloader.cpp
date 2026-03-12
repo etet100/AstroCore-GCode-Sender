@@ -6,34 +6,7 @@
 #include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include <QDebug>
-
-class StringListIODevice : public QIODevice {
-    public:
-        StringListIODevice(const QStringList &lines, QObject *parent = nullptr)
-            : QIODevice(parent), lines(lines), index(0) {}
-
-        bool open(OpenMode mode) override {
-            index = 0;
-            return QIODevice::open(mode);
-        }
-
-        bool isSequential() const override { return true; }
-
-    protected:
-        qint64 readData(char *data, qint64 maxSize) override {
-            if (index >= lines.size()) return -1;
-            QByteArray ba = lines[index++].toUtf8() + '\n';
-            qint64 size = qMin(maxSize, (qint64)ba.size());
-            memcpy(data, ba.constData(), size);
-            return size;
-        }
-
-        qint64 writeData(const char*, qint64) override { return -1; }
-
-    private:
-        QStringList lines;
-        int index;
-};
+#include <QTextStream>
 
 GCodeLoader::GCodeLoader(QObject *parent)
     : AbstractGCodeLoader(parent)
@@ -44,94 +17,36 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
 {
     QFile file(fileName);
 
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         emit cancelled();
-
         return;
     }
 
-    loadFromIODevice(file, file.size(), configuration);
-    file.close();
-}
-
-void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration)
-{
-    StringListIODevice io(lines);
-
-    loadFromIODevice(io, lines.size(), configuration);
-}
-
-void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
-{
     emit started();
-
-    m_cancel = false;
-    int size = gcode->count();
-    int remaining = size;
-
-    GcodeParser parser;
-    for (auto& item : *gcode) {
-        item.commandNumber = parser.getCommandNumber();
-        item.isMovement = parser.addCommand(item.args) != nullptr;
-
-        remaining--;
-        int percentage = 100 - (remaining * 100 / size);
-        static int lastPercentage = 0;
-        if (percentage != lastPercentage) {
-            lastPercentage = percentage;
-            emit progress(percentage);
-        }
-
-        if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
-            emit cancelled();
-
-            return;
-        }
-    }
-
-    GCodeViewParser* viewParser = new GCodeViewParser();
-    viewParser->getLinesFromParser(
-        &parser,
-        configuration.arcApproximationValue(),
-        configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
-    );
-
-    if (m_cancel) {
-        emit cancelled();
-    } else {
-        emit progress(100);
-
-        GCodeLoaderData *result = new GCodeLoaderData();
-        result->gcode = gcode;
-        result->viewParser = viewParser;
-
-        emit finished(result);
-    }
-}
-
-void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfiguration &configuration)
-{
-    emit started();
-
     m_cancel = false;
 
+    const qint64 fileSize = file.size();
+    const int estimatedLines = qMax(1, (int)(fileSize / 20));
+
     GcodeParser parser;
+    parser.reservePoints(estimatedLines);
+
     GCode* gcode = new GCode();
+    gcode->reserve(estimatedLines);
 
-    while (!io.atEnd()) {
-        GCodeItem item = GcodePreprocessorUtils::parseLine(io.readLine().toStdString());
-        if (item.state == GCodeItem::EmptyLine) {
-            continue;
-        }
+    QTextStream stream(&file);
+    int lastPercentage = -1;
+
+    while (!stream.atEnd()) {
+        GCodeItem item = GcodePreprocessorUtils::parseLine(stream.readLine());
+        if (item.state == GCodeItem::EmptyLine) continue;
 
         item.commandNumber = parser.getCommandNumber();
-        item.isMovement = parser.addCommand(item.args) != nullptr;
-        *gcode << item;
+        item.isMovement = parser.addCommand(item) != nullptr;
+        *gcode << std::move(item);
 
-        int percentage = ((float) io.pos() / (float) size) * 100.0f;
-        static int lastPercentage = 0;
+        int percentage = (int)(file.pos() * 100LL / fileSize);
         if (percentage != lastPercentage) {
-            qDebug() << "[GCodeLoader] Loading GCode:" << size << io.pos() << percentage;
             lastPercentage = percentage;
             emit progress(percentage);
         }
@@ -139,10 +54,11 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
         if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
             delete gcode;
             emit cancelled();
-
             return;
         }
     }
+
+    file.close();
 
     qDebug() << "[GCodeLoader] GCode loaded. Total lines:" << gcode->count();
 
@@ -157,6 +73,109 @@ void GCodeLoader::loadFromIODevice(QIODevice &io, int size, GCodeLoaderConfigura
 
     if (m_cancel) {
         delete gcode;
+        emit cancelled();
+    } else {
+        emit progress(100);
+        GCodeLoaderData *result = new GCodeLoaderData();
+        result->gcode = gcode;
+        result->viewParser = viewParser;
+        emit finished(result);
+    }
+}
+
+void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration)
+{
+    emit started();
+    m_cancel = false;
+
+    const int size = lines.size();
+
+    GcodeParser parser;
+    parser.reservePoints(size);
+
+    GCode* gcode = new GCode();
+    gcode->reserve(size);
+
+    int lastPercentage = -1;
+    int i = 0;
+
+    for (const QString &line : lines) {
+        GCodeItem item = GcodePreprocessorUtils::parseLine(line);
+        if (item.state != GCodeItem::EmptyLine) {
+            item.commandNumber = parser.getCommandNumber();
+            item.isMovement = parser.addCommand(item) != nullptr;
+            *gcode << std::move(item);
+        }
+
+        int percentage = ++i * 100 / size;
+        if (percentage != lastPercentage) {
+            lastPercentage = percentage;
+            emit progress(percentage);
+        }
+
+        if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
+            delete gcode;
+            emit cancelled();
+            return;
+        }
+    }
+
+    GCodeViewParser* viewParser = new GCodeViewParser();
+    viewParser->getLinesFromParser(
+        &parser,
+        configuration.arcApproximationValue(),
+        configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+    );
+
+    if (m_cancel) {
+        delete gcode;
+        emit cancelled();
+    } else {
+        emit progress(100);
+        GCodeLoaderData *result = new GCodeLoaderData();
+        result->gcode = gcode;
+        result->viewParser = viewParser;
+        emit finished(result);
+    }
+}
+
+void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
+{
+    emit started();
+
+    m_cancel = false;
+    int size = gcode->count();
+    int remaining = size;
+    int lastPercentage = -1;
+
+    GcodeParser parser;
+    parser.reservePoints(size);
+
+    for (auto& item : *gcode) {
+        item.commandNumber = parser.getCommandNumber();
+        item.isMovement = parser.addCommand(item) != nullptr;
+
+        remaining--;
+        int percentage = 100 - (remaining * 100 / size);
+        if (percentage != lastPercentage) {
+            lastPercentage = percentage;
+            emit progress(percentage);
+        }
+
+        if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
+            emit cancelled();
+            return;
+        }
+    }
+
+    GCodeViewParser* viewParser = new GCodeViewParser();
+    viewParser->getLinesFromParser(
+        &parser,
+        configuration.arcApproximationValue(),
+        configuration.arcApproximationMode() == ConfigurationParser::ParserArcApproximationMode::ByAngle
+    );
+
+    if (m_cancel) {
         emit cancelled();
     } else {
         emit progress(100);

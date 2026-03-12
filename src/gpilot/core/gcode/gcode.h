@@ -7,6 +7,8 @@
 
 #include <QObject>
 #include <QTimer>
+#include <vector>
+#include <string>
 
 enum class StreamerStartResult
 {
@@ -45,7 +47,7 @@ struct GCodeItem
     QString response;
     int commandNumber;
     States state = InQueue;
-    QStringList args;
+    std::vector<std::string> args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
     bool isMovement = false;
 
@@ -86,7 +88,11 @@ class GCode : public QObject
         GCode& operator << (const GCodeItem& item) {
             m_data.append(item);
             emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
-
+            return *this;
+        }
+        GCode& operator << (GCodeItem&& item) {
+            m_data.append(std::move(item));
+            emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
             return *this;
         }
         GCode& operator << (const GCode& source) {

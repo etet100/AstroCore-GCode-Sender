@@ -279,8 +279,8 @@ QString ShakingGCode::generateGCodeLine(const QVector3D &start, const QVector3D 
 
     // Extract command (G0, G1, etc.)
     QString command = originalItem.command;
-    if (command.isEmpty() && !originalItem.args.isEmpty()) {
-        command = originalItem.args.first();
+    if (command.isEmpty() && !originalItem.args.empty()) {
+        command = QString::fromStdString(originalItem.args.front());
     }
 
     // Start with command

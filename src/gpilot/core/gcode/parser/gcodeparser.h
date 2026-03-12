@@ -56,8 +56,8 @@ public:
     void setTruncateDecimalLength(int truncateDecimalLength);
     // Theoretically the initial point is unknown, can we assume (0,0,0)?
     void reset(const QVector3D &initialPoint = QVector3D(0, 0, 0));
+    void reservePoints(int n) { m_points.reserve(n); }
     PointSegment *addCommand(QString command);
-    PointSegment *addCommand(const QStringList &args);
     PointSegment *addCommand(const GCodeItem &gcodeItem);
     QVector3D* getCurrentPoint();
     QList<PointSegment *> expandArc();
@@ -94,11 +94,11 @@ private:
     // The gcode.
     QList<PointSegment*> m_points;
 
-    PointSegment *processCommand(const QStringList &args);
-    void handleMCode(float code, const QStringList &args);
-    PointSegment *handleGCode(float code, const QStringList &args);
+    PointSegment *processCommand(const std::vector<std::string> &args);
+    void handleMCode(float code, const std::vector<std::string> &args);
+    PointSegment *handleGCode(float code, const std::vector<std::string> &args);
     PointSegment *addLinearPointSegment(const QVector3D &nextPoint, bool fastTraverse);
-    PointSegment *addArcPointSegment(const QVector3D &nextPoint, bool clockwise, const QStringList &args);
+    PointSegment *addArcPointSegment(const QVector3D &nextPoint, bool clockwise, const std::vector<std::string> &args);
     void setLastGcodeCommand(float num);
     void expandCannedCycle(const QVector3D &position);
 };

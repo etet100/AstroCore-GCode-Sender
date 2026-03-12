@@ -104,26 +104,15 @@ void GcodeParser::reset(const QVector3D &initialPoint)
 PointSegment* GcodeParser::addCommand(QString command)
 {
     QString stripped = GcodePreprocessorUtils::removeComment(command);
-    QStringList args = GcodePreprocessorUtils::splitCommand(stripped);
+    auto args = GcodePreprocessorUtils::splitCommand(stripped);
 
-    return addCommand(args);
-}
-
-/**
-* Add a command which has already been broken up into its arguments.
-*/
-PointSegment* GcodeParser::addCommand(const QStringList& args)
-{
-    if (args.isEmpty()) {
-        return nullptr;
-    }
-
+    if (args.empty()) return nullptr;
     return processCommand(args);
 }
 
 PointSegment *GcodeParser::addCommand(const GCodeItem &gcodeItem)
 {
-    if (gcodeItem.args.isEmpty()) {
+    if (gcodeItem.args.empty()) {
         return nullptr;
     }
 
@@ -263,7 +252,7 @@ void GcodeParser::restoreState(const GcodeParserState &state)
     m_state = state;
 }
 
-PointSegment *GcodeParser::processCommand(const QStringList &args)
+PointSegment *GcodeParser::processCommand(const std::vector<std::string> &args)
 {
     QList<float> gCodes;
     PointSegment *ps = nullptr;
@@ -325,7 +314,7 @@ PointSegment *GcodeParser::addLinearPointSegment(const QVector3D &nextPoint, boo
     return ps;
 }
 
-PointSegment *GcodeParser::addArcPointSegment(const QVector3D &nextPoint, bool clockwise, const QStringList &args)
+PointSegment *GcodeParser::addArcPointSegment(const QVector3D &nextPoint, bool clockwise, const std::vector<std::string> &args)
 {
     PointSegment *ps = new PointSegment(&nextPoint, m_state.commandNumber++);
 
@@ -368,7 +357,7 @@ PointSegment *GcodeParser::addArcPointSegment(const QVector3D &nextPoint, bool c
     return ps;
 }
 
-void GcodeParser::handleMCode(float code, const QStringList &args)
+void GcodeParser::handleMCode(float code, const std::vector<std::string> &args)
 {
     double spindleSpeed = GcodePreprocessorUtils::parseCoord(args, 'S');
     if (!qIsNaN(spindleSpeed)) m_state.lastSpindleSpeed = spindleSpeed;
@@ -445,7 +434,7 @@ void GcodeParser::expandCannedCycle(const QVector3D &position)
 }
 
 // Why we use float here? Because of such G-codes as G32.2
-PointSegment * GcodeParser::handleGCode(float code, const QStringList &args)
+PointSegment * GcodeParser::handleGCode(float code, const std::vector<std::string> &args)
 {
     PointSegment *ps = nullptr;
 
