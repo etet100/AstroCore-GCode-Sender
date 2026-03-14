@@ -37,6 +37,7 @@
 #include "ui/forms/partials/main/partmainvisualizer.h"
 #include "ui/forms/partials/main/partmainoverride.h"
 #include "ui/forms/frmgrblconfigurator.h"
+#include "ui/forms/frmlog.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 
 #include "utils/interpolation.h"
@@ -81,10 +82,11 @@ class FrmMain : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FrmMain(Configuration &configuration, QWidget *parent = 0);
+    explicit FrmMain(Configuration& configuration, QWidget *parent = 0);
     ~FrmMain();
 
     void initializeCommunicator();
+    void setLogFormWindow(FrmLog* logForm);
 
 signals:
     void responseReceived(QString command, int tableIndex, QString response);
@@ -233,6 +235,7 @@ private:
 
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;
+    FrmLog* m_logForm = nullptr;
 
     // Filenames
     QString m_settingsFileName;

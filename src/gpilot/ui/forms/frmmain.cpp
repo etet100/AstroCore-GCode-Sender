@@ -84,6 +84,14 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->menuShowLog->setVisible(m_logForm != nullptr);
+    connect(ui->menuShowLog, &QMenu::aboutToShow, this, [this]() {
+        m_logForm->show();
+        m_logForm->raise();
+        m_logForm->activateWindow();
+        ui->menuShowLog->hide();
+    });
+
     ui->dockDevice->setTitleBarWidget(new DockableTitle(ui->dockDevice));
     ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
     ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
@@ -489,6 +497,11 @@ void FrmMain::initializeCommunicator()
     });
 }
 
+void FrmMain::setLogFormWindow(FrmLog *logForm)
+{
+    m_logForm = logForm;
+}
+
 void FrmMain::initializeVisualizer()
 {
     ui->visualizer->fitCodeDrawer();
@@ -599,6 +612,10 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     m_connection->close();
 
     saveSettings();
+
+    if (m_logForm) {
+        m_logForm->close();
+    }
 }
 
 void FrmMain::dragEnterEvent(QDragEnterEvent *dee)

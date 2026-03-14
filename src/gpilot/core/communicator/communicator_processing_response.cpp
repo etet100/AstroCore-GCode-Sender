@@ -11,7 +11,7 @@
 
 void Communicator::onConnectionLineReceived(QString data)
 {
-    // qDebug() << "[Communicator][Resp] " + data;
+    qDebug() << "[Communicator][Resp] " << data;
 
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
     //The longest line i have seen is 94 characters:
@@ -349,8 +349,14 @@ void Communicator::processSpindleState(QString line)
 
 void Communicator::processMachineState(QString stateStr)
 {
+    static QString lastStateStr = "";
+    if (stateStr != lastStateStr) {
+        qDebug() << "[Communicator] Machine state changed:" << stateStr;
+        lastStateStr = stateStr;
+    }
+
     MachineState state = m_machineStateDictionary.key(stateStr, MachineState::Unknown);
-    // qDebug() << "[Communicator] Machine state:" << stateStr;
+    qDebug() << "[Communicator][MachineState] Machine state:" << stateStr;
 
     // Update status
     StateBehavior* sb = m_sbManager.current();

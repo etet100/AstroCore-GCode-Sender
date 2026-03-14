@@ -15,11 +15,21 @@
 #include <QLoggingCategory>
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
+#include "ui/forms/frmlog.h"
 #include "ui/utils/thememanager.h"
 #include "core/config/implementations.h"
 #ifdef WINDOWS
 #include <windows.h>
 #endif
+
+struct TempLogFormItem {
+    QtMsgType type;
+    QString msg;
+};
+QList<TempLogFormItem>* tempLogFormBuffer = nullptr;
+FrmLog* logForm = nullptr;
+
+bool logToFile = false;
 
 void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & msg)
 {
@@ -42,12 +52,20 @@ void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & 
             abort();
     }
 
-    QFile outFile("GPilot.log");
-    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
-    QTextStream ts(&outFile);
-    ts << txt << Qt::endl;
-    QTextStream(stdout) << txt << Qt::endl;
-    ts.flush();
+    if (logToFile) {
+        QFile outFile("GPilot.log");
+        outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+        QTextStream ts(&outFile);
+        ts << txt << Qt::endl;
+        QTextStream(stdout) << txt << Qt::endl;
+        ts.flush();
+    }
+
+    if (logForm != nullptr) {
+        logForm->log(type, msg);
+    } else if (tempLogFormBuffer != nullptr) {
+        tempLogFormBuffer->append({type, msg});
+    }
 }
 
 #ifdef WINDOWS
@@ -92,12 +110,22 @@ int main(int argc, char *argv[])
     QCommandLineOption configTypeOption(QStringList{"c", "config-type"}, "Set config type (ini, json).", "type", "ini");
     parser.addOption(configTypeOption);
 
+    QCommandLineOption logWndOption(QStringList{"lw", "log-wnd"}, "Show log browser window.");
+    parser.addOption(logWndOption);
+
 #ifdef WINDOWS
     QCommandLineOption consoleOption(QStringList{"co", "console"}, "Show console window (Windows only).");
     parser.addOption(consoleOption);
 #endif
 
     parser.process(app);
+
+    if (parser.isSet(logWndOption)) {
+        // Why we do this? We don't want to create log form before creating main form,
+        // so we buffer log messages until log form is created.
+        tempLogFormBuffer = new QList<TempLogFormItem>();
+        qInstallMessageHandler(messageHandler);
+    }
 
     if (parser.isSet(logToFileOption)) {
         if (parser.isSet(trimLogOption)) {
@@ -170,6 +198,17 @@ int main(int argc, char *argv[])
 
     FrmMain form(configuration);
     form.show();
+
+    if (tempLogFormBuffer != nullptr) {
+        logForm = new FrmLog();
+        form.setLogFormWindow(logForm);
+        logForm->setModal(false);
+        for (const TempLogFormItem& item : *tempLogFormBuffer) {
+            logForm->log(item.type, item.msg);
+        }
+        delete tempLogFormBuffer;
+        logForm->show();
+    }
 
     return app.exec();
 }

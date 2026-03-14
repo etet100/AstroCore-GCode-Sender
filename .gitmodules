@@ -27,3 +27,6 @@
 [submodule "src/vendor/QtValueSlider"]
 	path = src/vendor/QtValueSlider
 	url = https://github.com/etet100/G-Pilot-qt-value-slider
+[submodule "src/vendor/vedis"]
+	path = src/vendor/vedis
+	url = https://github.com/symisc/vedis

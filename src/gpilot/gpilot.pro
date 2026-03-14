@@ -160,6 +160,7 @@ SOURCES += main.cpp\
     ui/drawers/originbillboarddrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
+    ui/forms/frmlog.cpp \
     ui/forms/modals/dlgeditheightmappoint.cpp \
     ui/forms/modals/dlgeditprogram.cpp \
     ui/forms/partials/main/partmainconsole.cpp \
@@ -232,6 +233,7 @@ SOURCES += main.cpp\
     ui/widgets/dockabletitle.cpp \
     ui/widgets/filedropoverlay.cpp \
     modules/ai/openaimanager.cpp \
+    utils/cache.cpp \
     utils/utils.cpp \
     ui/widgets/combobox.cpp \
     ui/widgets/comboboxkey.cpp \
@@ -326,6 +328,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
+    ui/forms/frmlog.h \
     ui/forms/modals/dlgeditheightmappoint.h \
     ui/forms/modals/dlgeditprogram.h \
     ui/forms/partials/main/partmainconsole.h \
@@ -398,6 +401,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/utils/windowstaskbar.h \
     ui/widgets/dockabletitle.h \
     ui/widgets/filedropoverlay.h \
+    utils/cache.h \
     utils/interpolation.h \
     modules/ai/openaimanager.h \
     utils/utils.h \
@@ -415,6 +419,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/qpushbuttonwithmenu.h
 
 FORMS    += ui/forms/frmmain.ui \
+    ui/forms/frmlog.ui \
     ui/forms/modals/dlgeditheightmappoint.ui \
     ui/forms/modals/dlgeditprogram.ui \
     ui/forms/partials/main/partmainconsole.ui \
@@ -460,6 +465,7 @@ include(../vendor/CRC.pri)
 include(../vendor/QtValueSlider.pri)
 include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
+include(../vendor/vedis.pri)
 
 LIBS += -L../designerplugins/customwidgetsplugin -lgpilot-customwidgets
 

@@ -193,6 +193,7 @@ void PartMainConsole::send()
         if (m_internalCommands.contains(command.mid(0, space - 1))) {
             emit newCommand(command, true);
         }
+
         return;
     }
 

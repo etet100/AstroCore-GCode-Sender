@@ -12,6 +12,7 @@ G-Pilot supports several command line switches that control logging, configurati
 - `-t` or `--trim-log` – Clear `GPilot.log` file at startup (use together with log-to-file).
 - `-c` or `--config-type <type>` – Select configuration file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
 - `-co` or `--console` – Open G-Pilot with a console window (for debugging). Windows only.
+- `-lw` or `--log-wnd` – Open G-Pilot with log browser window.
 
 ## Examples
 

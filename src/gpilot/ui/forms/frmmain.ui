@@ -878,11 +878,17 @@ QSlider::handle:horizontal:hover {
     <addaction name="actHeightmapOpen2"/>
     <addaction name="actHeightmapSave"/>
    </widget>
+   <widget class="QMenu" name="menuShowLog">
+    <property name="title">
+     <string>&amp;Log</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHeightmap"/>
    <addaction name="menuView"/>
    <addaction name="menuService"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuShowLog"/>
   </widget>
   <action name="actFileNew">
    <property name="text">
