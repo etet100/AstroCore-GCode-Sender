@@ -43,6 +43,7 @@ StateBehavior::Result ResetBehavior::onRawResponse(QString response)
 
     if (dataIsReset(response)) {
         if (m_stage == SentReset) {
+            clearAllTimeouts();
             qDebug() << "[ResetBehavior] Reset detected in raw response. Sending $$.";
 
             m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
@@ -154,10 +155,19 @@ StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, Stat
 
     qDebug() << "[ResetBehavior] Soft reset";
     communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+    setTimeout(100, [this]() {
+        qWarning() << "[ResetBehavior] Timeout: no response after reset.";
+        if (m_stage == SentReset) {
+            qWarning() << "[ResetBehavior] Timeout: no reset sequence received within 100ms.";
+
+            emit transition(this, new ErrorBehavior(0));
+
+            return;
+        }
+    });
+    m_stage = SentReset;
 
     communicator->startQueryingMachineState();
-
-    m_stage = SentReset;
 
     return Result::Ok;
 }

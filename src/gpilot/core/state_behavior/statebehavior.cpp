@@ -71,7 +71,7 @@ StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
     Q_UNUSED(next);
     m_communicator->stopQueryingMachineState();
     stopTimer();
-    stopTimeoutTimer();
+    clearAllTimeouts();
     emit asyncCompleted();
 
     return Result::Ok;
@@ -86,13 +86,22 @@ void StateBehavior::stopTimer()
     }
 }
 
-void StateBehavior::stopTimeoutTimer()
+void StateBehavior::clearTimeout(int id)
 {
-    if (m_timeoutTimer) {
-        m_timeoutTimer->stop();
-        delete m_timeoutTimer;
-        m_timeoutTimer = nullptr;
+    QTimer* timer = m_timers.take(id);
+    if (timer) {
+        timer->stop();
+        delete timer;
     }
+}
+
+void StateBehavior::clearAllTimeouts()
+{
+    for (QTimer* timer : m_timers) {
+        timer->stop();
+        delete timer;
+    }
+    m_timers.clear();
 }
 
 StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
@@ -153,21 +162,23 @@ bool StateBehavior::transitionToPreviousState() {
     return (bool) m_previous;
 }
 
-void StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
+int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
 {
-    stopTimeoutTimer();
+    int id = ++m_nextTimerId;
 
-    m_timeoutTimer = new QTimer(this);
-    m_timeoutTimer->setSingleShot(true);
-    m_timeoutTimer->setInterval(milliseconds);
-    if (callback != nullptr) {
-        connect(m_timeoutTimer, &QTimer::timeout, this, [this, callback]() {
-            stopTimeoutTimer();
+    QTimer* timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(milliseconds);
+    connect(timer, &QTimer::timeout, this, [this, id, callback]() {
+        m_timers.remove(id);
+        if (callback) {
             callback();
-        });
-    } else {
-        connect(m_timeoutTimer, &QTimer::timeout, this, &StateBehavior::onTimeoutSlot);
-    }
+        }
+    });
+    m_timers.insert(id, timer);
+    timer->start();
+
+    return id;
 }
 
 QString StateBehavior::enrichErrorMessage(QString message) {
@@ -178,11 +189,6 @@ QString StateBehavior::enrichErrorMessage(QString message) {
     }
 
     return message;
-}
-
-void StateBehavior::onTimeoutSlot()
-{
-    timeout();
 }
 
 bool StateBehavior::action(const Action &action)

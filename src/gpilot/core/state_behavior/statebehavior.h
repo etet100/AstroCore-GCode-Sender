@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QHash>
 #include <QTimer>
 #include "core/globals.h"
 #include "action.h"
@@ -108,7 +109,6 @@ class StateBehavior : public QObject
         bool handleMachineConfigurationActions(const Action &action);
         bool handleSaveMachineConfigurationParamAction(const Action &action);
         void stopTimer();
-        void stopTimeoutTimer();
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
         // This is something we will need in almost every behavior
@@ -121,18 +121,17 @@ class StateBehavior : public QObject
 
         bool transitionToPreviousState();
 
-        void setTimeout(int milliseconds, std::function<void()> callback = nullptr);
-        virtual void timeout() {};
+        int setTimeout(int milliseconds, std::function<void()> callback = nullptr);
+        void clearTimeout(int id);
+        void clearAllTimeouts();
 
         QString enrichErrorMessage(QString message);
         static const QMap<int, QString> ERRORS;
         static const QMap<int, QString> ALARMS;
 
-    private slots:
-        void onTimeoutSlot();
-
     private:
-        QTimer *m_timeoutTimer = nullptr;
+        QHash<int, QTimer*> m_timers;
+        int m_nextTimerId = 0;
         bool m_eventsAttached = false; // used by Communicator
 };
 
