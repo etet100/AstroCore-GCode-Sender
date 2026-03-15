@@ -11,34 +11,6 @@ ResetBehavior::ResetBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-void ResetBehavior::onMachineState(MachineState state)
-{
-    qDebug() << "[Behavior][Reset] Device State:" << static_cast<int>(state);
-    if (m_stage == SentReset) {
-        // qDebug() << "[Behavior][Reset] Reset sent, waiting for reset response. Ignoring machine state changes until reset is confirmed.";
-
-        // return;
-    }
-
-    if (m_stage != Completed) {
-        return;
-    }
-
-    qDebug() << "[Behavior][Reset] Device State:" << static_cast<int>(state);
-    // // Handle device state changes
-    if (state == MachineState::Idle) {
-        emit transition(this, new IdleBehavior());
-
-        return;
-    } else if (state == MachineState::Alarm) {
-        emit transition(this, new AlarmBehavior(m_communicator->lastAlarmCode()));
-
-        return;
-    } else {
-        qDebug() << "[Behavior][Reset] Unhandled state after reset:" << int(state);
-    }
-}
-
 void ResetBehavior::onAlarm(int code)
 {
     emit transition(this, new AlarmBehavior(code));
@@ -46,100 +18,18 @@ void ResetBehavior::onAlarm(int code)
 
 StateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
-    qDebug() << "[Behavior][Reset][Raw response] " << response;
+    qDebug() << "[Behavior][Reset][Raw response]" << response;
 
     if (dataIsReset(response)) {
         if (m_stage == SentReset) {
             clearAllTimeouts();
-            qDebug() << "[Behavior][Reset] Reset detected in raw response. Sending $$.";
-
-            m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-
-            m_stage = SentSettingsAndOffsets;
-        } else {
-            // Ignore silently
+            qDebug() << "[Behavior][Reset] Reset header received. Handing off to HandshakeBehavior.";
+            m_stage = Completed;
+            emit transition(this, new HandshakeBehavior());
         }
 
         return Result::Ok;
     }
-
-    return Result::Unhandled;
-}
-
-StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
-{
-    Q_UNUSED(commandAttributes);
-
-    qDebug() << "[Behavior][Reset] Command Response:" << command << response;
-
-    if (command == "$$" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
-        qDebug() << "[Behavior][Reset] Eeprom error during $$, requeue and wait for ok.";
-
-        return Result::ReturnCommandToQueue;
-    }
-    if (command == "$#" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
-        qDebug() << "[Behavior][Reset] Eeprom error during $#, requeue and wait for ok.";
-
-        return Result::ReturnCommandToQueue;
-    }
-
-    // if (dataIsReset(response)) {
-    //     qDebug() << "[Behavior][Reset] Reset detected in response. Sending $$ and $#.";
-
-    //     m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
-    //     m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
-
-    //     return true;
-    // }
-
-    if (command == "$$") {
-        if (!cmdStatus.ok) {
-            qDebug() << "[Behavior][Reset] Error receiving device configuration.";
-
-            return Result::Ok;
-        }
-
-        qDebug() << "[Behavior][Reset] Processing device configuration.";
-        m_communicator->processDeviceConfiguration(fullResponse);
-
-        m_stage = ReceivedSettings;
-        m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1);
-
-        return Result::Ok;
-    }
-
-    if (command == "$#") {
-        if (!cmdStatus.ok) {
-            qDebug() << "[Behavior][Reset] Error receiving offsets.";
-            if (cmdStatus.errorCode != 7) {
-                emit transition(this, new ErrorBehavior(cmdStatus.errorCode));
-
-                return Result::Ok;
-            }
-
-            qDebug() << "[Behavior][Reset] We continue despite the error 7.";
-        } else {
-            qDebug() << "[Behavior][Reset] Processing offsets.";
-            m_communicator->processOffsetsVars(fullResponse);
-        }
-
-        qDebug() << "[Behavior][Reset] Reset completed.";
-        m_communicator->queryMachineState();
-
-        // if (m_state == DeviceState::Alarm) {
-        //     emit transition(this, new IdleBehavior());
-        // } else {
-        //     qDebug() << "[ConnectingBehavior] Unhandled state after reset:" << int(m_state);
-        // }
-
-        m_stage = Completed;
-
-        return Result::Ok;
-    }
-
-    // if (command == "$G") {
-    //     m_communicator->processGCodeParserState(commandAttributes, response.first());
-    // }
 
     return Result::Unhandled;
 }
