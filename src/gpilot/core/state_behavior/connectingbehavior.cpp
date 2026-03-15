@@ -68,6 +68,6 @@ void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
         stopTimer();
         qDebug() << "[ConnectingBehavior] Connected.";
 
-        emit transition(this, new ResetBehavior());
+        emit transition(this, new HandshakeBehavior());
     }
 }

@@ -26,5 +26,7 @@
 #include "resetbehavior.h"
 #include "gotobehavior.h"
 #include "scantablebehavior.h"
+#include "handshakebehavior.h"
+#include "externalprocessbehavior.h"
 
 #endif // BEHAVIORS_H
