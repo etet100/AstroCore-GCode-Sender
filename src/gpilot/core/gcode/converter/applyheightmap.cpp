@@ -6,12 +6,12 @@
 #include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
 #include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
+#include "core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h"
 #include "core/gcode/gcode.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
 #include <QtMath>
-
 
 ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, QObject *parent)
     : QObject(parent)
@@ -33,6 +33,9 @@ ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, QObje
                 break;
             case Heightmap::InterpolationMode::Linear:
                 m_interpolator = new HeightmapLinearInterpolator(m_heightmap);
+                break;
+            case Heightmap::InterpolationMode::NearestNeighbour:
+                m_interpolator = new HeightmapNearestNeighbourInterpolator(m_heightmap);
                 break;
             default:
                 m_interpolator = new HeightmapBicubicInterpolator(m_heightmap);
