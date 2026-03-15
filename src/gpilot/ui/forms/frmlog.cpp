@@ -3,9 +3,9 @@
 
 #include <QAbstractItemModel>
 #include <QPainter>
-#include <QRegularExpression>
 #include <QTime>
 #include <QStyledItemDelegate>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QScrollBar>
@@ -385,14 +385,22 @@ FrmLog::FrmLog() : QDialog()
     resetBtn->setText("&Clear log");
     connect(resetBtn, &QPushButton::clicked, this, &FrmLog::clear);
 
-    connect(ui->txtSearch, &QLineEdit::textChanged, this, [this]() {
-        Cache::instance().set("search", ui->txtSearch->text());
+    connect(ui->txtIncludeText, &QLineEdit::textChanged, this, [this]() {
+        Cache::instance().set("include-text", ui->txtIncludeText->text());
+        Cache::instance().flush();
+        regenerateWithDelay();
+    });
+    connect(ui->txtExcludeText, &QLineEdit::textChanged, this, [this]() {
+        Cache::instance().set("exclude-text", ui->txtExcludeText->text());
         Cache::instance().flush();
         regenerateWithDelay();
     });
 
-    connect(ui->btnClearSearch, &QToolButton::clicked, this, [this]() {
-        ui->txtSearch->clear();
+    connect(ui->btnClearIncludeText, &QToolButton::clicked, this, [this]() {
+        ui->txtIncludeText->clear();
+    });
+    connect(ui->btnClearExcludeText, &QToolButton::clicked, this, [this]() {
+        ui->txtExcludeText->clear();
     });
 
     m_regenerateTimer->setSingleShot(true);
@@ -401,14 +409,26 @@ FrmLog::FrmLog() : QDialog()
 
     m_categoriesModel->ensurePath({"-- no tag --"});
 
-    const QString savedSearch = Cache::instance().get("search");
-    if (!savedSearch.isEmpty()) {
-        ui->txtSearch->setText(savedSearch);
+    const QString savedIncludeText = Cache::instance().get("include-text");
+    if (!savedIncludeText.isEmpty()) {
+        ui->txtIncludeText->setText(savedIncludeText);
+    }
+    const QString savedExcludeText = Cache::instance().get("exclude-text");
+    if (!savedExcludeText.isEmpty()) {
+        ui->txtExcludeText->setText(savedExcludeText);
     }
 
     connect(ui->btnTreeAll, &QPushButton::clicked, this, &FrmLog::treeSelectAll);
     connect(ui->btnTreeNone, &QPushButton::clicked, this, &FrmLog::treeSelectNone);
     connect(ui->btnTreeToggle, &QPushButton::clicked, this, &FrmLog::treeToggleSelection);
+
+    connect(ui->cmbMinLevel, &QComboBox::currentIndexChanged, this, [this](int index) {
+        Cache::instance().set("min-level", index);
+        Cache::instance().flush();
+        regenerateWithDelay();
+    });
+
+    ui->cmbMinLevel->setCurrentIndex(Cache::instance().getInt("min-level", 0));
 }
 
 void FrmLog::closeEvent(QCloseEvent* event)
@@ -447,11 +467,10 @@ void FrmLog::log(QtMsgType type, const QString& msg)
     QStringList tags = findTags(msg);
     m_entries.append({tags, timestamped, type});
 
-    const QString search = ui->txtSearch->text();
     if (!m_tagTree->isVisible(tags)) {
         return;
     }
-    if (!search.isEmpty() && !msg.contains(search, Qt::CaseInsensitive)) {
+    if (!passesFilter(msg, type)) {
         return;
     }
 
@@ -504,14 +523,13 @@ void FrmLog::clear()
 void FrmLog::regenerateLog()
 {
     bool isAtEnd = isScrolledToEnd();
-    const QString search = ui->txtSearch->text();
     ui->txtLog->clear();
 
     for (const LogEntry& entry : m_entries) {
         if (!m_tagTree->isVisible(entry.tags)) {
             continue;
         }
-        if (!search.isEmpty() && !entry.text.contains(search, Qt::CaseInsensitive)) {
+        if (!passesFilter(entry.text, entry.type)) {
             continue;
         }
         appendEntry(entry);
@@ -564,18 +582,16 @@ void FrmLog::appendEntry(const LogEntry& entry)
 
 QStringList FrmLog::findTags(const QString& msg)
 {
-    static QRegularExpression tagRe(R"(\[([^\]]+)\])");
-
     QStringList tags;
     int pos = 0;
 
     while (pos < msg.length() && msg[pos] == '[') {
-        QRegularExpressionMatch match = tagRe.match(msg, pos);
-        if (!match.hasMatch() || match.capturedStart() != pos) {
+        int close = msg.indexOf(']', pos + 1);
+        if (close == -1) {
             break;
         }
-        tags.append(match.captured(1));
-        pos = match.capturedEnd();
+        tags.append(msg.mid(pos + 1, close - pos - 1));
+        pos = close + 1;
     }
 
     if (!tags.isEmpty()) {
@@ -583,4 +599,40 @@ QStringList FrmLog::findTags(const QString& msg)
     }
 
     return tags;
+}
+
+static int msgSeverity(QtMsgType type)
+{
+    switch (type) {
+        case QtDebugMsg:    return 0;
+        case QtInfoMsg:     return 1;
+        case QtWarningMsg:  return 2;
+        case QtCriticalMsg: return 3;
+        case QtFatalMsg:    return 4;
+    }
+    return 0;
+}
+
+bool FrmLog::passesFilter(const QString& text, QtMsgType type) const
+{
+    if (msgSeverity(type) < ui->cmbMinLevel->currentIndex()) {
+        return false;
+    }
+
+    const QString include = ui->txtIncludeText->text().trimmed();
+    if (!include.isEmpty() && !text.contains(include, Qt::CaseInsensitive)) {
+        return false;
+    }
+
+    const QString excludeRaw = ui->txtExcludeText->text();
+    if (!excludeRaw.isEmpty()) {
+        for (const QString& part : excludeRaw.split('|')) {
+            const QString exclude = part.trimmed();
+            if (!exclude.isEmpty() && text.contains(exclude, Qt::CaseInsensitive)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

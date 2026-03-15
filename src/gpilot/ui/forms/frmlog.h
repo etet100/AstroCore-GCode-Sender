@@ -52,6 +52,7 @@ private:
     void regenerateLog();
     QStringList findTags(const QString& msg);
     void appendEntry(const LogEntry& entry);
+    bool passesFilter(const QString& text, QtMsgType type) const;
 };
 
 #endif // FRMLOG_H

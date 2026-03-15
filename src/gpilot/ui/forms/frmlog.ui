@@ -17,6 +17,15 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+   <property name="leftMargin">
+    <number>9</number>
+   </property>
+   <property name="topMargin">
+    <number>9</number>
+   </property>
+   <property name="rightMargin">
+    <number>9</number>
+   </property>
    <item>
     <widget class="QWidget" name="widget" native="true">
      <property name="sizePolicy">
@@ -137,7 +146,7 @@
         <height>0</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1">
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -166,17 +175,84 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="txtSearch">
+           <widget class="QComboBox" name="cmbMinLevel">
+            <item>
+             <property name="text">
+              <string>Debug</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Info</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Warning</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Critical</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Fatal</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtIncludeText">
             <property name="maxLength">
              <number>40</number>
             </property>
             <property name="placeholderText">
-             <string>Search text</string>
+             <string>Include</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="btnClearSearch">
+           <widget class="QToolButton" name="btnClearIncludeText">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget_4" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLineEdit" name="txtExcludeText">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>Exclude</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btnClearExcludeText">
             <property name="text">
              <string>...</string>
             </property>
