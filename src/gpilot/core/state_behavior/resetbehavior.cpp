@@ -181,7 +181,7 @@ bool ResetBehavior::dataIsReset(QString data)
     // GrblHAL 1.1f ['$' or '' for help]
     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
     // Gcarvin ?? https://github.com/inventables/gCarvin
-    static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+    static QRegularExpression re("^(GrblHAL|GRBL|Grbl|GCARVIN|uCNC)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
     if (!data.contains(re)) {
         return false;
     }
