@@ -18,7 +18,7 @@ class IdleBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
 
     protected:
-        QString name() const override { return "IdleBehavior"; }
+        QString name() const override { return "Idle"; }
         bool doAction(const Action &action) override;
 
 };

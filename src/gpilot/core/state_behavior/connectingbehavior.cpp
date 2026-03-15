@@ -17,7 +17,7 @@ QString ConnectingBehavior::description() { return "Connecting"; }
 
 StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ConnectingBehavior] Entry, attempting to connect...";
+    qDebug() << "[Behavior][Connecting] Entry, attempting to connect...";
     StateBehavior::onEntry(communicator, previous);
 
     assert(communicator->connection() != nullptr);
@@ -31,7 +31,7 @@ StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator,
     m_timer = new QTimer(this);
     m_timer->setInterval(2000);
     connect(m_timer, &QTimer::timeout, this, [this, communicator]() {
-        qDebug() << "[ConnectingBehavior] Attempting to connect...";
+        qDebug() << "[Behavior][Connecting] Attempting to connect...";
         log(QString("[Connecting][%1] Attempting to connect...").arg(communicator->connection()->name()));
         if (communicator->connection()->isConnected()) {
             stopTimer();
@@ -48,11 +48,11 @@ StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator,
 
 StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
 {
-    qDebug() << "[ConnectingBehavior] Exiting.";
+    qDebug() << "[Behavior][Connecting] Exiting.";
 
     stopTimer();
     if (!m_communicator->connection()->isConnected()) {
-        qDebug() << "[ConnectingBehavior] Connection not established. Giving up.";
+        qDebug() << "[Behavior][Connecting] Connection not established. Giving up.";
         log("Connection not established. Giving up.", {"Connecting", m_communicator->connection()->name()});
 
         // m_communicator->connection()->deleteLater();
@@ -66,7 +66,7 @@ void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
 {
     if (state == ConnectionState::Connected) {
         stopTimer();
-        qDebug() << "[ConnectingBehavior] Connected.";
+        qDebug() << "[Behavior][Connecting] Connected.";
 
         emit transition(this, new HandshakeBehavior());
     }

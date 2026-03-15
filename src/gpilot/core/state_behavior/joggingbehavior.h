@@ -29,7 +29,7 @@ class JoggingBehavior : public StateBehavior
         void setJoggingFeedRate(double feedRate);
 
     protected:
-        QString name() const override { return "JoggingBehavior"; }
+        QString name() const override { return "Jogging"; }
 
     private:
         static constexpr int TIMER_INTERVAL_MS = 50;

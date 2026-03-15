@@ -19,7 +19,7 @@ class ResetBehavior : public StateBehavior
         void onAlarm(int code) override;
 
     protected:
-        QString name() const override { return "ResetBehavior"; }
+        QString name() const override { return "Reset"; }
 
     private:
         enum Stage {

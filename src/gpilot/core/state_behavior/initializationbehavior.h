@@ -17,7 +17,7 @@ class InitializationBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
 
     protected:
-        QString name() const override { return "InitializationBehavior"; }
+        QString name() const override { return "Initialization"; }
 };
 
 #endif // INITIALIZATIONBEHAVIOR_H

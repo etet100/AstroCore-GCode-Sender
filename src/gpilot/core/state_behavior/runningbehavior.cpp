@@ -37,7 +37,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 {
     Q_UNUSED(fullResponse);
 
-    qDebug() << "[RunningBehavior] onCommandResponse:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
+    qDebug() << "[Behavior][Running] onCommandResponse:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
     m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
@@ -90,7 +90,7 @@ bool RunningBehavior::doAction(const Action &action)
 
 StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[RunningBehavior] Entry";
+    qDebug() << "[Behavior][Running] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     // If coming from PauseBehavior, resume the program
@@ -163,7 +163,7 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         } else {
             m_program.setCommandSent();
             m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
-            // qDebug() << "[RunningBehavior] Sent command:" << command;
+            // qDebug() << "[Behavior][Running] Sent command:" << command;
             sent++;
         }
         if (!m_program.isLastCommand()) {
@@ -175,19 +175,19 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         }
     }
 
-    qDebug() << "[RunningBehavior] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
+    qDebug() << "[Behavior][Running] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
 }
 
 void RunningBehavior::pause()
 {
-    qDebug() << "[RunningBehavior] Pausing";
+    qDebug() << "[Behavior][Running] Pausing";
     m_pause = true;
     // m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
 }
 
 void RunningBehavior::resume()
 {
-    qDebug() << "[RunningBehavior] Resuming";
+    qDebug() << "[Behavior][Running] Resuming";
     // m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
     m_pause = false;
 }

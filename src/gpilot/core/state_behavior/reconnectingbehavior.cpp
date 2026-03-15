@@ -12,11 +12,11 @@ ReconnectingBehavior::ReconnectingBehavior(Connection *newConnection)
 
 StateBehavior::Result ReconnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ReconnectingBehavior] Entry";
+    qDebug() << "[Behavior][Reconnecting] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     if (communicator->connection() && communicator->connection()->isConnected()) {
-        qDebug() << "[ReconnectingBehavior] Closing existing connection...";
+        qDebug() << "[Behavior][Reconnecting] Closing existing connection...";
         log("Closing existing connection...", QStringList() << "Reconnect" << communicator->connection()->name());
 
         communicator->connection()->close();
@@ -27,13 +27,13 @@ StateBehavior::Result ReconnectingBehavior::onEntry(CommunicatorApi *communicato
             if (!communicator->connection()->isConnected()) {
                 stopTimer();
 
-                qDebug() << "[ReconnectingBehavior] Connection closed.";
+                qDebug() << "[Behavior][Reconnecting] Connection closed.";
                 log("Connection closed.", {"Reconnect", communicator->connection()->name()});
 
                 communicator->connection()->deleteLater();
                 communicator->setConnection(nullptr, true);
 
-                qDebug() << "[ReconnectingBehavior] Set new connection and go to ConnectingBehavior.";
+                qDebug() << "[Behavior][Reconnecting] Set new connection and go to ConnectingBehavior.";
                 communicator->setConnection(m_newConnection, true);
                 emit transition(this, new ConnectingBehavior());
 
@@ -45,7 +45,7 @@ StateBehavior::Result ReconnectingBehavior::onEntry(CommunicatorApi *communicato
         return Result::WaitForAsyncResult;
     }
 
-    qDebug() << "[ReconnectingBehavior] Set new connection and go straight to ConnectingBehavior.";
+    qDebug() << "[Behavior][Reconnecting] Set new connection and go straight to ConnectingBehavior.";
     communicator->setConnection(m_newConnection, true);
     emit transition(this, new ConnectingBehavior());
 

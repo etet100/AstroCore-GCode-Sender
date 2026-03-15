@@ -23,7 +23,7 @@ public:
     void onAlarm(int code) override;
 
 protected:
-    QString name() const override { return "ExternalProcessBehavior"; }
+    QString name() const override { return "ExternalProcess"; }
 };
 
 #endif // EXTERNALPROCESSBEHAVIOR_H

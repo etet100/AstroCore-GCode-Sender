@@ -13,7 +13,7 @@ QString HandshakeBehavior::description() { return "Handshake"; }
 
 StateBehavior::Result HandshakeBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[HandshakeBehavior] Entry — querying machine state.";
+    qDebug() << "[Behavior][Handshake] Entry — querying machine state.";
     StateBehavior::onEntry(communicator, previous);
 
     m_communicator->startQueryingMachineState();
@@ -23,7 +23,7 @@ StateBehavior::Result HandshakeBehavior::onEntry(CommunicatorApi *communicator, 
 
 StateBehavior::Result HandshakeBehavior::onExit(StateBehavior *next)
 {
-    qDebug() << "[HandshakeBehavior] Exit.";
+    qDebug() << "[Behavior][Handshake] Exit.";
 
     return StateBehavior::onExit(next);
 }
@@ -34,7 +34,7 @@ void HandshakeBehavior::onMachineState(MachineState state)
         return;
     }
 
-    qDebug() << "[HandshakeBehavior] Initial machine state:" << static_cast<int>(state);
+    qDebug() << "[Behavior][Handshake] Initial machine state:" << static_cast<int>(state);
     m_initialState = state;
 
     // Machine is actively running something we didn't start — skip settings query.
@@ -57,12 +57,12 @@ StateBehavior::Result HandshakeBehavior::onCommandResponse(
     Q_UNUSED(commandAttributes);
     Q_UNUSED(response);
 
-    qDebug() << "[HandshakeBehavior] Command response:" << command;
+    qDebug() << "[Behavior][Handshake] Command response:" << command;
 
     // Retry on EEPROM-not-ready error before main handling.
     if (!cmdStatus.ok && cmdStatus.errorCode == GRBL_ERROR_EEPROM_READ_FAIL) {
         if (command == "$$" || command == "$#") {
-            qDebug() << "[HandshakeBehavior] EEPROM not ready for" << command << "— requeuing.";
+            qDebug() << "[Behavior][Handshake] EEPROM not ready for" << command << "— requeuing.";
 
             return Result::ReturnCommandToQueue;
         }
@@ -72,7 +72,7 @@ StateBehavior::Result HandshakeBehavior::onCommandResponse(
         if (cmdStatus.ok) {
             m_communicator->processDeviceConfiguration(fullResponse);
         } else {
-            qDebug() << "[HandshakeBehavior] Failed to receive device settings (error" << cmdStatus.errorCode << "). Continuing.";
+            qDebug() << "[Behavior][Handshake] Failed to receive device settings (error" << cmdStatus.errorCode << "). Continuing.";
         }
 
         m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1);
@@ -85,7 +85,7 @@ StateBehavior::Result HandshakeBehavior::onCommandResponse(
         if (cmdStatus.ok) {
             m_communicator->processOffsetsVars(fullResponse);
         } else {
-            qDebug() << "[HandshakeBehavior] Failed to receive coordinate offsets (error" << cmdStatus.errorCode << "). Continuing.";
+            qDebug() << "[Behavior][Handshake] Failed to receive coordinate offsets (error" << cmdStatus.errorCode << "). Continuing.";
         }
 
         m_stage = Completed;
@@ -99,7 +99,7 @@ StateBehavior::Result HandshakeBehavior::onCommandResponse(
 
 void HandshakeBehavior::transitionBasedOnInitialState()
 {
-    qDebug() << "[HandshakeBehavior] Handshake complete. Transitioning based on state:" << static_cast<int>(m_initialState);
+    qDebug() << "[Behavior][Handshake] Handshake complete. Transitioning based on state:" << static_cast<int>(m_initialState);
 
     switch (m_initialState) {
         case MachineState::Alarm:

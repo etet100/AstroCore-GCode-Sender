@@ -26,7 +26,7 @@ class HoldBehavior : public StateBehavior
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 
     protected:
-        QString name() const override { return "HoldBehavior"; }
+        QString name() const override { return "Hold"; }
         bool doAction(const Action &action) override;
 
     private:

@@ -17,7 +17,7 @@ HomingBehavior::HomingBehavior(QObject *parent)
 
 StateBehavior::Result HomingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[HomingBehavior] Entry";
+    qDebug() << "[Behavior][Homing] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     // Send homing command
@@ -53,10 +53,10 @@ void HomingBehavior::onMachineStateChanged(MachineState state)
 
 StateBehavior::Result HomingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
-    qDebug() << "[HomingBehavior] Command Response:" << command << response;
+    qDebug() << "[Behavior][Homing] Command Response:" << command << response;
     if (command == "$H") {
         if (response.contains("error")) {
-            qDebug() << "[HomingBehavior] Homing error";
+            qDebug() << "[Behavior][Homing] Homing error";
             // Error occurred during homing command
             emit error(this, "Homing failed - " + response);
 
@@ -67,15 +67,15 @@ StateBehavior::Result HomingBehavior::onCommandResponse(QString command, Command
                 emit transition(this, new IdleBehavior(this));
             }
         } else if (!response.isEmpty() && !m_homingCompleted) {
-            qDebug() << "[HomingBehavior] Homing command finished";
+            qDebug() << "[Behavior][Homing] Homing command finished";
             // Got a response but it's not an error
             // Homing might be in progress or just finished
             // Some controllers don't give direct response about homing completion
             // So we check machine state in onMachineStateChanged
 
-            qDebug() << "[HomingBehavior] Test";
-            qDebug() << "[HomingBehavior] Test" << response;
-            qDebug() << "[HomingBehavior] Test" << fullResponse;
+            qDebug() << "[Behavior][Homing] Test";
+            qDebug() << "[Behavior][Homing] Test" << response;
+            qDebug() << "[Behavior][Homing] Test" << fullResponse;
 
             emit transition(this, new IdleBehavior(this));
         }
@@ -88,7 +88,7 @@ StateBehavior::Result HomingBehavior::onCommandResponse(QString command, Command
 
 void HomingBehavior::onAlarm(int code)
 {
-    qDebug() << "[HomingBehavior] Alarm during homing:" << code;
+    qDebug() << "[Behavior][Homing] Alarm during homing:" << code;
 
     emit transition(this, new AlarmBehavior(code));
 }

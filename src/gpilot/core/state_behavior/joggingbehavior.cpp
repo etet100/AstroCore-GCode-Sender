@@ -34,7 +34,7 @@ bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
 
 StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[JoggingBehavior] Entry";
+    qDebug() << "[Behavior][Jogging] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     startJogging();
@@ -53,14 +53,14 @@ StateBehavior::Result JoggingBehavior::onExit(StateBehavior *next)
 
 void JoggingBehavior::onMachineStateChanged(MachineState state)
 {
-    qDebug() << "[JoggingBehavior] Device State Changed:" << static_cast<int>(state);
+    qDebug() << "[Behavior][Jogging] Device State Changed:" << static_cast<int>(state);
 
     if (state == MachineState::Jog) {
-        qDebug() << "[JoggingBehavior] Device is jogging";
+        qDebug() << "[Behavior][Jogging] Device is jogging";
         m_isJoggingState = true;
     } else
     if (state == MachineState::Idle) {
-        qDebug() << "[JoggingBehavior] Device is not jogging anymore";
+        qDebug() << "[Behavior][Jogging] Device is not jogging anymore";
         stopJogging();
         emit transition(this, new IdleBehavior());
     } else if (state == MachineState::Alarm) {
@@ -76,14 +76,14 @@ void JoggingBehavior::onMachineStateChanged(MachineState state)
 void JoggingBehavior::onMachineState(MachineState state)
 {
     if (m_stopping && state == MachineState::Idle) {
-        qDebug() << "[JoggingBehavior] Device is not jogging anymore";
+        qDebug() << "[Behavior][Jogging] Device is not jogging anymore";
         emit transition(this, new IdleBehavior());
     }
 }
 
 StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
-    qDebug() << "[JoggingBehavior] Command Response:" << command << "->" << response;
+    qDebug() << "[Behavior][Jogging] Command Response:" << command << "->" << response;
 
     if (!command.startsWith("$J=")) {
         // error
@@ -106,7 +106,7 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
         //     });
         // }
     } else if (response.startsWith("error")) {
-        qDebug() << "[JoggingBehavior] Jogging command error:" << response;
+        qDebug() << "[Behavior][Jogging] Jogging command error:" << response;
         if (response == "error:15") {
             if (!m_stopping) {
                 log("Next move exceeds machine limits.", {"Jogging"});
@@ -127,7 +127,7 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
         m_communicator->clearQueue(); // Delete unsent jog commands
 
         if (m_firstCommand) {
-            qDebug() << "[JoggingBehavior] First jogging command failed, should be in Idle state";
+            qDebug() << "[Behavior][Jogging] First jogging command failed, should be in Idle state";
             emit transition(this, new IdleBehavior());
         }
 
@@ -156,7 +156,7 @@ void JoggingBehavior::fillBuffer()
     double realDistance = (m_communicator->machinePos() - m_startMachinePos).length();
     double remaining = m_sent * m_segmentDist - realDistance;
 
-    qDebug() << "[JoggingBehavior] fillBuffer: real=" << realDistance
+    qDebug() << "[Behavior][Jogging][Cmd] fillBuffer: real=" << realDistance
              << "sent=" << m_sent << "remaining=" << remaining
              << "target=" << m_targetLookahead;
 
@@ -196,7 +196,7 @@ void JoggingBehavior::startJogging()
     }
 
     if (m_continuous) {
-        qDebug() << "[JoggingBehavior] Continuous mode";
+        qDebug() << "[Behavior][Jogging] Continuous mode";
 
         // Segment covers exactly one timer interval of travel at the configured feed rate.
         // This gives the shortest possible segments while maintaining continuous motion.
@@ -255,14 +255,14 @@ void JoggingBehavior::stopJogging()
         return;
     }
 
-    qDebug() << "[JoggingBehavior] Stopping jogging";
+    qDebug() << "[Behavior][Jogging] Stopping jogging";
 
     m_joggingTimer.stop();
     if (!m_communicator || !m_isJogging) {
         return;
     }
 
-    qDebug() << "[JoggingBehavior] Send JOG CANCEL and clear queue";
+    qDebug() << "[Behavior][Jogging] Send JOG CANCEL and clear queue";
     m_communicator->clearQueue();
     m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
     m_isJogging = false;

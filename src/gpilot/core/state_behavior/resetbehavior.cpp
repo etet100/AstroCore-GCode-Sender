@@ -13,11 +13,18 @@ ResetBehavior::ResetBehavior(QObject *parent)
 
 void ResetBehavior::onMachineState(MachineState state)
 {
+    qDebug() << "[Behavior][Reset] Device State:" << static_cast<int>(state);
+    if (m_stage == SentReset) {
+        // qDebug() << "[Behavior][Reset] Reset sent, waiting for reset response. Ignoring machine state changes until reset is confirmed.";
+
+        // return;
+    }
+
     if (m_stage != Completed) {
         return;
     }
 
-    qDebug() << "[ResetBehavior] Device State:" << static_cast<int>(state);
+    qDebug() << "[Behavior][Reset] Device State:" << static_cast<int>(state);
     // // Handle device state changes
     if (state == MachineState::Idle) {
         emit transition(this, new IdleBehavior());
@@ -28,7 +35,7 @@ void ResetBehavior::onMachineState(MachineState state)
 
         return;
     } else {
-        qDebug() << "[ResetBehavior] Unhandled state after reset:" << int(state);
+        qDebug() << "[Behavior][Reset] Unhandled state after reset:" << int(state);
     }
 }
 
@@ -39,12 +46,12 @@ void ResetBehavior::onAlarm(int code)
 
 StateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
-    qDebug() << "[ResetBehavior] Raw Response:" << response;
+    qDebug() << "[Behavior][Reset][Raw response] " << response;
 
     if (dataIsReset(response)) {
         if (m_stage == SentReset) {
             clearAllTimeouts();
-            qDebug() << "[ResetBehavior] Reset detected in raw response. Sending $$.";
+            qDebug() << "[Behavior][Reset] Reset detected in raw response. Sending $$.";
 
             m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
 
@@ -63,21 +70,21 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
 {
     Q_UNUSED(commandAttributes);
 
-    qDebug() << "[ResetBehavior] Command Response:" << command << response;
+    qDebug() << "[Behavior][Reset] Command Response:" << command << response;
 
     if (command == "$$" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
-        qDebug() << "[ResetBehavior] Eeprom error during $$, requeue and wait for ok.";
+        qDebug() << "[Behavior][Reset] Eeprom error during $$, requeue and wait for ok.";
 
         return Result::ReturnCommandToQueue;
     }
     if (command == "$#" && !cmdStatus.ok && cmdStatus.errorCode == 7) {
-        qDebug() << "[ResetBehavior] Eeprom error during $#, requeue and wait for ok.";
+        qDebug() << "[Behavior][Reset] Eeprom error during $#, requeue and wait for ok.";
 
         return Result::ReturnCommandToQueue;
     }
 
     // if (dataIsReset(response)) {
-    //     qDebug() << "[ResetBehavior] Reset detected in response. Sending $$ and $#.";
+    //     qDebug() << "[Behavior][Reset] Reset detected in response. Sending $$ and $#.";
 
     //     m_communicator->sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
     //     m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
@@ -87,12 +94,12 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
 
     if (command == "$$") {
         if (!cmdStatus.ok) {
-            qDebug() << "[ResetBehavior] Error receiving device configuration.";
+            qDebug() << "[Behavior][Reset] Error receiving device configuration.";
 
             return Result::Ok;
         }
 
-        qDebug() << "[ResetBehavior] Processing device configuration.";
+        qDebug() << "[Behavior][Reset] Processing device configuration.";
         m_communicator->processDeviceConfiguration(fullResponse);
 
         m_stage = ReceivedSettings;
@@ -103,20 +110,20 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
 
     if (command == "$#") {
         if (!cmdStatus.ok) {
-            qDebug() << "[ResetBehavior] Error receiving offsets.";
+            qDebug() << "[Behavior][Reset] Error receiving offsets.";
             if (cmdStatus.errorCode != 7) {
                 emit transition(this, new ErrorBehavior(cmdStatus.errorCode));
 
                 return Result::Ok;
             }
 
-            qDebug() << "[ResetBehavior] We continue despite the error 7.";
+            qDebug() << "[Behavior][Reset] We continue despite the error 7.";
         } else {
-            qDebug() << "[ResetBehavior] Processing offsets.";
+            qDebug() << "[Behavior][Reset] Processing offsets.";
             m_communicator->processOffsetsVars(fullResponse);
         }
 
-        qDebug() << "[ResetBehavior] Reset completed.";
+        qDebug() << "[Behavior][Reset] Reset completed.";
         m_communicator->queryMachineState();
 
         // if (m_state == DeviceState::Alarm) {
@@ -139,26 +146,18 @@ StateBehavior::Result ResetBehavior::onCommandResponse(QString command, CommandA
 
 StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ResetBehavior] Entry";
+    qDebug() << "[Behavior][Reset] Entry";
     StateBehavior::onEntry(communicator, previous);
 
+    qDebug() << "[Behavior][Reset] Clearing command queues.";
     communicator->clearCommandsAndQueue();
 
-    // QString command = "[CTRL+X]";
-    // CommandAttributes commandAttributes(
-    //     CommandSource::System,
-    //     m_communicator->m_commandIndex++,
-    //     TABLE_INDEX_UI, // why UI ??
-    //     command
-    // );
-    // m_communicator->m_commands.append(commandAttributes);
-
-    qDebug() << "[ResetBehavior] Soft reset";
+    qDebug() << "[Behavior][Reset] Soft reset";
     communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
     setTimeout(100, [this]() {
-        qWarning() << "[ResetBehavior] Timeout: no response after reset.";
+        qWarning() << "[Behavior][Reset] Timeout: no response after reset.";
         if (m_stage == SentReset) {
-            qWarning() << "[ResetBehavior] Timeout: no reset sequence received within 100ms.";
+            qWarning() << "[Behavior][Reset] Timeout: no reset sequence received within 100ms.";
 
             emit transition(this, new ErrorBehavior(0));
 

@@ -16,7 +16,7 @@ class ErrorBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
 
     protected:
-        QString name() const override { return "ErrorBehavior"; }
+        QString name() const override { return "Error"; }
 
     private:
         int m_errorCode;

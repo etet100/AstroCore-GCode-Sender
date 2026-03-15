@@ -101,7 +101,7 @@ StateBehavior::Result ScanTableBehavior::onExit(StateBehavior *next)
 
 void ScanTableBehavior::onAlarm(int code)
 {
-    qDebug() << "[ScanTableBehavior] Alarm" << code << "during scan";
+    qDebug() << "[Behavior][ScanTable] Alarm" << code << "during scan";
     log(QString("Alarm %1 during scan").arg(code), {"ScanTable", "Error"});
     emit scanFailed(QString("Alarm %1").arg(code));
     emit transition(this, new AlarmBehavior(code));
@@ -111,7 +111,7 @@ void ScanTableBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Alarm) {
         int code = m_communicator->lastAlarmCode();
-        qDebug() << "[ScanTableBehavior] Machine alarm during scan, code" << code;
+        qDebug() << "[Behavior][ScanTable] Machine alarm during scan, code" << code;
         log("Machine alarm during scan", {"ScanTable", "Error"});
         emit scanFailed("Machine alarm");
         emit transition(this, new AlarmBehavior(code));

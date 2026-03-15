@@ -36,7 +36,7 @@ class ToolChangeBehavior : public StateBehavior
         ToolChangeState changeState() const { return m_changeState; }
 
     protected:
-        QString name() const override { return "ToolChangeBehavior"; }
+        QString name() const override { return "ToolChange"; }
         bool doAction(const Action &action) override;
 
     private:

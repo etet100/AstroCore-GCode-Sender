@@ -195,7 +195,7 @@ bool StateBehavior::action(const Action &action)
 {
     bool result = doAction(action);
     if (!result) {
-        log(QString("[%1] Action rejected: %2").arg(name()).arg(action.name()));
+        log(QString("[Behavior][%1] Action rejected: %2").arg(name()).arg(action.name()));
     }
 
     return false;
@@ -220,7 +220,7 @@ bool StateBehavior::handleSaveMachineConfigurationParamAction(const Action &acti
 {
     SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
     QString command = QString("$%1=%2").arg(saveAction.index()).arg(saveAction.value());
-    qDebug() << "[" << name() << "] Saving machine configuration parameter:" << command;
+    qDebug() << QString("[Behavior][%1] Saving machine configuration parameter: %2").arg(name()).arg(command);
     m_communicator->sendCommand(CommandSource::System, command);
 
     return true;

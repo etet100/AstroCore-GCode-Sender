@@ -11,7 +11,6 @@
 
 InitializationBehavior::InitializationBehavior(QObject *parent) : StateBehavior{parent}
 {
-
 }
 
 void InitializationBehavior::onMachineStateChanged(MachineState state)
@@ -42,22 +41,15 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
 
 StateBehavior::Result InitializationBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[InitializationBehavior] Entry";
+    qDebug() << "[Behavior][Initialization] Entry";
     StateBehavior::onEntry(communicator, previous);
-
-    // if ((bool) communicator->connection()) {
-    //     qDebug() << "[InitializationBehavior] Connection object exists";
-    //     emit transition(this, new ConnectingBehavior());
-
-    //     return;
-    // }
 
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
     connect(m_timer, &QTimer::timeout, this, [this]() {
         if ((bool) m_communicator->connection()) {
             stopTimer();
-            qDebug() << "[InitializationBehavior] Connection object exists";
+            qDebug() << "[Behavior][Initialization] Connection object exists";
             emit transition(this, new ConnectingBehavior());
 
             return;

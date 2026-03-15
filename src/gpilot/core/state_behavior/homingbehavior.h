@@ -19,7 +19,7 @@ class HomingBehavior : public StateBehavior
         bool action(const Action &action) override;
 
     protected:
-        QString name() const override { return "HomingBehavior"; }
+        QString name() const override { return "Homing"; }
 
     private:
         bool m_homingStarted;

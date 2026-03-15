@@ -13,7 +13,7 @@ QString ExternalProcessBehavior::description() { return "External process"; }
 
 StateBehavior::Result ExternalProcessBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ExternalProcessBehavior] Entry — machine is running an external process.";
+    qDebug() << "[Behavior][ExternalProcess] Entry — machine is running an external process.";
     StateBehavior::onEntry(communicator, previous);
 
     log("[ExternalProcess] Machine is executing an external process. Monitoring state.");
@@ -24,7 +24,7 @@ StateBehavior::Result ExternalProcessBehavior::onEntry(CommunicatorApi *communic
 
 void ExternalProcessBehavior::onMachineStateChanged(MachineState state)
 {
-    qDebug() << "[ExternalProcessBehavior] Machine state changed:" << static_cast<int>(state);
+    qDebug() << "[Behavior][ExternalProcess] Machine state changed:" << static_cast<int>(state);
 
     switch (state) {
         case MachineState::Idle:

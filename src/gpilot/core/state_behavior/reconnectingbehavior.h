@@ -18,7 +18,7 @@ class ReconnectingBehavior : public StateBehavior
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
 
     protected:
-        QString name() const override { return "ReconnectingBehavior"; }
+        QString name() const override { return "Reconnecting"; }
 
     private:
         enum Stage {

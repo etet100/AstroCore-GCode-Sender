@@ -22,7 +22,7 @@ class RunningBehavior : public StateBehavior
         void handleSpindleOverride(int percentage);
 
     protected:
-        QString name() const override { return "RunningBehavior"; }
+        QString name() const override { return "Running"; }
         bool doAction(const Action &action) override;
 
     private:

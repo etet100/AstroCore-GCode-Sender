@@ -23,7 +23,7 @@ StateBehavior::Result CheckModeBehavior::onEntry(CommunicatorApi *communicator, 
 {
     StateBehavior::onEntry(communicator, previous);
 
-    qDebug() << "[CheckModeBehavior] Entering check mode. Program will be verified without actual movement.";
+    qDebug() << "[Behavior][CheckMode] Entering check mode. Program will be verified without actual movement.";
 
     // Enter check mode by sending $C command
     m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
@@ -50,7 +50,7 @@ void CheckModeBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
         // Check mode finished or was stopped
-        qDebug() << "[CheckModeBehavior] Check mode completed. Returning to Idle.";
+        qDebug() << "[Behavior][CheckMode] Check mode completed. Returning to Idle.";
         emit transition(this, new IdleBehavior());
     } else if (state == MachineState::Alarm) {
         // Machine entered alarm state during check
@@ -62,7 +62,7 @@ StateBehavior::Result CheckModeBehavior::onCommandResponse(QString command, Comm
 {
     Q_UNUSED(fullResponse);
 
-    qDebug() << "[CheckModeBehavior] Command:" << command << "Response:" << response;
+    qDebug() << "[Behavior][CheckMode] Command:" << command << "Response:" << response;
 
     m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
@@ -76,7 +76,7 @@ StateBehavior::Result CheckModeBehavior::onCommandResponse(QString command, Comm
 
 void CheckModeBehavior::onAlarm(int code)
 {
-    qDebug() << "[CheckModeBehavior] Alarm during check mode:" << code;
+    qDebug() << "[Behavior][CheckMode] Alarm during check mode:" << code;
     emit transition(this, new AlarmBehavior(code));
 }
 
@@ -117,13 +117,13 @@ void CheckModeBehavior::sendStreamerCommandsUntilBufferIsFull()
         }
     }
 
-    qDebug() << "[CheckModeBehavior] Sent " << sent << " commands in check mode; buffer length:" << m_communicator->bufferLength();
+    qDebug() << "[Behavior][CheckMode] Sent " << sent << " commands in check mode; buffer length:" << m_communicator->bufferLength();
 }
 
 void CheckModeBehavior::stop()
 {
     m_stopped = true;
-    qDebug() << "[CheckModeBehavior] Check mode stopped by user.";
+    qDebug() << "[Behavior][CheckMode] Check mode stopped by user.";
 
     // Clear remaining commands and exit check mode
     if (m_communicator) {

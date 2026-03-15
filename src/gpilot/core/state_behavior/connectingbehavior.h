@@ -17,7 +17,7 @@ class ConnectingBehavior : public StateBehavior
         void onConnectionStateChanged(ConnectionState state) override;
 
     protected:
-        QString name() const override { return "ConnectingBehavior"; }
+        QString name() const override { return "Connecting"; }
 
     private:
         // bool dataIsReset(QString data);

@@ -24,7 +24,7 @@ void IdleBehavior::onMachineStateChanged(MachineState state)
 
 StateBehavior::Result IdleBehavior::onExit(StateBehavior *next)
 {
-    qDebug() << "[IdleBehavior] Exit";
+    qDebug() << "[Behavior][Idle] Exit";
 
     return StateBehavior::onExit(next);
 }
@@ -33,7 +33,7 @@ StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAt
 {
     assert(m_communicator != nullptr && !m_communicator.isNull());
 
-    qDebug() << "[IdleBehavior] Command Response:" << command << response;
+    qDebug() << "[Behavior][Idle] Command Response:" << command << response;
 
     if (command == "$G") {
         m_communicator->processGCodeParserState(commandAttributes, response);
@@ -43,12 +43,12 @@ StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAt
 
     if (command == "$$") {
         if (!cmdStatus.ok) {
-            qDebug() << "[IdleBehavior] Error receiving device configuration.";
+            qDebug() << "[Behavior][Idle] Error receiving device configuration.";
 
             return Result::Ok;
         }
 
-        qDebug() << "[IdleBehavior] Processing device configuration.";
+        qDebug() << "[Behavior][Idle] Processing device configuration.";
         m_communicator->processDeviceConfiguration(fullResponse);
 
         return Result::Ok;
@@ -128,7 +128,7 @@ bool IdleBehavior::doAction(const Action &action)
 
 StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[IdleBehavior] Entry";
+    qDebug() << "[Behavior][Idle] Entry";
 
     communicator->startQueryingMachineState();
 

@@ -31,7 +31,7 @@ void GoToBehavior::onMachineState(MachineState state)
 
 void GoToBehavior::onAlarm(int code)
 {
-    qDebug() << "[GoToBehavior] Alarm during go to:" << code;
+    qDebug() << "[Behavior][GoTo] Alarm during go to:" << code;
 
     emit transition(this, new AlarmBehavior(code));
 }
@@ -43,22 +43,22 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
     Q_UNUSED(fullResponse);
 
     if (!cmdStatus.ok) {
-        qDebug() << "[GoToBehavior] Command Error:" << cmdStatus.errorCode;
-        log("Go to command failed with error " + QString::number(cmdStatus.errorCode), {"GoToBehavior"});
+        qDebug() << "[Behavior][GoTo] Command Error:" << cmdStatus.errorCode;
+        log("Go to command failed with error " + QString::number(cmdStatus.errorCode), {"Behavior", "GoTo"});
 
         transitionToPreviousState();
 
         return Result::Ok;
     }
 
-    qDebug() << "[GoToBehavior] Command Response:" << command << response;
+    qDebug() << "[Behavior][GoTo] Command Response:" << command << response;
 
     return Result::Ok;
 }
 
 StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[GoToBehavior] Entry";
+    qDebug() << "[Behavior][GoTo] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     // QString cmd = QString("G1 X%1 Y%2 F%3")

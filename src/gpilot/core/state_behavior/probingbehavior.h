@@ -23,8 +23,8 @@ class ProbingBehavior : public StateBehavior
         };
 
         struct ProbeParameters {
-            double fastFeedRate = 200.0;     // Fast probe speed (mm/min)
-            double slowFeedRate = 50.0;      // Slow probe speed (mm/min)
+            double fastFeedRate = 50.0;     // Fast probe speed (mm/min)
+            double slowFeedRate = 20.0;      // Slow probe speed (mm/min)
             double maxDistance = 30.0;       // Maximum probe distance (mm)
             double retractDistance = 2.0;    // Retract distance between probes (mm)
             double safeDistance = 5.0;       // Safe distance to move up after probing (mm)
@@ -46,7 +46,7 @@ class ProbingBehavior : public StateBehavior
         bool wasSuccessful() const { return m_success; }
 
     protected:
-        QString name() const override { return "ProbingBehavior"; }
+        QString name() const override { return "Probing"; }
 
     private:
         ProbeParameters m_params;

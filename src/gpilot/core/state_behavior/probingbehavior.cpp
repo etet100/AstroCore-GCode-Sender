@@ -35,7 +35,7 @@ QString ProbingBehavior::description()
 
 StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[ProbingBehavior] Entry - starting two-phase probing sequence";
+    qDebug() << "[Behavior][Probing] Entry - starting two-phase probing sequence";
     StateBehavior::onEntry(communicator, previous);
 
     m_communicator->startQueryingMachineState();
@@ -53,7 +53,7 @@ StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, St
 StateBehavior::Result ProbingBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
-    qDebug() << "[ProbingBehavior] Exit";
+    qDebug() << "[Behavior][Probing] Exit";
 
     m_communicator->stopQueryingMachineState();
 
@@ -62,7 +62,7 @@ StateBehavior::Result ProbingBehavior::onExit(StateBehavior *next)
 
 void ProbingBehavior::onAlarm(int code)
 {
-    qDebug() << "[ProbingBehavior] Alarm received:" << code;
+    qDebug() << "[Behavior][Probing] Alarm received:" << code;
 
     m_alarmOccurred = true;
     m_alarmCode = code;
@@ -79,7 +79,7 @@ void ProbingBehavior::onAlarm(int code)
 
 void ProbingBehavior::onMachineStateChanged(MachineState state)
 {
-    qDebug() << "[ProbingBehavior] Machine state changed:" << static_cast<int>(state)
+    qDebug() << "[Behavior][Probing] Machine state changed:" << static_cast<int>(state)
              << "Stage:" << static_cast<int>(m_stage);
 
     // If alarm occurred, transition to alarm state
@@ -101,7 +101,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 {
     Q_UNUSED(commandAttributes);
 
-    qDebug() << "[ProbingBehavior] Command Response:" << command << "->" << response
+    qDebug() << "[Behavior][Probing] Command Response:" << command << "->" << response
              << "Stage:" << static_cast<int>(m_stage);
 
     // If alarm occurred, stop processing
@@ -111,7 +111,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 
     // Check for errors
     if (!cmdStatus.ok) {
-        qDebug() << "[ProbingBehavior] Command error:" << cmdStatus.errorCode;
+        qDebug() << "[Behavior][Probing] Command error:" << cmdStatus.errorCode;
         log(QString("Probing command error: %1").arg(enrichErrorMessage(response)), {"Probing", "Error"});
         finishProbing(false);
         return StateBehavior::Result::Ok;
@@ -121,7 +121,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
     switch (m_stage) {
         case ProbeStage::InitialSetup:
             if (command.contains("G91")) {
-                qDebug() << "[ProbingBehavior] Initial setup complete, starting fast probe";
+                qDebug() << "[Behavior][Probing] Initial setup complete, starting fast probe";
                 startFastProbe();
             }
             break;
@@ -135,7 +135,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
                     if (contacted) {
                         m_fastProbePosition = position;
                         log(QString("Fast probe contact at Z=%1").arg(position.z(), 0, 'f', 3), {"Probing"});
-                        qDebug() << "[ProbingBehavior] Fast probe successful, retracting...";
+                        qDebug() << "[Behavior][Probing] Fast probe successful, retracting...";
                         startRetract();
                     } else {
                         log("Fast probe failed - no contact detected", {"Probing", "Error"});
@@ -151,7 +151,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 
         case ProbeStage::RetractWait:
             if (command.contains("G0") || command.contains("G1")) {
-                qDebug() << "[ProbingBehavior] Retract complete, starting slow probe";
+                qDebug() << "[Behavior][Probing] Retract complete, starting slow probe";
                 if (m_params.doubleProbe) {
                     startSlowProbe();
                 } else {
@@ -180,7 +180,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
                         m_probedPosition = position;
                         m_success = true;
                         log(QString("Precise probe contact at Z=%1").arg(position.z(), 0, 'f', 3), {"Probing"});
-                        qDebug() << "[ProbingBehavior] Slow probe successful";
+                        qDebug() << "[Behavior][Probing] Slow probe successful";
                         emit probeCompleted(m_probedPosition);
 
                         if (m_params.setZeroAtProbe) {
@@ -202,7 +202,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 
         case ProbeStage::SetZero:
             if (command.contains("G92")) {
-                qDebug() << "[ProbingBehavior] Z zero set, moving to safe position";
+                qDebug() << "[Behavior][Probing] Z zero set, moving to safe position";
                 log("Z axis zeroed at probe position", {"Probing"});
                 moveToSafePosition();
             }
@@ -210,7 +210,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
 
         case ProbeStage::MoveToSafe:
             if (command.contains("G0") || command.contains("G1")) {
-                qDebug() << "[ProbingBehavior] Moved to safe position";
+                qDebug() << "[Behavior][Probing] Moved to safe position";
 
                 // Return to absolute positioning if needed
                 if (m_params.useAbsolute) {
@@ -226,7 +226,7 @@ StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, Comman
         case ProbeStage::Completed:
             // Finalize
             if (m_params.useAbsolute && command.contains("G90")) {
-                qDebug() << "[ProbingBehavior] Returned to absolute mode, transitioning back";
+                qDebug() << "[Behavior][Probing] Returned to absolute mode, transitioning back";
                 transitionToPreviousState();
             }
             break;
@@ -313,7 +313,7 @@ bool ProbingBehavior::parseProbeResponse(const QStringList &fullResponse, QVecto
             position.setZ(match.captured(3).toDouble());
             contacted = (match.captured(4) == "1");
 
-            qDebug() << "[ProbingBehavior] Parsed probe response:"
+            qDebug() << "[Behavior][Probing] Parsed probe response:"
                      << "X=" << position.x()
                      << "Y=" << position.y()
                      << "Z=" << position.z()
@@ -323,7 +323,7 @@ bool ProbingBehavior::parseProbeResponse(const QStringList &fullResponse, QVecto
         }
     }
 
-    qDebug() << "[ProbingBehavior] Failed to parse probe response:" << fullResponse;
+    qDebug() << "[Behavior][Probing] Failed to parse probe response:" << fullResponse;
     return false;
 }
 

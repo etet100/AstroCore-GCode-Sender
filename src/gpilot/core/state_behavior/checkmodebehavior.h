@@ -22,7 +22,7 @@ class CheckModeBehavior : public StateBehavior
         void onAlarm(int code) override;
 
     protected:
-        QString name() const override { return "CheckModeBehavior"; }
+        QString name() const override { return "CheckMode"; }
         bool doAction(const Action &action) override;
 
     private:

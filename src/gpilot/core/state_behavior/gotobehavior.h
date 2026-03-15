@@ -19,7 +19,7 @@ class GoToBehavior : public StateBehavior
         void onAlarm(int code) override;
 
     protected:
-        QString name() const override { return "GoToBehavior"; }
+        QString name() const override { return "GoTo"; }
 
     private:
         enum Stage {

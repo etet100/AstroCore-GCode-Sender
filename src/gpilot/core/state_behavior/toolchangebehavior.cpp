@@ -39,7 +39,7 @@ StateBehavior::Result ToolChangeBehavior::onEntry(CommunicatorApi *communicator,
 {
     StateBehavior::onEntry(communicator, previous);
 
-    qDebug() << "[ToolChangeBehavior] Tool change requested for tool:" << m_toolNumber;
+    qDebug() << "[Behavior][ToolChange] Tool change requested for tool:" << m_toolNumber;
 
     emit toolChangeRequested(m_toolNumber);
 
@@ -58,7 +58,7 @@ StateBehavior::Result ToolChangeBehavior::onEntry(CommunicatorApi *communicator,
 StateBehavior::Result ToolChangeBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
-    qDebug() << "[ToolChangeBehavior] Exiting tool change state.";
+    qDebug() << "[Behavior][ToolChange] Exiting tool change state.";
     return StateBehavior::onExit(next);
 }
 
@@ -68,11 +68,11 @@ void ToolChangeBehavior::onMachineStateChanged(MachineState state)
         // Handle state transitions based on current tool change state
         switch (m_changeState) {
             case ToolChangeState::MovingToSafePosition:
-                qDebug() << "[ToolChangeBehavior] Arrived at safe position.";
+                qDebug() << "[Behavior][ToolChange] Arrived at safe position.";
                 waitForUserConfirmation();
                 break;
             case ToolChangeState::ReturningToWorkPosition:
-                qDebug() << "[ToolChangeBehavior] Returned to work position.";
+                qDebug() << "[Behavior][ToolChange] Returned to work position.";
                 complete();
                 break;
             default:
@@ -99,7 +99,7 @@ bool ToolChangeBehavior::doAction(const Action &action)
     // User can confirm tool change to continue
     if (action.type() == Action::Type::Resume || action.type() == Action::Type::CycleStart) {
         if (m_changeState == ToolChangeState::WaitingForUserConfirmation) {
-            qDebug() << "[ToolChangeBehavior] User confirmed tool change.";
+            qDebug() << "[Behavior][ToolChange] User confirmed tool change.";
             returnToWorkPosition();
             return true;
         }
@@ -111,7 +111,7 @@ bool ToolChangeBehavior::doAction(const Action &action)
 void ToolChangeBehavior::moveToSafePosition()
 {
     m_changeState = ToolChangeState::MovingToSafePosition;
-    qDebug() << "[ToolChangeBehavior] Moving to safe tool change position.";
+    qDebug() << "[Behavior][ToolChange] Moving to safe tool change position.";
 
     if (m_communicator) {
         // Move to safe Z height first (G53 G0 Z-10 for example)
@@ -126,7 +126,7 @@ void ToolChangeBehavior::moveToSafePosition()
 void ToolChangeBehavior::waitForUserConfirmation()
 {
     m_changeState = ToolChangeState::WaitingForUserConfirmation;
-    qDebug() << "[ToolChangeBehavior] Waiting for user to change tool and confirm.";
+    qDebug() << "[Behavior][ToolChange] Waiting for user to change tool and confirm.";
 
     // Emit signal or show dialog for user confirmation
     // User should press "Resume" or "Cycle Start" to continue
@@ -135,7 +135,7 @@ void ToolChangeBehavior::waitForUserConfirmation()
 void ToolChangeBehavior::returnToWorkPosition()
 {
     m_changeState = ToolChangeState::ReturningToWorkPosition;
-    qDebug() << "[ToolChangeBehavior] Returning to saved work position.";
+    qDebug() << "[Behavior][ToolChange] Returning to saved work position.";
 
     if (m_communicator) {
         // Optionally probe tool length if probe is available
@@ -153,7 +153,7 @@ void ToolChangeBehavior::returnToWorkPosition()
 void ToolChangeBehavior::complete()
 {
     m_changeState = ToolChangeState::Completed;
-    qDebug() << "[ToolChangeBehavior] Tool change completed for tool:" << m_toolNumber;
+    qDebug() << "[Behavior][ToolChange] Tool change completed for tool:" << m_toolNumber;
 
     emit toolChangeCompleted(m_toolNumber);
 

@@ -43,7 +43,7 @@ signals:
     void progressChanged(int scanned, int total);
 
 protected:
-    QString name() const override { return "ScanTableBehavior"; }
+    QString name() const override { return "ScanTable"; }
 
 private:
     enum class Phase {

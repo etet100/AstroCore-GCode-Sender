@@ -26,7 +26,7 @@ class PauseBehavior : public StateBehavior
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 
     protected:
-        QString name() const override { return "PauseBehavior"; }
+        QString name() const override { return "Pause"; }
         bool doAction(const Action &action) override;
 
     private:

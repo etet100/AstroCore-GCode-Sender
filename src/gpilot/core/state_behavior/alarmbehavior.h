@@ -19,7 +19,7 @@ class AlarmBehavior : public StateBehavior
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 
     protected:
-        QString name() const override { return "AlarmBehavior"; }
+        QString name() const override { return "Alarm"; }
         bool doAction(const Action &action) override;
 
     private:

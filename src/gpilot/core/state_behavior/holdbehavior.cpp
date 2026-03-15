@@ -33,7 +33,7 @@ StateBehavior::Result HoldBehavior::onEntry(CommunicatorApi *communicator, State
 {
     StateBehavior::onEntry(communicator, previous);
 
-    qDebug() << "[HoldBehavior] Entering feed hold state.";
+    qDebug() << "[Behavior][Hold] Entering feed hold state.";
 
     // If user requested hold, send feed hold command
     if (m_source == HoldSource::UserRequest && m_communicator) {
@@ -46,14 +46,14 @@ StateBehavior::Result HoldBehavior::onEntry(CommunicatorApi *communicator, State
 StateBehavior::Result HoldBehavior::onExit(StateBehavior *next)
 {
     Q_UNUSED(next);
-    qDebug() << "[HoldBehavior] Exiting feed hold state.";
+    qDebug() << "[Behavior][Hold] Exiting feed hold state.";
     return StateBehavior::onExit(next);
 }
 
 void HoldBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Run) {
-        qDebug() << "[HoldBehavior] Machine resumed. Checking previous state.";
+        qDebug() << "[Behavior][Hold] Machine resumed. Checking previous state.";
 
         // Return to previous state if it was running
         if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {
@@ -64,7 +64,7 @@ void HoldBehavior::onMachineStateChanged(MachineState state)
             emit transition(this, new IdleBehavior());
         }
     } else if (state == MachineState::Idle) {
-        qDebug() << "[HoldBehavior] Machine became idle.";
+        qDebug() << "[Behavior][Hold] Machine became idle.";
         emit transition(this, new IdleBehavior());
     }
 }
@@ -93,7 +93,7 @@ bool HoldBehavior::doAction(const Action &action)
 
 void HoldBehavior::resume()
 {
-    qDebug() << "[HoldBehavior] Resuming from feed hold.";
+    qDebug() << "[Behavior][Hold] Resuming from feed hold.";
 
     if (m_communicator) {
         // Send cycle start command to resume

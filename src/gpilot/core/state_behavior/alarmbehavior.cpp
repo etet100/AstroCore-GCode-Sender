@@ -26,7 +26,7 @@ QString AlarmBehavior::description() {
 
 void AlarmBehavior::onMachineStateChanged(MachineState state)
 {
-    qDebug() << "[AlarmBehavior] Device State Changed:" << static_cast<int>(state);
+    qDebug() << "[Behavior][Alarm] Device State Changed:" << static_cast<int>(state);
     // Handle device state changes
     if (state == MachineState::Idle) {
         emit transition(this, new IdleBehavior());
@@ -35,7 +35,7 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
 
 StateBehavior::Result AlarmBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[AlarmBehavior] Entry";
+    qDebug() << "[Behavior][Alarm] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     // Can send alarm state query if the controller supports it
@@ -51,7 +51,7 @@ void AlarmBehavior::setAlarmMessage()
 
 StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
-    qDebug() << "[AlarmBehavior] Command Response:" << command << response;
+    qDebug() << "[Behavior][Alarm] Command Response:" << command << response;
     // Handle command responses in alarm state
     if (command == "$X") {  // Unlock command
         if (!fullResponse.contains("error")) {
@@ -67,12 +67,12 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
 
     if (command == "$$") {
         if (!cmdStatus.ok) {
-            qDebug() << "[AlarmBehavior] Error receiving device configuration.";
+            qDebug() << "[Behavior][Alarm] Error receiving device configuration.";
 
             return Result::Ok;
         }
 
-        qDebug() << "[AlarmBehavior] Processing device configuration.";
+        qDebug() << "[Behavior][Alarm] Processing device configuration.";
         m_communicator->processDeviceConfiguration(fullResponse);
 
         return Result::Ok;
@@ -83,7 +83,7 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
 
 // void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
 // {
-//     qDebug() << "[AlarmBehavior] Connection State Changed:" << static_cast<int>(state);
+//     qDebug() << "[Behavior][Alarm] Connection State Changed:" << static_cast<int>(state);
 //     if (state != ConnectionState::Connected) {
 //         // If connection is lost, we might want to transition to a different state
 //         // For now, we don't do anything special

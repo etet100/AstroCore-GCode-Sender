@@ -26,7 +26,7 @@ public:
     void onMachineState(MachineState state) override;
 
 protected:
-    QString name() const override { return "HandshakeBehavior"; }
+    QString name() const override { return "Handshake"; }
 
 private:
     enum Stage {
