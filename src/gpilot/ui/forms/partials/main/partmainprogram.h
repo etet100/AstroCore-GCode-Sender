@@ -59,13 +59,10 @@ class PartMainProgram : public QWidget
         void setCurrentModelData(const QModelIndex& index, const QVariant& value);
         // void clearProgramHeightmapModel();
         // void clearHeightmapModel();
-        void setProgramCommentsVisible(bool visible);
+        // void setProgramCommentsVisible(bool visible);
 
         void setAutoScroll(bool enabled);
         bool isAutoScroll() const;
-
-        void setHideComments(bool enabled);
-        bool isHideComments() const;
 
         void setHeightMapVisible(bool visible);
         void setProgramVisible(bool visible);
@@ -106,7 +103,6 @@ class PartMainProgram : public QWidget
         void pause(bool checked = false);
         void clearRecentFiles();
         void currentChanged(const QModelIndex& current, const QModelIndex& previous);
-        void hideCommentsChanged(bool checked);
         void manualScrollRequested();
         void insertLinesRequested(int current, bool before);
         void editLinesRequested(int from, int to);

@@ -115,9 +115,7 @@ void GCodeTableModel::setProgram(GCode* data)
 {
     beginResetModel();
     m_data = data;
-    if (m_filtered) {
-        prepareNoCommentFilter();
-    }
+    applyFilters();
     // connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
     endResetModel();
 }
@@ -200,14 +198,33 @@ Qt::ItemFlags GCodeTableModel::flags(const QModelIndex &index) const
 
 void GCodeTableModel::setCommentsVisible(bool visible)
 {
+    m_showComments = visible;
     beginResetModel();
-    if (visible) {
-        m_filteredRows.clear();
-        m_filtered = false;
-    } else {
-        prepareNoCommentFilter();
-    }
+    applyFilters();
     endResetModel();
+}
+
+void GCodeTableModel::showComments()
+{
+    setCommentsVisible(true);
+}
+
+void GCodeTableModel::hideComments()
+{
+    setCommentsVisible(false);
+}
+
+void GCodeTableModel::setFilter(const QString &text)
+{
+    m_filterText = text.trimmed();
+    beginResetModel();
+    applyFilters();
+    endResetModel();
+}
+
+void GCodeTableModel::clearFilter()
+{
+    setFilter(QString());
 }
 
 int GCodeTableModel::toFilteredIndex(int index) const
@@ -219,14 +236,28 @@ int GCodeTableModel::toFilteredIndex(int index) const
     }
 }
 
-void GCodeTableModel::prepareNoCommentFilter()
+void GCodeTableModel::applyFilters()
 {
+    m_filtered = !m_showComments || !m_filterText.isEmpty();
+
     m_filteredRows.clear();
     m_allRowsToFiltered.clear();
+
+    if (!m_filtered) {
+        return;
+    }
+
     int i = 0;
     int k = 0;
     for (auto& row : *m_data) {
-        if (row.group != GCodeItemGroup::Comment) {
+        bool visible = true;
+        if (!m_showComments && row.group == GCodeItemGroup::Comment) {
+            visible = false;
+        }
+        if (!m_filterText.isEmpty() && !row.command.contains(m_filterText, Qt::CaseInsensitive)) {
+            visible = false;
+        }
+        if (visible) {
             k = m_filteredRows.size();
             m_filteredRows.append(i);
         }
@@ -235,6 +266,4 @@ void GCodeTableModel::prepareNoCommentFilter()
     }
 
     assert(m_data->count() == m_allRowsToFiltered.count());
-
-    m_filtered = true;
 }

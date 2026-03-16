@@ -150,9 +150,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
-    connect(ui->program, &PartMainProgram::hideCommentsChanged, this, [this](bool checked) {
-        ui->program->setProgramCommentsVisible(!checked);
-    });
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         clearRecentFiles();
     });

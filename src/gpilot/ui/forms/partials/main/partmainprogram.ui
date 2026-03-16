@@ -102,9 +102,19 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="chkHideComments">
+        <widget class="QCheckBox" name="chkShowComments">
          <property name="text">
-          <string>Hide all comments</string>
+          <string>Comments</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtFilter">
+         <property name="placeholderText">
+          <string>Filter</string>
          </property>
         </widget>
        </item>

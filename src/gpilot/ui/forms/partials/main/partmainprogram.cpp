@@ -48,9 +48,12 @@ void PartMainProgram::setupUi()
     connect(ui->tblProgram, &QWidget::customContextMenuRequested, this, &PartMainProgram::onTableContextMenuRequested);
     ui->tblProgram->installEventFilter(this);
 
-    // Connect checkbox signals
-    connect(ui->chkHideComments, &QCheckBox::checkStateChanged, this, [this](int state) {
-        emit hideCommentsChanged(state == Qt::Checked);
+    connect(ui->chkShowComments, &QCheckBox::checkStateChanged, this, [this](int state) {
+        m_programModel.setCommentsVisible(state);
+    });
+
+    connect(ui->txtFilter, &QLineEdit::textChanged, this, [this](const QString& text) {
+        m_programModel.setFilter(text);
     });
 }
 
@@ -91,16 +94,6 @@ void PartMainProgram::setAutoScroll(bool enabled)
 bool PartMainProgram::isAutoScroll() const
 {
     return ui->chkAutoScrollGCode->isChecked();
-}
-
-void PartMainProgram::setHideComments(bool enabled)
-{
-    ui->chkHideComments->setChecked(enabled);
-}
-
-bool PartMainProgram::isHideComments() const
-{
-    return ui->chkHideComments->isChecked();
 }
 
 void PartMainProgram::setHeightMapVisible(bool visible)
@@ -502,11 +495,6 @@ void PartMainProgram::setCurrentModelData(const QModelIndex& index, const QVaria
     }
 }
 
-void PartMainProgram::setProgramCommentsVisible(bool visible)
-{
-    m_programModel.setCommentsVisible(visible);
-}
-
 // Program model operations
 void PartMainProgram::clearProgramModel()
 {
@@ -625,7 +613,3 @@ bool PartMainProgram::isCurrentModelProgramModel() const
 {
     return m_currentModel == &m_programModel;
 }
-
-
-
-

@@ -39,7 +39,13 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
+    void showComments();
+    void hideComments();
     void setCommentsVisible(bool visible);
+
+    void setFilter(const QString &text);
+    void clearFilter();
+
     int toFilteredIndex(int index) const;
 
 private slots:
@@ -49,10 +55,12 @@ private:
     GCode* m_data;
     QStringList m_headers;
     bool m_filtered = false;
-    QList<int> m_filteredRows; // index of rows that are not comments
-    QList<int> m_allRowsToFiltered; // mapping from all rows to filtered rows
+    bool m_showComments = true;
+    QString m_filterText;
+    QList<int> m_filteredRows;       // original indices of rows that pass all filters
+    QList<int> m_allRowsToFiltered;  // mapping: original row → last valid filtered index
 
-    void prepareNoCommentFilter();
+    void applyFilters();
 };
 
 #endif // GCODETABLEMODEL_H
