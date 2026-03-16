@@ -168,6 +168,31 @@ void GCode::replace(int from, int to, GCode &gcode)
     // emit linesUpdated(from, m_data.count() - 1);
 }
 
+GCode &GCode::operator <<(const GCode &source) {
+    for (const GCodeItem& item : source.m_data) {
+        m_data.append(item);
+    }
+    emit loaded();
+
+    return *this;
+}
+
+GCode &GCode::operator <<(GCodeItem &&item) {
+    m_data.append(std::move(item));
+    m_data.last().lineNumber = m_data.count();
+    emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
+
+    return *this;
+}
+
+GCode &GCode::operator <<(const GCodeItem &item) {
+    m_data.append(item);
+    m_data.last().lineNumber = m_data.count();
+    emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
+
+    return *this;
+}
+
 void GCode::onLinesUpdatedTimer()
 {
     if (m_linesUpdatedTo == INT_MIN) {

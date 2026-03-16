@@ -41,6 +41,7 @@ struct GCodeItem
 {
     enum States { InQueue = 0, EmptyLine, Sent, Processed, Error, Skipped, Comment };
 
+    int lineNumber;
     QString line;
     QString command;
     QString comment;
@@ -85,24 +86,9 @@ class GCode : public QObject
         void deleteLines(int from, int to);
         QString linesAsText(int from, int to);
         void replace(int from, int to, GCode& gcode);
-        GCode& operator << (const GCodeItem& item) {
-            m_data.append(item);
-            emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
-            return *this;
-        }
-        GCode& operator << (GCodeItem&& item) {
-            m_data.append(std::move(item));
-            emit linesUpdated(m_data.count() - 1, m_data.count() - 1);
-            return *this;
-        }
-        GCode& operator << (const GCode& source) {
-            for (const GCodeItem& item : source.m_data) {
-                m_data.append(item);
-            }
-            emit loaded();
-
-            return *this;
-        }
+        GCode& operator << (const GCodeItem& item);
+        GCode& operator << (GCodeItem&& item);
+        GCode& operator << (const GCode& source);
         void reserve(int size) { m_data.reserve(size); }
         void insert(int index, const GCodeItem& item) {
             m_data.insert(index, item);

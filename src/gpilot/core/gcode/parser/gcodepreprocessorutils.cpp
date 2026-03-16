@@ -45,6 +45,39 @@ static inline std::string &trim(std::string &s)
     return ltrim(rtrim(s));
 }
 
+// Single-pass extraction: strips all comments to build the command, captures the first comment found.
+// Avoids scanning the string twice (once for removeComment, once for parseComment).
+static void splitCommandAndComment(const QString &line, QString &command, QString &comment)
+{
+    comment.clear();
+
+    const int semiPos = line.indexOf(';');
+    const int parenPos = line.indexOf('(');
+
+    // Capture the first occurring comment (semicolon or parenthesized)
+    if (semiPos >= 0 && (parenPos < 0 || semiPos <= parenPos)) {
+        comment = line.mid(semiPos + 1).trimmed();
+    } else if (parenPos >= 0) {
+        const int closePos = line.indexOf(')', parenPos);
+        comment = (closePos >= 0)
+            ? line.mid(parenPos, closePos - parenPos + 1)
+            : line.mid(parenPos);
+    }
+
+    // Build command: truncate at semicolon, then remove all (...) pairs
+    QString cmd = line;
+    if (semiPos >= 0) {
+        cmd.truncate(semiPos);
+    }
+    int open;
+    while ((open = cmd.indexOf('(')) >= 0) {
+        const int close = cmd.indexOf(')', open);
+        if (close < 0) { cmd.truncate(open); break; }
+        cmd.remove(open, close - open + 1);
+    }
+    command = cmd.trimmed().toUpper();
+}
+
 void GcodePreprocessorUtils::parseLines(QStringList& lines, GCode& gcode)
 {
     for (const auto& line : lines) {
@@ -63,9 +96,8 @@ GCodeItem GcodePreprocessorUtils::parseLine(const QString &line)
         return { .state = GCodeItem::EmptyLine };
     }
 
-    // removeComment returns trimmed+uppercased command with comments stripped
-    const QString command = GcodePreprocessorUtils::removeComment(trimmed);
-    const QString comment = GcodePreprocessorUtils::parseComment(trimmed);
+    QString command, comment;
+    splitCommandAndComment(trimmed, command, comment);
 
     if (command.isEmpty() && comment.isEmpty()) {
         return { .state = GCodeItem::EmptyLine };
@@ -207,6 +239,7 @@ QString GcodePreprocessorUtils::parseComment(QString command)
     if (match.hasMatch()) {
         return match.captured(1);
     }
+
     return "";
 }
 

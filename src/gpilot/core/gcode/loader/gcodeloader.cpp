@@ -37,10 +37,12 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
     QTextStream stream(&file);
     int lastPercentage = -1;
 
+    int lineNumber = 1;
     while (!stream.atEnd()) {
         GCodeItem item = GcodePreprocessorUtils::parseLine(stream.readLine());
         if (item.state == GCodeItem::EmptyLine) continue;
 
+        item.lineNumber = lineNumber++;
         item.commandNumber = parser.getCommandNumber();
         item.isMovement = parser.addCommand(item) != nullptr;
         *gcode << std::move(item);
