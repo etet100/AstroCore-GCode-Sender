@@ -81,5 +81,9 @@
         <file>../images/jogging/arrow_left_down.svg</file>
         <file>../images/jogging/arrow_right_down.svg</file>
         <file>../images/jogging/stop.svg</file>
+        <file>../images/logs/check_square.svg</file>
+        <file>../images/logs/square.svg</file>
+        <file>../images/logs/refresh_cw.svg</file>
+        <file>../images/logs/x.svg</file>
     </qresource>
 </RCC>

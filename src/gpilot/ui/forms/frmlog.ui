@@ -64,6 +64,10 @@
         <property name="text">
          <string>+</string>
         </property>
+        <property name="icon">
+         <iconset resource="../resources/images.qrc">
+          <normaloff>:/images/logs/check_square.svg</normaloff>:/images/logs/check_square.svg</iconset>
+        </property>
        </widget>
       </item>
       <item>
@@ -76,6 +80,10 @@
         </property>
         <property name="text">
          <string>-</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources/images.qrc">
+          <normaloff>:/images/logs/square.svg</normaloff>:/images/logs/square.svg</iconset>
         </property>
        </widget>
       </item>
@@ -91,7 +99,8 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::SyncSynchronizing"/>
+         <iconset resource="../resources/images.qrc">
+          <normaloff>:/images/logs/refresh_cw.svg</normaloff>:/images/logs/refresh_cw.svg</iconset>
         </property>
         <property name="toolButtonStyle">
          <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
@@ -219,7 +228,8 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/images/logs/x.svg</normaloff>:/images/logs/x.svg</iconset>
             </property>
            </widget>
           </item>
@@ -257,7 +267,8 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/images/logs/x.svg</normaloff>:/images/logs/x.svg</iconset>
             </property>
            </widget>
           </item>
@@ -286,7 +297,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources/images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

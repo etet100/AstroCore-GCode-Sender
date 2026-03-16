@@ -66,6 +66,16 @@ class Utils
             button->setIcon(invertIconColors(button->icon()));
         }
 
+        static void invertButtonIconColors(QList<QWidget*> buttons)
+        {
+            for (QWidget* button : buttons)
+            {
+                if (auto* btn = qobject_cast<QAbstractButton*>(button)) {
+                    invertButtonIconColors(btn);
+                }
+            }
+        }
+
         static bool isHeightmapFile(QString fileName)
         {
             return fileName.endsWith(".map", Qt::CaseInsensitive);

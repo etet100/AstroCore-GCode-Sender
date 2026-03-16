@@ -46,6 +46,7 @@ private:
     CategoriesModel* m_categoriesModel;
     QList<LogEntry> m_entries;
     QTimer* m_regenerateTimer;
+    bool m_dark;
 
     void closeEvent(QCloseEvent* event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;

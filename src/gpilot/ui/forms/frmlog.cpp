@@ -1,6 +1,7 @@
 #include "frmlog.h"
 #include "ui_frmlog.h"
-
+#include "ui/utils/thememanager.h"
+#include "utils/utils.h"
 #include <QAbstractItemModel>
 #include <QPainter>
 #include <QTime>
@@ -355,6 +356,30 @@ FrmLog::FrmLog() : QDialog()
                Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
 
     ui->setupUi(this);
+
+    m_dark = ThemeManager::instance().dark();
+    if (m_dark) {
+        Utils::invertButtonIconColors({
+            ui->btnClearIncludeText,
+            ui->btnClearExcludeText,
+            ui->btnTreeAll,
+            ui->btnTreeNone,
+            ui->btnTreeToggle,
+        });
+    }
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
+        if (m_dark != dark) {
+            m_dark = dark;
+            Utils::invertButtonIconColors({
+                ui->btnClearIncludeText,
+                ui->btnClearExcludeText,
+                ui->btnTreeAll,
+                ui->btnTreeNone,
+                ui->btnTreeToggle,
+            });
+        }
+    });
+
     ui->treeCategories->setHeaderHidden(true);
     ui->treeCategories->setModel(m_categoriesModel);
     ui->treeCategories->setItemDelegate(new CategoryDelegate(this));
