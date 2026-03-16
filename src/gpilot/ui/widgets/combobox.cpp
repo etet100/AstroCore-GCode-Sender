@@ -15,9 +15,31 @@ ComboBox::~ComboBox()
 
 void ComboBox::storeText()
 {
-    if (this->count() == this->maxCount()) this->removeItem(this->maxCount() - 1);
+    if (this->count() == this->maxCount()) {
+        this->removeItem(this->maxCount() - 1);
+    }
     this->insertItem(0, this->currentText());
     this->setCurrentIndex(-1);
+}
+
+void ComboBox::addItems(const QStringList &texts)
+{
+    QComboBox::addItems(texts);
+}
+
+void ComboBox::setItems(const QStringList &texts)
+{
+    QComboBox::clear(); addItems(texts);
+}
+
+QStringList ComboBox::items()
+{
+    QStringList l;
+    for (int i = 0; i < count(); i++) {
+        l << itemText(i);
+    }
+
+    return l;
 }
 
 void ComboBox::keyPressEvent(QKeyEvent *e)
