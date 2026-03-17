@@ -162,6 +162,7 @@ SOURCES += main.cpp\
     ui/drawers/originbillboarddrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
+    ui/forms/frmclosingapp.cpp \
     ui/forms/frmlog.cpp \
     ui/forms/modals/dlgeditheightmappoint.cpp \
     ui/forms/modals/dlgeditprogram.cpp \
@@ -332,6 +333,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
+    ui/forms/frmclosingapp.h \
     ui/forms/frmlog.h \
     ui/forms/modals/dlgeditheightmappoint.h \
     ui/forms/modals/dlgeditprogram.h \
@@ -423,6 +425,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/qpushbuttonwithmenu.h
 
 FORMS    += ui/forms/frmmain.ui \
+    ui/forms/frmclosingapp.ui \
     ui/forms/frmlog.ui \
     ui/forms/modals/dlgeditheightmappoint.ui \
     ui/forms/modals/dlgeditprogram.ui \

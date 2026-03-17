@@ -22,6 +22,7 @@
 #include <QStyleHints>
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
+#include "ui/forms/frmclosingapp.h"
 #include "utils/utils.h"
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmaincontrol.h"
@@ -618,6 +619,11 @@ void FrmMain::closeEvent(QCloseEvent *ce)
         m_heightmapMode = mode;
         return;
     }
+
+    // Show closing form to prevent "Not responding" state in case of slow shutdown (e.g. waiting for connection to close)
+    FrmClosingApp closingForm(this);
+    closingForm.show();
+    qApp->processEvents();
 
     m_timerConnection.stop();
     m_communicator->deinit();
