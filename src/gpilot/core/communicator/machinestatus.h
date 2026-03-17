@@ -148,6 +148,9 @@ struct MachineStatusReport
             if (floodEnabled)   { motion << "Flood"; }
             if (mistEnabled)    { motion << "Mist"; }
         }
+        if (hasBufferStatus) {
+            motion << QString("*Bf:* %1/%2").arg(bufferAvailable).arg(bufferSize);
+        }
         if (!motion.isEmpty()) { lines << motion.join("  "); }
             else { lines << "*No feed/spindle data*"; }
 

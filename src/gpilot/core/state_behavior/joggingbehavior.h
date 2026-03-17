@@ -7,6 +7,7 @@
 
 #include "statebehavior.h"
 #include "core/globals.h"
+#include <QElapsedTimer>
 
 class JoggingBehavior : public StateBehavior
 {
@@ -50,6 +51,7 @@ class JoggingBehavior : public StateBehavior
         int m_acked = 0;
         double m_segmentDist = 0.0;
         double m_targetLookahead = 0.0;
+        QElapsedTimer m_fillBufferLogTimer;
 
         void continueJogging();
         void fillBuffer();

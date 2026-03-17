@@ -156,11 +156,16 @@ void JoggingBehavior::continueJogging()
 void JoggingBehavior::fillBuffer()
 {
     double realDistance = (m_communicator->machinePos() - m_startMachinePos).length();
-    double remaining = m_sent * m_segmentDist - realDistance;
+    double sentDistance = m_sent * m_segmentDist;
+    double remaining = sentDistance - realDistance;
 
-    qDebug() << "[Behavior][Jogging][Cmd] fillBuffer: real=" << realDistance
-             << "sent=" << m_sent << "remaining=" << remaining
-             << "target=" << m_targetLookahead;
+    if (!m_fillBufferLogTimer.isValid() || m_fillBufferLogTimer.elapsed() >= 100) {
+        qDebug() << "[Behavior][Jogging][Buf] sent=" << sentDistance
+                 << "real=" << realDistance
+                 << "buffer=" << remaining
+                 << "(target=" << m_targetLookahead << ")";
+        m_fillBufferLogTimer.restart();
+    }
 
     while (!m_stopping && remaining < m_targetLookahead
            && !m_communicator->willOverflowBuffer(m_jogCommand)) {
@@ -233,8 +238,11 @@ void JoggingBehavior::startJogging()
             fillBuffer();
         });
 
+        // In continuous mode we query machine state on every timer tick to monitor jogging
+        // status and react to changes as quickly as possible. Remember to restart querying on stop jogging!
         m_communicator->stopQueryingMachineState();
         m_joggingTimer.start(TIMER_INTERVAL_MS);
+
         return;
     }
 
@@ -276,6 +284,12 @@ void JoggingBehavior::stopJogging()
     qDebug() << "[Behavior][Jogging] Stopping jogging";
 
     m_joggingTimer.stop();
+
+    if (m_continuous) {
+        m_joggingTimer.stop();
+        m_communicator->startQueryingMachineState();
+    }
+
     if (!m_communicator || !m_isJogging) {
         return;
     }
