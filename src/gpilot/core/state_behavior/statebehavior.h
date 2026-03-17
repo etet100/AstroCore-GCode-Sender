@@ -65,12 +65,8 @@ class StateBehavior : public QObject
 
         using StateResponseCallback = std::function<void(MachineState)>;
 
-        virtual void onMachineState(MachineState state) {
-            for (auto& cbk : m_stateResponseCallbacks) {
-                cbk(state);
-            }
-            m_stateResponseCallbacks.clear();
-        }
+        // if overriden, do not forget to call StateBehavior::onMachineState(state)
+        virtual void onMachineState(MachineState state);
 
         // returns true if the response was handled and should not be processed further, for example
         // passed to onCommandResponse.
@@ -91,7 +87,13 @@ class StateBehavior : public QObject
             Q_UNUSED(state);
         }
 
-        void waitForStateResponse(StateResponseCallback callback);
+        // Registers a callback to fire when the machine reaches targetState (Unknown = any state).
+        // If milliseconds > 0, fires callback(MachineState::Unknown) on timeout.
+        // Returns an ID that can be passed to clearWaitForStateResponse() to cancel.
+        int waitForStateResponse(StateResponseCallback callback,
+                                 MachineState targetState = MachineState::Unknown,
+                                 int milliseconds = 0);
+        void clearWaitForStateResponse(int id);
 
     signals:
         void transition(StateBehavior *state, StateBehavior *newState);
@@ -103,7 +105,14 @@ class StateBehavior : public QObject
         StateBehavior *m_previous = nullptr;
         QPointer<CommunicatorApi> m_communicator = nullptr;
         QTimer *m_timer = nullptr;
-        QList<StateResponseCallback> m_stateResponseCallbacks;
+
+        struct StateResponseEntry {
+            int id;
+            MachineState targetState;
+            int timerId;
+            StateResponseCallback callback;
+        };
+        QList<StateResponseEntry> m_stateResponseCallbacks;
 
         virtual QString name() const = 0;
         bool handleMachineConfigurationActions(const Action &action);
@@ -112,7 +121,7 @@ class StateBehavior : public QObject
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
         // This is something we will need in almost every behavior
-        bool dataIsReset(QString data);
+        // bool dataIsReset(QString data);
 
         virtual bool doAction(const Action &action) {
             Q_UNUSED(action);
@@ -131,7 +140,6 @@ class StateBehavior : public QObject
 
     private:
         QHash<int, QTimer*> m_timers;
-        int m_nextTimerId = 0;
         bool m_eventsAttached = false; // used by Communicator
 };
 

@@ -91,7 +91,7 @@ SOURCES += main.cpp\
     core/communicator/communicator_utils.cpp \
     core/communicator/statebehaviorgarbagecollector.cpp \
     core/communicator/statebehaviormanager.cpp \
-    core/communicator/statusprocessor.cpp \
+    core/communicator/statusreportprocessor.cpp \
     core/config/configuration.cpp \
     core/config/module/configurationai.cpp \
     core/config/module/configurationconnection.cpp \
@@ -254,7 +254,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/machinestatus.h \
     core/communicator/statebehaviorgarbagecollector.h \
     core/communicator/statebehaviormanager.h \
-    core/communicator/statusprocessor.h \
+    core/communicator/statusreportprocessor.h \
     core/config/configuration.h \
     core/config/implementations.h \
     core/config/module/configurationai.h \

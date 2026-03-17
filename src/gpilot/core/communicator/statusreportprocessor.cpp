@@ -2,11 +2,11 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "statusprocessor.h"
+#include "statusreportprocessor.h"
 #include <QRegularExpression>
 #include <QDebug>
 
-StatusProcessor::StatusProcessor(QObject *parent)
+StatusReportProcessor::StatusReportProcessor(QObject *parent)
     : QObject(parent)
 {
     m_machineStateDictionary = {
@@ -29,9 +29,9 @@ StatusProcessor::StatusProcessor(QObject *parent)
     };
 }
 
-MachineStatus StatusProcessor::parse(const QString &statusLine)
+MachineStatusReport StatusReportProcessor::parse(const QString &statusLine)
 {
-    MachineStatus status;
+    MachineStatusReport status;
     status.rawLine = statusLine;
 
     // Remove < and >, split by |
@@ -80,12 +80,12 @@ MachineStatus StatusProcessor::parse(const QString &statusLine)
     return status;
 }
 
-void StatusProcessor::parseMachineState(const QString &stateStr, MachineStatus &status)
+void StatusReportProcessor::parseMachineState(const QString &stateStr, MachineStatusReport &status)
 {
     status.state = m_machineStateDictionary.value(stateStr, MachineState::Unknown);
 }
 
-void StatusProcessor::parseMachinePosition(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseMachinePosition(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression mpx("([^,]*),([^,]*),([^,^>^|]*)");
 
@@ -100,7 +100,7 @@ void StatusProcessor::parseMachinePosition(const QString &line, MachineStatus &s
     }
 }
 
-void StatusProcessor::parseWorkPosition(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseWorkPosition(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
 
@@ -115,7 +115,7 @@ void StatusProcessor::parseWorkPosition(const QString &line, MachineStatus &stat
     }
 }
 
-void StatusProcessor::parseWorkOffset(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseWorkOffset(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
 
@@ -130,7 +130,7 @@ void StatusProcessor::parseWorkOffset(const QString &line, MachineStatus &status
     }
 }
 
-void StatusProcessor::parseOverrides(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseOverrides(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression ov("([^,]*),([^,]*),([^,^>^|]*)");
 
@@ -143,7 +143,7 @@ void StatusProcessor::parseOverrides(const QString &line, MachineStatus &status)
     }
 }
 
-void StatusProcessor::parseFeedSpindleSpeed(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseFeedSpindleSpeed(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression fs("([^,]*),([^,^|^>]*)");
 
@@ -155,7 +155,7 @@ void StatusProcessor::parseFeedSpindleSpeed(const QString &line, MachineStatus &
     }
 }
 
-void StatusProcessor::parseBuffersStatus(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseBuffersStatus(const QString &line, MachineStatusReport &status)
 {
     static QRegularExpression fs(R"((\d*),(\d*))");
 
@@ -167,13 +167,13 @@ void StatusProcessor::parseBuffersStatus(const QString &line, MachineStatus &sta
     }
 }
 
-void StatusProcessor::parsePinsState(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parsePinsState(const QString &line, MachineStatusReport &status)
 {
-    status.pinStates = line;
+    status.pinStates = PinState::parse(line);
     status.hasPinStates = true;
 }
 
-void StatusProcessor::parseAccessoryState(const QString &line, MachineStatus &status)
+void StatusReportProcessor::parseAccessoryState(const QString &line, MachineStatusReport &status)
 {
     status.spindleCW = line.contains("S");
     status.spindleEnabled = line.contains("S") || line.contains("C");

@@ -1,6 +1,6 @@
 #include "errorbehavior.h"
 
-ErrorBehavior::ErrorBehavior(int code, QObject *parent) : StateBehavior(parent), m_errorCode(code)
+ErrorBehavior::ErrorBehavior(QString error, QObject *parent) : StateBehavior(parent), m_error(error)
 {
 }
 
@@ -10,7 +10,7 @@ ErrorBehavior::~ErrorBehavior()
 
 QString ErrorBehavior::description()
 {
-    return QString("Error: %1").arg(m_errorCode);
+    return QString("Err: %1").arg(m_error);
 }
 
 StateBehavior::Result ErrorBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

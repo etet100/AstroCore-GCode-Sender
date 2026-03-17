@@ -8,7 +8,7 @@ class ErrorBehavior : public StateBehavior
     Q_OBJECT
 
     public:
-        explicit ErrorBehavior(int code, QObject *parent = nullptr);
+        explicit ErrorBehavior(QString error, QObject *parent = nullptr);
         ~ErrorBehavior();
 
         QString description() override;
@@ -19,7 +19,7 @@ class ErrorBehavior : public StateBehavior
         QString name() const override { return "Error"; }
 
     private:
-        int m_errorCode;
+        QString m_error;
 };
 
 #endif // ERRORBEHAVIOR_H

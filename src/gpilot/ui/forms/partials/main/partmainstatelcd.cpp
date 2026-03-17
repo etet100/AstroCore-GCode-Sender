@@ -1,6 +1,7 @@
 
 #include "partmainstatelcd.h"
 #include "ui_partmainstatelcd.h"
+#include "utils/utils.h"
 #include <QFontDatabase>
 
 PartMainStateLcd::PartMainStateLcd(QWidget *parent)
@@ -32,6 +33,13 @@ void PartMainStateLcd::setStatusText(QString status, QString bgColor, QString fg
 void PartMainStateLcd::setConName(QString name)
 {
     ui->txtConName->setText(name);
+}
+
+void PartMainStateLcd::setMachineStateReport(QString report)
+{
+    ui->txtMachineInfo->setText(report);
+    ui->txtMachineInfo->adjustSize();
+    Utils::refreshStyle({ui->txtMachineInfo, this});
 }
 
 void PartMainStateLcd::resizeEvent(QResizeEvent *event)

@@ -37,7 +37,7 @@ void PartMainProgram::setupUi()
     // Connect buttons
     connect(ui->cmdFileOpen, &QPushButton::clicked, this, &PartMainProgram::openClicked);
     connect(ui->cmdFileSend, &QPushButton::clicked, this, &PartMainProgram::startClicked);
-    connect(ui->cmdFilePause, &QPushButton::clicked, this, &PartMainProgram::pauseClicked);
+    connect(ui->cmdFilePauseResume, &QPushButton::clicked, this, &PartMainProgram::pauseClicked);
     connect(ui->cmdFileAbort, &QPushButton::clicked, this, &PartMainProgram::abortClicked);
     connect(ui->cmdFileReset, &QPushButton::clicked, this, &PartMainProgram::resetClicked);
 
@@ -181,7 +181,7 @@ void PartMainProgram::setFileButtonsEnabled(bool open, bool reset, bool send, bo
     ui->cmdFileOpen->setEnabled(open);
     ui->cmdFileReset->setEnabled(reset);
     ui->cmdFileSend->setEnabled(send);
-    ui->cmdFilePause->setEnabled(pause);
+    ui->cmdFilePauseResume->setEnabled(pause);
     ui->cmdFileAbort->setEnabled(abort);
 }
 
@@ -189,21 +189,21 @@ void PartMainProgram::setOpenButtonEnabled(bool enabled) { ui->cmdFileOpen->setE
 void PartMainProgram::setResetButtonEnabled(bool enabled) { ui->cmdFileReset->setEnabled(enabled); }
 void PartMainProgram::setSendButtonEnabled(bool enabled) { ui->cmdFileSend->setEnabled(enabled); }
 void PartMainProgram::setAbortButtonEnabled(bool enabled) { ui->cmdFileAbort->setEnabled(enabled); }
-void PartMainProgram::setPauseButtonEnabled(bool enabled) { ui->cmdFilePause->setEnabled(enabled); }
+void PartMainProgram::setPauseButtonEnabled(bool enabled) { ui->cmdFilePauseResume->setEnabled(enabled); }
 
 void PartMainProgram::setPauseButtonText(const QString& text)
 {
-    ui->cmdFilePause->setText(text);
+    ui->cmdFilePauseResume->setText(text);
 }
 
 void PartMainProgram::setPauseButtonChecked(bool checked)
 {
-    ui->cmdFilePause->setChecked(checked);
+    ui->cmdFilePauseResume->setChecked(checked);
 }
 
 void PartMainProgram::setPauseButtonFocus()
 {
-    ui->cmdFilePause->setFocus();
+    ui->cmdFilePauseResume->setFocus();
 }
 
 void PartMainProgram::setSendButtonText(const QString& text)
@@ -213,7 +213,7 @@ void PartMainProgram::setSendButtonText(const QString& text)
 
 void PartMainProgram::updateButtonStyles()
 {
-    Utils::refreshStyle({ui->cmdFileOpen, ui->cmdFileReset, ui->cmdFileSend, ui->cmdFilePause, ui->cmdFileAbort});
+    Utils::refreshStyle({ui->cmdFileOpen, ui->cmdFileReset, ui->cmdFileSend, ui->cmdFilePauseResume, ui->cmdFileAbort});
 }
 
 void PartMainProgram::setSendMenuFirstActionEnabled(bool enabled)

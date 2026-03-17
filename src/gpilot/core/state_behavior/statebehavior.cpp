@@ -5,6 +5,7 @@
 #include "statebehavior.h"
 #include "core/communicator/communicator.h"
 #include <QRegularExpression>
+#include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
 
 const QMap<int, QString> StateBehavior::ERRORS = {
@@ -51,10 +52,33 @@ void StateBehavior::reset()
     emit transition(this, new ResetBehavior(this));
 }
 
+void StateBehavior::onMachineState(MachineState state) {
+    QList<StateResponseEntry> toFire;
+
+    qDebug() << "[Behavior] Machine state:" << static_cast<int>(state);
+
+    m_stateResponseCallbacks.removeIf([&](const StateResponseEntry& entry) {
+        if (entry.targetState == MachineState::Unknown || entry.targetState == state) {
+            toFire.append(entry);
+
+            return true;
+        }
+
+        return false;
+    });
+
+    for (const auto& entry : toFire) {
+        if (entry.timerId != -1) {
+            clearTimeout(entry.timerId);
+        }
+        entry.callback(state);
+    }
+}
+
 StateBehavior::Result StateBehavior::onRawResponse(QString response) {
     Q_UNUSED(response);
     // if (dataIsReset(response)) {
-    //     qDebug() << "[StateBehavior] Unexpected reset?";
+    //     qDebug() << "[Behavior] Unexpected reset?";
 
     //     // Dangerous situation, reset detected unexpectedly
     //     // What to do? For now, just transition to ResetBehavior
@@ -72,6 +96,7 @@ StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
     m_communicator->stopQueryingMachineState();
     stopTimer();
     clearAllTimeouts();
+    m_stateResponseCallbacks.clear();
     emit asyncCompleted();
 
     return Result::Ok;
@@ -115,9 +140,39 @@ StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, Stat
     return Result::Ok;
 }
 
-void StateBehavior::waitForStateResponse(StateResponseCallback callback)
+int StateBehavior::waitForStateResponse(StateResponseCallback callback, MachineState targetState, int milliseconds)
 {
-    m_stateResponseCallbacks.append(callback);
+    static int nextId = 0;
+    int id = ++nextId;
+    int timerId = -1;
+
+    if (milliseconds > 0) {
+        timerId = setTimeout(milliseconds, [this, id]() {
+            auto it = std::find_if(m_stateResponseCallbacks.begin(), m_stateResponseCallbacks.end(),
+                                   [id](const StateResponseEntry& e) { return e.id == id; });
+            if (it != m_stateResponseCallbacks.end()) {
+                StateResponseCallback cb = it->callback;
+                m_stateResponseCallbacks.erase(it);
+                cb(MachineState::Unknown);
+            }
+        });
+    }
+
+    m_stateResponseCallbacks.append({id, targetState, timerId, callback});
+
+    return id;
+}
+
+void StateBehavior::clearWaitForStateResponse(int id)
+{
+    auto it = std::find_if(m_stateResponseCallbacks.begin(), m_stateResponseCallbacks.end(),
+                           [id](const StateResponseEntry& e) { return e.id == id; });
+    if (it != m_stateResponseCallbacks.end()) {
+        if (it->timerId != -1) {
+            clearTimeout(it->timerId);
+        }
+        m_stateResponseCallbacks.erase(it);
+    }
 }
 
 void StateBehavior::log(QString message, QStringList context)
@@ -140,19 +195,19 @@ void StateBehavior::log(QString message, std::initializer_list<QString> context)
     log(message, contextList);
 }
 
-bool StateBehavior::dataIsReset(QString data)
-{
-    // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
-    // followed by a version number in the format x.y.
-    // This matches e.g.
-    // Grbl 1.1h ['$' for help]
-    // GrblHAL 1.1f ['$' or '' for help]
-    // Grbl 1.8 [uCNC v1.8.8 '$' for help]
-    // Gcarvin ?? https://github.com/inventables/gCarvin
-    static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
+// bool StateBehavior::dataIsReset(QString data)
+// {
+//     // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
+//     // followed by a version number in the format x.y.
+//     // This matches e.g.
+//     // Grbl 1.1h ['$' for help]
+//     // GrblHAL 1.1f ['$' or '' for help]
+//     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
+//     // Gcarvin ?? https://github.com/inventables/gCarvin
+//     static QRegularExpression re("^(GrblHAL|GRBL|GCARVIN)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
 
-    return data.contains(re);
-}
+//     return data.contains(re);
+// }
 
 bool StateBehavior::transitionToPreviousState() {
     if (m_previous) {
@@ -164,7 +219,8 @@ bool StateBehavior::transitionToPreviousState() {
 
 int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
 {
-    int id = ++m_nextTimerId;
+    static int nextId = 0;
+    int id = ++nextId;
 
     QTimer* timer = new QTimer(this);
     timer->setSingleShot(true);
@@ -181,7 +237,8 @@ int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
     return id;
 }
 
-QString StateBehavior::enrichErrorMessage(QString message) {
+QString StateBehavior::enrichErrorMessage(QString message)
+{
     if (message.startsWith("error:")) {
         int code = message.mid(6).toInt();
 

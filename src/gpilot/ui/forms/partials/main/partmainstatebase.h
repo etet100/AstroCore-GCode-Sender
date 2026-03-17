@@ -23,6 +23,7 @@ public:
     virtual void setStatusText(QString status, QString bgColor, QString fgColor) = 0;
     virtual void setBehaviorName(QString n) { m_behaviorName = n; up(); }
     virtual void setMachineState(QString n) { m_machineState = n; up(); }
+    virtual void setMachineStateReport(QString report) = 0;
 
 protected:
     QMap<MachineState, QString> m_statusCaptions;

@@ -30,6 +30,8 @@ StateBehavior::Result HandshakeBehavior::onExit(StateBehavior *next)
 
 void HandshakeBehavior::onMachineState(MachineState state)
 {
+    StateBehavior::onMachineState(state);
+
     if (m_stage != QueryingState) {
         return;
     }

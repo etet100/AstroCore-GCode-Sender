@@ -3,7 +3,7 @@
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include "core/machine/physicalmachineconfigurationparser.h"
-#include "statusprocessor.h"
+#include "statusreportprocessor.h"
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>
@@ -11,7 +11,7 @@
 
 void Communicator::onConnectionLineReceived(QString data)
 {
-    qDebug() << "[Communicator][Resp] " << data;
+    qDebug() << "[Communicator][Resp][All] " << data;
 
     assert(QThread::currentThread() == QCoreApplication::instance()->thread());
     //The longest line i have seen is 94 characters:
@@ -19,6 +19,7 @@ void Communicator::onConnectionLineReceived(QString data)
     assert(data.length() < 150);
 
     if (data.startsWith("[MSG:")) {
+        qDebug() << "[Communicator][Resp][Msg] " << data;
         processMessage(data);
         processStateBehaviorTransition();
 
@@ -26,7 +27,7 @@ void Communicator::onConnectionLineReceived(QString data)
     }
 
     if (data.startsWith("ALARM:")) {
-        qDebug() << "[Communicator] Alarm:" << data;
+        qDebug() << "[Communicator][Resp][Alarm] " << data;
 
         processAlarm(data);
         processStateBehaviorTransition();
@@ -48,6 +49,7 @@ void Communicator::onConnectionLineReceived(QString data)
 
     // Status response
     if (data.startsWith('<')) {
+        qDebug() << "[Communicator][Resp][Status] " << data;
         processStatus(data);
         processStateBehaviorTransition();
 
@@ -59,6 +61,8 @@ void Communicator::onConnectionLineReceived(QString data)
     // if (dataIsReset(data)) {
     //     qDebug() << "< RST <" << data;
     // }
+
+    qDebug() << "[Communicator][Resp2] " << data;
 
     if (m_sbManager.hasCurrent()) {
         StateBehavior* sb = m_sbManager.current();
@@ -249,8 +253,8 @@ void Communicator::processStatus(QString line)
     QStringList sections(line.mid(1, line.length() - 2).split("|"));
     m_statusReceived = true;
 
-    // static StatusProcessor statusProcessor;
-    // qDebug() << statusProcessor.parse(line);
+    static StatusReportProcessor statusProcessor;
+    emit machineStatusReportReceived(statusProcessor.parse(line));
 
     // processMachinePosition()
     // // Update machine coordinates
@@ -308,25 +312,28 @@ void Communicator::processStatus(QString line)
 
     processNewToolPosition();
 
-    // Update continuous jog
-    // @TODO jogger service??
-    // m_form->jogContinuous();
-
     // Emit status signal
     emit statusReceived(line);
 }
 
+// X, Y, Z, A, B,: X, Y, or Z-axis limit pins are triggered.
+// P: Probe pin is triggered.
+// D: Door pin is triggered.
+// H: Feed Hold pin is triggered.
+// R: Safety Door/Reset pin is triggered.
+// S: Cycle Start pin is triggered.
 void Communicator::processPinsState(QString line)
 {
-    QString pinState;
     static QRegularExpression pn("Pn:([^|^>]*)");
 
     QRegularExpressionMatch match = pn.match(line);
     if (match.hasMatch()) {
-        pinState.append(QString(tr("PS: %1")).arg(match.captured(1)));
-    }
+        PinState pinState = PinState::parse(match.captured(1));
 
-    emit pinStateReceived(pinState);
+        emit pinStateReceived(pinState);
+
+        qDebug() << "[Communicator] Pin state:" << pinState.toString();
+    }
 }
 
 void Communicator::processSpindleState(QString line)
@@ -918,7 +925,7 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
 void Communicator::processMessage(QString data)
 {
-    qDebug() << "< MSG <" << data;
+    qDebug() << "[Communicator][Msg] Received:" << data;
     // static QRegularExpression msg("\\[MSG:([^\\]]+)\\]");
     // if (msg.indexIn(data) != -1) {
     //     QString message = msg.cap(1);

@@ -152,7 +152,7 @@ private slots:
     void onSpindleStateReceived(bool state);
     void onFloodStateReceived(bool state);
     void onParserStateReceived(QString state);
-    void onPinStateReceived(QString state);
+    void onPinStateReceived(PinState state);
     void onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed);
     void onSpindleSpeedReceived(int spindleSpeed);
     void onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride);

@@ -129,20 +129,20 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
         for (int i = fromLine; i <= toLine; i++) {
             GCodeItem &item = m_program[i];
-            int j = item.commandNumber;
-            if (j != -1) {
-                foreach (int l, lineIndexes.at(j)) {
-                    if (item.state == GCodeItem::Sent) {
-                        list[l].setIsHightlight(true);
-                        list[l].setDrawn(false);
-                        indexes.append(l);
-                    } else if (item.state == GCodeItem::Processed) {
-                        list[l].setIsHightlight(false);
-                        list[l].setDrawn(true);
-                        indexes.append(l);
-                    }
-                }
-            }
+            // int j = item.commandNumber;
+            // if (j != -1) {
+            //     foreach (int l, lineIndexes.at(j)) {
+            //         if (item.state == GCodeItem::Sent) {
+            //             list[l].setIsHightlight(true);
+            //             list[l].setDrawn(false);
+            //             indexes.append(l);
+            //         } else if (item.state == GCodeItem::Processed) {
+            //             list[l].setIsHightlight(false);
+            //             list[l].setDrawn(true);
+            //             indexes.append(l);
+            //         }
+            //     }
+            // }
         }
 
         if (!indexes.isEmpty()) {
@@ -417,6 +417,18 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             connection->setHome(abs, x, y, z);
         }
     });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setSingleLimit, this, [this](Axis axis, float pos) {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->setSingleLimit(axis, pos);
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::estop, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->estop();
+        }
+    });
 
     appendSpacer(
         ui->scrollContentsDevice
@@ -464,6 +476,9 @@ void FrmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::machinePosChanged, this, &FrmMain::onMachinePosChanged);
     connect(m_communicator, &Communicator::workPosChanged, this, &FrmMain::onWorkPosChanged);
     connect(m_communicator, &Communicator::machineStateReceived, this, &FrmMain::onMachineStateReceived);
+    connect(m_communicator, &Communicator::machineStatusReportReceived, this, [this](MachineStatusReport report) {
+        ui->state->setMachineStateReport(report.toMarkdown());
+    });
     connect(m_communicator, &Communicator::machineStateChanged, this, &FrmMain::onMachineStateChanged);
     connect(m_communicator, &Communicator::senderStateReceived, this, &FrmMain::onSenderStateReceived);
     connect(m_communicator, SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
@@ -1106,19 +1121,19 @@ void FrmMain::onFilePause(bool checked)
     //     updateControlsState();
     // }
 
-    if (checked) {
-        Action action(Action::Pause);
-        if (m_communicator->stateBehavior()->action(action)) {
-            m_timer.pauseExecution();
-            ui->program->setPauseButtonText(tr("Resume"));
-        }
-    } else {
-        Action action(Action::Resume);
-        if (m_communicator->stateBehavior()->action(action)) {
-            m_timer.resumeExecution();
-            ui->program->setPauseButtonText(tr("Pause"));
-        }
+    // if (checked) {
+    Action action(Action::PauseResume);
+    if (m_communicator->stateBehavior()->action(action)) {
+        // m_timer.pauseExecution();
+        // ui->program->setPauseButtonText(tr("Resume"));
     }
+    // } else {
+    //     Action action(Action::Resume);
+    //     if (m_communicator->stateBehavior()->action(action)) {
+    //         m_timer.resumeExecution();
+    //         ui->program->setPauseButtonText(tr("Pause"));
+    //     }
+    // }
 }
 
 void FrmMain::onFileAbort()
@@ -1779,9 +1794,9 @@ void FrmMain::onParserStateReceived(QString state)
     ui->visualizer->setParserState(state);
 }
 
-void FrmMain::onPinStateReceived(QString state)
+void FrmMain::onPinStateReceived(PinState state)
 {
-    ui->visualizer->setPinState(state);
+    ui->visualizer->setPinState(state.toString());
 }
 
 void FrmMain::onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed)

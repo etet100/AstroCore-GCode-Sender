@@ -79,7 +79,7 @@ class ConfigurationRegistry
         static StructInfo& getInfo(const QString& name) {
             ConfigRegistryItem &registry = getRegistry();
             if (registry.find(name) == registry.end()) {
-                qDebug() << "Nie ma " << name;
+                qWarning() << "[Configuration] Missing " << name;
             }
             return getRegistry()[name];
         }

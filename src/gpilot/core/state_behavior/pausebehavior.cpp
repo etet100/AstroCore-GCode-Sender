@@ -16,7 +16,7 @@ PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
 
 bool PauseBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::Resume) {
+    if (action.type() == Action::Type::PauseResume) {
         resume();
         return true;
     }
@@ -45,6 +45,7 @@ QString PauseBehavior::description()
 
 StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
+    qDebug() << "[Behavior][Pause] Entry";
     StateBehavior::onEntry(communicator, previous);
 
     // if previous = RunningBehavio
@@ -104,6 +105,8 @@ StateBehavior::Result PauseBehavior::onCommandResponse(QString command, CommandA
 
 void PauseBehavior::resume()
 {
+    qDebug() << "[Behavior][Pause] Resuming";
+
     emit transition(this, this->previous());
 //     // Send resume (cycle start) command to the controller
 //     if (m_communicator) {

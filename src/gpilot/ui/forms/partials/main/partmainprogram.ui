@@ -168,12 +168,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="cmdFilePause">
+        <widget class="QPushButton" name="cmdFilePauseResume">
          <property name="text">
           <string>Pause</string>
          </property>
          <property name="checkable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>

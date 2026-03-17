@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>483</width>
+    <width>665</width>
     <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -26,109 +26,112 @@
    <property name="bottomMargin">
     <number>9</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QFrame" name="frame">
-     <property name="frameShape">
-      <enum>QFrame::Shape::NoFrame</enum>
+   <item>
+    <widget class="QPlainTextEdit" name="txtConsole">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>1</height>
+      </size>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_14">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPlainTextEdit" name="txtConsole">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>1</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0">
-        <item>
-         <widget class="ComboBox" name="cboCommand">
-          <property name="styleSheet">
-           <string notr="true">padding-top: 3;
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0">
+     <item>
+      <widget class="ComboBox" name="cboCommand">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">padding-top: 3;
 padding-bottom: 3;
 padding-right: 8;</string>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-          <property name="maxVisibleItems">
-           <number>10</number>
-          </property>
-          <property name="maxCount">
-           <number>25</number>
-          </property>
-          <property name="insertPolicy">
-           <enum>QComboBox::InsertPolicy::InsertAtTop</enum>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="cmdCommandSend">
-          <property name="toolTip">
-           <string>Send command</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../../resources/images.qrc">
-            <normaloff>:/images/send_1.png</normaloff>:/images/send_1.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>16</width>
-            <height>16</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="cmdClearConsole">
-          <property name="toolTip">
-           <string>Clear console</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../../../resources/images.qrc">
-            <normaloff>:/images/erase_1.png</normaloff>:/images/erase_1.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>16</width>
-            <height>16</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="maxVisibleItems">
+        <number>10</number>
+       </property>
+       <property name="maxCount">
+        <number>25</number>
+       </property>
+       <property name="insertPolicy">
+        <enum>QComboBox::InsertPolicy::InsertAtTop</enum>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cmdCommandSend">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Send command</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/send_1.png</normaloff>:/images/send_1.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cmdClearConsole">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Clear console</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/erase_1.png</normaloff>:/images/erase_1.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -147,50 +150,34 @@ padding-right: 8;</string>
  </resources>
  <connections>
   <connection>
-   <sender>cmdCommandSend</sender>
-   <signal>clicked()</signal>
-   <receiver>partMainConsole</receiver>
-   <slot>onSendClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>426</x>
-     <y>459</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>428</x>
-     <y>478</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cmdClearConsole</sender>
    <signal>clicked()</signal>
    <receiver>partMainConsole</receiver>
    <slot>onClearClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>462</x>
+     <x>646</x>
      <y>459</y>
     </hint>
     <hint type="destinationlabel">
-     <x>479</x>
-     <y>460</y>
+     <x>332</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>cboCommand</sender>
-   <signal>returnPressed()</signal>
+   <sender>cmdCommandSend</sender>
+   <signal>clicked()</signal>
    <receiver>partMainConsole</receiver>
    <slot>onSendClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>217</x>
-     <y>468</y>
+     <x>606</x>
+     <y>459</y>
     </hint>
     <hint type="destinationlabel">
-     <x>-1</x>
-     <y>468</y>
+     <x>332</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>

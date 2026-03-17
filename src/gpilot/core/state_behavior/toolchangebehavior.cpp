@@ -97,7 +97,7 @@ StateBehavior::Result ToolChangeBehavior::onCommandResponse(QString command, Com
 bool ToolChangeBehavior::doAction(const Action &action)
 {
     // User can confirm tool change to continue
-    if (action.type() == Action::Type::Resume || action.type() == Action::Type::CycleStart) {
+    if (action.type() == Action::Type::PauseResume || action.type() == Action::Type::CycleStart) {
         if (m_changeState == ToolChangeState::WaitingForUserConfirmation) {
             qDebug() << "[Behavior][ToolChange] User confirmed tool change.";
             returnToWorkPosition();

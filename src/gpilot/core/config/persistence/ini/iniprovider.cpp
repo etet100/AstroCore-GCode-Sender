@@ -14,7 +14,7 @@ bool IniProvider::open()
         return false;
     }
 
-    qDebug() << "Open configuration file: " << m_filePath;
+    qDebug() << "[Configuration] Open file: " << m_filePath;
 
     m_settings = new QSettings(m_filePath, QSettings::IniFormat);
     //m_settings->setIniCodec("UTF-8");
@@ -44,8 +44,6 @@ bool IniProvider::getBool(const QString group, const QString key, bool defaultVa
 
 QString IniProvider::getString(const QString group, const QString key, QString defaultValue)
 {
-    // qDebug() << m_settings->allKeys() << m_settings->fileName();
-    // qDebug() << group + "/" + key << m_settings->value(group + "/" + key, defaultValue);
     return m_settings->value(group + "/" + key, defaultValue).toString();
 }
 
@@ -62,8 +60,6 @@ QVariant IniProvider::getVariant(const QString group, const QString key, QVarian
 QStringList IniProvider::getStringList(const QString group, const QString key, QStringList defaultValue)
 {
     QStringList list = getVariant(group, key, defaultValue).toStringList();
-
-    qDebug() << "IniProvider::getStringList" << group + "/" + key << "=>" << list;
 
     // do not return list with single empty string
     if (list.length() == 1 && list[0] == "") {

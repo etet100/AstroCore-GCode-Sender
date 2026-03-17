@@ -49,7 +49,7 @@ StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, Stat
         if (m_stage == SentReset) {
             qWarning() << "[Behavior][Reset] Timeout: no reset sequence received within 100ms.";
 
-            emit transition(this, new ErrorBehavior(0));
+            emit transition(this, new ErrorBehavior("No response from device"));
 
             return;
         }

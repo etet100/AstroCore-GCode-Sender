@@ -11,6 +11,11 @@
 class RunningBehavior : public StateBehavior
 {
     public:
+        enum class RunningStage {
+            Unknown,
+            Resuming,
+        };
+
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override { return "Running"; }
         void onMachineStateChanged(MachineState state) override;
@@ -26,14 +31,14 @@ class RunningBehavior : public StateBehavior
         bool doAction(const Action &action) override;
 
     private:
+        RunningStage m_stage;
         int m_feedOverride;
         int m_spindleOverride;
         GCode &m_program;
-        bool m_pause;
+        bool m_pause = false;
 
         void sendStreamerCommandsUntilBufferIsFull();
         void pause();
-        void resume();
 };
 
 #endif // RUNNINGBEHAVIOR_H

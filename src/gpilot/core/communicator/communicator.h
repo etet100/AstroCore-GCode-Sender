@@ -10,6 +10,7 @@
 #include "core/jogger/jogger.h"
 #include "core/state_behavior/statebehavior.h"
 #include "statebehaviormanager.h"
+#include "machinestatus.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -185,12 +186,14 @@ class Communicator : public QObject
         void senderStateReceived(SenderState state);
         void senderStateChanged(SenderState state);
         void machineStateChanged(MachineState state);
+        void machineStatusReportReceived(MachineStatusReport report);
         void machineConfigurationReceived(PhysicalMachineConfiguration configuration);
         void machinePosChanged(QVector3D pos);
         void workPosChanged(QVector3D pos);
         void machineStateReceived(MachineState state);
+        void machineStatusReceived(MachineState state);
         void spindleStateReceived(bool state);
-        void pinStateReceived(QString state);
+        void pinStateReceived(PinState state);
         void parserStateReceived(QString state);
         void toolPositionReceived(QVector3D pos);
         void floodStateReceived(bool state);

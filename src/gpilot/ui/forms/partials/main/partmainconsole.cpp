@@ -4,6 +4,8 @@
 
 #include "partmainconsole.h"
 #include "ui_partmainconsole.h"
+#include "ui/utils/thememanager.h"
+#include "utils/utils.h"
 #include <QScrollBar>
 #include <QCompleter>
 #include <QKeyEvent>
@@ -24,6 +26,23 @@ PartMainConsole::PartMainConsole(QWidget *parent)
     ui->cmdCommandSend->setFixedHeight(ui->cboCommand->height());
 
     ui->cboCommand->installEventFilter(this);
+
+    static bool dark = ThemeManager::instance().dark();
+    if (dark) {
+        Utils::invertButtonIconColors({
+            ui->cmdClearConsole,
+            ui->cmdCommandSend,
+        });
+    }
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark_) {
+        if (dark != dark_) {
+            dark = dark_;
+            Utils::invertButtonIconColors({
+                ui->cmdClearConsole,
+                ui->cmdCommandSend,
+            });
+        }
+    });
 }
 
 void PartMainConsole::initialize(ConfigurationConsole &configurationConsole)
@@ -263,19 +282,25 @@ bool PartMainConsole::eventFilter(QObject *watched, QEvent *event)
                 ui->cboCommand->setEditText(textBeforeSelection);
             }
             handleAutocomplete();
+
             return true;
         }
 
         if (keyEvent->key() == Qt::Key_Escape) {
             if (!m_autocompletePrefix.isEmpty()) {
                 cancelAutocomplete();
+
                 return true;
             }
         }
 
-        if (keyEvent->key() != Qt::Key_Return && keyEvent->key() != Qt::Key_Enter) {
-            cancelAutocomplete();
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+            send();
+
+            return true;
         }
+
+        cancelAutocomplete();
     }
 
     return QWidget::eventFilter(watched, event);

@@ -57,7 +57,8 @@ bool VirtualConnection::open()
 void VirtualConnection::flushOutgoingData()
 {
     if (!m_socket) {
-        qDebug() << "[IO][" + deviceName() + "]" << "No socket connection!";
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "No socket connection!";
+
         return;
     }
     if (m_socket->bytesToWrite()) {
@@ -79,7 +80,7 @@ void VirtualConnection::sendLine(QString line)
 {
     flushOutgoingData();
 
-    qDebug() << "[IO][" + deviceName() + "]" << ">>" << line;
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << ">>" << line;
 
     std::string str = QString(line + "\n").toStdString();
     m_socket->write(str.c_str(), str.length());
@@ -90,11 +91,11 @@ void VirtualConnection::sendLine(QString line)
 // void VirtualConnection::sendControlCommand(QString command)
 // {
 //     if (!m_controlSocket || !m_controlSocket->isOpen()) {
-//         qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+//         qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
 //         return;
 //     }
 
-//     qDebug() << "[IO][" + deviceName() + "]" << "Control >>" << command;
+//     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control >>" << command;
 //     m_controlSocket->flush();
 // }
 
@@ -105,18 +106,18 @@ void VirtualConnection::sendControlCommand(QJsonObject cmd)
     m_controlSocket->write(json);
     m_controlSocket->flush();
 
-    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Control >>" << QString::fromUtf8(json).trimmed();
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Control >>" << QString::fromUtf8(json).trimmed();
 }
 
 void VirtualConnection::lockProbeAtCurrentPosition()
 {
     if (!m_controlSocket || !m_controlSocket->isOpen()) {
-        qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
 
         return;
     }
 
-    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Locking probe at current position.";
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Locking probe at current position.";
 
     QJsonObject cmd;
     cmd["cmd"] = "probe_at_current";
@@ -127,12 +128,12 @@ void VirtualConnection::lockProbeAtCurrentPosition()
 void VirtualConnection::resetProbePosition()
 {
     if (!m_controlSocket || !m_controlSocket->isOpen()) {
-        qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
 
         return;
     }
 
-    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Resetting probe position.";
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Resetting probe position.";
 
     QJsonObject cmd;
     cmd["cmd"] = "reset_probe";
@@ -143,12 +144,12 @@ void VirtualConnection::resetProbePosition()
 void VirtualConnection::setHome(bool abs, double x, double y, double z)
 {
     if (!m_controlSocket || !m_controlSocket->isOpen()) {
-        qWarning() << "[IO][" + deviceName() + "]" << "Control socket not available!";
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
 
         return;
     }
 
-    qDebug() << "[IO][" + deviceName() + "][Ctrl]" << "Setting home position to"
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Setting home position to"
              << (abs ? "absolute" : "relative") << "(" << x << "," << y << "," << z << ")";
 
     QJsonObject cmd;
@@ -157,6 +158,40 @@ void VirtualConnection::setHome(bool abs, double x, double y, double z)
     cmd["x"] = x;
     cmd["y"] = y;
     cmd["z"] = z;
+
+    sendControlCommand(cmd);
+}
+
+void VirtualConnection::setSingleLimit(Axis axis, float pos)
+{
+    if (!m_controlSocket || !m_controlSocket->isOpen()) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
+
+        return;
+    }
+
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Setting single limit for axis" << (int) axis << "to" << pos;
+
+    QJsonObject cmd;
+    cmd["cmd"] = "set_single_limit";
+    cmd["axis"] = (int) axis;
+    cmd["pos"] = pos;
+
+    sendControlCommand(cmd);
+}
+
+void VirtualConnection::estop()
+{
+    if (!m_controlSocket || !m_controlSocket->isOpen()) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
+
+        return;
+    }
+
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Emergency stop!";
+
+    QJsonObject cmd;
+    cmd["cmd"] = "estop";
 
     sendControlCommand(cmd);
 }
@@ -172,7 +207,7 @@ void VirtualConnection::cleanupThread()
         return;
     }
 
-    qDebug() << "[IO][" + deviceName() + "]" << "Stopping thread...";
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Stopping thread...";
 
     if (!m_thread->wait(1500)) {
         m_thread->terminate();
@@ -188,7 +223,7 @@ void VirtualConnection::close()
 
 void VirtualConnection::cleanup()
 {
-    qDebug() << "[IO][" + deviceName() + "]" << "Closing connection";
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Closing connection";
 
     if (m_state == ConnectionState::Disconnected) {
         return;
@@ -226,7 +261,7 @@ void VirtualConnection::cleanup()
 void VirtualConnection::onNewConnection()
 {
     if (m_socket == nullptr) {
-        qDebug() << "[IO][" + deviceName() + "]" << "Main connection received.";
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Main connection received.";
 
         m_socket = m_server->nextPendingConnection();
         connect(m_socket, &QIODevice::readyRead, this, &VirtualConnection::onReadyRead);
@@ -235,13 +270,13 @@ void VirtualConnection::onNewConnection()
         setState(ConnectionState::Connected);
     }
     else if (m_controlSocket == nullptr) {
-        qDebug() << "[IO][" + deviceName() + "]" << "Control connection received.";
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control connection received.";
 
         m_controlSocket = m_server->nextPendingConnection();
         connect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
     }
     else {
-        qWarning() << "[IO][" + deviceName() + "]" << "Too many connections, rejecting.";
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Too many connections, rejecting.";
         QLocalSocket* extraSocket = m_server->nextPendingConnection();
         extraSocket->abort();
         extraSocket->deleteLater();
@@ -250,14 +285,14 @@ void VirtualConnection::onNewConnection()
 
 void VirtualConnection::onDisconnected()
 {
-    qDebug() << "[IO][" + deviceName() + "]" << "Disconnected.";
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Disconnected.";
 
     close();
 }
 
 void VirtualConnection::onControlDisconnected()
 {
-    qDebug() << "[IO][" + deviceName() + "]" << "Control connection disconnected.";
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control connection disconnected.";
 
     if (m_controlSocket != nullptr) {
         m_controlSocket->deleteLater();

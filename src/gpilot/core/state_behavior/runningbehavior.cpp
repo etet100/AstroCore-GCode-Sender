@@ -7,7 +7,7 @@
 #include "idlebehavior.h"
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
-// #include "toolchangebehavior.h"
+#include "toolchangebehavior.h"
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
@@ -22,13 +22,13 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
-        // Program finished or was stopped
-        // emit transition(this, new IdleBehavior());
-    } else if (m_pause && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
-        // Machine is in hold state - transition to pause
-        emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::Program));
+        emit transition(this, new IdleBehavior());
+    } else if (m_stage != RunningStage::Resuming && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
+        PauseBehavior::PauseSource source = m_pause
+            ? PauseBehavior::PauseSource::UserRequest
+            : PauseBehavior::PauseSource::External;
+        emit transition(this, new PauseBehavior(source));
     } else if (state == MachineState::Alarm) {
-        // Machine entered alarm state
         emit transition(this, new AlarmBehavior());
     }
 }
@@ -37,19 +37,19 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 {
     Q_UNUSED(fullResponse);
 
-    qDebug() << "[Behavior][Running] onCommandResponse:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
+    qDebug() << "[Behavior][Running][Resp] Response:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
     m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
-    // Process command responses during running state
-    // For example, handle M6 commands for tool change
-    // if (command.contains("M6")) {
-    //     // Tool change requested
-    //     // emit transition(this, new ToolChangeBehavior(this, command.mid(command.indexOf("T") + 1).toInt(),
-    //     //                                           ToolChangeBehavior::ToolChangeSource::Program));
+    static QRegularExpression m6("M0*6(?!\\d)");
+    if (GcodePreprocessorUtils::removeComment(command).contains(m6)) {
+        static QRegularExpression toolNumber("T(\\d+)");
+        QRegularExpressionMatch match = toolNumber.match(command);
+        int tool = match.hasMatch() ? match.captured(1).toInt() : 0;
+        emit transition(this, new ToolChangeBehavior(tool));
 
-    //     return true;
-    // }
+        return Result::Ok;
+    }
 
     if (!m_pause) {
         sendStreamerCommandsUntilBufferIsFull();
@@ -60,27 +60,19 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 
 void RunningBehavior::onAlarm(int code)
 {
-    if (m_pause) {
-
-    }
-
     // Handle alarm during running state
     emit transition(this, new AlarmBehavior(code));
 }
 
 bool RunningBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::Pause && !m_pause) {
+    if (action.type() == Action::Type::PauseResume && !m_pause) {
         pause();
-        // Handle pause action
-        // emit transition(this, new PauseBehavior(PauseBehavior::PauseSource::UserRequest));
+
         return true;
     } else if (action.type() == Action::Type::Stop) {
-        // Handle stop action
-        // Send stop command to controller
-        if (m_communicator) {
-            // m_communicator->sendCommand(CommandSource::User, "M0");
-        }
+        m_communicator->clearCommandsAndQueue();
+        m_communicator->sendRealtimeCommand(GRBL_LIVE_SOFT_RESET);
 
         return true;
     }
@@ -93,13 +85,31 @@ StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, St
     qDebug() << "[Behavior][Running] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    // If coming from PauseBehavior, resume the program
-    PauseBehavior* pausePrevious  = dynamic_cast<PauseBehavior*>(previous);
-    if (pausePrevious) {
-        resume();
-    }
+    m_pause = false;
+    communicator->startQueryingMachineState();
 
-    sendStreamerCommandsUntilBufferIsFull();
+    PauseBehavior* pausePrevious = dynamic_cast<PauseBehavior*>(previous);
+    if (pausePrevious) {
+        qDebug() << "[Behavior][Running] Resuming from Pause, sending Cycle Start and waiting for Run state";
+
+        // Machine is in Hold — send Cycle Start and wait for Run state before filling buffer
+        m_stage = RunningStage::Resuming;
+        m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
+        waitForStateResponse([this](MachineState state) {
+            switch (state) {
+                case MachineState::Run:
+                    qDebug() << "[Behavior][Running] Detected Run state";
+                    sendStreamerCommandsUntilBufferIsFull();
+                    break;
+                case MachineState::Unknown:
+                    qDebug() << "[Behavior][Running] Timeout waiting for Run state";
+                    break;
+            }
+            m_stage = RunningStage::Unknown;
+        }, MachineState::Run, 500);
+    } else {
+        sendStreamerCommandsUntilBufferIsFull();
+    }
 
     return Result::Ok;
 }
@@ -144,12 +154,10 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
 
     static QRegularExpression M230("(M0*2|M30|M0*6)(?!\\d)");
 
-    // qDebug() <<
-    //     "bufferLength: " << m_communicator->bufferLength() <<
-    //     "command.length: " << command.length() <<
-    //     "commandIndex: " << m_program.commandIndex() <<
-    //     "hasMoreCommands: " << m_program.hasMoreCommands() <<
-    //     "m_commands.isEmpty: " << (!m_communicator->m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230));
+    qDebug() << "[Behavior][Running][Dbg] " <<
+        "bufferLength: " << m_communicator->bufferLength() <<
+        "commandIndex: " << m_program.commandIndex() <<
+        "hasMoreCommands: " << m_program.hasMoreCommands();
 
     // Pass empty commands through loop too, we will skip them inside
     QString command = m_program.command();
@@ -175,19 +183,19 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         }
     }
 
-    qDebug() << "[Behavior][Running] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
+    qDebug() << "[Behavior][Running][Dbg] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
 }
 
 void RunningBehavior::pause()
 {
+    if (m_pause) {
+        qDebug() << "[Behavior][Running] Already paused, ignoring pause request";
+
+        return;
+    }
+
     qDebug() << "[Behavior][Running] Pausing";
     m_pause = true;
-    // m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
 }
 
-void RunningBehavior::resume()
-{
-    qDebug() << "[Behavior][Running] Resuming";
-    // m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
-    m_pause = false;
-}

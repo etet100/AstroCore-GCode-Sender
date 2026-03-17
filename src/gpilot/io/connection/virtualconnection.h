@@ -28,6 +28,8 @@ public:
     void lockProbeAtCurrentPosition();
     void resetProbePosition();
     void setHome(bool abs, double x, double y, double z);
+    void setSingleLimit(Axis axis, float pos);
+    void estop();
 
 protected:
     virtual QString deviceName() const;

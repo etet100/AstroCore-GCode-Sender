@@ -6,7 +6,7 @@
 #include "joggingbehavior.h"
 #include "core/communicator/communicator.h"
 #include "idlebehavior.h"
-// #include "pausebehavior.h"
+#include "errorbehavior.h"
 #include "alarmbehavior.h"
 
 JoggingBehavior::JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
@@ -37,8 +37,8 @@ StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, St
     qDebug() << "[Behavior][Jogging] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    startJogging();
     communicator->startQueryingMachineState();
+    startJogging();
 
     return Result::Ok;
 }
@@ -75,6 +75,8 @@ void JoggingBehavior::onMachineStateChanged(MachineState state)
 
 void JoggingBehavior::onMachineState(MachineState state)
 {
+    StateBehavior::onMachineState(state);
+
     if (m_stopping && state == MachineState::Idle) {
         qDebug() << "[Behavior][Jogging] Device is not jogging anymore";
         emit transition(this, new IdleBehavior());
@@ -147,7 +149,7 @@ void JoggingBehavior::continueJogging()
         return;
     }
 
-    m_communicator->sendCommand(CommandSource::GeneralUI, m_jogCommand, TABLE_INDEX_UI);
+    m_communicator->sendCommand(CommandSource::System, m_jogCommand, TABLE_INDEX_UI);
     m_sent++;
 }
 
@@ -247,6 +249,22 @@ void JoggingBehavior::startJogging()
     m_isJogging = true;
     m_sent = 0;
     continueJogging();
+
+    // During 500ms the status should change to jogging, if not then the move was probably not possible
+    setTimeout(500, [this]() {
+        if (!m_isJoggingState) {
+            qDebug() << "[Behavior][Jogging] Jog command not acknowledged as jogging, waiting for Idle state";
+            waitForStateResponse([this](MachineState state) {
+                if (state == MachineState::Idle) {
+                    qDebug() << "[Behavior][Jogging] Idle state, transitioning to IdleBehavior";
+                    emit transition(this, new IdleBehavior());
+                } else {
+                    qWarning() << "[Behavior][Jogging] State is" << static_cast<int>(state);
+                    emit transition(this, new ErrorBehavior("Jog command failed"));
+                }
+            }, MachineState::Unknown, 500);
+        }
+    });
 }
 
 void JoggingBehavior::stopJogging()
@@ -267,7 +285,6 @@ void JoggingBehavior::stopJogging()
     m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
     m_isJogging = false;
     m_stopping = true;
-    m_communicator->startQueryingMachineState();
 }
 
 void JoggingBehavior::setJoggingFeedRate(double feedRate)

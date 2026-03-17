@@ -20,6 +20,21 @@ PartMainVirtualSettings::PartMainVirtualSettings(QWidget *parent)
     connect(ui->btnSetHomeRel, &StyledToolButton::clicked, this, [this]() {
         emit setHome(false, ui->editX->text().toDouble(), ui->editY->text().toDouble(), ui->editZ->text().toDouble());
     });
+    connect(ui->btnEStop, &StyledToolButton::clicked, this, [this]() {
+        emit estop();
+    });
+    connect(ui->editX, &QLineEdit::editingFinished, this, [this]() {
+        emit setSingleLimit(Axis::X, ui->editX->text().toFloat());
+    });
+    connect(ui->editY, &QLineEdit::editingFinished, this, [this]() {
+        emit setSingleLimit(Axis::Y, ui->editY->text().toFloat());
+    });
+    connect(ui->editZ, &QLineEdit::editingFinished, this, [this]() {
+        emit setSingleLimit(Axis::Z, ui->editZ->text().toFloat());
+    });
+    connect(ui->editProbe, &QLineEdit::editingFinished, this, [this]() {
+        emit setSingleLimit(Axis::Probe, ui->editProbe->text().toFloat());
+    });
 }
 
 PartMainVirtualSettings::~PartMainVirtualSettings()
@@ -56,12 +71,12 @@ float PartMainVirtualSettings::calcFinalAxisPos(HomingDir homingDir, float curre
 
 void PartMainVirtualSettings::updateDevice()
 {
-    QString updateCommand = QString("@@@,%s,%s,%s,%s,%s")
-        .arg(ui->editX->text())
-        .arg(ui->editY->text())
-        .arg(ui->editZ->text())
-        .arg(ui->editProbe->text())
-        .arg(ui->btnEStop->isChecked() ? "1" : "0");
+    // QString updateCommand = QString("@@@,%s,%s,%s,%s,%s")
+    //     .arg(ui->editX->text())
+    //     .arg(ui->editY->text())
+    //     .arg(ui->editZ->text())
+    //     .arg(ui->editProbe->text())
+    //     .arg(ui->btnEStop->isChecked() ? "1" : "0");
 }
 
 void PartMainVirtualSettings::set(int val)

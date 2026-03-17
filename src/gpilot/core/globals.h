@@ -83,6 +83,37 @@ enum class GrblError {
 #define UCNC_ALARM_LIMITS_ACTIVE        11
 #define UCNC_ALARM_TOOL_SYNC_FAIL       12
 #define UCNC_ALARM_LIMITS_TRIPPED       13
+#define FLUIDNC_ALARM_SPINDLE_CONTROL         10
+#define FLUIDNC_ALARM_STARTUP_PIN             11
+#define FLUIDNC_ALARM_HOMING_AMBIGUOUS_SWITCH 12
+#define FLUIDNC_ALARM_HARD_STOP               13
+#define FLUIDNC_ALARM_UNHOMED                 14
+#define FLUIDNC_ALARM_INIT                    15
+#define FLUIDNC_ALARM_EXPANDER_RESET          16
+#define FLUIDNC_ALARM_GCODE_ERROR             17
+#define FLUIDNC_ALARM_PROBE_HARD_LIMIT        18
+
+// enum class ExecAlarm : uint8_t {
+//     HardLimit             = 1,
+//     SoftLimit             = 2,
+//     AbortCycle            = 3,
+//     ProbeFailInitial      = 4,
+//     ProbeFailContact      = 5,
+//     HomingFailReset       = 6,
+//     HomingFailDoor        = 7,
+//     HomingFailPulloff     = 8,
+//     HomingFailApproach    = 9,
+//     SpindleControl        = 10,
+//     StartupPin            = 11,  // control or limit input pin active
+//     HomingAmbiguousSwitch = 12,
+//     HardStop              = 13,
+//     Unhomed               = 14,
+//     Init                  = 15,
+//     ExpanderReset         = 16,
+//     GCodeError            = 17,
+//     ProbeHardLimit        = 18,
+// };
+
 
 enum class GrblAlarm {
     HardLimits = 1,
@@ -158,13 +189,14 @@ struct CmdStatus {
 };
 
 enum class Axis : int {
+    Probe = -2, // not a real axis, used for testing probe position
     None = -1,
     X,
     Y,
     Z,
     A,
     B,
-    C
+    C,
 };
 
 enum class JoggindDir {

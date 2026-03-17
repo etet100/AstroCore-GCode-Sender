@@ -27,6 +27,8 @@ class PartMainVirtualSettings : public QWidget
         void lockProbeAtCurrentPosition();
         void resetProbePosition();
         void setHome(bool abs, double x, double y, double z);
+        void setSingleLimit(Axis axis, float pos);
+        void estop();
 
     protected:
         void resizeEvent(QResizeEvent *event) override;

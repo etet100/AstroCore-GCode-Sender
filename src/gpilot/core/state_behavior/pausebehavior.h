@@ -31,6 +31,7 @@ class PauseBehavior : public StateBehavior
 
     private:
         PauseSource m_source;
+        bool m_resumed = false;
         void resume();
 };
 
