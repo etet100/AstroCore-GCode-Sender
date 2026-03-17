@@ -46,7 +46,6 @@ private:
     CategoriesModel* m_categoriesModel;
     QList<LogEntry> m_entries;
     QTimer* m_regenerateTimer;
-    bool m_dark;
 
     void closeEvent(QCloseEvent* event) override;
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -54,6 +53,8 @@ private:
     QStringList findTags(const QString& msg);
     void appendEntry(const LogEntry& entry);
     bool passesFilter(const QString& text, QtMsgType type) const;
+    void saveWindowState() const;
+    void restoreWindowState();
 };
 
 #endif // FRMLOG_H

@@ -3,6 +3,10 @@
 #include "ui/utils/thememanager.h"
 #include "utils/utils.h"
 #include <QAbstractItemModel>
+#include <QCloseEvent>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QThread>
 #include <QPainter>
 #include <QTime>
 #include <QStyledItemDelegate>
@@ -46,19 +50,9 @@ class TagTree
                 CategoryItem* item = m_index.value("-- no tag --", nullptr);
                 return !item || item->checkState != Qt::Unchecked;
             }
-            QString key;
-            for (const QString& tag : path) {
-                if (!key.isEmpty()) {
-                    key += '|';
-                }
-                key += tag;
-                CategoryItem* item = m_index.value(key, nullptr);
-                if (item && item->checkState == Qt::Unchecked) {
-                    return false;
-                }
-            }
+            CategoryItem* item = m_index.value(path.join('|'), nullptr);
 
-            return true;
+            return !item || item->checkState != Qt::Unchecked;
         }
 
         CategoryItem* findChild(CategoryItem* parent, const QString& name) const
@@ -114,12 +108,13 @@ class CategoriesModel : public QAbstractItemModel
 
                 CategoryItem* child = m_tree->findChild(current, tag);
                 if (!child) {
-                    QString cached = Cache::instance().get(key);
+                    auto& cache = Cache::instance();
+                    QString cached = cache.get("log/" + key);
                     Qt::CheckState initialState;
                     if (cached.isEmpty()) {
                         initialState = Qt::Checked;
-                        Cache::instance().set(key, true);
-                        Cache::instance().flush();
+                        cache.set("log/" + key, true);
+                        cache.flush();
                     } else {
                         initialState = (cached == "1") ? Qt::Checked : Qt::Unchecked;
                     }
@@ -225,13 +220,23 @@ class CategoriesModel : public QAbstractItemModel
             }
             auto* item = static_cast<CategoryItem*>(index.internalPointer());
             auto state = static_cast<Qt::CheckState>(value.toInt());
-            propagateDown(item, state);
-            if (state == Qt::Checked) {
+            bool ctrl = m_ctrlModifier;
+            m_ctrlModifier = false;
+
+            item->checkState = state;
+            QModelIndex idx = indexForItem(item, 1);
+            emit dataChanged(idx, idx, {Qt::CheckStateRole});
+
+            if (ctrl && state == Qt::Checked) {
                 checkAncestors(item);
+            } else if (ctrl && state == Qt::Unchecked) {
+                uncheckAncestorsIfNoCheckedSiblings(item);
             }
 
             return true;
         }
+
+        void setCtrlModifier(bool ctrl) { m_ctrlModifier = ctrl; }
 
         Qt::ItemFlags flags(const QModelIndex& index) const override
         {
@@ -267,7 +272,7 @@ class CategoriesModel : public QAbstractItemModel
         void saveAllRecursive(CategoryItem* item) const
         {
             for (auto* child : item->children) {
-                Cache::instance().set(child->pathKey, child->checkState != Qt::Unchecked);
+                Cache::instance().set("log/" + child->pathKey, child->checkState != Qt::Unchecked);
                 saveAllRecursive(child);
             }
         }
@@ -308,6 +313,28 @@ class CategoriesModel : public QAbstractItemModel
                 emit dataChanged(idx, idx, {Qt::CheckStateRole});
             }
         }
+
+        void uncheckAncestorsIfNoCheckedSiblings(CategoryItem* item)
+        {
+            for (CategoryItem* p = item->parent; p && p != m_tree->root(); p = p->parent) {
+                bool anyOtherChecked = false;
+                for (auto* sibling : p->children) {
+                    if (sibling != item && sibling->checkState != Qt::Unchecked) {
+                        anyOtherChecked = true;
+                        break;
+                    }
+                }
+                if (anyOtherChecked) {
+                    break;
+                }
+                p->checkState = Qt::Unchecked;
+                QModelIndex idx = indexForItem(p, 1);
+                emit dataChanged(idx, idx, {Qt::CheckStateRole});
+                item = p;
+            }
+        }
+
+        bool m_ctrlModifier = false;
 };
 
 class CategoryDelegate : public QStyledItemDelegate
@@ -357,8 +384,8 @@ FrmLog::FrmLog() : QDialog()
 
     ui->setupUi(this);
 
-    m_dark = ThemeManager::instance().dark();
-    if (m_dark) {
+    static bool dark = ThemeManager::instance().dark();
+    if (dark) {
         Utils::invertButtonIconColors({
             ui->btnClearIncludeText,
             ui->btnClearExcludeText,
@@ -367,9 +394,9 @@ FrmLog::FrmLog() : QDialog()
             ui->btnTreeToggle,
         });
     }
-    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
-        if (m_dark != dark) {
-            m_dark = dark;
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark_) {
+        if (dark != dark_) {
+            dark = dark_;
             Utils::invertButtonIconColors({
                 ui->btnClearIncludeText,
                 ui->btnClearExcludeText,
@@ -380,6 +407,9 @@ FrmLog::FrmLog() : QDialog()
         }
     });
 
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 3);
+
     ui->treeCategories->setHeaderHidden(true);
     ui->treeCategories->setModel(m_categoriesModel);
     ui->treeCategories->setItemDelegate(new CategoryDelegate(this));
@@ -388,7 +418,19 @@ FrmLog::FrmLog() : QDialog()
     ui->treeCategories->header()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->treeCategories->header()->setSectionResizeMode(1, QHeaderView::Fixed);
     ui->treeCategories->header()->resizeSection(1, 24);
+    ui->treeCategories->setExpandsOnDoubleClick(false);
     ui->treeCategories->viewport()->installEventFilter(this);
+
+    connect(ui->treeCategories, &QTreeView::doubleClicked,
+            this, [this](const QModelIndex& index) {
+        if (!index.isValid() || index.column() != 0) {
+            return;
+        }
+        QModelIndex checkIdx = m_categoriesModel->index(index.row(), 1, index.parent());
+        auto current = static_cast<Qt::CheckState>(m_categoriesModel->data(checkIdx, Qt::CheckStateRole).toInt());
+        m_categoriesModel->setCtrlModifier(QGuiApplication::keyboardModifiers() & Qt::ControlModifier);
+        m_categoriesModel->setData(checkIdx, current == Qt::Checked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
+    });
 
     connect(m_categoriesModel, &QAbstractItemModel::rowsInserted,
             this, [this](const QModelIndex& parent, int, int) {
@@ -401,8 +443,9 @@ FrmLog::FrmLog() : QDialog()
             return;
         }
         auto* item = static_cast<CategoryItem*>(topLeft.internalPointer());
-        Cache::instance().set(item->pathKey, item->checkState != Qt::Unchecked);
-        Cache::instance().flush();
+        auto& cache = Cache::instance();
+        cache.set("log/" + item->pathKey, item->checkState != Qt::Unchecked);
+        cache.flush();
         regenerateWithDelay();
     });
 
@@ -411,13 +454,15 @@ FrmLog::FrmLog() : QDialog()
     connect(resetBtn, &QPushButton::clicked, this, &FrmLog::clear);
 
     connect(ui->txtIncludeText, &QLineEdit::textChanged, this, [this]() {
-        Cache::instance().set("include-text", ui->txtIncludeText->text());
-        Cache::instance().flush();
+        auto& cache = Cache::instance();
+        cache.set("log/include-text", ui->txtIncludeText->text());
+        cache.flush();
         regenerateWithDelay();
     });
     connect(ui->txtExcludeText, &QLineEdit::textChanged, this, [this]() {
-        Cache::instance().set("exclude-text", ui->txtExcludeText->text());
-        Cache::instance().flush();
+        auto& cache = Cache::instance();
+        cache.set("log/exclude-text", ui->txtExcludeText->text());
+        cache.flush();
         regenerateWithDelay();
     });
 
@@ -434,32 +479,91 @@ FrmLog::FrmLog() : QDialog()
 
     m_categoriesModel->ensurePath({"-- no tag --"});
 
-    const QString savedIncludeText = Cache::instance().get("include-text");
-    if (!savedIncludeText.isEmpty()) {
-        ui->txtIncludeText->setText(savedIncludeText);
-    }
-    const QString savedExcludeText = Cache::instance().get("exclude-text");
-    if (!savedExcludeText.isEmpty()) {
-        ui->txtExcludeText->setText(savedExcludeText);
-    }
-
     connect(ui->btnTreeAll, &QPushButton::clicked, this, &FrmLog::treeSelectAll);
     connect(ui->btnTreeNone, &QPushButton::clicked, this, &FrmLog::treeSelectNone);
     connect(ui->btnTreeToggle, &QPushButton::clicked, this, &FrmLog::treeToggleSelection);
 
     connect(ui->cmbMinLevel, &QComboBox::currentIndexChanged, this, [this](int index) {
-        Cache::instance().set("min-level", index);
-        Cache::instance().flush();
+        auto& cache = Cache::instance();
+        cache.set("log/min-level", index);
+        cache.flush();
         regenerateWithDelay();
     });
 
-    ui->cmbMinLevel->setCurrentIndex(Cache::instance().getInt("min-level", 0));
+    auto& cache = Cache::instance();
+    ui->cmbMinLevel->setCurrentIndex(cache.getInt("log/min-level", 0));
+
+    const QString savedIncludeText = cache.get("log/include-text");
+    if (!savedIncludeText.isEmpty()) {
+        ui->txtIncludeText->setText(savedIncludeText);
+    }
+    const QString savedExcludeText = cache.get("log/exclude-text");
+    if (!savedExcludeText.isEmpty()) {
+        ui->txtExcludeText->setText(savedExcludeText);
+    }
+
+    restoreWindowState();
 }
 
 void FrmLog::closeEvent(QCloseEvent* event)
 {
+    saveWindowState();
     hide();
     event->ignore();
+}
+
+void FrmLog::saveWindowState() const
+{
+    auto& cache = Cache::instance();
+    bool maximized = windowState() & Qt::WindowMaximized;
+
+    cache.set("log/window/maximized", maximized);
+    cache.set("log/window/screen", screen()->name());
+
+    QRect g = normalGeometry();
+    cache.set("log/window/x", g.x());
+    cache.set("log/window/y", g.y());
+    cache.set("log/window/w", g.width());
+    cache.set("log/window/h", g.height());
+
+    cache.flush();
+}
+
+void FrmLog::restoreWindowState()
+{
+    auto& cache = Cache::instance();
+
+    QString screenName = cache.get("log/window/screen");
+    QScreen* targetScreen = QGuiApplication::primaryScreen();
+    if (!screenName.isEmpty()) {
+        for (QScreen* s : QGuiApplication::screens()) {
+            if (s->name() == screenName) {
+                targetScreen = s;
+                break;
+            }
+        }
+    }
+
+    int x = cache.getInt("log/window/x", -1);
+    int y = cache.getInt("log/window/y", -1);
+    int w = cache.getInt("log/window/w", 900);
+    int h = cache.getInt("log/window/h", 600);
+
+    QRect screen = targetScreen->availableGeometry();
+    if (x == -1 || y == -1) {
+        x = screen.x() + (screen.width() - w) / 2;
+        y = screen.y() + (screen.height() - h) / 2;
+    }
+
+    // Clamp to screen bounds in case screen layout changed
+    x = qBound(screen.x(), x, screen.right() - w);
+    y = qBound(screen.y(), y, screen.bottom() - h);
+
+    setGeometry(x, y, w, h);
+
+    if (cache.getBool("log/window/maximized", false)) {
+        showMaximized();
+    }
 }
 
 FrmLog::~FrmLog()
@@ -470,15 +574,11 @@ FrmLog::~FrmLog()
 
 bool FrmLog::eventFilter(QObject* obj, QEvent* event)
 {
-    if (obj == ui->treeCategories->viewport() && event->type() == QEvent::MouseButtonDblClick) {
+    if (obj == ui->treeCategories->viewport() && event->type() == QEvent::MouseButtonPress) {
         auto* me = static_cast<QMouseEvent*>(event);
         QModelIndex idx = ui->treeCategories->indexAt(me->pos());
-        if (idx.isValid() && idx.column() == 0) {
-            QModelIndex checkIdx = m_categoriesModel->index(idx.row(), 1, idx.parent());
-            auto current = static_cast<Qt::CheckState>(m_categoriesModel->data(checkIdx, Qt::CheckStateRole).toInt());
-            m_categoriesModel->setData(checkIdx, current == Qt::Checked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
-
-            return true;
+        if (idx.isValid() && idx.column() == 1) {
+            m_categoriesModel->setCtrlModifier(me->modifiers() & Qt::ControlModifier);
         }
     }
 
@@ -487,6 +587,11 @@ bool FrmLog::eventFilter(QObject* obj, QEvent* event)
 
 void FrmLog::log(QtMsgType type, const QString& msg)
 {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, [this, type, msg]() { log(type, msg); }, Qt::QueuedConnection);
+        return;
+    }
+
     const QString timestamped = QTime::currentTime().toString("hh:mm:ss ") + msg;
 
     QStringList tags = findTags(msg);

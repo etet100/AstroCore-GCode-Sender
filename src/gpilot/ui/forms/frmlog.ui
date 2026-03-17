@@ -16,7 +16,7 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
    <property name="leftMargin">
     <number>9</number>
    </property>
@@ -26,103 +26,6 @@
    <property name="rightMargin">
     <number>9</number>
    </property>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QToolButton" name="btnTreeAll">
-        <property name="minimumSize">
-         <size>
-          <width>25</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>+</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources/images.qrc">
-          <normaloff>:/images/logs/check_square.svg</normaloff>:/images/logs/check_square.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btnTreeNone">
-        <property name="minimumSize">
-         <size>
-          <width>25</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>-</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources/images.qrc">
-          <normaloff>:/images/logs/square.svg</normaloff>:/images/logs/square.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btnTreeToggle">
-        <property name="minimumSize">
-         <size>
-          <width>25</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources/images.qrc">
-          <normaloff>:/images/logs/refresh_cw.svg</normaloff>:/images/logs/refresh_cw.svg</iconset>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="minimumSize">
@@ -140,13 +43,146 @@
      <property name="handleWidth">
       <number>30</number>
      </property>
-     <widget class="QTreeView" name="treeCategories">
-      <property name="maximumSize">
-       <size>
-        <width>350</width>
-        <height>16777215</height>
-       </size>
-      </property>
+     <widget class="QWidget" name="widget_5" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="btnTreeAll">
+            <property name="minimumSize">
+             <size>
+              <width>25</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>+</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/images/logs/check_square.svg</normaloff>:/images/logs/check_square.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btnTreeNone">
+            <property name="minimumSize">
+             <size>
+              <width>25</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>-</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/images/logs/square.svg</normaloff>:/images/logs/square.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btnTreeToggle">
+            <property name="minimumSize">
+             <size>
+              <width>25</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/images/logs/refresh_cw.svg</normaloff>:/images/logs/refresh_cw.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTreeView" name="treeCategories">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="widget_2" native="true">
       <property name="minimumSize">
@@ -231,6 +267,12 @@
              <iconset resource="../resources/images.qrc">
               <normaloff>:/images/logs/x.svg</normaloff>:/images/logs/x.svg</iconset>
             </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
+            </property>
            </widget>
           </item>
          </layout>
@@ -269,6 +311,12 @@
             <property name="icon">
              <iconset resource="../resources/images.qrc">
               <normaloff>:/images/logs/x.svg</normaloff>:/images/logs/x.svg</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>18</width>
+              <height>18</height>
+             </size>
             </property>
            </widget>
           </item>
