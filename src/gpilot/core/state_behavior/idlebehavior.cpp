@@ -123,7 +123,7 @@ bool IdleBehavior::doAction(const Action &action)
             return true;
     }
 
-    return StateBehavior::doAction(action);
+    return false;
 }
 
 StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

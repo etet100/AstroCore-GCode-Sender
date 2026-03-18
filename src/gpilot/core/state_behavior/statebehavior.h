@@ -123,6 +123,7 @@ class StateBehavior : public QObject
         // This is something we will need in almost every behavior
         // bool dataIsReset(QString data);
 
+        // No need to call base implementation of doAction if you override it
         virtual bool doAction(const Action &action) {
             Q_UNUSED(action);
             return false;

@@ -55,8 +55,6 @@ void StateBehavior::reset()
 void StateBehavior::onMachineState(MachineState state) {
     QList<StateResponseEntry> toFire;
 
-    qDebug() << "[Behavior] Machine state:" << static_cast<int>(state);
-
     m_stateResponseCallbacks.removeIf([&](const StateResponseEntry& entry) {
         if (entry.targetState == MachineState::Unknown || entry.targetState == state) {
             toFire.append(entry);
@@ -252,6 +250,8 @@ bool StateBehavior::action(const Action &action)
 {
     bool result = doAction(action);
     if (!result) {
+        qDebug() << qPrintable(QString("[Behavior][%1] Action rejected: %2").arg(name()).arg(action.name()));
+
         log(QString("[Behavior][%1] Action rejected: %2").arg(name()).arg(action.name()));
     }
 
@@ -276,8 +276,11 @@ bool StateBehavior::handleMachineConfigurationActions(const Action &action)
 bool StateBehavior::handleSaveMachineConfigurationParamAction(const Action &action)
 {
     SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
+
     QString command = QString("$%1=%2").arg(saveAction.index()).arg(saveAction.value());
-    qDebug() << QString("[Behavior][%1] Saving machine configuration parameter: %2").arg(name()).arg(command);
+
+    qDebug() << qPrintable(QString("[Behavior][%1] Saving machine configuration parameter: %2").arg(name()).arg(command));
+
     m_communicator->sendCommand(CommandSource::System, command);
 
     return true;

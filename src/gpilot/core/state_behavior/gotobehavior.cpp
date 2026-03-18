@@ -38,6 +38,34 @@ void GoToBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
+bool GoToBehavior::doAction(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Stop:
+            stopJogging();
+
+            return true;
+    }
+
+    return false;
+}
+
+void GoToBehavior::stopJogging()
+{
+    qDebug() << "[Behavior][GoTo] Stopping";
+
+    qDebug() << "[Behavior][GoTo] Send JOG CANCEL and clear queue";
+    m_communicator->clearQueue();
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_JOG_CANCEL);
+
+    qDebug() << "[Behavior][GoTo] Now wait for idle state";
+    setTimeout(500, [this]() {
+        qWarning() << "[Behavior][GoTo] No response after stop command, transitioning to Error";
+
+        emit transition(this, new ErrorBehavior("Failed to stop GoTo movement"));
+    });
+}
+
 StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     Q_UNUSED(commandAttributes);

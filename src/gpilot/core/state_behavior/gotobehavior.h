@@ -20,6 +20,7 @@ class GoToBehavior : public StateBehavior
 
     protected:
         QString name() const override { return "GoTo"; }
+        bool doAction(const Action &action) override;
 
     private:
         enum Stage {
@@ -32,6 +33,7 @@ class GoToBehavior : public StateBehavior
         QPointF m_target;
         int m_feedRate;
         Stage m_stage = None;
+        void stopJogging();
 };
 
 #endif // GOTOBEHAVIOR_H

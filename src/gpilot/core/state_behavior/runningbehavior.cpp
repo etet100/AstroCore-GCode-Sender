@@ -107,9 +107,9 @@ StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, St
             }
             m_stage = RunningStage::Unknown;
         }, MachineState::Run, 500);
-    } else {
-        sendStreamerCommandsUntilBufferIsFull();
     }
+
+    sendStreamerCommandsUntilBufferIsFull();
 
     return Result::Ok;
 }

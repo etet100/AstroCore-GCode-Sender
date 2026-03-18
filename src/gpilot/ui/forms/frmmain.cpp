@@ -226,10 +226,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
-        JoggingBehavior *joggingBehavior = dynamic_cast<JoggingBehavior*>(m_communicator->stateBehavior());
-        if (joggingBehavior) {
-            joggingBehavior->stopJogging();
-        }
+        m_communicator->stateBehavior()->action(Action::Stop);
     });
 
     // Drag&drop placeholders

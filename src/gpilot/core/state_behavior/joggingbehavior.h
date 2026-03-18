@@ -31,6 +31,7 @@ class JoggingBehavior : public StateBehavior
 
     protected:
         QString name() const override { return "Jogging"; }
+        bool doAction(const Action &action) override;
 
     private:
         static constexpr int TIMER_INTERVAL_MS = 50;

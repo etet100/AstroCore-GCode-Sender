@@ -155,6 +155,12 @@ void JoggingBehavior::continueJogging()
 
 void JoggingBehavior::fillBuffer()
 {
+    if (!m_isJogging) {
+        qDebug() << "[Behavior][Jogging] Not jogging, skipping buffer fill";
+
+        return;
+    }
+
     double realDistance = (m_communicator->machinePos() - m_startMachinePos).length();
     double sentDistance = m_sent * m_segmentDist;
     double remaining = sentDistance - realDistance;
@@ -208,7 +214,7 @@ void JoggingBehavior::startJogging()
         // Segment covers exactly one timer interval of travel at the configured feed rate.
         // This gives the shortest possible segments while maintaining continuous motion.
         double effectiveFeedRate = (m_joggingVector.z() != 0) ? m_feedRateZ : m_feedRate;
-        m_segmentDist = std::max(effectiveFeedRate / 60000.0 * TIMER_INTERVAL_MS, 0.05);
+        m_segmentDist = std::max(effectiveFeedRate / 60000.0 * TIMER_INTERVAL_MS, 0.5);
         if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
             m_segmentDist /= std::sqrt(2.0);
         }
@@ -241,6 +247,7 @@ void JoggingBehavior::startJogging()
         // In continuous mode we query machine state on every timer tick to monitor jogging
         // status and react to changes as quickly as possible. Remember to restart querying on stop jogging!
         m_communicator->stopQueryingMachineState();
+
         m_joggingTimer.start(TIMER_INTERVAL_MS);
 
         return;
@@ -312,5 +319,17 @@ void JoggingBehavior::setJoggingFeedRate(double feedRate)
         stopJogging();
         startJogging();
     }
+}
+
+bool JoggingBehavior::doAction(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Stop:
+            stopJogging();
+
+            return true;
+    }
+
+    return false;
 }
 
