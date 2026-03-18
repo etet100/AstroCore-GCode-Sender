@@ -85,7 +85,7 @@ class PartMainProgram : public QWidget
         void selectFirstRow();
         void resetToFirstRow();
         void setTableUpdatesEnabled(bool enable);
-        void scrollToCurrentIndex(const QModelIndex& index);
+        void scrollToIndex(int index);
         void setProgramTableModel(QAbstractItemModel* model);
         void setProgramTableEditTriggers(QAbstractItemView::EditTriggers triggers);
         QByteArray saveProgramHeaderState() const;

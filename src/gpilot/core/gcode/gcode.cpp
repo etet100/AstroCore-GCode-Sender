@@ -105,6 +105,7 @@ void GCode::setCommandSent()
     GCodeItem& item = m_data[m_commandIndex];
     item.state = GCodeItem::Sent;
     addUpdatedRange(m_commandIndex);
+    m_lastSentCommand = m_commandIndex;
 }
 
 void GCode::setCommandResponse(int commandIndex, bool success, QString response)
@@ -195,12 +196,15 @@ GCode &GCode::operator <<(const GCodeItem &item) {
 
 void GCode::onLinesUpdatedTimer()
 {
-    if (m_linesUpdatedTo == INT_MIN) {
-        return;
+    if (m_lastSentCommand != INT_MAX) {
+        emit lastSentCommandChanged(m_lastSentCommand);
+        m_lastSentCommand = INT_MAX;
     }
 
-    emit linesUpdated(m_linesUpdatedFrom, m_linesUpdatedTo);
+    if (m_linesUpdatedTo != INT_MIN) {
+        emit linesUpdated(m_linesUpdatedFrom, m_linesUpdatedTo);
 
-    m_linesUpdatedFrom = INT_MAX;
-    m_linesUpdatedTo = INT_MIN;
+        m_linesUpdatedFrom = INT_MAX;
+        m_linesUpdatedTo = INT_MIN;
+    }
 }

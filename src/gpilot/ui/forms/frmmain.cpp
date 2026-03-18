@@ -150,6 +150,9 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
             ui->visualizer->updateCodeDrawer(indexes);
         }
     });
+    connect(&m_program, &GCode::lastSentCommandChanged, this, [this](int index) {
+        ui->program->scrollToIndex(index);
+    });
 
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         clearRecentFiles();

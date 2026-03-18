@@ -134,6 +134,7 @@ class GCode : public QObject
         QList<GCodeItem> m_data;
         int m_linesUpdatedFrom = INT_MAX;
         int m_linesUpdatedTo = INT_MIN;
+        int m_lastSentCommand = INT_MAX;
         QTimer m_linesUpdatedTimer;
         QString m_contentHash;
 
@@ -146,6 +147,7 @@ class GCode : public QObject
     signals:
         void progressChanged(int progress);
         void linesUpdated(int from, int to);
+        void lastSentCommandChanged(int commandIndex);
         void loaded();
         void finished();
         void paused();

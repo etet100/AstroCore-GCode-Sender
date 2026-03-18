@@ -117,10 +117,17 @@ void PartMainProgram::resetToFirstRow()
     }
 }
 
-void PartMainProgram::scrollToCurrentIndex(const QModelIndex& index)
+void PartMainProgram::scrollToIndex(int index)
 {
-    ui->tblProgram->scrollTo(index);
-    ui->tblProgram->setCurrentIndex(index);
+    if (!isAutoScroll()) {
+        return;
+    }
+    auto* model = ui->tblProgram->model();
+    if (model) {
+        const QModelIndex ind = currentModelIndex(m_programModel.toFilteredIndex(index) + 2, 0);
+        ui->tblProgram->scrollTo(ind);
+        // ui->tblProgram->setCurrentIndex(index);
+    }
 }
 
 void PartMainProgram::setTableUpdatesEnabled(bool enable)
