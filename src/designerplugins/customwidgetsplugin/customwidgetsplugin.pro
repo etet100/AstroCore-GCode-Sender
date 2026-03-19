@@ -9,6 +9,8 @@ DEFINES += CUSTOMWIDGETS_EXPORT
 
 HEADERS +=  colorpicker.h \
             customwidgetsshared.h \
+            iconlabel.h \
+            iconlabelplugin.h \
             qtvalueslider.h \
             qtvaluesliderplugin.h \
             slider.h \
@@ -23,6 +25,8 @@ HEADERS +=  colorpicker.h \
             xswitchbuttonplugin.h
 
 SOURCES +=  colorpicker.cpp \
+            iconlabel.cpp \
+            iconlabelplugin.cpp \
             qtvalueslider.cpp \
             qtvaluesliderplugin.cpp \
             slider.cpp \
