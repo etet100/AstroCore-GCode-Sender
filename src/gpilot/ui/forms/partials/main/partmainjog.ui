@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>246</width>
+    <width>254</width>
     <height>274</height>
    </rect>
   </property>
@@ -36,9 +36,9 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="joggingLayout">
-     <item row="3" column="1">
-      <widget class="StyledToolButton" name="cmdYMinus">
+    <layout class="QGridLayout" name="joggingLayout" columnstretch="1,0,0,0,0,0" columnminimumwidth="0,0,0,0,0,0">
+     <item row="3" column="4">
+      <widget class="StyledToolButton" name="cmdZMinus">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -46,7 +46,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Y-</string>
+        <string>Z-</string>
        </property>
        <property name="text">
         <string/>
@@ -121,6 +121,111 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+      <widget class="StyledToolButton" name="cmdXMinusYMinus">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>31</height>
+        </size>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/jogging/arrow_left_down.svg</normaloff>:/images/jogging/arrow_left_down.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="StyledToolButton" name="cmdZPlus">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Z+</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../resources/images.qrc">
+           <normaloff>:/images/jogging/arrow_up.svg</normaloff>:/images/jogging/arrow_up.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="adjustSize" stdset="0">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+      <widget class="StyledToolButton" name="cmdXMinusYPlus">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>31</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/jogging/arrow_left_up.svg</normaloff>:/images/jogging/arrow_left_up.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="StyledToolButton" name="cmdYMinus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Y-</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/jogging/arrow_down.svg</normaloff>:/images/jogging/arrow_down.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="adjustSize" stdset="0">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="0">
       <widget class="StyledToolButton" name="cmdXMinus">
        <property name="sizePolicy">
@@ -150,23 +255,32 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-      <widget class="StyledToolButton" name="cmdXMinusYMinus">
-       <property name="minimumSize">
-        <size>
-         <width>32</width>
-         <height>31</height>
-        </size>
+     <item row="2" column="2">
+      <widget class="StyledToolButton" name="cmdXPlus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>X+</string>
+       </property>
+       <property name="text">
+        <string/>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/jogging/arrow_left_down.svg</normaloff>:/images/jogging/arrow_left_down.svg</iconset>
+         <normaloff>:/images/jogging/arrow_right.svg</normaloff>:/images/jogging/arrow_right.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
-         <width>24</width>
-         <height>24</height>
+         <width>32</width>
+         <height>32</height>
         </size>
+       </property>
+       <property name="adjustSize" stdset="0">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -187,94 +301,6 @@
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
          <normaloff>:/images/jogging/stop.svg</normaloff>:/images/jogging/stop.svg</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>32</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="adjustSize" stdset="0">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="3">
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="StyledToolButton" name="cmdZMinus">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Z-</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../resources/images.qrc">
-           <normaloff>:/images/jogging/arrow_down.svg</normaloff>:/images/jogging/arrow_down.svg</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>32</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="adjustSize" stdset="0">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="2">
-      <widget class="StyledToolButton" name="cmdXPlus">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>X+</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/jogging/arrow_right.svg</normaloff>:/images/jogging/arrow_right.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -308,91 +334,32 @@
       </widget>
      </item>
      <item row="0" column="3">
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="StyledToolButton" name="cmdZPlus">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Z+</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../resources/images.qrc">
-           <normaloff>:/images/jogging/arrow_up.svg</normaloff>:/images/jogging/arrow_up.svg</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>32</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="adjustSize" stdset="0">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-      <widget class="StyledToolButton" name="cmdXMinusYPlus">
+      <widget class="QWidget" name="widget" native="true">
        <property name="minimumSize">
         <size>
-         <width>32</width>
-         <height>31</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/jogging/arrow_left_up.svg</normaloff>:/images/jogging/arrow_left_up.svg</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>24</width>
-         <height>24</height>
+         <width>20</width>
+         <height>0</height>
         </size>
        </property>
       </widget>
      </item>
+     <item row="0" column="5">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
    <item>
-    <widget class="PartMainJogParameters2" name="jogParameters" native="true">
+    <widget class="PartMainJogParameters3" name="jogParameters" native="true">
      <property name="enabled">
       <bool>true</bool>
      </property>
@@ -450,9 +417,9 @@
    <header>styledtoolbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>PartMainJogParameters2</class>
+   <class>PartMainJogParameters3</class>
    <extends>QWidget</extends>
-   <header>ui/forms/partials/main/partmainjogparameters2.h</header>
+   <header>ui/forms/partials/main/partmainjogparameters3.h</header>
   </customwidget>
  </customwidgets>
  <resources>

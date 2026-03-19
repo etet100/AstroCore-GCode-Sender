@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PartMainJogParameters3</class>
+ <widget class="QWidget" name="PartMainJogParameters3">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>313</width>
+    <height>212</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="IconLabel" name="lblStep">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Step size</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../../resources/images.qrc">
+       <normaloff>:/images/jogging/ruler.svg</normaloff>:/images/jogging/ruler.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="contStep" native="true">
+     <property name="styleSheet">
+      <string notr="true">QPushButton::checked {
+	background-color: red;
+	color: white;
+}
+</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="IconLabel" name="lblFeedXY">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Feedrate</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../../resources/images.qrc">
+       <normaloff>:/images/jogging/gauge.svg</normaloff>:/images/jogging/gauge.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="contFeedXY" native="true">
+     <property name="styleSheet">
+      <string notr="true">QPushButton::checked {
+	background-color: blue;
+	color: white;
+}
+</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="IconLabel" name="lblFeedZ">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Feedrate Z</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../../resources/images.qrc">
+       <normaloff>:/images/jogging/gauge.svg</normaloff>:/images/jogging/gauge.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="contFeedZ" native="true">
+     <property name="styleSheet">
+      <string notr="true">QPushButton::checked {
+	background-color: green;
+	color: white;
+}
+</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>IconLabel</class>
+   <extends>QWidget</extends>
+   <header>iconlabel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../resources/images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

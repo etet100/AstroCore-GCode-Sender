@@ -24,13 +24,13 @@ PartMainJog::PartMainJog(QWidget *parent)
     // ui->cmdYMinus->setBackColor(backgroundColor);
     // ui->cmdYPlus->setBackColor(backgroundColor);
 
-    connect(ui->jogParameters, &PartMainJogParameters2::stepSizeChanged, this, [this](double val) {
+    connect(ui->jogParameters, &PartMainJogParameters3::stepSizeChanged, this, [this](double val) {
         m_configurationJogging->setStep(val);
     });
-    connect(ui->jogParameters, &PartMainJogParameters2::feedRateXYChanged, this, [this](double val) {
+    connect(ui->jogParameters, &PartMainJogParameters3::feedRateXYChanged, this, [this](double val) {
         m_configurationJogging->setFeed(static_cast<int>(val));
     });
-    connect(ui->jogParameters, &PartMainJogParameters2::feedRateZChanged, this, [this](double val) {
+    connect(ui->jogParameters, &PartMainJogParameters3::feedRateZChanged, this, [this](double val) {
         m_configurationJogging->setFeedZ(static_cast<int>(val));
     });
     connect(ui->chkContinuous, &QCheckBox::toggled, this, [this](bool checked) {
