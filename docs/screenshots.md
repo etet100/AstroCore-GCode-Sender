@@ -29,3 +29,7 @@ This page collects selected screenshots of G-Pilot. They are useful to quickly s
 ## G-code editor
 
 ![G-code editor](screenshots/screenshot_gcode_editor.png)
+
+## Jog panel
+
+![Jog panel](screenshots/screenshot_jogging_panel.png)

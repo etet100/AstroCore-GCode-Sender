@@ -36,6 +36,7 @@ Main documentation pages available in this folder:
 
 - [About G-Pilot](about.md)
 - [User interface](ui.md)
+- [Jogging](jogging.md)
 - [G-code editing](gcode-editing.md)
 - [Connection and virtual modes](connection-modes.md)
 - [Log browser](log-browser.md)
