@@ -149,9 +149,6 @@ class GCode : public QObject
         void linesUpdated(int from, int to);
         void lastSentCommandChanged(int commandIndex);
         void loaded();
-        void finished();
-        void paused();
-        void error();
 
     private slots:
         void onLinesUpdatedTimer();
