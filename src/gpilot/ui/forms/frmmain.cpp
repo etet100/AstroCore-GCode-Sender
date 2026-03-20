@@ -1941,6 +1941,14 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
             }, "gpt-4o");
 
             return;
+        } else if (command == "start") {
+            m_communicator->sb()->action(Action::Run);
+        } else if (command == "pause") {
+            m_communicator->sb()->action(Action::PauseResume);
+        } else if (command == "reset") {
+            m_communicator->sb()->action(Action::Unlock);
+        } else if (command == "open") {
+            onFileOpen();
         }
 
         qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
