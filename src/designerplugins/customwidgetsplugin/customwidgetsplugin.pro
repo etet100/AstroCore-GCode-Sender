@@ -1,7 +1,7 @@
 CONFIG += plugin shared
 CONFIG -= debug_and_release
 TEMPLATE = lib
-QT += widgets uiplugin multimedia multimediawidgets
+QT += widgets uiplugin multimedia multimediawidgets svg
 
 TARGET = gpilot-customwidgets
 QMAKE_FLAGS += -Wl,-soname,libgpilot-customwidgets.so

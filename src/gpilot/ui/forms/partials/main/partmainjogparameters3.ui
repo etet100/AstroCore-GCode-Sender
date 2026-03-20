@@ -36,12 +36,21 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="text">
       <string>Step size</string>
      </property>
-     <property name="icon">
-      <iconset resource="../../../resources/images.qrc">
-       <normaloff>:/images/jogging/ruler.svg</normaloff>:/images/jogging/ruler.svg</iconset>
+     <property name="svgIcon">
+      <string>:/images/jogging/ruler.svg</string>
+     </property>
+     <property name="iconColor">
+      <color>
+       <red>170</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
      </property>
      <property name="iconSize">
       <size>
@@ -72,15 +81,24 @@
      <property name="text">
       <string>Feedrate</string>
      </property>
-     <property name="icon">
-      <iconset resource="../../../resources/images.qrc">
-       <normaloff>:/images/jogging/gauge.svg</normaloff>:/images/jogging/gauge.svg</iconset>
+     <property name="svgIcon">
+      <string>:/images/jogging/gauge.svg</string>
+     </property>
+     <property name="iconColor">
+      <color>
+       <red>0</red>
+       <green>0</green>
+       <blue>255</blue>
+      </color>
      </property>
      <property name="iconSize">
       <size>
        <width>22</width>
        <height>22</height>
       </size>
+     </property>
+     <property name="invertIconColors">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -105,9 +123,15 @@
      <property name="text">
       <string>Feedrate Z</string>
      </property>
-     <property name="icon">
-      <iconset resource="../../../resources/images.qrc">
-       <normaloff>:/images/jogging/gauge.svg</normaloff>:/images/jogging/gauge.svg</iconset>
+     <property name="svgIcon">
+      <string>:/images/jogging/gauge.svg</string>
+     </property>
+     <property name="iconColor">
+      <color>
+       <red>0</red>
+       <green>170</green>
+       <blue>0</blue>
+      </color>
      </property>
      <property name="iconSize">
       <size>
@@ -137,8 +161,6 @@
    <header>iconlabel.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../../resources/images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
