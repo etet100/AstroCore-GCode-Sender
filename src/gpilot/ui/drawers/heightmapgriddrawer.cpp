@@ -238,13 +238,13 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             // m_lines.append(vertex);
 
             m_billboardDrawable.addBillboard(
-                QVector3D(x, y, value + 6.0),
+                QVector3D(x, y, 0.0f),
                 new HeightMapGridBillboardContentData(
                     QPoint(x_, y_), value,
                     QString("%1, %2\n%3").arg(x_).arg(y_).arg(value, 0, 'f', 2),
                     QColor(11, 22, 17, 200), Qt::white
                 ),
-                30.0f * scale // Billboard size in pixels
+                22.0f * scale // Billboard size in pixels
             );
 
             x += stepSize.width();

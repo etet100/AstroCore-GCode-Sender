@@ -23,7 +23,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     m_codeDrawer = new GcodeDrawer();
     m_probeDrawer = new GcodeDrawer();
     m_probeDrawer->setVisible(false);
-    m_currentDrawer = m_codeDrawer;
+    m_boundingBoxDrawer.setVisible(false);
 
     connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::updateCursorDrawer);
 
@@ -140,6 +140,7 @@ void PartMainVisualizer::initDrawables()
 {
     *ui->visualizer << m_codeDrawer << m_probeDrawer
                     << &m_boundingBoxDrawer
+                    << m_boundingBoxDrawer.billboardDrawable()
                     << &m_cursorDrawer
                     << &m_heightmapBorderDrawer
                     << m_heightmapBorderDrawer.billboardDrawable()
@@ -151,9 +152,11 @@ void PartMainVisualizer::initDrawables()
                     << &m_toolDrawer
                     << &m_originDrawer
                     << &m_originDrawer.billboardDrawable()
+                    << &m_noGcodeDefaultDrawer
     ;
 
-    ui->visualizer->fitDrawable(m_codeDrawer);
+    // ui->visualizer->setIsometricView();
+    ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
 }
 
 void PartMainVisualizer::applyVisualizerConfiguration(
@@ -243,7 +246,7 @@ void PartMainVisualizer::updateGCodeExtremes()
 
 void PartMainVisualizer::fitDrawable()
 {
-    ui->visualizer->fitDrawable();
+    ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
 }
 
 void PartMainVisualizer::fitCodeDrawer()
@@ -256,6 +259,7 @@ void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
     m_program = program;
     m_codeDrawer->setViewParser(parser);
     m_boundingBoxDrawer.setViewParser(parser);
+    m_noGcodeDefaultDrawer.setVisible(false);
 }
 
 void PartMainVisualizer::setProbeParser(GCodeViewParser* parser)
@@ -437,7 +441,12 @@ void PartMainVisualizer::toggleOriginClicked()
 
 void PartMainVisualizer::fitClicked()
 {
-    ui->visualizer->fitDrawable(m_currentDrawer);
+    // If gcode is loaded, fit code drawer, otherwise fit default rectangle drawer
+    if (m_currentDrawer != nullptr) {
+        ui->visualizer->fitDrawable(m_currentDrawer);
+    } else {
+        ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
+    }
 }
 
 void PartMainVisualizer::_2dClicked()
@@ -827,4 +836,9 @@ void PartMainVisualizer::toggleToolClicked()
 void PartMainVisualizer::toggleLightClicked()
 {
     ui->visualizer->toggleLight();
+}
+
+void PartMainVisualizer::toggleBoundingBoxClicked()
+{
+    m_boundingBoxDrawer.toggleVisible();
 }

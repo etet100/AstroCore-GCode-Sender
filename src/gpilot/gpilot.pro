@@ -160,6 +160,7 @@ SOURCES += main.cpp\
     ui/drawers/cursordrawer.cpp \
     ui/drawers/heightmapareadrawer.cpp \
     ui/drawers/originbillboarddrawer.cpp \
+    ui/drawers/nogcodedefaultdrawer.cpp \
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
     ui/forms/frmclosingapp.cpp \
@@ -333,6 +334,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/cursordrawer.h \
     ui/drawers/heightmapareadrawer.h \
     ui/drawers/originbillboarddrawer.h \
+    ui/drawers/nogcodedefaultdrawer.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
     ui/forms/frmclosingapp.h \

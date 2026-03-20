@@ -1,19 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Inner Object (Cube) -->
-    <path d="M12 8L8 10V14L12 16L16 14V10L12 8Z" opacity="0.3" fill="currentColor" />
-    <!-- Bounding Box Corners -->
-    <!-- Top Left -->
-    <path d="M4 9V4H9" />
-    <!-- Top Right -->
-    <path d="M15 4H20V9" />
-    <!-- Bottom Left -->
-    <path d="M4 15V20H9" />
-    <!-- Bottom Right -->
-    <path d="M15 20H20V15" />
-    <!-- Connecting lines (optional dashed) -->
-    <path d="M4 9v6" stroke-dasharray="2 2" opacity="0.3" />
-    <path d="M20 9v6" stroke-dasharray="2 2" opacity="0.3" />
-    <path d="M9 4h6" stroke-dasharray="2 2" opacity="0.3" />
-    <path d="M9 20h6" stroke-dasharray="2 2" opacity="0.3" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" opacity="0.3" />
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96" opacity="0.3" />
+    <line x1="12" y1="22.08" x2="12" y2="12" opacity="0.3" />
+    {/* Vertices */}
+    <circle cx="12" cy="2" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="21" cy="7" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="3" cy="7" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="21" cy="17" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="3" cy="17" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="22" r="1.5" fill="currentColor" stroke="none" />
 </svg>

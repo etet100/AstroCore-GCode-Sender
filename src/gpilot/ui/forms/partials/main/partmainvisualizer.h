@@ -14,6 +14,7 @@
 #include "ui/drawers/tablesurfacedrawer.h"
 #include "ui/drawers/cursordrawer.h"
 #include "ui/drawers/boundingboxdrawer.h"
+#include "ui/drawers/nogcodedefaultdrawer.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include "core/heightmap/interpolator/heightmapinterpolator.h"
 #include "ui/widgets/glwidget.h"
@@ -138,6 +139,7 @@ class PartMainVisualizer : public QWidget
         void updateBillboardsScreenPositions();
         void toggleToolClicked();
         void toggleLightClicked();
+        void toggleBoundingBoxClicked();
 
     private:
         Ui::partMainVisualizer* ui;
@@ -145,9 +147,9 @@ class PartMainVisualizer : public QWidget
         // TODO: Add machine table visualizer
         TableSurfaceDrawer m_tableSurfaceDrawer;
         OriginDrawer m_originDrawer;
-        GcodeDrawer *m_codeDrawer;
-        GcodeDrawer *m_probeDrawer;
-        GcodeDrawer *m_currentDrawer;
+        GcodeDrawer *m_codeDrawer = nullptr;
+        GcodeDrawer *m_probeDrawer = nullptr;
+        GcodeDrawer *m_currentDrawer = nullptr;
         BoundingBoxDrawer m_boundingBoxDrawer;
         ToolDrawer m_toolDrawer;
         CursorDrawer m_cursorDrawer;
@@ -157,6 +159,7 @@ class PartMainVisualizer : public QWidget
         HeightMapInterpolationDrawer m_heightmapInterpolationDrawer;
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
+        NoGcodeDefaultDrawer m_noGcodeDefaultDrawer;
         Heightmap* m_heightmap = nullptr;
         GCode* m_program = nullptr;
         bool m_ignoreZ;

@@ -135,107 +135,98 @@ void GLWidget::fitDrawable(ShaderDrawable *drawable)
 
     if (drawable != nullptr) {
         updateExtremes(drawable);
-
-        // Calculate center of drawable in world space
-        QVector3D center(
-            (m_xMin + m_xMax) * 0.5f,
-            (m_yMin + m_yMax) * 0.5f,
-            (m_zMin + m_zMax) * 0.5f
-        );
-        m_lookAt = center;
-
-        // Calculate camera basis vectors (Z-up system) to determine object orientation relative to camera
-        float pitch = qDegreesToRadians((float)m_xRot);
-        float yaw = qDegreesToRadians((float)m_yRot);
-        float cosPitch = cos(pitch);
-        float sinPitch = sin(pitch);
-        float cosYaw = cos(yaw);
-        float sinYaw = sin(yaw);
-
-        // Camera Z axis (pointing towards viewer)
-        QVector3D camZ(sinYaw * cosPitch, -cosYaw * cosPitch, sinPitch);
-        camZ.normalize();
-
-        // Camera Y axis (Up)
-        QVector3D camY(-sinYaw * sinPitch, cosYaw * sinPitch, cosPitch);
-        if (qAbs(cosPitch) < 0.001f) {
-            camY = QVector3D(sinYaw, cosYaw, 0);
-            if (pitch < 0) camY = -camY;
-        }
-        camY.normalize();
-
-        // Camera X axis (Right)
-        QVector3D camX = QVector3D::crossProduct(camY, camZ).normalized();
-
-        // Calculate extents of the AABB projected onto the camera plane
-        // We use the "Separating Axis Theorem" logic here.
-        // The extent of the AABB along a vector V is sum(|halfSize_i * dot(axis_i, V)|)
-        float dx = m_xSize * 0.5f;
-        float dy = m_ySize * 0.5f;
-        float dz = m_zSize * 0.5f;
-
-        float maxProjX = qAbs(dx * camX.x()) + qAbs(dy * camX.y()) + qAbs(dz * camX.z());
-        float maxProjY = qAbs(dx * camY.x()) + qAbs(dy * camY.y()) + qAbs(dz * camY.z());
-        float maxProjZ = qAbs(dx * camZ.x()) + qAbs(dy * camZ.y()) + qAbs(dz * camZ.z());
-
-        if (maxProjX > 0.0f || maxProjY > 0.0f) {
-            if (m_mode == ViewMode::Perspective) {
-                float aspectRatio = width() / float(height() ? height() : 1);
-                float fovRad = qDegreesToRadians((float)m_fov);
-
-                // Calculate required distance
-                // For perspective, we must account for the fact that the front of the object
-                // is closer to the camera and thus appears larger.
-                // We need the frustum to be large enough at the front of the object (dist - maxProjZ).
-                float distY = maxProjY / tan(fovRad * 0.5f);
-                float distX = maxProjX / (tan(fovRad * 0.5f) * aspectRatio);
-
-                // Add maxProjZ to distance to ensure front face fits
-                m_zoomDistance = qMax(distX, distY) + maxProjZ;
-
-                // Use minimal margin (1%)
-                // m_zoomDistance *= 1.01f;
-
-                // Ensure we don't clip the front of the object with near plane
-                m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
-
-                qDebug() << "[GLWidget] Perspective fit (Tight+Depth): projX=" << maxProjX << "projY=" << maxProjY
-                         << "dist=" << m_zoomDistance;
-            } else {
-                // For orthographic projection
-                float aspectRatio = width() / float(height() ? height() : 1);
-
-                float sizeY = maxProjY;
-                float sizeX = maxProjX / aspectRatio;
-
-                // Use minimal margin (1%)
-                m_zoomDistance = qMax(sizeX, sizeY) * 1.01f;
-
-                // Ensure we don't clip the front of the object with near plane
-                m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
-
-                qDebug() << "[GLWidget] Ortho fit (Tight): projX=" << maxProjX << "projY=" << maxProjY
-                         << "orthoSize=" << m_zoomDistance;
-            }
-        } else {
-            m_zoomDistance = DEFAULT_ZOOM;
-        }        qDebug() << "[GLWidget] FitDrawable: center=" << center
-                 << "size=" << m_xSize << m_ySize << m_zSize
-                 << "finalZoom=" << m_zoomDistance;
     } else {
-        m_lookAt = QVector3D(0, 0, 0);
-
-        m_xMin = 0;
-        m_xMax = 0;
-        m_yMin = 0;
-        m_yMax = 0;
-        m_zMin = 0;
-        m_zMax = 0;
-
-        m_xSize = 0;
-        m_ySize = 0;
-        m_zSize = 0;
+        setDefaultExtemes();
     }
+
+    // Calculate center of drawable in world space
+    QVector3D center(
+        (m_xMin + m_xMax) * 0.5f,
+        (m_yMin + m_yMax) * 0.5f,
+        (m_zMin + m_zMax) * 0.5f
+    );
+    m_lookAt = center;
+
+    // Calculate camera basis vectors (Z-up system) to determine object orientation relative to camera
+    float pitch = qDegreesToRadians((float)m_xRot);
+    float yaw = qDegreesToRadians((float)m_yRot);
+    float cosPitch = cos(pitch);
+    float sinPitch = sin(pitch);
+    float cosYaw = cos(yaw);
+    float sinYaw = sin(yaw);
+
+    // Camera Z axis (pointing towards viewer)
+    QVector3D camZ(sinYaw * cosPitch, -cosYaw * cosPitch, sinPitch);
+    camZ.normalize();
+
+    // Camera Y axis (Up)
+    QVector3D camY(-sinYaw * sinPitch, cosYaw * sinPitch, cosPitch);
+    if (qAbs(cosPitch) < 0.001f) {
+        camY = QVector3D(sinYaw, cosYaw, 0);
+        if (pitch < 0) camY = -camY;
+    }
+    camY.normalize();
+
+    // Camera X axis (Right)
+    QVector3D camX = QVector3D::crossProduct(camY, camZ).normalized();
+
+    // Calculate extents of the AABB projected onto the camera plane
+    // We use the "Separating Axis Theorem" logic here.
+    // The extent of the AABB along a vector V is sum(|halfSize_i * dot(axis_i, V)|)
+    float dx = m_xSize * 0.5f;
+    float dy = m_ySize * 0.5f;
+    float dz = m_zSize * 0.5f;
+
+    float maxProjX = qAbs(dx * camX.x()) + qAbs(dy * camX.y()) + qAbs(dz * camX.z());
+    float maxProjY = qAbs(dx * camY.x()) + qAbs(dy * camY.y()) + qAbs(dz * camY.z());
+    float maxProjZ = qAbs(dx * camZ.x()) + qAbs(dy * camZ.y()) + qAbs(dz * camZ.z());
+
+    if (maxProjX > 0.0f || maxProjY > 0.0f) {
+        if (m_mode == ViewMode::Perspective) {
+            float aspectRatio = width() / float(height() ? height() : 1);
+            float fovRad = qDegreesToRadians((float)m_fov);
+
+            // Calculate required distance
+            // For perspective, we must account for the fact that the front of the object
+            // is closer to the camera and thus appears larger.
+            // We need the frustum to be large enough at the front of the object (dist - maxProjZ).
+            float distY = maxProjY / tan(fovRad * 0.5f);
+            float distX = maxProjX / (tan(fovRad * 0.5f) * aspectRatio);
+
+            // Add maxProjZ to distance to ensure front face fits
+            m_zoomDistance = qMax(distX, distY) + maxProjZ;
+
+            // Use minimal margin (1%)
+            // m_zoomDistance *= 1.01f;
+
+            // Ensure we don't clip the front of the object with near plane
+            m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
+
+            qDebug() << "[GLWidget] Perspective fit (Tight+Depth): projX=" << maxProjX << "projY=" << maxProjY
+                     << "dist=" << m_zoomDistance;
+        } else {
+            // For orthographic projection
+            float aspectRatio = width() / float(height() ? height() : 1);
+
+            float sizeY = maxProjY;
+            float sizeX = maxProjX / aspectRatio;
+
+            // Use minimal margin (1%)
+            m_zoomDistance = qMax(sizeX, sizeY) * 1.01f;
+
+            // Ensure we don't clip the front of the object with near plane
+            m_zoomDistance = qMax(m_zoomDistance, maxProjZ + m_near * 1.1f);
+
+            qDebug() << "[GLWidget] Ortho fit (Tight): projX=" << maxProjX << "projY=" << maxProjY
+                     << "orthoSize=" << m_zoomDistance;
+        }
+    } else {
+        m_zoomDistance = DEFAULT_ZOOM;
+    }
+
+    qDebug() << "[GLWidget] FitDrawable: center=" << center
+             << "size=" << m_xSize << m_ySize << m_zSize
+             << "finalZoom=" << m_zoomDistance;
 
     updateProjection();
     updateView();
@@ -260,6 +251,23 @@ void GLWidget::updateExtremes(ShaderDrawable *drawable)
     m_zSize = m_zMax - m_zMin;
 
     qDebug() << "[GLWidget] Extremes updated: "
+             << "X:" << m_xMin << "..." << m_xMax
+             << "Y:" << m_yMin << "..." << m_yMax
+             << "Z:" << m_zMin << "..." << m_zMax
+             << "Sizes:"
+             << m_xSize << m_ySize << m_zSize;
+}
+
+void GLWidget::setDefaultExtemes()
+{
+    m_xMin = 0;
+    m_xMax = m_xSize = 50;
+    m_yMin = 0;
+    m_yMax = m_ySize = 50;
+    m_zMin = 0;
+    m_zMax = m_zSize = 5;
+
+    qDebug() << "[GLWidget] Default extremes set: "
              << "X:" << m_xMin << "..." << m_xMax
              << "Y:" << m_yMin << "..." << m_yMax
              << "Z:" << m_zMin << "..." << m_zMax
@@ -1066,13 +1074,15 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     drawText(painter, pos, m_speedState, lineHeight);
     drawText(painter, pos, m_pinState, lineHeight);
 
-    // right side
-    pos = QPoint(this->width() - 10, this->height() - 10 - (4 * lineHeight) + fontHeight);
+    if (width() > 320) {
+        // right side
+        pos = QPoint(this->width() - 10, this->height() - 10 - (4 * lineHeight) + fontHeight);
 
-    drawText(painter, pos, m_spendTime.toString("hh:mm:ss") + " / " + m_estimatedTime.toString("hh:mm:ss"), lineHeight, Qt::AlignRight);
-    drawText(painter, pos, m_bufferState, 15, Qt::AlignRight);
-    drawText(painter, pos, QString(tr("Vertices: %1")).arg(vertices), lineHeight, Qt::AlignRight);
-    drawText(painter, pos, QString("FPS: %1").arg(m_fps), lineHeight, Qt::AlignRight);
+        drawText(painter, pos, m_spendTime.toString("hh:mm:ss") + " / " + m_estimatedTime.toString("hh:mm:ss"), lineHeight, Qt::AlignRight);
+        drawText(painter, pos, m_bufferState, 15, Qt::AlignRight);
+        drawText(painter, pos, QString(tr("Vertices: %1")).arg(vertices), lineHeight, Qt::AlignRight);
+        drawText(painter, pos, QString("FPS: %1").arg(m_fps), lineHeight, Qt::AlignRight);
+    }
 
     m_frames++;
 #ifdef GLES

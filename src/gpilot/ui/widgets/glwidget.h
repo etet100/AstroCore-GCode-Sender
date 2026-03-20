@@ -45,6 +45,8 @@ public:
     GLWidget &operator<<(ShaderDrawable *drawable);
 
     void updateExtremes(ShaderDrawable *drawable);
+    // Set default extremes (0,0,0) - (50,50,10) - to avoid problems with 0 size drawable
+    void setDefaultExtemes();
     void fitDrawable(ShaderDrawable *drawable = NULL);
     void setAntialiasing(bool antialiasing);
     void setSpendTime(const QTime &spendTime);

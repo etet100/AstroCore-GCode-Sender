@@ -306,7 +306,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // ui->visualizer = new PartMainVisualizer(this);
     // m_program, m_heightmap
     ui->visualizer->setHeightmap(m_heightmap);
-    ui->visualizer->setProgram(&m_program, &m_viewParser);
+    // ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
@@ -517,7 +517,6 @@ void FrmMain::setLogFormWindow(FrmLog *logForm)
 
 void FrmMain::initializeVisualizer()
 {
-    ui->visualizer->fitCodeDrawer();
     connect(ui->visualizer, &PartMainVisualizer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         switch (mode) {
             case GLWidget::ViewMode::Perspective:
@@ -2850,9 +2849,9 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     m_probeParser.reset();
 
     // Reset code drawer
-    ui->visualizer->useCodeDrawer();
+    // ui->visualizer->useCodeDrawer();
     m_viewParser = *data->viewParser;
-    ui->visualizer->loadNewProgram();
+    // ui->visualizer->loadNewProgram();
 
     // Update interface
     ui->heightmap->resetUseHeighmap();

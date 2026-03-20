@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>349</height>
+    <height>379</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -185,6 +185,32 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
       <property name="spacing">
        <number>4</number>
       </property>
+      <item row="9" column="0">
+       <widget class="StyledToolButton" name="cmdToggleTool">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle tool</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_tool.png</normaloff>:/images/visualizer_tool.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
       <item row="5" column="1">
        <widget class="StyledToolButton" name="cmd2d">
         <property name="minimumSize">
@@ -211,8 +237,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="StyledToolButton" name="cmdRight">
+      <item row="10" column="1">
+       <widget class="StyledToolButton" name="cmdToggleLight">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -220,43 +246,11 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="toolTip">
-         <string>Right view</string>
-        </property>
-        <property name="text">
-         <string/>
+         <string>Toggle rotating light</string>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="StyledToolButton" name="cmdIsometric">
-        <property name="minimumSize">
-         <size>
-          <width>35</width>
-          <height>26</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>3D View</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
+          <normaloff>:/images/visualizer/visualizer_light.svg</normaloff>:/images/visualizer/visualizer_light.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -298,8 +292,34 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="2">
-       <widget class="QWidget" name="line1" native="true">
+      <item row="1" column="0">
+       <widget class="StyledToolButton" name="cmdLeft">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Left view</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_front.png</normaloff>:/images/visualizer_front.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QWidget" name="line2" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -349,8 +369,37 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QWidget" name="line2" native="true">
+      <item row="1" column="1">
+       <widget class="StyledToolButton" name="cmdRight">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Right view</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer_left.png</normaloff>:/images/visualizer_left.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="2">
+       <widget class="QWidget" name="line1" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -368,6 +417,61 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
           <width>16777215</width>
           <height>3</height>
          </size>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="StyledToolButton" name="cmdFit">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Zoom to fit contents</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="StyledToolButton" name="cmdToggleHeightmapMarkers">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>26</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle heightmap markers</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer/visualizer_grid_markers.svg</normaloff>:/images/visualizer/visualizer_grid_markers.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -400,8 +504,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="StyledToolButton" name="cmdToggleHeightmap">
+      <item row="2" column="0">
+       <widget class="StyledToolButton" name="cmdIsometric">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -409,14 +513,14 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="toolTip">
-         <string>Toggle heightmap visibility</string>
+         <string>3D View</string>
         </property>
         <property name="text">
-         <string>...</string>
+         <string/>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
+          <normaloff>:/images/visualizer_isometric.png</normaloff>:/images/visualizer_isometric.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -458,8 +562,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <widget class="StyledToolButton" name="cmdToggleTool">
+      <item row="8" column="1">
+       <widget class="StyledToolButton" name="cmdToggleHeightmap">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -467,92 +571,14 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="toolTip">
-         <string>Toggle tool</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_tool.png</normaloff>:/images/visualizer_tool.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="StyledToolButton" name="cmdToggleHeightmapMarkers">
-        <property name="minimumSize">
-         <size>
-          <width>35</width>
-          <height>26</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Toggle heightmap markers</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer/visualizer_grid_markers.svg</normaloff>:/images/visualizer/visualizer_grid_markers.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="StyledToolButton" name="cmdFit">
-        <property name="minimumSize">
-         <size>
-          <width>35</width>
-          <height>26</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Zoom to fit contents</string>
+         <string>Toggle heightmap visibility</string>
         </property>
         <property name="text">
-         <string/>
+         <string>...</string>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/fit_1.png</normaloff>:/images/fit_1.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="StyledToolButton" name="cmdLeft">
-        <property name="minimumSize">
-         <size>
-          <width>35</width>
-          <height>26</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Left view</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_front.png</normaloff>:/images/visualizer_front.png</iconset>
+          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -594,8 +620,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
-       <widget class="StyledToolButton" name="cmdToggleLight">
+      <item row="11" column="0">
+       <widget class="StyledToolButton" name="cmdToggleBoundingBox">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -603,17 +629,11 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="toolTip">
-         <string>Toggle rotating light</string>
+         <string>Toggle bounding box</string>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer/visualizer_light.svg</normaloff>:/images/visualizer/visualizer_light.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
+          <normaloff>:/images/visualizer/visualizer_extremes.svg</normaloff>:/images/visualizer/visualizer_extremes.svg</iconset>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>false</bool>
@@ -650,7 +670,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>74</y>
+     <y>71</y>
     </hint>
     <hint type="destinationlabel">
      <x>129</x>
@@ -666,7 +686,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>13</x>
-     <y>74</y>
+     <y>71</y>
     </hint>
     <hint type="destinationlabel">
      <x>116</x>
@@ -682,7 +702,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>274</y>
+     <y>255</y>
     </hint>
     <hint type="destinationlabel">
      <x>135</x>
@@ -698,7 +718,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>9</x>
-     <y>274</y>
+     <y>255</y>
     </hint>
     <hint type="destinationlabel">
      <x>95</x>
@@ -714,7 +734,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>8</x>
-     <y>143</y>
+     <y>134</y>
     </hint>
     <hint type="destinationlabel">
      <x>101</x>
@@ -730,7 +750,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>226</y>
+     <y>210</y>
     </hint>
     <hint type="destinationlabel">
      <x>249</x>
@@ -746,7 +766,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>20</x>
-     <y>226</y>
+     <y>210</y>
     </hint>
     <hint type="destinationlabel">
      <x>92</x>
@@ -762,7 +782,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>109</y>
+     <y>102</y>
     </hint>
     <hint type="destinationlabel">
      <x>259</x>
@@ -778,7 +798,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>191</y>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
      <x>85</x>
@@ -794,7 +814,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>26</x>
-     <y>109</y>
+     <y>102</y>
     </hint>
     <hint type="destinationlabel">
      <x>114</x>
@@ -810,7 +830,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>23</x>
-     <y>309</y>
+     <y>287</y>
     </hint>
     <hint type="destinationlabel">
      <x>274</x>
@@ -826,7 +846,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
-     <y>309</y>
+     <y>287</y>
     </hint>
     <hint type="destinationlabel">
      <x>117</x>
@@ -842,7 +862,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>8</x>
-     <y>343</y>
+     <y>318</y>
     </hint>
     <hint type="destinationlabel">
      <x>191</x>
@@ -866,6 +886,22 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmdToggleBoundingBox</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>toggleBoundingBoxClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>19</x>
+     <y>331</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>113</x>
+     <y>337</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>fitClicked()</slot>
@@ -882,5 +918,6 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
   <slot>heightmapMarkersClicked()</slot>
   <slot>toggleOriginClicked()</slot>
   <slot>toggleLightClicked()</slot>
+  <slot>toggleBoundingBoxClicked()</slot>
  </slots>
 </ui>
