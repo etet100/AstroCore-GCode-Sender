@@ -21,12 +21,9 @@ class WindowsTaskbar : public QObject
         void hide();
         void show();
     private:
-        // QPropertyAnimation *m_animator;
         QWidget *m_widget;
         ITaskbarList3* m_pTaskbar = nullptr;
         HWND hwnd();
-        // void startAnimator();
-        // void setAnimation(float value);
 };
 
 #endif
