@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>299</width>
-    <height>121</height>
+    <width>371</width>
+    <height>122</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,29 +19,34 @@
   <widget class="QWidget" name="widget" native="true">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>100</width>
-     <height>100</height>
+     <x>20</x>
+     <y>20</y>
+     <width>81</width>
+     <height>81</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
-     <width>100</width>
-     <height>100</height>
+     <width>80</width>
+     <height>80</height>
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">image: url(:/images/gpilot_256.png);</string>
+    <string notr="true">image: url(:/images/power.svg);
+border-radius: 15px;
+border:  4px solid gray;
+background: silver;
+padding: 20px;
+color: gray;</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="label1">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>10</y>
-     <width>151</width>
-     <height>99</height>
+     <x>120</x>
+     <y>30</y>
+     <width>241</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">
@@ -50,7 +55,28 @@
     </font>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:700;&quot;&gt;Closing&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Please wait...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:700;&quot;&gt;Closing application&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label2">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>60</y>
+     <width>241</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>-1</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Please wait...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>

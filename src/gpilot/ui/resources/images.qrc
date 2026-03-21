@@ -54,6 +54,7 @@
         <file>../images/dockable_close.png</file>
         <file>../images/dockable_undock.png</file>
         <file>../images/dockable_dock.png</file>
+        <file>../images/power.svg</file>
         <file>../images/visualizer/visualizer_grid.svg</file>
         <file>../images/visualizer/visualizer_grid_markers.svg</file>
         <file>../images/visualizer/visualizer_boundaries.svg</file>
