@@ -175,7 +175,6 @@ void PartMainVisualizer::applyVisualizerConfiguration(
     ui->visualizer->setVsync(visualizerConfiguration.vsync());
     ui->visualizer->setFps(visualizerConfiguration.fpsLock());
     ui->visualizer->setColorBackground(visualizerConfiguration.backgroundColor());
-    ui->visualizer->setColorText(visualizerConfiguration.textColor());
 
     // Adapt visualizer buttons colors
     const int LIGHTBOUND = 140;
@@ -184,6 +183,17 @@ void PartMainVisualizer::applyVisualizerConfiguration(
 
     QColor base = visualizerConfiguration.backgroundColor();
     bool light = base.value() > LIGHTBOUND;
+    static bool previousLight = true;
+    if (light != previousLight) {
+        // If theme changed from light to dark or vice versa, update buttons icons
+        for (auto& button : ui->buttons->findChildren<StyledToolButton*>(Qt::FindDirectChildrenOnly)) {
+            Utils::invertButtonIconColors(button);
+        }
+        previousLight = light;
+    }
+
+    // White text for dark backgrounds, black text for light backgrounds
+    ui->visualizer->setColorText(light ? Qt::black : Qt::white);
 
     // Use background color with some transparency for buttons background
     ui->buttons->setStyleSheet(
