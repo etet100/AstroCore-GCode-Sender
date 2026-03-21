@@ -95,11 +95,8 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
                         case (uint8_t)CommPacketType::CMD:
                             handleCmdMessage(packetData, packetSize);
                             break;
-                        case (uint8_t)CommPacketType::STEP_SIZE_CHANGED:
-                            handleStepSizeChangedMessage(packetData, packetSize);
-                            break;
-                        case (uint8_t)CommPacketType::FEED_RATE_CHANGED:
-                            handleFeedRateChangedMessage(packetData, packetSize);
+                        case (uint8_t)CommPacketType::JOGGING_PARAM:
+                            handleJoggingParamMessage(packetData, packetSize);
                             break;
                         case (uint8_t)CommPacketType::JOG:
                             handleJogMessage(packetData, packetSize);
@@ -225,6 +222,45 @@ void Pendant::sendFeedRateSelections()
     m_socket->write((char*)&message, sizeof(FeedRateConfigMessage));
 }
 
+void Pendant::sendStepSize(float value)
+{
+    JoggingParamMessage message;
+    message.header.size = sizeof(JoggingParamMessage);
+    message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
+
+    message.param = CommJoggingParam::STEP;
+    message.value = value;
+
+    message.footer.crc = calcCRC8((uint8_t*)&message, sizeof(JoggingParamMessage) - sizeof(CommFooter));
+    m_socket->write((char*)&message, sizeof(JoggingParamMessage));
+}
+
+void Pendant::sendFeedRate(float value)
+{
+    JoggingParamMessage message;
+    message.header.size = sizeof(JoggingParamMessage);
+    message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
+
+    message.param = CommJoggingParam::FEED;
+    message.value = value;
+
+    message.footer.crc = calcCRC8((uint8_t*)&message, sizeof(JoggingParamMessage) - sizeof(CommFooter));
+    m_socket->write((char*)&message, sizeof(JoggingParamMessage));
+}
+
+void Pendant::sendFeedRateZ(float value)
+{
+    JoggingParamMessage message;
+    message.header.size = sizeof(JoggingParamMessage);
+    message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
+
+    message.param = CommJoggingParam::FEED_Z;
+    message.value = value;
+
+    message.footer.crc = calcCRC8((uint8_t*)&message, sizeof(JoggingParamMessage) - sizeof(CommFooter));
+    m_socket->write((char*)&message, sizeof(JoggingParamMessage));
+}
+
 void Pendant::updateLastMessageTime()
 {
     m_lastMessageTime = QDateTime::currentMSecsSinceEpoch();
@@ -258,21 +294,12 @@ void Pendant::handleCmdMessage(const uint8_t* data, uint8_t size)
     this->updateLastMessageTime();
 }
 
-void Pendant::handleStepSizeChangedMessage(const uint8_t* data, uint8_t size)
+void Pendant::handleJoggingParamMessage(const uint8_t* data, uint8_t size)
 {
-    StepSizeChangedMessage msg;
+    JoggingParamMessage msg;
     memcpy(&msg, data, size);
 
-    qDebug() << "[Pendant] Step size changed:" << msg.value;
-    this->updateLastMessageTime();
-}
-
-void Pendant::handleFeedRateChangedMessage(const uint8_t* data, uint8_t size)
-{
-    FeedRateChangedMessage msg;
-    memcpy(&msg, data, size);
-
-    qDebug() << "[Pendant] Feed rate changed:" << msg.value;
+    qDebug() << "[Pendant] Jogging param changed - Separate Z:" << (int) msg.param << msg.value;
     this->updateLastMessageTime();
 }
 

@@ -22,9 +22,8 @@ enum class CommPacketType: uint8_t {
     STEP_SIZE_CONFIG = 3,
     FEED_RATE_CONFIG = 4,
     CMD = 5,
-    STEP_SIZE_CHANGED = 6,
-    FEED_RATE_CHANGED = 7,
-    JOG = 8,
+    JOGGING_PARAM = 6,
+    JOG = 7,
     MAX,
 };
 
@@ -42,6 +41,12 @@ enum class CmdType: uint8_t {
     RESET,
     SPINDLE,
     JOG_STOP,
+};
+
+enum class CommJoggingParam: uint8_t {
+    STEP = 0,
+    FEED,
+    FEED_Z,
 };
 
 #define COMM_PACKET_VERSION 1
@@ -123,18 +128,12 @@ PACK(struct CmdMessage
     CommFooter footer;
 });
 
-PACK(struct StepSizeChangedMessage
+PACK(struct JoggingParamMessage
 {
-    CommHeader header;
-    float value;
-    CommFooter footer;
-});
-
-PACK(struct FeedRateChangedMessage
-{
-    CommHeader header;
-    float value;
-    CommFooter footer;
+        CommHeader header;
+        CommJoggingParam param;
+        float value;
+        CommFooter footer;
 });
 
 PACK(struct JogMessage
@@ -161,7 +160,7 @@ T vmax(T a, Args... args) {
 #define COMM_MAX_PACKET_SIZE vmax(sizeof(StateMessage), \
         sizeof(WifiConfigMessage), sizeof(PingMessage), \
         sizeof(StepSizeConfigMessage), sizeof(FeedRateConfigMessage), sizeof(CmdMessage), \
-        sizeof(StepSizeChangedMessage), sizeof(FeedRateChangedMessage), sizeof(JogMessage) \
+        sizeof(JoggingParamMessage), sizeof(JogMessage) \
 )
 
 #endif // PENDANT_DEFINES_H

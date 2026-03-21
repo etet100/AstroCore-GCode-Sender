@@ -34,12 +34,14 @@ class Pendant : public QObject
         void sendWifiConfig(const QString &ssid, const QString &password);
         void sendStepSizeSelections();
         void sendFeedRateSelections();
+        void sendStepSize(float step);
+        void sendFeedRate(float feed);
+        void sendFeedRateZ(float feed);
         void updateLastMessageTime();
 
         void handlePingMessage(const uint8_t* data, uint8_t size);
         void handleCmdMessage(const uint8_t* data, uint8_t size);
-        void handleStepSizeChangedMessage(const uint8_t* data, uint8_t size);
-        void handleFeedRateChangedMessage(const uint8_t* data, uint8_t size);
+        void handleJoggingParamMessage(const uint8_t* data, uint8_t size);
         void handleJogMessage(const uint8_t* data, uint8_t size);
 };
 
