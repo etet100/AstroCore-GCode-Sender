@@ -2739,6 +2739,9 @@ void FrmMain::loadFile(QString filePath)
     int progressIndex = ui->console->appendProgress("Loading " + filePath);
     connect(loader, &GCodeThreadedLoader::progress, this, [this, progressIndex](int progress) {
         ui->console->setProgress(progressIndex, progress);
+        #ifdef WINDOWS
+            m_taskBar.setProgress(progress, 100);
+        #endif
     });
     connect(loader, &GCodeThreadedLoader::cancelled, this, [this, loader]() {
         ui->console->appendSystem("Cancelled loading");
