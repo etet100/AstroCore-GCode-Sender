@@ -17,6 +17,7 @@ const QMap<int, QString> Action::NAMES = {
     {FeedHold, "Feed Hold"},
     {CycleStart, "Cycle Start"},
     {Jog, "Jog"},
+    {GoTo, "Go To"},
     {Home, "Home"},
     {Probe, "Probe"},
     {Unlock, "Unlock"},
