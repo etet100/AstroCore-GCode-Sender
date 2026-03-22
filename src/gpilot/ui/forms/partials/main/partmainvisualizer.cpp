@@ -88,6 +88,9 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
         m_originDrawer.update();
         m_heightmapGridDrawer.update();
     });
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, [this]() {
+        updateColors();
+    });
 
     initializeButtons();
     initializeInfoBar();
@@ -174,54 +177,9 @@ void PartMainVisualizer::applyVisualizerConfiguration(
     ui->visualizer->setFarPlane(visualizerConfiguration.farPlane());
     ui->visualizer->setVsync(visualizerConfiguration.vsync());
     ui->visualizer->setFps(visualizerConfiguration.fpsLock());
-    ui->visualizer->setColorBackground(visualizerConfiguration.backgroundColor());
 
-    // Adapt visualizer buttons colors
-    const int LIGHTBOUND = 140;
-    const int NORMALSHIFT = 40;
-    const int HIGHLIGHTSHIFT = 80;
-
-    QColor base = visualizerConfiguration.backgroundColor();
-    bool light = base.value() > LIGHTBOUND;
-    static bool previousLight = true;
-    if (light != previousLight) {
-        // If theme changed from light to dark or vice versa, update buttons icons
-        for (auto& button : ui->buttons->findChildren<StyledToolButton*>(Qt::FindDirectChildrenOnly)) {
-            Utils::invertButtonIconColors(button);
-        }
-        previousLight = light;
-    }
-
-    // White text for dark backgrounds, black text for light backgrounds
-    ui->visualizer->setColorText(light ? Qt::black : Qt::white);
-
-    // Use background color with some transparency for buttons background
-    ui->buttons->setStyleSheet(
-        ui->buttons->styleSheet().replace(
-            QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
-                        QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(base.red())
-                                                   .arg(base.green())
-                                                   .arg(base.blue())
-                .arg(std::max(0, base.alpha() - 100))
-            )
-        );
-
-    // ui->cmdToggleProjection->setIcon(QIcon(":/images/visualizer_toggle_view_mode.png"));
-    // ui->cmdFit->setIcon(QIcon(":/images/fit_1.png"));
-    // ui->cmdIsometric->setIcon(QIcon(":/images/visualizer_isometric.png"));
-    // ui->cmdFront->setIcon(QIcon(":/images/visualizer_front.png"));
-    // ui->cmdRight->setIcon(QIcon(":/images/visualizer_left.png"));
-    // ui->cmdTop->setIcon(QIcon(":/images/visualizer_top.png"));
-
-    QColor normal, highlight;
-
-    normal.setHsv(base.hue(), base.saturation(), base.value() + (light ? -NORMALSHIFT : NORMALSHIFT));
-    highlight.setHsv(base.hue(), base.saturation(), base.value() + (light ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
-
-    ui->visualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
-                background-color: %3} QToolButton:hover {border: 1px solid %2;}")
-                .arg(normal.name()).arg(highlight.name())
-                .arg(base.name()));
+    m_colors = visualizerConfiguration.colors();
+    updateColors();
 
     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
 
@@ -270,6 +228,14 @@ void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
     m_codeDrawer->setViewParser(parser);
     m_boundingBoxDrawer.setViewParser(parser);
     m_noGcodeDefaultDrawer.setVisible(false);
+
+    QVector3D minEx = parser->getMinimumExtremes();
+    QVector3D maxEx = parser->getMaximumExtremes();
+    ui->visualizer->setLightCenter(QVector3D(
+        (minEx.x() + maxEx.x()) / 2.0f,
+        (minEx.y() + maxEx.y()) / 2.0f,
+        maxEx.z()
+    ));
 }
 
 void PartMainVisualizer::setProbeParser(GCodeViewParser* parser)
@@ -508,18 +474,73 @@ void PartMainVisualizer::setUpdatesEnabled2(bool updatesEnabled)
     ui->visualizer->setUpdatesEnabled(updatesEnabled);
 }
 
+void PartMainVisualizer::updateColors()
+{
+    const int LIGHTBOUND = 140;
+    const int NORMALSHIFT = 40;
+    const int HIGHLIGHTSHIFT = 80;
+
+    bool dark = ThemeManager::instance().dark();
+    ConfigurationVisualizer::Colors colors = dark ? m_colors.dark : m_colors.light;
+
+    QColor bgColor = colors.background;
+    bool isBackgroundLight = bgColor.value() > LIGHTBOUND;
+    static bool previousIsBackgroundLight = true;
+    if (isBackgroundLight != previousIsBackgroundLight) {
+        for (auto& button : ui->buttons->findChildren<StyledToolButton*>(Qt::FindDirectChildrenOnly)) {
+            Utils::invertButtonIconColors(button);
+        }
+        previousIsBackgroundLight = isBackgroundLight;
+    }
+
+    ui->visualizer->setColorBackground(bgColor);
+    ui->visualizer->setColorText(isBackgroundLight ? Qt::black : Qt::white);
+
+    ui->buttons->setStyleSheet(
+        ui->buttons->styleSheet().replace(
+            QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
+            QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(bgColor.red())
+                .arg(bgColor.green())
+                .arg(bgColor.blue())
+                .arg(std::max(0, bgColor.alpha() - 100))
+        )
+    );
+
+    QColor normal, highlight;
+    normal.setHsv(bgColor.hue(), bgColor.saturation(), bgColor.value() + (isBackgroundLight ? -NORMALSHIFT : NORMALSHIFT));
+    highlight.setHsv(bgColor.hue(), bgColor.saturation(), bgColor.value() + (isBackgroundLight ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
+    ui->visualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
+                background-color: %3} QToolButton:hover {border: 1px solid %2;}")
+                .arg(normal.name()).arg(highlight.name())
+                .arg(bgColor.name()));
+
+    m_codeDrawer->setColorNormal(colors.normalToolpath);
+    m_codeDrawer->setColorDrawn(colors.drawnToolpath);
+    m_codeDrawer->setColorHighlight(colors.hightlightToolpath);
+    m_codeDrawer->setColorZMovement(colors.zMovement);
+    m_codeDrawer->setColorRapidMovement(colors.rapidMovement);
+    m_codeDrawer->setColorStart(colors.startPoint);
+    m_codeDrawer->setColorEnd(colors.endPoint);
+
+    m_codeDrawer->update();
+
+    m_toolDrawer.setColor(colors.tool);
+    m_toolDrawer.update();
+
+    m_cursorDrawer.setColor(colors.cursor);
+    m_cursorDrawer.update();
+
+    m_tableSurfaceDrawer.setGridColor(colors.tableSurfaceGrid);
+    m_tableSurfaceDrawer.update();
+
+    m_selectionDrawer.setColor(colors.hightlightToolpath);
+}
+
 void PartMainVisualizer::applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration)
 {
     m_codeDrawer->setLineWidth(visualizerConfiguration.lineWidth());
     m_codeDrawer->setSimplify(visualizerConfiguration.simplifyGeometry());
     m_codeDrawer->setSimplifyPrecision(visualizerConfiguration.simplifyGeometryPrecision());
-    m_codeDrawer->setColorNormal(visualizerConfiguration.normalToolpathColor());
-    m_codeDrawer->setColorDrawn(visualizerConfiguration.drawnToolpathColor());
-    m_codeDrawer->setColorHighlight(visualizerConfiguration.hightlightToolpathColor());
-    m_codeDrawer->setColorZMovement(visualizerConfiguration.zMovementColor());
-    m_codeDrawer->setColorRapidMovement(visualizerConfiguration.rapidMovementColor());
-    m_codeDrawer->setColorStart(visualizerConfiguration.startPointColor());
-    m_codeDrawer->setColorEnd(visualizerConfiguration.endPointColor());
     m_codeDrawer->setIgnoreZ(visualizerConfiguration.ignoreZ());
     m_codeDrawer->setGrayscaleSegments(visualizerConfiguration.grayscaleSegments());
     m_codeDrawer->setGrayscaleCode(visualizerConfiguration.grayscaleSegmentsBySCode() ? GcodeDrawer::S : GcodeDrawer::Z);
@@ -535,21 +556,18 @@ void PartMainVisualizer::applyToolDrawerConfiguration(ConfigurationVisualizer &v
     m_toolDrawer.setLineWidth(visualizerConfiguration.lineWidth());
     m_toolDrawer.setMode(visualizerConfiguration.toolType());
     m_toolDrawer.setToolAngle(visualizerConfiguration.toolAngle());
-    m_toolDrawer.setColor(visualizerConfiguration.toolColor());
     m_toolDrawer.update();
 }
 
 void PartMainVisualizer::applyCursorDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
     m_cursorDrawer.setVisible(visualizerConfiguration.show3dCursor());
-    m_cursorDrawer.setColor(visualizerConfiguration.cursorColor());
     m_cursorDrawer.update();
 }
 
 void PartMainVisualizer::applyTableSurfaceDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_tableSurfaceDrawer.setGridColor(visualizerConfiguration.tableSurfaceGridColor());
-    m_tableSurfaceDrawer.update();
+    Q_UNUSED(visualizerConfiguration)
 }
 
 void PartMainVisualizer::applyHeightmapDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
@@ -567,7 +585,7 @@ void PartMainVisualizer::applyOriginDrawerConfiguration(ConfigurationVisualizer 
 
 void PartMainVisualizer::applySelectionDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration)
 {
-    m_selectionDrawer.setColor(visualizerConfiguration.hightlightToolpathColor());
+    Q_UNUSED(visualizerConfiguration)
 }
 
 void PartMainVisualizer::setParserState(QString state)
@@ -614,7 +632,7 @@ void PartMainVisualizer::resetVisualization()
 
 void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previousRow)
 {
-    if (!m_program || m_program->empty()) {
+    if (!m_program || m_program->empty() || m_currentDrawer == nullptr) {
         return;
     }
 
@@ -625,6 +643,9 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
              << rowPrevious << "to" << rowCurrent;
 
     GCodeViewParser *parser = m_currentDrawer->viewParser();
+    if (parser == nullptr) {
+        return;
+    }
     QList<LineSegment>& list = parser->getLineSegmentList();
     QVector<QList<int>>& lineIndexes = parser->getLinesIndexes();
 

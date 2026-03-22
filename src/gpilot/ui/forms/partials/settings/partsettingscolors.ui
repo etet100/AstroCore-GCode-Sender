@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>187</width>
-    <height>132</height>
+    <width>529</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,26 +17,65 @@
    </sizepolicy>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>8</number>
-   </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="btnLight">
+        <property name="text">
+         <string>Light mode</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnDark">
+        <property name="text">
+         <string>Dark mode</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>336</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item>
     <layout class="QGridLayout" name="gridLayout" columnstretch="1,2,1,2">
      <property name="verticalSpacing">
       <number>0</number>
      </property>
+     <item row="1" column="1">
+      <widget class="ColorPicker" name="clpVisualizerToolColor"/>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="lblVisualizerBackgroundColor">
        <property name="text">
@@ -44,38 +83,8 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
-      <widget class="ColorPicker" name="clpVisualizerTextColor" native="true"/>
-     </item>
      <item row="0" column="1">
-      <widget class="ColorPicker" name="clpVisualizerBackgroundColor" native="true"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="ColorPicker" name="clpVisualizerToolColor" native="true"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_19">
-       <property name="text">
-        <string>Tool:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="ColorPicker" name="clpVisualizerTableGridColor" native="true"/>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="label_28">
-       <property name="text">
-        <string>Text:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="label_33">
-       <property name="text">
-        <string>Table grid:</string>
-       </property>
-      </widget>
+      <widget class="ColorPicker" name="clpVisualizerBackgroundColor"/>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_2">
@@ -84,8 +93,25 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>Tool:</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="1">
-      <widget class="ColorPicker" name="clpVisualizerCursorColor" native="true"/>
+      <widget class="ColorPicker" name="clpVisualizerCursorColor"/>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_33">
+       <property name="text">
+        <string>Table grid:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="ColorPicker" name="clpVisualizerTableGridColor"/>
      </item>
     </layout>
    </item>
@@ -125,16 +151,16 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="ColorPicker" name="clpToolpathNormalColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathNormalColor"/>
      </item>
      <item row="1" column="3">
-      <widget class="ColorPicker" name="clpToolpathZMovementColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathZMovementColor"/>
      </item>
      <item row="2" column="1">
-      <widget class="ColorPicker" name="clpToolpathRapidMovementColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathRapidMovementColor"/>
      </item>
      <item row="1" column="1">
-      <widget class="ColorPicker" name="clpToolpathHighlightColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathHighlightColor"/>
      </item>
      <item row="3" column="2">
       <widget class="QLabel" name="label_27">
@@ -144,7 +170,7 @@
       </widget>
      </item>
      <item row="3" column="3">
-      <widget class="ColorPicker" name="clpToolpathEndColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathEndColor"/>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="lblVisualizerNormalColor">
@@ -168,10 +194,10 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="ColorPicker" name="clpToolpathStartColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathStartColor"/>
      </item>
      <item row="0" column="3">
-      <widget class="ColorPicker" name="clpToolpathDrawnColor" native="true"/>
+      <widget class="ColorPicker" name="clpToolpathDrawnColor"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_26">

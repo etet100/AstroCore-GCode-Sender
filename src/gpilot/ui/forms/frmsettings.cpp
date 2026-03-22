@@ -134,18 +134,34 @@ void FrmSettings::initializeWidgets()
     ui->txtToolLength->setValue(visualizer.toolLength());
     ui->chkShow3dCursor->setChecked(visualizer.show3dCursor());
     // colors
-    ui->colors->setVisualizerToolColor(visualizer.toolColor());
-    ui->colors->setVisualizerCursorColor(visualizer.cursorColor());
-    ui->colors->setVisualizerBackgroundColor(visualizer.backgroundColor());
-    ui->colors->setVisualizerTextColor(visualizer.textColor());
-    ui->colors->setToolpathNormalColor(visualizer.normalToolpathColor());
-    ui->colors->setToolpathDrawnColor(visualizer.drawnToolpathColor());
-    ui->colors->setToolpathHighlightColor(visualizer.hightlightToolpathColor());
-    ui->colors->setToolpathZMovementColor(visualizer.zMovementColor());
-    ui->colors->setToolpathRapidMovementColor(visualizer.rapidMovementColor());
-    ui->colors->setToolpathStartColor(visualizer.startPointColor());
-    ui->colors->setToolpathEndColor(visualizer.endPointColor());
-    ui->colors->setVisualizerTableGridColor(visualizer.tableSurfaceGridColor());
+    ui->colors->setColors({
+        .light = {
+            .toolpathHighlight    = visualizer.hightlightToolpathColorLight(),
+            .toolpathZMovement    = visualizer.zMovementColorLight(),
+            .toolpathStart        = visualizer.startPointColorLight(),
+            .toolpathEnd          = visualizer.endPointColorLight(),
+            .toolpathNormal       = visualizer.normalToolpathColorLight(),
+            .toolpathDrawn        = visualizer.drawnToolpathColorLight(),
+            .toolpathRapidMovement= visualizer.rapidMovementColorLight(),
+            .visualizerBackground           = visualizer.backgroundColorLight(),
+            .visualizerTool                 = visualizer.toolColorLight(),
+            .visualizerCursor               = visualizer.cursorColorLight(),
+            .visualizerTableGrid            = visualizer.tableSurfaceGridColorLight(),
+        },
+        .dark = {
+            .toolpathHighlight    = visualizer.hightlightToolpathColorDark(),
+            .toolpathZMovement    = visualizer.zMovementColorDark(),
+            .toolpathStart        = visualizer.startPointColorDark(),
+            .toolpathEnd          = visualizer.endPointColorDark(),
+            .toolpathNormal       = visualizer.normalToolpathColorDark(),
+            .toolpathDrawn        = visualizer.drawnToolpathColorDark(),
+            .toolpathRapidMovement= visualizer.rapidMovementColorDark(),
+            .visualizerBackground           = visualizer.backgroundColorDark(),
+            .visualizerTool                 = visualizer.toolColorDark(),
+            .visualizerCursor               = visualizer.cursorColorDark(),
+            .visualizerTableGrid            = visualizer.tableSurfaceGridColorDark(),
+        },
+    });
 
     const ConfigurationSender &sender = m_configuration.senderModule();
     ui->sender->setUseStartCommands(sender.useProgramStartCommands());
@@ -239,18 +255,29 @@ void FrmSettings::applySettings()
     visualizer.m_toolLength = ui->txtToolLength->value();
     visualizer.m_show3dCursor = ui->chkShow3dCursor->isChecked();
     // colors
-    visualizer.m_toolColor = ui->colors->visualizerToolColor();
-    visualizer.m_cursorColor = ui->colors->visualizerCursorColor();
-    visualizer.m_backgroundColor = ui->colors->visualizerBackgroundColor();
-    visualizer.m_textColor = ui->colors->visualizerTextColor();
-    visualizer.m_normalToolpathColor = ui->colors->toolpathNormalColor();
-    visualizer.m_drawnToolpathColor = ui->colors->toolpathDrawnColor();
-    visualizer.m_hightlightToolpathColor = ui->colors->toolpathHighlightColor();
-    visualizer.m_zMovementColor = ui->colors->toolpathZMovementColor();
-    visualizer.m_rapidMovementColor = ui->colors->toolpathRapidMovementColor();
-    visualizer.m_startPointColor = ui->colors->toolpathStartColor();
-    visualizer.m_endPointColor = ui->colors->toolpathEndColor();
-    visualizer.m_tableSurfaceGridColor = ui->colors->visualizerTableGridColor();
+    PartSettingsColors::Groups colorsGroups = ui->colors->colors();
+    visualizer.m_toolColorLight = colorsGroups.light.visualizerTool;
+    visualizer.m_cursorColorLight = colorsGroups.light.visualizerCursor;
+    visualizer.m_backgroundColorLight = colorsGroups.light.visualizerBackground;
+    visualizer.m_normalToolpathColorLight = colorsGroups.light.toolpathNormal;
+    visualizer.m_drawnToolpathColorLight = colorsGroups.light.toolpathDrawn;
+    visualizer.m_hightlightToolpathColorLight = colorsGroups.light.toolpathHighlight;
+    visualizer.m_zMovementColorLight = colorsGroups.light.toolpathZMovement;
+    visualizer.m_rapidMovementColorLight = colorsGroups.light.toolpathRapidMovement;
+    visualizer.m_startPointColorLight = colorsGroups.light.toolpathStart;
+    visualizer.m_endPointColorLight = colorsGroups.light.toolpathEnd;
+    visualizer.m_tableSurfaceGridColorLight = colorsGroups.light.visualizerTableGrid;
+    visualizer.m_toolColorDark = colorsGroups.dark.visualizerTool;
+    visualizer.m_cursorColorDark = colorsGroups.dark.visualizerCursor;
+    visualizer.m_backgroundColorDark = colorsGroups.dark.visualizerBackground;
+    visualizer.m_normalToolpathColorDark = colorsGroups.dark.toolpathNormal;
+    visualizer.m_drawnToolpathColorDark = colorsGroups.dark.toolpathDrawn;
+    visualizer.m_hightlightToolpathColorDark = colorsGroups.dark.toolpathHighlight;
+    visualizer.m_zMovementColorDark = colorsGroups.dark.toolpathZMovement;
+    visualizer.m_rapidMovementColorDark = colorsGroups.dark.toolpathRapidMovement;
+    visualizer.m_startPointColorDark = colorsGroups.dark.toolpathStart;
+    visualizer.m_endPointColorDark = colorsGroups.dark.toolpathEnd;
+    visualizer.m_tableSurfaceGridColorDark = colorsGroups.dark.visualizerTableGrid;
 
     ConfigurationSender &sender = m_configuration.senderModule();
     sender.m_useProgramStartCommands = ui->sender->useStartCommands();

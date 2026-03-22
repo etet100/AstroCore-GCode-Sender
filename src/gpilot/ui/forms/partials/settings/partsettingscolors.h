@@ -16,35 +16,38 @@ class PartSettingsColors : public QWidget
         Q_OBJECT
 
     public:
+        struct Colors
+        {
+                QColor toolpathHighlight;
+                QColor toolpathZMovement;
+                QColor toolpathStart;
+                QColor toolpathEnd;
+                QColor toolpathNormal;
+                QColor toolpathDrawn;
+                QColor toolpathRapidMovement;
+                QColor visualizerBackground;
+                QColor visualizerTool;
+                QColor visualizerCursor;
+                QColor visualizerTableGrid;
+        };
+
+        struct Groups
+        {
+                Colors light;
+                Colors dark;
+        };
+
         explicit PartSettingsColors(QWidget *parent = nullptr);
         ~PartSettingsColors();
-        void setToolpathHighlightColor(const QColor &color);
-        void setToolpathZMovementColor(const QColor &color);
-        void setToolpathStartColor(const QColor &color);
-        void setToolpathEndColor(const QColor &color);
-        void setToolpathNormalColor(const QColor &color);
-        void setToolpathDrawnColor(const QColor &color);
-        void setToolpathRapidMovementColor(const QColor &color);
-        void setVisualizerBackgroundColor(const QColor &color);
-        void setVisualizerTextColor(const QColor &color);
-        void setVisualizerToolColor(const QColor &color);
-        void setVisualizerCursorColor(const QColor &color);
-        void setVisualizerTableGridColor(const QColor &color);
-        QColor toolpathHighlightColor() const;
-        QColor toolpathZMovementColor() const;
-        QColor toolpathStartColor() const;
-        QColor toolpathEndColor() const;
-        QColor toolpathNormalColor() const;
-        QColor toolpathDrawnColor() const;
-        QColor toolpathRapidMovementColor() const;
-        QColor visualizerBackgroundColor() const;
-        QColor visualizerTextColor() const;
-        QColor visualizerToolColor() const;
-        QColor visualizerCursorColor() const;
-        QColor visualizerTableGridColor() const;
+        void setColors(const Groups& groups);
+        Groups colors();
 
     private:
         Ui::partSettingsColors *ui;
+        Groups m_groups;
+        bool m_dark;
+        void updateGroupsFromUI();
+        void updateUIFromGroups();
 };
 
 #endif // PARTSETTINGSCOLORS_H

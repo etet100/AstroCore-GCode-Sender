@@ -37,6 +37,7 @@ class PartMainVisualizer : public QWidget
         );
         ~PartMainVisualizer();
         void applyVisualizerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);
+        void updateColors();
         void updateGCodeExtremes();
         void fitDrawable();
         void fitCodeDrawer();
@@ -164,6 +165,7 @@ class PartMainVisualizer : public QWidget
         GCode* m_program = nullptr;
         bool m_ignoreZ;
         int m_lastDrawnLineIndex;
+        ConfigurationVisualizer::ColorGroups m_colors;
 
         QGraphicsOpacityEffect* m_infoOpacityEffect;
         QPropertyAnimation* m_infoAnimation;
