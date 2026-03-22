@@ -1061,7 +1061,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     drawText(painter, pos, m_speedState, lineHeight);
     drawText(painter, pos, m_pinState, lineHeight);
 
-    if (width() > 320) {
+    if (width() > 320 && height() > 380) {
         // right side
         pos = QPoint(this->width() - 10, this->height() - 10 - (4 * lineHeight) + fontHeight);
 
