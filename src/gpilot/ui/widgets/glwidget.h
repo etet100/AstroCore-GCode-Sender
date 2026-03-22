@@ -79,6 +79,7 @@ public:
     void setFps(int fps);
     void setParserState(const QString &parserState);
     void setBufferState(const QString &bufferState);
+    void setLightCenter(const QVector3D &lightCenter);
     void setZBuffer(bool zBuffer);
     void setFov(double fov);
     void setNearPlane(double plane);
@@ -150,6 +151,7 @@ private:
     QString m_pinState;
     QString m_bufferState;
     QPointF m_bottomSurfaceCursorPos;
+    QVector3D m_lightCenter;
     bool m_updatesEnabled;
     bool m_viewChanged;
 

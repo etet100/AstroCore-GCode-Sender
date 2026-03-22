@@ -360,6 +360,11 @@ void GLWidget::setBufferState(const QString &bufferState)
     m_bufferState = bufferState;
 }
 
+void GLWidget::setLightCenter(const QVector3D &lightCenter)
+{
+    m_lightCenter = lightCenter;
+}
+
 void GLWidget::setParserState(const QString &parserState)
 {
     m_parserState = parserState;
@@ -835,10 +840,10 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     QOpenGLShaderProgram *currentProgram = nullptr;
 
-    static float lightRotation = 0;
     QVector3D lightPos;
     if (m_light) {
-        lightPos = QVector3D(100 * cos(lightRotation * M_PI / 180), 100 * sin(lightRotation * M_PI / 180), 40);
+        static float lightRotation = 0;
+        lightPos = QVector3D(200 * cos(lightRotation * M_PI / 180), 200 * sin(lightRotation * M_PI / 180), 0) + m_lightCenter;
         lightRotation += 1;
     }
 
