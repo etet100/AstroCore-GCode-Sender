@@ -3745,6 +3745,7 @@ void FrmMain::restoreCentralWidget()
 {
     QString centralWidgetName = m_configuration.uiModule().centralWidget();
     if (centralWidgetName.isEmpty()) {
+        // it should never be empty since it has a default value
         return;
     }
 
