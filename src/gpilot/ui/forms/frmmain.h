@@ -6,7 +6,6 @@
 #define FRMMAIN_H
 
 #include <QMainWindow>
-#include <QSettings>
 #include <QTimer>
 #include <QBasicTimer>
 #include <QStringList>
@@ -236,9 +235,6 @@ private:
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;
     FrmLog* m_logForm = nullptr;
-
-    // Filenames
-    QString m_settingsFileName;
 
     // Timers
     QTimer m_timerConnection;

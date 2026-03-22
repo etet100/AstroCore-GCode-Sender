@@ -63,9 +63,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_timeEstimator(m_timer),
     m_configuration(configuration)
 {
-    // Loading settings
-    m_settingsFileName = qApp->applicationDirPath() + "/settings.ini";
-
     // Initializing variables
 
     // to communicator
@@ -2282,8 +2279,6 @@ void FrmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
 
 void FrmMain::loadSettings()
 {
-    QSettings set(m_settingsFileName, QSettings::IniFormat);
-
     m_settingsLoading = true;
 
     emit settingsAboutToLoad();
@@ -2316,7 +2311,7 @@ void FrmMain::loadSettings()
     // Shortcuts
     ShortcutsMap shortcutsMap;
 
-    QByteArray ba = set.value("shortcuts").toByteArray();
+    QByteArray ba = m_configuration.uiModule().shortcuts();
     QDataStream s(&ba, QIODevice::ReadOnly);
     s >> shortcutsMap;
 
@@ -2340,9 +2335,10 @@ void FrmMain::loadSettings()
 
 void FrmMain::restoreDockableLayoutState()
 {
-    QSettings set(m_settingsFileName, QSettings::IniFormat);
+    ConfigurationUI& uiConfiguration = m_configuration.uiModule();
 
-    ui->program->restoreHeaderState(set.value("header", QByteArray()).toByteArray());
+    ui->program->restoreHeaderState(uiConfiguration.programHeaderState());
+    restoreGeometry(uiConfiguration.mainFormGeometryData());
 
     // Adjust docks width
     int w = qMax(ui->dockDevice->widget()->sizeHint().width(),
@@ -2374,8 +2370,6 @@ void FrmMain::restoreDockableLayoutState()
         // connect(w, &QDockWidget::topLevelChanged, this, &FrmMain::onDockTopLevelChanged);
     }
 
-    ConfigurationUI& uiConfiguration = m_configuration.uiModule();
-
     // Panels
     ui->scrollContentsDevice->restoreState(this, uiConfiguration.panelDeviceState());
     ui->scrollContentsModification->restoreState(this, uiConfiguration.panelModificationState());
@@ -2394,7 +2388,7 @@ void FrmMain::restoreDockableLayoutState()
     }
 
     // Normal window state
-    restoreState(set.value("formMainState").toByteArray());
+    restoreState(uiConfiguration.mainFormState());
 
     // Hide central widget dock
     for (auto dock : findChildren<QDockWidget*>()) {
@@ -2457,36 +2451,14 @@ void FrmMain::initializeUiScaleMenu()
 
 void FrmMain::saveSettings()
 {
-    QSettings set(m_settingsFileName, QSettings::IniFormat);
-
     emit settingsAboutToSave();
 
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
-    // ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
-    // m_configuration.machineModule().setSpindleSpeed(ui->slbSpindle->value());
     uiConfiguration.setAutoScrollGCode(ui->program->isAutoScroll());
-
-    set.setValue("header", ui->program->saveHeaderState());
-//    set.setValue("settingsSplitMain", m_settings->ui->splitMain->saveState());
-//    set.setValue("formGeometry", this->saveGeometry());
-//    set.setValue("formSettingsGeometry", m_settings->saveGeometry());
-//    uiConfiguration.setMainFormGeometry(this->geometry());
-    //uiConfiguration.setSettingsFormGeometry(m_settings->geometry());
-
-    // joggingConfiguration.setJogStep(ui->cboJogStep->currentText().toDouble());
-    // joggingConfiguration.setJogFeed(ui->cboJogFeed->currentText().toInt());
-
-    // set.setValue("jogSteps", (QStringList)ui->cboJogStep->items().mid(1, ui->cboJogStep->items().count() - 1));
-    // set.setValue("jogStep", ui->cboJogStep->currentText());
-    // set.setValue("jogFeeds", ui->cboJogFeed->items());
-    // set.setValue("jogFeed", ui->cboJogFeed->currentText());
-
-    QStringList list;
-
-    // Docks
-    set.setValue("formMainState", saveState());
-    set.setValue("formMainGeometry", saveGeometry());
+    uiConfiguration.setProgramHeaderState(ui->program->saveHeaderState());
+    uiConfiguration.setMainFormState(saveState());
+    uiConfiguration.setMainFormGeometryData(saveGeometry());
 
     // Shortcuts
     ShortcutsMap m;
@@ -2496,7 +2468,7 @@ void FrmMain::saveSettings()
 
     foreach (QAction *a, acts) m[a->objectName()] = a->shortcuts();
     s << m;
-    set.setValue("shortcuts", ba);
+    uiConfiguration.setShortcuts(ba);
 
     // Panels
     uiConfiguration.setPanelModificationState(ui->scrollContentsModification->saveState());

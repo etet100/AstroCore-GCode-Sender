@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QRect>
+#include <QByteArray>
 #include <QWidget>
 #include "configurationmodule.h"
 
@@ -43,6 +44,10 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(QStringList hiddenPanels MEMBER m_hiddenPanels NOTIFY changed)
     Q_PROPERTY(QStringList collapsedPanels MEMBER m_collapsedPanels NOTIFY changed)
     Q_PROPERTY(QString centralWidget MEMBER m_centralWidget NOTIFY changed)
+    Q_PROPERTY(QByteArray mainFormState MEMBER m_mainFormState NOTIFY changed)
+    Q_PROPERTY(QByteArray mainFormGeometryData MEMBER m_mainFormGeometryData NOTIFY changed)
+    Q_PROPERTY(QByteArray programHeaderState MEMBER m_programHeaderState NOTIFY changed)
+    Q_PROPERTY(QByteArray shortcuts MEMBER m_shortcuts NOTIFY changed)
 
     public:
         explicit ConfigurationUI(QObject *parent);
@@ -92,6 +97,14 @@ class ConfigurationUI : public ConfigurationModule
         void setCollapsedPanels(const QStringList &panels) { m_collapsedPanels = panels; emit changed(); }
         QString centralWidget() const { return m_centralWidget; }
         void setCentralWidget(const QString &widget) { m_centralWidget = widget; emit changed(); }
+        QByteArray mainFormState() const { return m_mainFormState; }
+        void setMainFormState(const QByteArray &state) { m_mainFormState = state; emit changed(); }
+        QByteArray mainFormGeometryData() const { return m_mainFormGeometryData; }
+        void setMainFormGeometryData(const QByteArray &data) { m_mainFormGeometryData = data; emit changed(); }
+        QByteArray programHeaderState() const { return m_programHeaderState; }
+        void setProgramHeaderState(const QByteArray &state) { m_programHeaderState = state; emit changed(); }
+        QByteArray shortcuts() const { return m_shortcuts; }
+        void setShortcuts(const QByteArray &shortcuts) { m_shortcuts = shortcuts; emit changed(); }
 
     private:
         static const int MAX_RECENT_FILES = 10;
@@ -117,6 +130,10 @@ class ConfigurationUI : public ConfigurationModule
         QList<int> m_settingsFormSlicerSizes;
         bool m_darkMode;
         QString m_centralWidget;
+        QByteArray m_mainFormState;
+        QByteArray m_mainFormGeometryData;
+        QByteArray m_programHeaderState;
+        QByteArray m_shortcuts;
 };
 
 #endif // CONFIGURATIONUI_H

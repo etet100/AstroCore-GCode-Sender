@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QRect>
 #include <QVector3D>
+#include <QByteArray>
 
 ConfigurationModule::ConfigurationModule(QObject *parent, QMap<QString, QVariant> defaults) : QObject(parent), m_defaults(defaults)
 {
@@ -90,6 +91,15 @@ ConfigurationModule::ConfigurationModule(QObject *parent, QMap<QString, QVariant
         },
         [](QVariant serialized) -> QVariant {
             return QColor(serialized.toString());
+        }
+    );
+    ConfigurationRegistry::registerValue(
+        "QByteArray",
+        [](QVariant raw) -> QVariant {
+            return QString::fromLatin1(raw.toByteArray().toBase64());
+        },
+        [](QVariant serialized) -> QVariant {
+            return QByteArray::fromBase64(serialized.toString().toLatin1());
         }
     );
 }
