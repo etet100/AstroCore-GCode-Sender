@@ -39,6 +39,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 
     qDebug() << "[Behavior][Running][Resp] Response:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
+    assert(commandAttributes.tableIndex >= 0);
     m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
     static QRegularExpression m6("M0*6(?!\\d)");

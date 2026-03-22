@@ -126,7 +126,7 @@ private:
     QPoint m_lastPos;
     double m_zoomDistance;
     double m_fov, m_near, m_far;
-    double m_xMin, m_xMax, m_yMin, m_yMax, m_zMin, m_zMax, m_xSize, m_ySize, m_zSize;
+    double m_xMin = 0, m_xMax = 0, m_yMin = 0, m_yMax = 0, m_zMin = 0, m_zMax = 0, m_xSize = 0, m_ySize = 0, m_zSize = 0;
     double m_lineWidth;
     double m_offset;
     bool m_error = false;

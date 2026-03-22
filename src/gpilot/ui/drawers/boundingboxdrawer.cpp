@@ -10,6 +10,11 @@ BoundingBoxDrawer::BoundingBoxDrawer() : QObject()
 
 bool BoundingBoxDrawer::updateData(GLPalette &palette)
 {
+    m_lines.clear();
+    if (m_viewParser == nullptr) {
+        return false;
+    }
+
     QVector3D rawMin = minimumExtremes();
     QVector3D rawMax = maximumExtremes();
 
@@ -21,8 +26,6 @@ bool BoundingBoxDrawer::updateData(GLPalette &palette)
     GLfloat pointColor = palette.color(QColor(Qt::blue));
 
     // generate 12 lines
-
-    m_lines.clear();
 
     m_lines.append(VertexData(QVector3D(min.x(), min.y(), min.z()), lineColor));
     m_lines.append(VertexData(QVector3D(max.x(), min.y(), min.z()), lineColor));

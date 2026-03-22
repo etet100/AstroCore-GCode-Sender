@@ -25,9 +25,6 @@
     #define MIN_ZOOM  10.0
     #define MAX_ZOOM  10000.0
 #endif
-#define ONE_DEG_IN_RAD 0.0174533
-// what is this value? oryginally was 1.25
-#define MAGIC_ZOOM_MULTIPLIER 1.9
 
 #ifdef GLES
 #ifdef USE_GLWINDOW
@@ -46,7 +43,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     m_viewChanged = false;
 
     m_xRot = m_xRotTarget = 35.264;
-    m_yRot = m_yRotTarget = 0;// m_yRot > 180 ? 405 : 45;
+    m_yRot = m_yRotTarget = 45;
 
     m_zoomDistance = DEFAULT_ZOOM;
 
@@ -58,16 +55,6 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent), m_shaderProgram(0)
     m_fov = 30;
     m_near = 0.5;
     m_far = 5000.0;
-
-    m_xMin = 0;
-    m_xMax = 0;
-    m_yMin = 0;
-    m_yMax = 0;
-    m_zMin = 0;
-    m_zMax = 0;
-    m_xSize = 0;
-    m_ySize = 0;
-    m_zSize = 0;
 
     updateProjection();
     updateView();

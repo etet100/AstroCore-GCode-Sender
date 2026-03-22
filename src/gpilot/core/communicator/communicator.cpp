@@ -174,10 +174,10 @@ SendCommandResult Communicator::sendCommand(
     }
 
     // Queue offsets request on G92, G10 commands
-    static QRegularExpression G92("(G92|G10)(?!\\d)");
-    if (command.contains(G92)) {
-        sendCommand(source, "$#", TABLE_INDEX_UTIL2, true);
-    }
+    // static QRegularExpression G92("(G92|G10)(?!\\d)");
+    // if (command.contains(G92)) {
+    //     sendCommand(source, "$#", TABLE_INDEX_UTIL2, true);
+    // }
 
     m_connection->sendLine(commandLine);
 
