@@ -100,6 +100,7 @@ public:
 
     QMatrix4x4& viewMatrix() { return m_viewMatrix; }
     QMatrix4x4& projectionMatrix() { return m_projectionMatrix; }
+    QVector3D& lightPos() { return m_lightPos; }
 
 signals:
     void rotated();
@@ -152,6 +153,7 @@ private:
     QString m_bufferState;
     QPointF m_bottomSurfaceCursorPos;
     QVector3D m_lightCenter;
+    QVector3D m_lightPos;
     bool m_updatesEnabled;
     bool m_viewChanged;
 

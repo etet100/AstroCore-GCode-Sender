@@ -155,10 +155,10 @@ void PartMainProgram::setCurrentIndex(const QModelIndex& index)
     ui->tblProgram->setCurrentIndex(index);
 }
 
-void PartMainProgram::abortClicked() { emit abort(); }
-void PartMainProgram::startClicked() { emit start(); }
+void PartMainProgram::abortClicked() { emit abortRequested(); }
+void PartMainProgram::startClicked() { emit startRequested(); }
 void PartMainProgram::openClicked() { emit openFile(); }
-void PartMainProgram::resetClicked() { emit reset(); }
+void PartMainProgram::resetClicked() { emit programResetRequested(); }
 void PartMainProgram::setProgramVisible(bool visible)
 {
     ui->tblProgram->setVisible(visible);
@@ -385,6 +385,18 @@ void PartMainProgram::setRecentFiles(QStringList files)
     menu->addAction(clearAction);
 
     ui->cmdFileOpen->setMenu(menu);
+}
+
+/*
+ * Unload program and heightmap, close drawers and visualizer state
+ */
+void PartMainProgram::close()
+{
+    m_programModel.setProgram(nullptr);
+    delete m_probeModel; m_probeModel = nullptr;
+    delete m_programHeightmapModel; m_programHeightmapModel = nullptr;
+    delete m_heightmapModel; m_heightmapModel = nullptr;
+    ui->tblHeightMap->setModel(nullptr);
 }
 
 void PartMainProgram::pauseClicked(bool checked) {

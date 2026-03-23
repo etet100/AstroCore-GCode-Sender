@@ -9,6 +9,7 @@
 #include "ui/drawers/heightmapareadrawer.h"
 #include "ui/drawers/heightmapgriddrawer.h"
 #include "ui/drawers/heightmapinterpolationdrawer.h"
+#include "ui/drawers/lightsourcedrawer.h"
 #include "ui/drawers/selectiondrawer.h"
 #include "ui/drawers/machineboundsdrawer.h"
 #include "ui/drawers/tablesurfacedrawer.h"
@@ -56,7 +57,7 @@ class PartMainVisualizer : public QWidget
         void setPinState(QString state);
         void setSpeedState(QString state);
 
-        void reset();
+        void close();
 
         void setInterpolationData(QVector<QVector<double>> *data, QRectF borderRect);
         void setHeightmapInterpolationVisible(bool visible);
@@ -161,6 +162,7 @@ class PartMainVisualizer : public QWidget
         SelectionDrawer m_selectionDrawer;
         MachineBoundsDrawer m_machineBoundsDrawer;
         NoGcodeDefaultDrawer m_noGcodeDefaultDrawer;
+        LightSourceDrawer m_lightSourceDrawer;
         Heightmap* m_heightmap = nullptr;
         GCode* m_program = nullptr;
         bool m_ignoreZ;
@@ -169,6 +171,7 @@ class PartMainVisualizer : public QWidget
 
         QGraphicsOpacityEffect* m_infoOpacityEffect;
         QPropertyAnimation* m_infoAnimation;
+        QTimer m_lightPosTimer;
 
         void placeButtons();
         void applyCodeDrawerConfiguration(ConfigurationVisualizer &visualizerConfiguration, ConfigurationMachine &machineConfiguration);

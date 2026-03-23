@@ -95,11 +95,13 @@ class PartMainProgram : public QWidget
         void setupFileSendMenu(QObject* receiver, const char* sendFromLineSlot);
         void setRecentFiles(QStringList files);
 
+        void close();
+
     signals:
-        void abort();
-        void start();
+        void abortRequested();
+        void startRequested();
         void openFile(QString filePath = "");
-        void reset();
+        void programResetRequested();
         void pause(bool checked = false);
         void clearRecentFiles();
         void currentChanged(const QModelIndex& current, const QModelIndex& previous);

@@ -52,7 +52,7 @@ private slots:
     void notifyLinesUpdated(int fromLine, int toLine);
 
 private:
-    GCode* m_data;
+    GCode* m_data = nullptr;
     QStringList m_headers;
     bool m_filtered = false;
     bool m_showComments = true;

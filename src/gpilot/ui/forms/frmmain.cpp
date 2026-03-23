@@ -342,10 +342,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->program, &PartMainProgram::editLinesRequested, this, &FrmMain::programEditLines);
 
     connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
-    connect(ui->program, &PartMainProgram::start, this, &FrmMain::onFileSend);
+    connect(ui->program, &PartMainProgram::startRequested, this, &FrmMain::onFileSend);
     connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
-    connect(ui->program, &PartMainProgram::abort, this, &FrmMain::onFileAbort);
-    connect(ui->program, &PartMainProgram::reset, this, &FrmMain::onFileReset);
+    connect(ui->program, &PartMainProgram::abortRequested, this, &FrmMain::onFileAbort);
+    connect(ui->program, &PartMainProgram::programResetRequested, this, &FrmMain::onFileReset);
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
                                        QMessageBox::Ignore | QMessageBox::Abort, this);
@@ -2821,14 +2821,10 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
         return;
     }
 
-    // Reset tables
-    // clearTable();
-    ui->program->clearProbeModel();
-    ui->program->clearProgramHeightmapModel();
-    // updateCurrentModel(&m_programModel);
+    ui->program->close();
+    ui->visualizer->close();
 
-    // Reset parsers
-    // m_viewParser.reset();
+    m_viewParser.reset();
     m_probeParser.reset();
 
     // Reset code drawer
@@ -2853,7 +2849,6 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // Block parser updates on table changes
     m_programLoading = true;
 
-    // Prepare model
     {
         QSignalBlocker blocker(m_program);
         m_program.clear();
@@ -2871,15 +2866,11 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     m_programLoading = false;
 
-    // Set table model
+    ui->program->setProgram(&m_program);
     ui->program->switchToProgramModel();
     ui->program->restoreHeaderState(headerState);
-
-    // Update tableview
-    // connect(ui->tblProgram->selectionModel(), &QItemSelectionModel::currentChanged, this, &FrmMain::onTableCurrentChanged);
     ui->program->selectFirstRow();
 
-    //  Update code drawer
     ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->updateCodeDrawer();
     ui->visualizer->fitCodeDrawer();
@@ -3071,18 +3062,11 @@ void FrmMain::resetHeightmap()
 
 void FrmMain::newFile()
 {
-    // Reset tables
-    // clearTable();
-    ui->program->clearProbeModel();
-    ui->program->clearProgramHeightmapModel();
-    // updateCurrentModel(&m_programModel);
+    ui->program->close();
+    ui->visualizer->close();
 
-    // Reset parsers
     m_viewParser.reset();
     m_probeParser.reset();
-
-    // Reset code drawer
-    ui->visualizer->reset();
 
     m_timeEstimator.resetEstimation();
     ui->visualizer->setTimeEstimation(m_timeEstimator);

@@ -24,6 +24,7 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     m_probeDrawer = new GcodeDrawer();
     m_probeDrawer->setVisible(false);
     m_boundingBoxDrawer.setVisible(false);
+    m_lightSourceDrawer.setVisible(false);
 
     connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::updateCursorDrawer);
 
@@ -94,6 +95,12 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
 
     initializeButtons();
     initializeInfoBar();
+
+    m_lightPosTimer.setInterval(100);
+    connect(&m_lightPosTimer, &QTimer::timeout, this, [this]() {
+        m_lightSourceDrawer.setPosition(ui->visualizer->lightPos());
+    });
+    m_lightPosTimer.start();
 }
 
 PartMainVisualizer::~PartMainVisualizer()
@@ -156,9 +163,9 @@ void PartMainVisualizer::initDrawables()
                     << &m_originDrawer
                     << &m_originDrawer.billboardDrawable()
                     << &m_noGcodeDefaultDrawer
+                    << &m_lightSourceDrawer
     ;
 
-    // ui->visualizer->setIsometricView();
     ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
 }
 
@@ -265,14 +272,17 @@ void PartMainVisualizer::setToolPosition(QVector3D pos)
     m_toolDrawer.setToolPosition(pos);
 }
 
-void PartMainVisualizer::reset()
+/*
+ * Unload program and heightmap, reset drawers and visualizer state
+ */
+void PartMainVisualizer::close()
 {
-    m_codeDrawer->update();
-    m_currentDrawer = m_codeDrawer;
-    ui->visualizer->fitDrawable();
-
-    m_selectionDrawer.resetEndPosition();
-    m_selectionDrawer.update();
+    m_heightmap = nullptr;
+    m_program = nullptr;
+    m_codeDrawer->setViewParser(nullptr);
+    m_boundingBoxDrawer.setViewParser(nullptr);
+    m_noGcodeDefaultDrawer.setVisible(true);
+    m_boundingBoxDrawer.setVisible(false);
 }
 
 void PartMainVisualizer::setHeightmap(Heightmap& heightmap)
@@ -867,6 +877,7 @@ void PartMainVisualizer::toggleToolClicked()
 void PartMainVisualizer::toggleLightClicked()
 {
     ui->visualizer->toggleLight();
+    m_lightSourceDrawer.toggleVisible();
 }
 
 void PartMainVisualizer::toggleBoundingBoxClicked()

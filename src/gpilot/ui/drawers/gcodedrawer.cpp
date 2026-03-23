@@ -185,6 +185,10 @@ GcodeVectorData GcodeDrawer::prepareVectorsAsync()
     result.success = false;
 
     if (m_viewParser == nullptr) {
+        // No g-code data, return empty result with success = true to clear existing vertices
+        // in main thread
+        result.success = true;
+
         return result;
     }
 
@@ -444,6 +448,7 @@ void GcodeDrawer::setViewParser(GCodeViewParser* viewParser)
 {
     // do not delete old parser!
     m_viewParser = viewParser;
+    update();
 }
 
 GCodeViewParser *GcodeDrawer::viewParser()

@@ -200,6 +200,7 @@ SOURCES += main.cpp\
     ui/drawers/origindrawer.cpp \
     ui/drawers/shaderdrawable.cpp \
     ui/drawers/tooldrawer.cpp \
+    ui/drawers/lightsourcedrawer.cpp \
     ui/drawers/machineboundsdrawer.cpp \
     core/gcode/gcode.cpp \
     core/gcode/exporter/gcodeexporter.cpp \
@@ -374,6 +375,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/origindrawer.h \
     ui/drawers/shaderdrawable.h \
     ui/drawers/tooldrawer.h \
+    ui/drawers/lightsourcedrawer.h \
     ui/drawers/machineboundsdrawer.h \
     core/gcode/gcode.h \
     core/gcode/exporter/gcodeexporter.h \

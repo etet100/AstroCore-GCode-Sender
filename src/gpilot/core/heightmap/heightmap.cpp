@@ -218,7 +218,7 @@ void Heightmap::generateRandom()
     qDebug() << "[Heightmap] generating random heightmap data...";
     for (int y = 0; y < m_size.height(); y++) {
         for (int x = 0; x < m_size.width(); x++) {
-            at(x, y) = (rand() % 800 / 30.0) - 5.0;
+            at(x, y) = ((rand() % (25 * 30)) / 250.0) - 3.0;
         }
     }
 }

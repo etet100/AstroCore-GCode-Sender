@@ -272,6 +272,16 @@ PointSegment *GcodeParser::processCommand(const std::vector<std::string> &args)
     // handle G codes.
     gCodes = GcodePreprocessorUtils::parseCodes(args, 'G');
 
+    // handle multiple G codes, like `G00 G0 X-0.474 Y75.557`
+    if (gCodes.size() > 1) {
+        bool allSame = std::all_of(gCodes.begin() + 1, gCodes.end(), [&](float c){ return c == gCodes.first(); });
+        if (allSame) {
+            gCodes = { gCodes.first() };
+        } else {
+            qWarning() << "[GcodeParser] Multiple different G codes on one line:" << gCodes;
+        }
+    }
+
     // If there was no command, add the implicit one to the party.
     if (gCodes.isEmpty() && m_state.lastGcodeCommand != -1) {
         gCodes.append(m_state.lastGcodeCommand);

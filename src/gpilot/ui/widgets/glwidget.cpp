@@ -840,10 +840,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
     QOpenGLShaderProgram *currentProgram = nullptr;
 
-    QVector3D lightPos;
     if (m_light) {
         static float lightRotation = 0;
-        lightPos = QVector3D(200 * cos(lightRotation * M_PI / 180), 200 * sin(lightRotation * M_PI / 180), 0) + m_lightCenter;
+        m_lightPos = QVector3D(200 * cos(lightRotation * M_PI / 180), 200 * sin(lightRotation * M_PI / 180), 0) + m_lightCenter;
         lightRotation += 1;
     }
 
@@ -855,7 +854,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->bind();
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
-        currentProgram->setUniformValue("u_light_position", lightPos);
+        currentProgram->setUniformValue("u_light_position", m_lightPos);
         currentProgram->setUniformValue("u_light", m_light);
         //
         currentProgram->setUniformValue("u_eye", m_eye);
@@ -871,7 +870,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         currentProgram->bind();
         currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
         currentProgram->setUniformValue("u_mv_matrix", m_viewMatrix);
-        currentProgram->setUniformValue("u_light_position", lightPos);
+        currentProgram->setUniformValue("u_light_position", m_lightPos);
         currentProgram->setUniformValue("u_light", m_light);
     }
 

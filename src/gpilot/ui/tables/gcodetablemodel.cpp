@@ -25,7 +25,7 @@ void GCodeTableModel::notifyLinesUpdated(int fromLine, int toLine)
 
 QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || index.row() >= rowCount()) {
+    if (m_data == nullptr || !index.isValid() || index.row() >= rowCount()) {
         return QVariant();
     }
 
@@ -186,6 +186,10 @@ void GCodeTableModel::updateLines(int from, int to)
 int GCodeTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
+
+    if (m_data == nullptr) {
+        return m_filtered ? 0 : 1;
+    }
 
     // +1 add empty row at the end for easier appending new lines
     return m_filtered ? m_filteredRows.size() : (m_data->count() + 1);
