@@ -142,6 +142,7 @@ class PartMainVisualizer : public QWidget
         void toggleToolClicked();
         void toggleLightClicked();
         void toggleBoundingBoxClicked();
+        void toggleToolpathClicked();
 
     private:
         Ui::partMainVisualizer* ui;

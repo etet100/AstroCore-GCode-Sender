@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>379</height>
+    <height>384</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -59,20 +59,27 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>44</height>
+      </size>
+     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>40</height>
+       <height>70</height>
       </size>
      </property>
      <property name="styleSheet">
       <string notr="true">QLabel#lblInfo {
         background-color: rgba(30, 30, 30, 200);
         color: white;
-        padding: 4px 20px 4px 20px;
+        padding: 8px 26px 8px 26px;
         font-size: 20px;
-        border-radius: 15px;
-}</string>
+        border-radius: 20px;
+}
+</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -105,6 +112,12 @@
       </item>
       <item>
        <widget class="QLabel" name="lblInfo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -165,9 +178,7 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">/* this color will be replaced in runtime */
-StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
-</string>
+      <string notr="true"/>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -190,7 +201,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -207,7 +224,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -216,7 +236,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -233,7 +259,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -242,7 +271,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -259,7 +294,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -268,7 +306,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -288,7 +332,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -297,7 +344,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -314,7 +367,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -345,7 +401,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -365,7 +427,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -374,7 +439,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -394,7 +465,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -425,7 +499,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -445,7 +525,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -454,7 +537,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -471,7 +560,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -480,7 +572,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -500,7 +598,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -509,7 +610,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -529,7 +636,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -538,7 +648,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -558,7 +674,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -567,7 +686,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -587,7 +712,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -596,7 +724,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -616,7 +750,10 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
          </size>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
         </property>
        </widget>
       </item>
@@ -625,7 +762,13 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
         <property name="minimumSize">
          <size>
           <width>35</width>
-          <height>26</height>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
          </size>
         </property>
         <property name="toolTip">
@@ -636,7 +779,39 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
           <normaloff>:/images/visualizer/visualizer_extremes.svg</normaloff>:/images/visualizer/visualizer_extremes.svg</iconset>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="customColors" stdset="0">
          <bool>false</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>-2</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="StyledToolButton" name="cmdToggleToolpath">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle toopath view</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer/visualizer_gcode.svg</normaloff>:/images/visualizer/visualizer_gcode.svg</iconset>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>-2</number>
         </property>
        </widget>
       </item>
@@ -862,7 +1037,7 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>8</x>
-     <y>318</y>
+     <y>350</y>
     </hint>
     <hint type="destinationlabel">
      <x>191</x>
@@ -877,8 +1052,8 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <slot>toggleLightClicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>64</x>
-     <y>318</y>
+     <x>73</x>
+     <y>350</y>
     </hint>
     <hint type="destinationlabel">
      <x>169</x>
@@ -894,11 +1069,27 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
    <hints>
     <hint type="sourcelabel">
      <x>19</x>
-     <y>331</y>
+     <y>384</y>
     </hint>
     <hint type="destinationlabel">
      <x>113</x>
      <y>337</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdToggleToolpath</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>toggleToolpathClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>373</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>117</x>
+     <y>365</y>
     </hint>
    </hints>
   </connection>
@@ -919,5 +1110,6 @@ StyledToolButton { /* bbg */ background-color: rgba(255, 255, 255, 0); }
   <slot>toggleOriginClicked()</slot>
   <slot>toggleLightClicked()</slot>
   <slot>toggleBoundingBoxClicked()</slot>
+  <slot>toggleToolpathClicked()</slot>
  </slots>
 </ui>

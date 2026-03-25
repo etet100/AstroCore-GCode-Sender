@@ -4,7 +4,6 @@
 #include "core/config/module/configurationmachine.h"
 #include "core/gcode/gcode.h"
 #include "ui/drawers/vertexdataexporter.h"
-#include <QRegularExpression>
 #include <QGraphicsOpacityEffect>
 #include <QMessageBox>
 #include "styledtoolbutton.h"
@@ -122,7 +121,7 @@ void PartMainVisualizer::initializeInfoBar()
     ui->lblInfo->setGraphicsEffect(m_infoOpacityEffect);
 
     m_infoAnimation = new QPropertyAnimation(m_infoOpacityEffect, "opacity");
-    m_infoAnimation->setDuration(100);
+    m_infoAnimation->setDuration(300);
 }
 
 void PartMainVisualizer::initializeButtons()
@@ -229,20 +228,27 @@ void PartMainVisualizer::fitCodeDrawer()
     ui->visualizer->fitDrawable(m_codeDrawer);
 }
 
+/*
+ * program should not be null
+ * parser will be nullptr if new file is selected - program is empty
+ */
 void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
 {
     m_program = program;
     m_codeDrawer->setViewParser(parser);
     m_boundingBoxDrawer.setViewParser(parser);
-    m_noGcodeDefaultDrawer.setVisible(false);
 
-    QVector3D minEx = parser->getMinimumExtremes();
-    QVector3D maxEx = parser->getMaximumExtremes();
-    ui->visualizer->setLightCenter(QVector3D(
-        (minEx.x() + maxEx.x()) / 2.0f,
-        (minEx.y() + maxEx.y()) / 2.0f,
-        maxEx.z()
-    ));
+    if (parser != nullptr) {
+        QVector3D minEx = parser->getMinimumExtremes();
+        QVector3D maxEx = parser->getMaximumExtremes();
+        ui->visualizer->setLightCenter(QVector3D(
+            (minEx.x() + maxEx.x()) / 2.0f,
+            (minEx.y() + maxEx.y()) / 2.0f,
+            maxEx.z()
+        ));
+
+        m_noGcodeDefaultDrawer.setVisible(false);
+    }
 }
 
 void PartMainVisualizer::setProbeParser(GCodeViewParser* parser)
@@ -487,42 +493,14 @@ void PartMainVisualizer::setUpdatesEnabled2(bool updatesEnabled)
 void PartMainVisualizer::updateColors()
 {
     const int LIGHTBOUND = 140;
-    const int NORMALSHIFT = 40;
-    const int HIGHLIGHTSHIFT = 80;
 
     bool dark = ThemeManager::instance().dark();
     ConfigurationVisualizer::Colors colors = dark ? m_colors.dark : m_colors.light;
 
     QColor bgColor = colors.background;
-    bool isBackgroundLight = bgColor.value() > LIGHTBOUND;
-    static bool previousIsBackgroundLight = true;
-    if (isBackgroundLight != previousIsBackgroundLight) {
-        for (auto& button : ui->buttons->findChildren<StyledToolButton*>(Qt::FindDirectChildrenOnly)) {
-            Utils::invertButtonIconColors(button);
-        }
-        previousIsBackgroundLight = isBackgroundLight;
-    }
 
     ui->visualizer->setColorBackground(bgColor);
-    ui->visualizer->setColorText(isBackgroundLight ? Qt::black : Qt::white);
-
-    ui->buttons->setStyleSheet(
-        ui->buttons->styleSheet().replace(
-            QRegularExpression("/\\* bbg \\*/ background-color: rgba\\([^;^\\}]+\\)"),
-            QString("/* bbg */ background-color: rgba(%1,%2,%3,%4)").arg(bgColor.red())
-                .arg(bgColor.green())
-                .arg(bgColor.blue())
-                .arg(std::max(0, bgColor.alpha() - 100))
-        )
-    );
-
-    QColor normal, highlight;
-    normal.setHsv(bgColor.hue(), bgColor.saturation(), bgColor.value() + (isBackgroundLight ? -NORMALSHIFT : NORMALSHIFT));
-    highlight.setHsv(bgColor.hue(), bgColor.saturation(), bgColor.value() + (isBackgroundLight ? -HIGHLIGHTSHIFT : HIGHLIGHTSHIFT));
-    ui->visualizer->setStyleSheet(QString("QToolButton {border: 1px solid %1; \
-                background-color: %3} QToolButton:hover {border: 1px solid %2;}")
-                .arg(normal.name()).arg(highlight.name())
-                .arg(bgColor.name()));
+    ui->visualizer->setColorText(bgColor.value() > LIGHTBOUND ? Qt::black : Qt::white);
 
     m_codeDrawer->setColorNormal(colors.normalToolpath);
     m_codeDrawer->setColorDrawn(colors.drawnToolpath);
@@ -883,4 +861,9 @@ void PartMainVisualizer::toggleLightClicked()
 void PartMainVisualizer::toggleBoundingBoxClicked()
 {
     m_boundingBoxDrawer.toggleVisible();
+}
+
+void PartMainVisualizer::toggleToolpathClicked()
+{
+    m_codeDrawer->toggleVisible();
 }
