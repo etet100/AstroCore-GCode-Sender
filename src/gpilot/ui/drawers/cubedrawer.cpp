@@ -91,7 +91,13 @@ void CubeDrawer::draw(QRect dest, GLPalette &palette)
     if (!m_vbo.isCreated()) {
         init();
     }
-    drawToBuffer(palette);
+    if (m_updated) {
+        updateView();
+        updateClickableAreas();
+        drawToBuffer(palette);
+        m_updated = false;
+        qDebug() << "[GLWidget][Cube] Updated view and redraw cube" << dest;
+    }
     copyToScreen(dest);
 }
 
@@ -127,12 +133,13 @@ void CubeDrawer::updateClickableAreas()
 
 void CubeDrawer::updateEyePosition(QVector3D eye, const QVector3D& center, QVector3D up)
 {
+    if (eye == m_eye && center == m_center && up == m_up) {
+        return;
+    }
     m_eye = eye;
     m_up = up;
     m_center = center;
-
-    updateView();
-    updateClickableAreas();
+    m_updated = true;
 }
 
 CubeClickableFace CubeDrawer::faceAtPos(QPoint pos)
@@ -140,7 +147,7 @@ CubeClickableFace CubeDrawer::faceAtPos(QPoint pos)
     int pi = 0;
     int ci = 0;
     for (auto clickable : clickables) {
-        Q_UNUSED(clickable);
+        Q_UNUSED(clickable)
 
         QPoint tr1[3] = { m_points2d[pi++], m_points2d[pi++], m_points2d[pi++] };
         QPoint tr2[3] = { m_points2d[pi++], m_points2d[pi++], m_points2d[pi++] };
@@ -178,9 +185,6 @@ CubeClickableFace CubeDrawer::mouseMoveEvent(QMouseEvent *event)
         return m_faceAtCursor;
     }
 
-    int fi = (int) m_faceAtCursor;
-    int li = 0;
-
     m_needsUpdateGeometry = true;
 
     return m_faceAtCursor;
@@ -188,6 +192,7 @@ CubeClickableFace CubeDrawer::mouseMoveEvent(QMouseEvent *event)
 
 void CubeDrawer::leaveEvent(QEvent *event)
 {
+    Q_UNUSED(event)
     for (auto &line : m_lines) {
         line.color = 0;
     }

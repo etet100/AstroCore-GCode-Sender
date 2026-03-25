@@ -52,6 +52,7 @@ private:
     int m_width;
     int m_height;
     bool m_needsUpdateGeometry = true;
+    bool m_updated = true;
     QVector3D m_eye;
     QVector3D m_up;
     QVector3D m_center;
