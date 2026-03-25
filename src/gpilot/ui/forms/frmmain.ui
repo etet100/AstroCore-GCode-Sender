@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>G-Pilot</string>
+   <string>G-Pilot GCode Sender</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/images.qrc">
