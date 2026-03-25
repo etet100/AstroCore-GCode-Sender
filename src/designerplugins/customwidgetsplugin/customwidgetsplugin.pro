@@ -52,3 +52,5 @@ isEmpty(QTCREATOR_PLUGINS_PATH) {
 }
 target.path = $$QTCREATOR_PLUGINS_PATH
 INSTALLS += target
+
+DESTDIR = $$OUT_PWD/../../gpilot

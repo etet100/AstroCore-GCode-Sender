@@ -8,3 +8,8 @@ QSplitter::handle:horizontal, QMainWindow::separator:vertical {
 QSplitter::handle:vertical, QMainWindow::separator:horizontal {
     background-image: url(":/images/handle_horizontal_light.png");
 }
+
+QGroupBox::title {
+    ph-title-background: #96DFCF;
+}
+

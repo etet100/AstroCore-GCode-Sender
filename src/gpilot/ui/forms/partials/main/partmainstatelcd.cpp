@@ -3,6 +3,7 @@
 #include "ui_partmainstatelcd.h"
 #include "utils/utils.h"
 #include <QFontDatabase>
+#include "ui/utils/thememanager.h"
 
 PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     : PartMainStateBase(parent)
@@ -17,6 +18,10 @@ PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     if (fontId != -1) {
         QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
     }
+
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this]() {
+        this->resizeEvent(nullptr);
+    });
 }
 
 PartMainStateLcd::~PartMainStateLcd()
@@ -55,9 +60,18 @@ void PartMainStateLcd::resizeEvent(QResizeEvent *event)
 
     int fontSize = qMax(12, qMin(31, static_cast<int>(lcdWidth / charCount * 2.1)));
 
-    //
+    QPalette pal = qApp->palette();
+    QColor color("#96DFCF"); // text color
+    QColor bgColor = pal.color(QPalette::Button);
+    if (!ThemeManager::instance().dark()) {
+        bgColor = bgColor.darker(110);
+        color = color.darker(300);
+    }
 
-    QString styleSheet = QString("font: %1pt \"Patopian 1986\";").arg(fontSize);
+    QString styleSheet = QString("font: %1pt \"Patopian 1986\"; "
+                                 "color: " + color.name() +"; background: " + bgColor.name() + "; "
+                                 "border: 1px solid palette(window); border-radius: 4px;").arg(fontSize);
+    qDebug() << styleSheet;
 
     ui->txtWX->setStyleSheet(styleSheet);
     ui->txtWY->setStyleSheet(styleSheet);

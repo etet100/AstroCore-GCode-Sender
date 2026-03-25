@@ -82,11 +82,11 @@ void XSwitchButton::drawBackGround(QPainter *painter)
     if (m_checked){
         QRect textRect(0, 0, width() - sliderWidth, height());
         painter->setPen(QPen(m_textColor));
-        if(showText()) painter->drawText(textRect, Qt::AlignCenter, m_textStrOn);
+        if (showText()) painter->drawText(textRect, Qt::AlignCenter, m_textStrOn);
     } else {
         QRect textRect(sliderWidth, 0, width() - sliderWidth, height());
         painter->setPen(QPen(m_textColor));
-        if(showText()) painter->drawText(textRect, Qt::AlignCenter, m_textStrOff);
+        if (showText()) painter->drawText(textRect, Qt::AlignCenter, m_textStrOff);
     }
 
     painter->restore();

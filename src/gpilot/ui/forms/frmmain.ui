@@ -463,9 +463,6 @@ QSlider::handle:horizontal:hover {
            <property name="checkable">
             <bool>true</bool>
            </property>
-           <property name="overrided" stdset="0">
-            <bool>false</bool>
-           </property>
            <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
             <item>
              <widget class="PartMainControl" name="control" native="true">
@@ -536,8 +533,8 @@ QSlider::handle:horizontal:hover {
    <widget class="QWidget" name="dockVisualizerContents">
     <property name="styleSheet">
      <string notr="true">#dockVisualizerContents {
-	border: 1px solid silver;
 	border-top: none;
+	padding: 1px;
 }</string>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">

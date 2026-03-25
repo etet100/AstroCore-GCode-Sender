@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>244</width>
-    <height>231</height>
+    <height>249</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -289,14 +289,11 @@
          <kerning>false</kerning>
         </font>
        </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="text">
         <string>123.456</string>
@@ -345,10 +342,10 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="lineWidth">
         <number>1</number>
@@ -409,10 +406,10 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="lineWidth">
         <number>1</number>
@@ -473,10 +470,10 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="lineWidth">
         <number>1</number>
@@ -537,10 +534,10 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="lineWidth">
         <number>1</number>
@@ -601,10 +598,10 @@
         <string notr="true"/>
        </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Panel</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Sunken</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <property name="lineWidth">
         <number>1</number>
