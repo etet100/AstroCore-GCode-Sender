@@ -67,10 +67,15 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 
     ui->menuShowLog->setVisible(m_logForm != nullptr);
     connect(ui->menuShowLog, &QMenu::aboutToShow, this, [this]() {
-        m_logForm->show();
-        m_logForm->raise();
-        m_logForm->activateWindow();
-        ui->menuShowLog->hide();
+        if (m_logForm != nullptr) {
+            m_logForm->show();
+            m_logForm->raise();
+            m_logForm->activateWindow();
+            ui->menuShowLog->hide();
+        } else {
+            qWarning() << "[FrmMain] No log window available to show";
+            QMessageBox::warning(this, tr("No log window"), tr("Log window is disabled"));
+        }
     });
 
     ui->dockDevice->setTitleBarWidget(new DockableTitle(ui->dockDevice));
