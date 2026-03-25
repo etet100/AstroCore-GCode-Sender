@@ -219,6 +219,7 @@ jobs:
         shell: cmd
         run: |
           xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
+          xcopy testing\gcode\* installer\packages\com.gpilot.examples.gcode\data\gcode-examples\ /E /I /H /Y
           binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller-${{ matrix.config }}.exe
 
       - name: Package build artifacts

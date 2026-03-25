@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
-    <Name>G-Pilot</Name>
+    <Name>G-Pilot GCode Sender</Name>
     <Version>1.0.0</Version>
     <Title>G-Pilot Installer</Title>
     <Publisher>BTS</Publisher>
-    <StartMenuDir>G-Pilot</StartMenuDir>
+    <StartMenuDir>G-Pilot GCode Sender</StartMenuDir>
     <TargetDir>@HomeDir@/GPilot</TargetDir>
     <ControlScript>controlscript.qs</ControlScript>
     <InstallActionColumnVisible>true</InstallActionColumnVisible>
