@@ -483,7 +483,7 @@ include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
 include(../vendor/vedis.pri)
 
-LIBS += -L../designerplugins/customwidgetsplugin -lgpilot-customwidgets
+LIBS += -L. -lgpilot-customwidgets
 
 # qtPrepareTool(LRELEASE, lrelease)
 # for(tsfile, TRANSLATIONS) {
