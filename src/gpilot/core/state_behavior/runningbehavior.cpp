@@ -22,6 +22,12 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
+        if (m_stage == RunningStage::Running) {
+            qWarning() << "[Behavior][Running] Unexpected transition to Idle state while running";
+        } else if (m_stage == RunningStage::NoMoreCommands) {
+            qDebug() << "[Behavior][Running][Dbg] Transition to Idle state after finishing commands, expected behavior";
+        }
+
         emit transition(this, new IdleBehavior());
     } else if (m_stage != RunningStage::Resuming && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
         PauseBehavior::PauseSource source = m_pause
@@ -108,6 +114,8 @@ StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, St
             }
             m_stage = RunningStage::Unknown;
         }, MachineState::Run, 500);
+    } else {
+        m_stage = RunningStage::Running;
     }
 
     sendStreamerCommandsUntilBufferIsFull();
@@ -159,6 +167,14 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         "bufferLength: " << m_communicator->bufferLength() <<
         "commandIndex: " << m_program.commandIndex() <<
         "hasMoreCommands: " << m_program.hasMoreCommands();
+
+    if (!m_program.hasMoreCommands()) {
+        qDebug() << "[Behavior][Running] No more commands to send";
+
+        m_stage = RunningStage::NoMoreCommands;
+
+        return;
+    }
 
     // Pass empty commands through loop too, we will skip them inside
     QString command = m_program.command();

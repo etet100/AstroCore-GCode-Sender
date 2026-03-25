@@ -14,6 +14,8 @@ class RunningBehavior : public StateBehavior
         enum class RunningStage {
             Unknown,
             Resuming,
+            Running,
+            NoMoreCommands,
         };
 
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
