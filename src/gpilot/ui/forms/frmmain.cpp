@@ -269,7 +269,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // ui->visualizer = new PartMainVisualizer(this);
     // m_program, m_heightmap
     ui->visualizer->setHeightmap(m_heightmap);
-    // ui->visualizer->setProgram(&m_program, &m_viewParser);
+    ui->visualizer->setProgram(&m_program, nullptr);
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
@@ -2803,31 +2803,25 @@ void FrmMain::newFile()
 
     m_viewParser.reset();
     m_probeParser.reset();
+    m_program.clear();
 
     m_timeEstimator.resetEstimation();
     ui->visualizer->setTimeEstimation(m_timeEstimator);
-    //     setEstimatedTime(QTime(0, 0, 0));
-    // ui->visualizer->setSpendTime(QTime(0, 0, 0));
 
     FilesManager::instance().resetGcodeFile();
     ui->heightmap->resetUseHeighmap();
-    //TODO heightmap
-    // ui->grpHeightMap->setProperty("overrided", false);
-    // Utils::refreshStyle(ui->grpHeightMap);
-
-    // Reset tableview
     QByteArray headerState = ui->program->saveHeaderState();
-    // ui->program->setCurrentModel(NULL);
 
-    // Set table model
     ui->program->switchToProgramModel();
     ui->program->restoreHeaderState(headerState);
 
-    // Update tableview
-    // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
     ui->program->selectFirstRow();
 
     resetHeightmap();
+
+    ui->program->setProgram(&m_program);
+    ui->visualizer->setProgram(&m_program, nullptr);
+    ui->visualizer->updateCodeDrawer();
 
     updateControlsState();
 }
