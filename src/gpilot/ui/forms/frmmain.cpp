@@ -273,6 +273,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
+    connect(&m_program, &GCode::linesUpdated, this, [this]() {
+        updateParser();
+    });
+
     initializeVisualizer();
     initializeMainMenu();
 
