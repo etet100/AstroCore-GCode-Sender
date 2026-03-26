@@ -1,4 +1,5 @@
 #include "communicator.h"
+#include "commandbuffer.h"
 #include "overrides.h"
 #include <QVector3D>
 #include <QDebug>
@@ -46,6 +47,46 @@ Communicator::Communicator(
     m_spindleCW = true;
     m_comApi = new CommunicatorApi(this);
     m_overrides = new Overrides(this);
+    m_posTracker = new PositionTracker(this);
+    connect(m_posTracker, &PositionTracker::machinePosChanged, this, &Communicator::machinePosChanged);
+    connect(m_posTracker, &PositionTracker::toolPositionReceived, this, &Communicator::toolPositionReceived);
+
+    // CommandBuffer: the two-level GRBL command queue.
+    m_commandBuffer = new CommandBuffer(connection);
+
+    // Callback: behavior notification when a command gets a response.
+    m_commandBuffer->setResponseHandler([this](
+        const QString& command,
+        CommandAttributes& attrs,
+        const CmdStatus& status,
+        const QString& data,
+        const QStringList& lines
+    ) -> bool {
+        Q_UNUSED(data)
+        if (!m_sbManager.hasCurrent()) return false;
+        StateBehavior::Result result = m_sbManager.current()->onCommandResponse(
+            command, attrs, status, data, lines
+        );
+        return result == StateBehavior::Result::Ok;
+    });
+
+    // Callback: drain queue through the normal sendCommand path
+    // so M2/M30 detection and other special cases still apply.
+    m_commandBuffer->setQueuedCommandSender([this](
+        CommandSource source,
+        const QString& commandLine,
+        int tableIndex,
+        CommandCallback callback
+    ) -> SendCommandResult {
+        return sendCommand(source, commandLine, tableIndex, false, callback);
+    });
+
+    // Forward CommandBuffer signals to Communicator signals.
+    connect(m_commandBuffer, &CommandBuffer::commandSent,
+            this, &Communicator::commandSent);
+
+    connect(m_commandBuffer, &CommandBuffer::commandCompleted,
+            this, &Communicator::onCommandBufferCompleted);
 
     m_sbManager.execute(new InitializationBehavior(), false, m_comApi);
 
@@ -57,10 +98,6 @@ Communicator::Communicator(
     }
 
     setSenderStateAndEmitSignal(SenderState::Stopped);
-
-    // Update state timer
-    // connect(&m_timerQueryState, &QTimer::timeout, this, &Communicator::onTimerStateQuery);
-    // m_timerQueryState.start();
 }
 
 Communicator::~Communicator()
@@ -78,9 +115,25 @@ void Communicator::resetStateVariables()
 {
     m_machineState = MachineState::Unknown;
     m_senderState = SenderState::Unknown;
-    m_machinePos = QVector3D(0, 0, 0);
-    m_workOffset = QVector3D(0, 0, 0);
+    if (m_posTracker) m_posTracker->reset();
     m_machineConfiguration = nullptr;
+}
+
+// Called by CommandBuffer after a command response is fully processed.
+void Communicator::onCommandBufferCompleted(
+    CommandAttributes attributes,
+    CmdStatus status,
+    QStringList lines)
+{
+    // Handle special command responses that need processing here.
+    const QString command = GcodePreprocessorUtils::removeComment(attributes.commandLine).toUpper();
+
+    if (command == "$#" && status.ok) {
+        m_posTracker->processOffsetsVars(lines);
+    }
+
+    emit commandResponseReceived(attributes);
+    emit responseReceived(attributes.commandLine, attributes.tableIndex, attributes.response);
 }
 
 /**
@@ -93,9 +146,7 @@ SendCommandResult Communicator::sendCommand(
     bool wait,
     CommandCallback callback
 ) {
-    QRegularExpressionMatch match;
-
-    // Handle special console commands
+    // Handle special console commands that should not go to the machine.
     if (source == CommandSource::Console) {
         QString trimmed = GcodePreprocessorUtils::removeComment(commandLine);
         if (trimmed == "$H") {
@@ -104,65 +155,14 @@ SendCommandResult Communicator::sendCommand(
         }
     }
 
-    // tableIndex:
-    // 0...n - commands from g-code program
-    // -1 - ui commands
-    // -2 - utility commands
-    // -3 - utility commands
-
     if (!m_connection->isConnected() || !m_resetCompleted) return SendCommandResult::Done;
 
-    // Check command
     if (commandLine.isEmpty()) return SendCommandResult::Empty;
-
-    // Place to queue on 'wait' flag
-    if (wait) {
-        m_queue.append(CommandQueue(source, commandLine, tableIndex));
-
-        return SendCommandResult::Queue;
-    }
-
-    // Evaluate scripts in command
-    // @todo scripting??
-    //if (tableIndex < 0) command = evaluateCommand(command);
-
-    // Check evaluated command
-    if (commandLine.isEmpty()) return SendCommandResult::Empty;
-
-    // Place to queue if command buffer is full
-    if ((bufferLength() + commandLine.length() + 1) > BUFFERLENGTH) {
-        m_queue.append(CommandQueue(source, commandLine, tableIndex, callback));
-
-        return SendCommandResult::Queue;
-    }
 
     commandLine = commandLine.toUpper();
 
-    CommandAttributes commandAttributes(
-        source,
-        m_commandIndex++,
-        tableIndex,
-        commandLine,
-        callback
-    );
-
-    m_commands.append(commandAttributes);
-
-    QString command = GcodePreprocessorUtils::removeComment(commandLine);
-
-    // Processing spindle speed only from g-code program
-    static QRegularExpression s("[Ss]0*(\\d+)");
-    match = s.match(command);
-    if (match.hasMatch() && commandAttributes.tableIndex > -2) {
-        int speed = match.captured(1).toInt();
-        // @TODO we are about to send new spindle speed, should we update UI now or wait for response?? or
-        // maybe in onFeedSpindleSpeedReceived ??
-        // if (ui->slbSpindle->value() != speed) {
-        //     ui->slbSpindle->setValue(speed);
-        // }
-    }
-
-    // Set M2 & M30 commands sent flag
+    // Detect M2/M30/M6/M25 end-of-program commands to update sender state.
+    const QString command = GcodePreprocessorUtils::removeComment(commandLine);
     static QRegularExpression M230("(M0*2|M30|M0*6|M25)(?!\\d)");
     static QRegularExpression M6("(M0*6)(?!\\d)");
     if ((m_senderState == SenderState::Transferring) && command.contains(M230)) {
@@ -175,25 +175,18 @@ SendCommandResult Communicator::sendCommand(
         }
     }
 
-    // Queue offsets request on G92, G10 commands
-    // static QRegularExpression G92("(G92|G10)(?!\\d)");
-    // if (command.contains(G92)) {
-    //     sendCommand(source, "$#", TABLE_INDEX_UTIL2, true);
-    // }
-
-    m_connection->sendLine(commandLine);
-
-    emit commandSent(commandAttributes);
-
-    return SendCommandResult::Done;
+    return m_commandBuffer->enqueue(source, commandLine, tableIndex, wait, callback);
 }
 
 void Communicator::sendRealtimeCommand(QString command)
 {
-    if (command.length() != 1) return;
     if (!m_connection->isConnected() || !m_resetCompleted) return;
+    m_commandBuffer->sendRealtime(command);
+}
 
-    m_connection->sendByteArray(QByteArray(command.toLatin1(), 1));
+void Communicator::sendRealtimeCommand(int command)
+{
+    m_commandBuffer->sendRealtime(command);
 }
 
 void Communicator::queryMachineState()
@@ -206,29 +199,21 @@ void Communicator::queryMachineConfiguration()
     sendCommand(CommandSource::System, "$$");
 }
 
-// Process new state requested be current state behavior
+// Process new state requested by the current state behavior.
 void Communicator::processStateBehaviorTransition()
 {
     if (m_sbManager.hasPendingTransition()) {
         assert(m_sbManager.current() != nullptr);
-        // Clear to avoid re-entrance
+        // Clear to avoid re-entrance.
         StateBehavior *nsb = m_sbManager.next();
-        m_sbManager.requestTransition(nullptr); // Clear pending
+        m_sbManager.requestTransition(nullptr);
         m_sbManager.execute(nsb, true, m_comApi);
     }
-}
-
-void Communicator::sendRealtimeCommand(int command)
-{
-    QByteArray data;
-    data.append(char(command));
-    m_connection->sendByteArray(data);
 }
 
 void Communicator::sendCommands(CommandSource source, QString commands, int tableIndex)
 {
     sendCommands(source, commands.split("\n"), tableIndex);
-
 }
 
 void Communicator::sendCommands(CommandSource source, QStringList commands, int tableIndex)
@@ -240,83 +225,25 @@ void Communicator::sendCommands(CommandSource source, QStringList commands, int 
     }
 }
 
-// bool Communicator::streamCommands(GCode &streamer)
-// {
-//     // if (cannot be streamed) {
-//     //     return false;
-//     // }
-
-//     m_streamer = &streamer;
-//     //startStreaming();
-
-//     return true;
-// }
-
 void Communicator::clearCommandsAndQueue()
 {
-    qDebug() << "[Communicator] Clearing commands";
-    m_commands.clear();
-    clearQueue();
+    m_commandBuffer->clear();
 }
 
 void Communicator::clearQueue()
 {
-    qDebug() << "[Communicator] Clearing queue";
-    m_queue.clear();
+    m_commandBuffer->clearQueue();
 }
 
 void Communicator::reset()
 {
     assert(m_sbManager.current() != nullptr);
-
-    //m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
     m_sbManager.current()->reset();
-
-//     assert(m_connection != nullptr);
-
-//     qDebug() << "[Communicator] Resetting";
-
-//     m_connection->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
-
-//     resetStateVariables();
-
-//     setSenderStateAndEmitSignal(SenderState::Stopped);
-//     setDeviceStateAndEmitSignal(DeviceState::Unknown);
-//     // in main form
-//     //m_fileCommandIndex = 0;
-
-//     m_reseting = true;
-//     m_homing = false;
-//     m_resetCompleted = false;
-//     // in main form
-// //    m_updateSpindleSpeed = true;
-//     m_statusReceived = true;
-
-//     // Drop all remaining commands in buffer
-//     clearCommandsAndQueue();
-//     // m_commands.clear();
-//     // m_queue.clear();
-
-//     // Prepare reset response catch
-//     QString command = "[CTRL+X]";
-//     CommandAttributes commandAttributes(
-//         CommandSource::System,
-//         m_commandIndex++,
-//         TABLE_INDEX_UI, // why UI ??
-//         command
-//     );
-//     m_commands.append(commandAttributes);
-
-//     if (m_streamer != nullptr) {
-//         m_streamer->reset();
-//     }
-//     m_updateSpindleSpeed = true;
 }
 
 void Communicator::unlock()
 {
     assert(m_sbManager.current() != nullptr);
-
     m_sbManager.current()->action(Action::Unlock);
 }
 
@@ -336,10 +263,6 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
         return false;
     }
 
-    // disconnect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
-    // disconnect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
-
-    // m_connection->disconnect();
     m_connection = newConnection;
     if (!m_connection) {
         return true;
@@ -363,37 +286,11 @@ StateBehavior *Communicator::sb() const
     return m_sbManager.current();
 }
 
-// bool Communicator::openConnection()
-// {
-//     if (m_connection) {
-//         m_connection->open();
-
-//         return true;
-//     }
-
-//     return false;
-// }
-
 Connection *Communicator::connection()
 {
     return m_connection;
 }
 
-void Communicator::restoreOffsets()
-{
-    // Still have pre-reset working position
-    sendCommand(
-        CommandSource::System,
-        QString("%4G53G90X%1Y%2Z%3").arg(m_machinePos.x()).arg(m_machinePos.y()).arg(m_machinePos.z()).arg(m_machineConfiguration->unitsInches() ? "G20" : "G21"),
-        TABLE_INDEX_UTIL1
-    );
-
-    sendCommand(
-        CommandSource::System,
-        QString("%4G92X%1Y%2Z%3").arg(m_workOffset.x()).arg(m_workOffset.y()).arg(m_workOffset.z()).arg(m_machineConfiguration->unitsInches() ? "G20" : "G21"),
-        TABLE_INDEX_UTIL1
-    );
-}
 
 void Communicator::setSenderStateAndEmitSignal(SenderState state)
 {
@@ -402,7 +299,6 @@ void Communicator::setSenderStateAndEmitSignal(SenderState state)
         emit senderStateChanged(state);
     }
 
-    // make sure state is updated before emitting signal, is it correct?
     emit senderStateReceived(state);
 }
 
@@ -413,48 +309,6 @@ void Communicator::setMachineStateAndEmitSignal(MachineState state)
         emit machineStateChanged(state);
     }
 }
-
-int Communicator::bufferLength()
-{
-    int length = 0;
-
-    foreach (CommandAttributes ca, m_commands) {
-        length += ca.length;
-    }
-
-    return length;
-}
-
-bool Communicator::willOverflowBuffer(QString command)
-{
-    return (bufferLength() + command.length() + 1) > BUFFERLENGTH;
-}
-
-// send commands until buffer is full
-// void Communicator::sendStreamerCommandsUntilBufferIsFull()
-// {
-//     if (m_queue.length() > 0) return;
-
-//     QString command = m_streamer->command();
-//     static QRegularExpression M230("(M0*2|M30|M0*6)(?!\\d)");
-
-//     qDebug() <<
-//         "bufferLength: " << bufferLength() <<
-//         "command.length: " << command.length() <<
-//         "commandIndex: " << m_streamer->commandIndex() <<
-//         "hasMoreCommands: " << m_streamer->hasMoreCommands() <<
-//         "m_commands.isEmpty: " << (!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230));
-
-//     while ((bufferLength() + command.length() + 1) <= BUFFERLENGTH
-//            && m_streamer->hasMoreCommands() /* commandIndex() < m_form->currentModel().rowCount() - 1 */
-//            && !(!m_commands.isEmpty() && GcodePreprocessorUtils::removeComment(m_commands.last().commandLine).contains(M230))
-//     ) {
-//         m_streamer->commandSent();
-//         sendCommand(CommandSource::Program, command, m_streamer->commandIndex());
-//         m_streamer->advanceCommandIndex();
-//         command = m_streamer->command();
-//     }
-// }
 
 bool Communicator::isMachineConfigurationReady() const
 {
@@ -479,7 +333,6 @@ void Communicator::resetGRBLConfiguration()
 void Communicator::home()
 {
     m_sbManager.current()->action(Action::Home);
-    // execute(new HomingBehavior());
 }
 
 bool Communicator::execute(StateBehavior *sb, bool force)
@@ -494,49 +347,9 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
 
 void Communicator::processConnectionTimer()
 {
-    // TODO!!
     processStateBehaviorTransition();
-
-    // if (m_connection == nullptr || !m_connection->isConnected()) {
-    //     return;
-    // }
-
-    // // @TODO what does it do??? not homing, not hold, empty queue, are these the idle state tasks??
-    // // @TODO refactor ui->cmdHold->isChecked, for now we will assume that its value is always false
-    // if (!m_homing /*&& !ui->cmdHold->isChecked()*/ && m_queue.empty()) {
-    //     if (m_updateSpindleSpeed) {
-    //         m_updateSpindleSpeed = false;
-    //         // sendCommand(CommandSource::System, QString("S%1").arg(ui->slbSpindle->value()), COMMAND_TI_UTIL1);
-    //     }
-    //     // if (m_updateParserState) {
-    //     //     m_updateParserState = false;
-    //     //     sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL2, false);
-    //     // }
-    // }
-
 }
 
-// void Communicator::onTimerStateQuery()
-// {
-//     if (!m_connection) {
-//         return;
-//     }
-
-//     // qDebug() << m_connection->isConnected() << m_resetCompleted << m_statusReceived;
-//     if (m_connection->isConnected() && m_resetCompleted) {// && m_statusReceived) {
-//         // this->queryMachineState();
-//         // m_connection->sendByteArray(QByteArray(1, '?'));
-//         m_statusReceived = false;
-//     }
-
-//     // @todo find some other way to update buffer state
-//     //ui->glwVisualizer->setBufferState(QString(tr("Buffer: %1 / %2 / %3")).arg(bufferLength()).arg(m_commands.length()).arg(m_queue.length()));
-// }
-
-bool Communicator::compareCoordinates(double x, double y, double z)
-{
-    return m_machinePos.x() == x && m_machinePos.y() == y && m_machinePos.z() == z;
-}
 
 double Communicator::toMetric(double value)
 {
@@ -550,8 +363,6 @@ double Communicator::toInches(double value)
 
 void Communicator::storeParserState()
 {
-    // Remove GC:, Gx Mx, Fx, Sx ??
-    // @TODO do it better
     m_storedParserState = m_lastParserState.remove(QRegularExpression("GC:|\\[|\\]|G[01234]\\s|M[0345]+\\s|\\sF[\\d\\.]+|\\sS[\\d\\.]+"));
 }
 
@@ -564,39 +375,14 @@ void Communicator::restoreParserState()
 
 void Communicator::completeTransfer()
 {
-    // // Shadow last segment
-    // GcodeViewParse *parser = m_currentDrawer->viewParser();
-    // QList<LineSegment*> list = parser->getLineSegmentList();
-    // if (m_lastDrawnLineIndex < list.count()) {
-    //     list[m_lastDrawnLineIndex]->setDrawn(true);
-    //     m_currentDrawer->update(QList<int>() << m_lastDrawnLineIndex);
-    // }
-
-    // Update state
     setSenderStateAndEmitSignal(SenderState::Stopped);
     m_streamer->resetProcessed();
-    //m_lastDrawnLineIndex = 0;
     m_storedParserState.clear();
 
-    // updateControlsState();
-
-    // Send end commands
     if (m_configuration->senderModule().useProgramEndCommands())
         sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration->senderModule().programEndCommands());
 
     emit transferCompleted();
-
-    // Show message box
-    //qApp->beep();
-
-    // stopUpdatingState();
-    // m_timerConnection.stop();
-
-    // QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
-    //                                                                    .arg(ui->glwVisualizer->spendTime().toString("hh:mm:ss")));
-
-    // m_timerConnection.start();
-    // startUpdatingState(m_settings->queryStateTime());
 }
 
 void Communicator::onConnectionError(QString message)
@@ -612,25 +398,18 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
         m_lastAlarmCode = 0;
     }
 
-
-    // if (state == ConnectionState::Connected) {
-    //     reset();
-    // }
     m_sbManager.current()->onConnectionStateChanged(state);
-    // processStateBehaviorTransition();
 }
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
 {
     qDebug() << "[Communicator] State transition requested from " << sb->description() << " to " << nsb->description();
     m_sbManager.requestTransition(nsb);
-    //execute(nsb, true);
 }
 
 void Communicator::onStateError(StateBehavior *sb, QString message)
 {
     qDebug() << "[Communicator] State error: " << message;
-    // execute(new StateError(sb, message));
 }
 
 void Communicator::startQueryingMachineState()

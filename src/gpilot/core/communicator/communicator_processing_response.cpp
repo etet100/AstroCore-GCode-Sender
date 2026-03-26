@@ -1,6 +1,15 @@
 
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
+
+static bool dataIsReset(const QString& data)
+{
+    static QRegularExpression re(
+        "^(GRBL|GCARVIN)\\s\\d\\.\\d.",
+        QRegularExpression::CaseInsensitiveOption
+    );
+    return re.match(data).hasMatch();
+}
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include "core/machine/physicalmachineconfigurationparser.h"
 #include "statusreportprocessor.h"
@@ -73,8 +82,10 @@ void Communicator::onConnectionLineReceived(QString data)
         }
     }
 
-    if (m_commands.length() > 0 && !dataIsFloating(data) && !(m_commands[0].commandLine != "[CTRL+X]" && dataIsReset(data))) {
-        if (processCommandResponse(data)) {
+    if (!m_commandBuffer->isEmpty() && !dataIsFloating(data)
+        && !(m_commandBuffer->commands()[0].commandLine != "[CTRL+X]" && dataIsReset(data)))
+    {
+        if (m_commandBuffer->processResponse(data)) {
             processStateBehaviorTransition();
 
             return;
@@ -154,94 +165,6 @@ void Communicator::processOverrides(QString line)
     }
 }
 
-void Communicator::processNewToolPosition()
-{
-    QVector3D toolPosition;
-    if (!(m_machineState == MachineState::Check && !m_streamer->isLastCommandProcessed())) {
-        toolPosition = m_machinePos;
-
-        emit toolPositionReceived(toolPosition);
-    }
-}
-
-void Communicator::processMachinePosition(QString line)
-{
-    static QRegularExpression mpx("([^,]*),([^,]*),([^,^>^|]*)");
-
-    // qDebug() << "[Communicator] Processing machine position from line:" << line;
-
-    QRegularExpressionMatch match = mpx.match(line);
-    if (match.hasMatch()) {
-        QVector3D newPos(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-        if (newPos != m_machinePos) {
-            m_machinePos = newPos;
-            m_storedVars.setCoords("M", newPos);
-            emit machinePosChanged(newPos);
-        }
-    }
-}
-
-// WPos (work position), unlike WCO (Work Coordinate Offset) is an absolute value
-// not relative to machine pos, this must be considered when calculating
-// work position and possible offset
-void Communicator::processWorkPosition(QString line)
-{
-    static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
-
-    QRegularExpressionMatch match = wpx.match(line);
-    if (match.hasMatch()) {
-        QVector3D workPos = QVector3D(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-
-        QVector3D workOffset = QVector3D(
-            m_machinePos.x() - workPos.x(),
-            m_machinePos.y() - workPos.y(),
-            m_machinePos.z() - workPos.z()
-        );
-
-        if (workOffset != m_workOffset) {
-            m_workOffset = workOffset;
-            m_storedVars.setCoords("W", m_workOffset);
-        }
-    }
-}
-
-void Communicator::processWorkOffset(QString line)
-{
-    static QRegularExpression wpx("([^,]*),([^,]*),([^,^>^|]*)");
-    bool changed = false;
-
-    // qDebug() << "[Communicator] Processing work offset from line:" << line;
-
-    QRegularExpressionMatch match = wpx.match(line);
-    if (match.hasMatch()) {
-        QVector3D workOffset = QVector3D(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-        changed = workOffset != m_workOffset;
-        m_workOffset = workOffset;
-    }
-
-    // Update work coordinates
-    // QVector3D pos(
-    //     m_machinePos.x() - workOffset.x(),
-    //     m_machinePos.y() - workOffset.y(),
-    //     m_machinePos.z() - workOffset.z()
-    // );
-
-    if (changed) {
-        m_storedVars.setCoords("W", m_workOffset);
-    }
-}
 
 void Communicator::processStatus(QString line)
 {
@@ -279,11 +202,11 @@ void Communicator::processStatus(QString line)
     for (QString &section : sections) {
         line = section;
         if (line.startsWith("MPos:")) {
-            processMachinePosition(line.remove(0, 5));
+            m_posTracker->processMachinePosition(line.remove(0, 5));
         } else if (line.startsWith("WPos:")) {
-            processWorkPosition(line.remove(0, 5));
+            m_posTracker->processWorkPosition(line.remove(0, 5));
         } else if (line.startsWith("WCO:")) {
-            processWorkOffset(line.remove(0, 4));
+            m_posTracker->processWorkOffset(line.remove(0, 4));
         } else if (line.startsWith("Ov:")) {
             processOverrides(line.remove(0, 3));
         } else if (line.startsWith("FS:")) {
@@ -302,15 +225,12 @@ void Communicator::processStatus(QString line)
         }
     }
 
-    emit workPosChanged(m_machinePos - m_workOffset);
+    emit workPosChanged(m_posTracker->workPos());
 
-    // processMachinePosition(line);
-    // processWorkOffset(line);
-    // processOverrides(line);
-    // processFeedSpindleSpeed(line);
-    // processBuffersStatus(line);
-
-    processNewToolPosition();
+    m_posTracker->processNewToolPosition(
+        m_machineState == MachineState::Check,
+        m_streamer ? m_streamer->isLastCommandProcessed() : true
+    );
 
     // Emit status signal
     emit statusReceived(line);
@@ -409,20 +329,20 @@ void Communicator::processMachineState(QString stateStr)
                 if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
                     m_aborting = false;
                     restoreParserState();
-                    restoreOffsets();
+                    m_posTracker->restoreOffsets(m_machineConfiguration);
                     return;
                 }
                 break;
             case MachineState::Hold0: // Hold
             case MachineState::Hold1:
             case MachineState::Queue:
-                if (!m_reseting && compareCoordinates(x, y, z)) {
+                if (!m_reseting && m_posTracker->compareCoordinates(x, y, z)) {
                     x = sNan;
                     y = sNan;
                     z = sNan;
                     reset();
                 } else {
-                    const QVector3D pos = m_machinePos;
+                    const QVector3D pos = m_posTracker->machinePos();
                     x = pos.x();
                     y = pos.y();
                     z = pos.z();
@@ -498,7 +418,7 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
     QRegularExpressionMatch match = g.match(response);
     if (match.hasMatch()) {
-        m_storedVars.setCS(match.captured(0));
+        m_posTracker->scriptVars().setCS(match.captured(0));
         // @TODO how to update drawer? signal? timer?
         // m_form->machineBoundsDrawer().setOffset(
         //     QPointF(
@@ -515,7 +435,7 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
     match = t.match(response);
     if (match.hasMatch()) {
-        m_storedVars.setTool(match.captured(1).toInt());
+        m_posTracker->scriptVars().setTool(match.captured(1).toInt());
     }
 
     // TODO: Store firmware version, features, buffer size on $I command
@@ -557,13 +477,15 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
     }
 }
 
+// processCommandResponse was moved to CommandBuffer::processResponse()
+
+#if 0
 bool Communicator::processCommandResponse(QString data)
 {
     bool result = false;
 
-    // @TODO why static?? what is this for???
-    static QString response; // Full response string
-    static QStringList lines; // Response lines
+    static QString response;
+    static QStringList lines;
 
     // qDebug() << "< CMD <" << data;
 
@@ -884,6 +806,7 @@ bool Communicator::processCommandResponse(QString data)
 
     return result;
 }
+#endif
 
 void Communicator::processUnhandledResponse(QString data)
 {
@@ -956,41 +879,5 @@ void Communicator::processAlarm(QString data)
 // Save offset to be used when calculating work coordinates
 void Communicator::processOffsetsVars(QStringList response)
 {
-    for (auto &line : response) {
-        if (line.startsWith('[') && line.endsWith(']')) {
-            line = line.mid(1, line.length() - 2);
-        } else {
-            qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
-            assert(false);
-
-            return;
-        }
-
-        QStringList parts = line.split(":");
-        if (parts.size() != 2 && parts[0] != "PRB") {
-            qDebug() << "[Communicator] Something is wrong with offsets response " << line << response;
-            assert(false);
-
-            return;
-        }
-
-        QStringList axes = parts[1].split(",");
-        QVector3D pos = QVector3D(
-            axes.size() == 3 ? axes[0].toDouble() : 0,
-            axes.size() == 3 ? axes[1].toDouble() : 0,
-            axes.size() == 3 ? axes[2].toDouble() : axes[0].toDouble()
-        );
-
-        if (parts[0] == "G92") {
-            qDebug() << "[Communicator] G92 offset updated";
-            m_workOffset = pos;
-        }
-
-        m_storedVars.setCoords(
-            parts[0],
-            pos
-        );
-    }
-
-    qDebug() << "[Communicator] Offsets updated";
+    m_posTracker->processOffsetsVars(response);
 }

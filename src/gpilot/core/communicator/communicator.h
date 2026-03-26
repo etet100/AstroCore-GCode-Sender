@@ -5,13 +5,14 @@
 #include "core/gcode/gcode.h"
 #include "core/config/configuration.h"
 #include "io/connection/connection.h"
-#include "core/scripting/scriptvars.h"
 #include "core/machine/physicalmachineconfiguration.h"
+#include "positiontracker.h"
 #include "core/jogger/jogger.h"
 #include "core/state_behavior/statebehavior.h"
 #include "statebehaviormanager.h"
 #include "machinestatus.h"
 #include "overrides.h"
+#include "commandbuffer.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -59,7 +60,8 @@ class Communicator : public QObject
         const SenderState& senderState() const { return m_senderState; }
         const MachineState& machineState() const { return m_machineState; }
         PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
-        QVector3D machinePos() const { return m_machinePos; }
+        QVector3D machinePos() const { return m_posTracker->machinePos(); }
+        PositionTracker* positionTracker() { return m_posTracker; }
         // void sendStreamerCommandsUntilBufferIsFull();
         bool isMachineConfigurationReady() const;
         bool isSenderState(SenderState state) const;
@@ -73,38 +75,30 @@ class Communicator : public QObject
         void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
         Overrides* overrides() { return m_overrides; }
+        CommandBuffer* commandBuffer() { return m_commandBuffer; }
         void queryMachineState();
         void queryMachineConfiguration();
         void processStateBehaviorTransition();
 
         StateBehavior* stateBehavior() const { return m_sbManager.current(); }
     private:
-        static const int BUFFERLENGTH = 127;
-
-        Connection *m_connection = nullptr;;
+        Connection *m_connection = nullptr;
         Configuration *m_configuration;
         GCode *m_streamer = nullptr;
         PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
         Jogger m_jogger;
         Overrides *m_overrides = nullptr;
+        CommandBuffer *m_commandBuffer = nullptr;
         CommunicatorApi *m_comApi;
-
-        // Queues
-        QList<CommandAttributes> m_commands;
-        QList<CommandQueue> m_queue;
 
         // States
         SenderState m_senderState;
         MachineState m_machineState;
         StateBehaviorManager m_sbManager;
 
-        ScriptVars m_storedVars;
-
         QTimer m_startTime;
 
-        // Coordinates
-        QVector3D m_machinePos;
-        QVector3D m_workOffset;
+        PositionTracker* m_posTracker = nullptr;
 
         // Flags
         bool m_reseting;
@@ -115,10 +109,6 @@ class Communicator : public QObject
         bool m_spindleCW; // Spindle is rotating clockwise
         bool m_updateSpindleSpeed;
         bool m_updateParserState;
-
-        // Indices
-        // int m_probeIndex;
-        int m_commandIndex = 0;
 
         // Stored parser params
         QString m_lastParserState; // response to $G
@@ -136,30 +126,20 @@ class Communicator : public QObject
         bool execute(StateBehavior *statebehavior, bool force = false);
         void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
-        void restoreOffsets();
-        int bufferLength();
         void processOffsetsVars(QStringList response);
         static bool dataIsFloating(QString data);
-        static bool dataIsEnd(QString data);
-        static bool dataIsReset(QString data);
-        bool compareCoordinates(double x, double y, double z);
         double toMetric(double value);
         double toInches(double value);
         void processStatus(QString line);
-        bool processCommandResponse(QString data);
         void processUnhandledResponse(QString data);
         void processMessage(QString data);
         void processAlarm(QString data);
         void processFeedSpindleSpeed(QString line);
         void processBuffersStatus(QString line);
         void processOverrides(QString line);
-        void processWorkOffset(QString line);
-        void processMachinePosition(QString line);
-        void processWorkPosition(QString line);
         void processMachineState(QString state);
         void processPinsState(QString line);
         void processSpindleState(QString line);
-        void processNewToolPosition();
         void processWelcomeMessageDetected(QString message);
         void storeParserState();
         void restoreParserState();
@@ -168,9 +148,9 @@ class Communicator : public QObject
         void processDeviceConfiguration(QStringList response);
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
         bool finalizeExecute(StateBehavior *sb);
-        bool willOverflowBuffer(QString command);
         void startQueryingMachineState();
         void stopQueryingMachineState();
+        void onCommandBufferCompleted(CommandAttributes attributes, CmdStatus status, QStringList lines);
 
     private slots:
         // void onTimerStateQuery();
@@ -246,14 +226,14 @@ class CommunicatorApi : public QObject
         void sendRealtimeCommand(QString command) { m_communicator->sendRealtimeCommand(command); }
         void sendRealtimeCommand(int command) { m_communicator->sendRealtimeCommand(command); }
 
-        // Buffers
-        void clearQueue() { m_communicator->clearQueue(); }
-        void clearCommandsAndQueue() { m_communicator->clearCommandsAndQueue(); }
-        bool willOverflowBuffer(QString command) { return m_communicator->willOverflowBuffer(command); }
-        bool isCommandBufferEmpty() { return m_communicator->m_commands.isEmpty(); }
-        bool isQueueEmpty() { return m_communicator->m_queue.isEmpty(); }
-        QList<CommandAttributes>& commands() { return m_communicator->m_commands; }
-        int bufferLength() { return m_communicator->bufferLength(); }
+        // Buffers — delegated to CommandBuffer
+        void clearQueue() { m_communicator->commandBuffer()->clearQueue(); }
+        void clearCommandsAndQueue() { m_communicator->commandBuffer()->clear(); }
+        bool willOverflowBuffer(QString command) { return m_communicator->commandBuffer()->willOverflow(command); }
+        bool isCommandBufferEmpty() { return m_communicator->commandBuffer()->isEmpty(); }
+        bool isQueueEmpty() { return m_communicator->commandBuffer()->isQueueEmpty(); }
+        QList<CommandAttributes>& commands() { return m_communicator->commandBuffer()->commands(); }
+        int bufferLength() { return m_communicator->commandBuffer()->bufferLength(); }
 
     private:
         Communicator *m_communicator = nullptr;
