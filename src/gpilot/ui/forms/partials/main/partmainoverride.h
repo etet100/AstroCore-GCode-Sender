@@ -18,18 +18,9 @@ class PartMainOverride : public QWidget
 
         void applyConfiguration(ConfigurationMachine &machineConfiguration);
 
-        // Is it correct? No override means go 100%?
-        static constexpr double NO_OVERRIDE = 100;
-
         void setCurrentRapid(int);
         void setCurrentFeed(int);
         void setCurrentSpindle(int);
-        int targetFeed();
-        int targetRapid();
-        int targetSpindle();
-        bool feedOverridden();
-        bool rapidOverridden();
-        bool spindleOverridden();
 
     signals:
         void overrideChanged(
@@ -52,6 +43,7 @@ class PartMainOverride : public QWidget
         void onValueChanged();
 
     private:
+        static constexpr double NO_OVERRIDE = 100;
         Ui::partMainOverride *ui;
 
         void emitOverrideChanged();

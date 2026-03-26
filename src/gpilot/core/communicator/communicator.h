@@ -11,6 +11,7 @@
 #include "core/state_behavior/statebehavior.h"
 #include "statebehaviormanager.h"
 #include "machinestatus.h"
+#include "overrides.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -71,6 +72,7 @@ class Communicator : public QObject
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
+        Overrides* overrides() { return m_overrides; }
         void queryMachineState();
         void queryMachineConfiguration();
         void processStateBehaviorTransition();
@@ -84,6 +86,7 @@ class Communicator : public QObject
         GCode *m_streamer = nullptr;
         PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
         Jogger m_jogger;
+        Overrides *m_overrides = nullptr;
         CommunicatorApi *m_comApi;
 
         // Queues

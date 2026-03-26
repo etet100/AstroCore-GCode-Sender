@@ -154,7 +154,6 @@ private slots:
     void onPinStateReceived(PinState state);
     void onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed);
     void onSpindleSpeedReceived(int spindleSpeed);
-    void onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride);
     void onAborted();
     void onResponseReceived(QString command, int tableIndex, QString response);
     void onCommandResponseReceived(CommandAttributes commandAttributes);
@@ -174,7 +173,6 @@ private slots:
     void programEditLines(int from, int to);
     void onTableCellChanged(QModelIndex i1, QModelIndex i2);
     void onTableCurrentChanged(QModelIndex idx1, QModelIndex idx2);
-    void onOverrideChanged(bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle);
     void onActRecentFileTriggered();
     // void onActSendFromLineTriggered();
     void onSlbSpindleValueUserChanged();

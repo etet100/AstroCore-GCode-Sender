@@ -73,36 +73,6 @@ void PartMainOverride::setCurrentSpindle(int value)
     ui->slbSpindle->setCurrentValue(value);
 }
 
-int PartMainOverride::targetFeed()
-{
-    return ui->slbFeed->isChecked() ? ui->slbFeed->value() : NO_OVERRIDE;
-}
-
-int PartMainOverride::targetRapid()
-{
-    return ui->slbRapid->isChecked() ? ui->slbRapid->value() : NO_OVERRIDE;
-}
-
-int PartMainOverride::targetSpindle()
-{
-    return ui->slbSpindle->isChecked() ? ui->slbSpindle->value() : NO_OVERRIDE;
-}
-
-bool PartMainOverride::feedOverridden()
-{
-    return ui->slbFeed->isChecked();
-}
-
-bool PartMainOverride::rapidOverridden()
-{
-    return ui->slbRapid->isChecked();
-}
-
-bool PartMainOverride::spindleOverridden()
-{
-    return ui->slbSpindle->isChecked();
-}
-
 void PartMainOverride::onFeedPlusTriggered()
 {
     ui->slbFeed->setSliderPosition(ui->slbFeed->sliderPosition() + 1);

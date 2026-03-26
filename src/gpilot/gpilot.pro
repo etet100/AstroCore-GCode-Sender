@@ -88,6 +88,7 @@ CONFIG -= qml_debug
 SOURCES += main.cpp\
     core/communicator/communicator.cpp \
     core/communicator/communicator_processing_response.cpp \
+    core/communicator/overrides.cpp \
     core/communicator/communicator_utils.cpp \
     core/communicator/statebehaviorgarbagecollector.cpp \
     core/communicator/statebehaviormanager.cpp \
@@ -256,6 +257,7 @@ SOURCES += main.cpp\
 
 HEADERS  += ui/forms/frmmain.h \
     core/communicator/communicator.h \
+    core/communicator/overrides.h \
     core/communicator/machinestatus.h \
     core/communicator/statebehaviorgarbagecollector.h \
     core/communicator/statebehaviormanager.h \

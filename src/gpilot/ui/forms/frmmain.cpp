@@ -257,7 +257,11 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         ui->visualizer->updateHeightmap();
     });
 
-    connect(ui->overrides, &PartMainOverride::overrideChanged, this, &FrmMain::onOverrideChanged);
+    connect(ui->overrides, &PartMainOverride::overrideChanged, this, [this](bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle) {
+        m_communicator->overrides()->setTargets(feedOverridden, (int)feed, rapidOverridden, (int)rapid, spindleOverridden, (int)spindle);
+        ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
+        Utils::refreshStyle(ui->grpOverriding);
+    });
 
     // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
     // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
@@ -469,7 +473,11 @@ void FrmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::spindleSpeedReceived, this, &FrmMain::onSpindleSpeedReceived);
     // connect(m_communicator, &Communicator::commandProcessed, this, &FrmMain::onCommandProcessed);
     connect(m_communicator, SIGNAL(feedSpindleSpeedReceived(int,int)), this, SLOT(onFeedSpindleSpeedReceived(int,int)));
-    connect(m_communicator, &Communicator::overridesReceived, this, &FrmMain::onOverridesReceived);
+    connect(m_communicator->overrides(), &Overrides::currentValuesChanged, this, [this](int feed, int spindle, int rapid) {
+        ui->overrides->setCurrentFeed(feed);
+        ui->overrides->setCurrentSpindle(spindle);
+        ui->overrides->setCurrentRapid(rapid);
+    });
     connect(m_communicator, &Communicator::toolPositionReceived, this, &FrmMain::onToolPositionReceived);
     connect(m_communicator, &Communicator::transferCompleted, this, &FrmMain::onTransferCompleted);
     connect(m_communicator, &Communicator::aborted, this, &FrmMain::onAborted);
@@ -1228,11 +1236,11 @@ void FrmMain::on_grpOverriding_toggled(bool checked)
 {
     if (checked) {
         ui->grpOverriding->setTitle(tr("Overriding"));
-    } else if (ui->overrides->feedOverridden() | ui->overrides->rapidOverridden() | ui->overrides->spindleOverridden()) {
+    } else if (m_communicator->overrides()->isFeedOverridden() | m_communicator->overrides()->isRapidOverridden() | m_communicator->overrides()->isSpindleOverridden()) {
         ui->grpOverriding->setTitle(tr("Overriding") + QString(tr(" (%1/%2/%3)"))
-               .arg(ui->overrides->feedOverridden() ? QString::number(ui->overrides->targetFeed()) : "-")
-               .arg(ui->overrides->rapidOverridden() ? QString::number(ui->overrides->targetRapid()) : "-")
-               .arg(ui->overrides->spindleOverridden() ? QString::number(ui->overrides->targetSpindle()) : "-"));
+               .arg(m_communicator->overrides()->isFeedOverridden() ? QString::number(m_communicator->overrides()->targetFeed()) : "-")
+               .arg(m_communicator->overrides()->isRapidOverridden() ? QString::number(m_communicator->overrides()->targetRapid()) : "-")
+               .arg(m_communicator->overrides()->isSpindleOverridden() ? QString::number(m_communicator->overrides()->targetSpindle()) : "-"));
     }
     updateLayouts();
 
@@ -1763,55 +1771,6 @@ void FrmMain::onSpindleSpeedReceived(int spindleSpeed)
 }
 
 // https://github.com/gnea/grbl/blob/master/doc/markdown/commands.md
-void FrmMain::onOverridesReceived(int feedOverride, int spindleOverride, int rapidOverride)
-{
-    ui->overrides->setCurrentFeed(feedOverride);
-    ui->overrides->setCurrentSpindle(spindleOverride);
-
-    auto sendOverrideCommand = [this](int current, int target, char fullRate,
-                                      char decrease10, char decrease1,
-                                      char increase10, char increase1) {
-        if (current == target) {
-           return;
-        }
-        if (target == 100) {
-            m_communicator->sendRealtimeCommand(fullRate);
-        } else {
-            int diff = abs(target - current);
-            char cmd = (target < current)
-                ? (diff >= 10 ? decrease10 : decrease1)
-                : (diff >= 10 ? increase10 : increase1);
-            m_communicator->sendRealtimeCommand(cmd);
-        }
-    };
-
-    sendOverrideCommand(feedOverride, ui->overrides->targetFeed(),
-                        GRBL_LIVE_FEED_FULL_RATE,
-                        GRBL_LIVE_FEED_DECREASE_10, GRBL_LIVE_FEED_DECREASE_1,
-                        GRBL_LIVE_FEED_INCREASE_10, GRBL_LIVE_FEED_INCREASE_1);
-
-    sendOverrideCommand(spindleOverride, ui->overrides->targetSpindle(),
-                        GRBL_LIVE_SPINDLE_FULL_SPEED,
-                        GRBL_LIVE_SPINDLE_DECREASE_10, GRBL_LIVE_SPINDLE_DECREASE_1,
-                        GRBL_LIVE_SPINDLE_INCREASE_10, GRBL_LIVE_SPINDLE_INCREASE_1);
-
-    // Rapid
-    ui->overrides->setCurrentRapid(rapidOverride);
-    int target = ui->overrides->targetRapid();
-    if (rapidOverride != target) {
-        switch (target) {
-            case 25:
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_QUARTER_RATE);
-                break;
-            case 50:
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_HALF_RATE);
-                break;
-            case 100:
-                m_communicator->sendRealtimeCommand(GRBL_LIVE_RAPID_FULL_RATE);
-                break;
-        }
-    }
-}
 
 void FrmMain::onAborted()
 {
@@ -2005,16 +1964,6 @@ void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previo
     ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row());
 }
 
-// To be checked later, do we use this property?
-void FrmMain::onOverrideChanged(bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle)
-{
-    Q_UNUSED(feed)
-    Q_UNUSED(rapid)
-    Q_UNUSED(spindle)
-
-    ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
-    Utils::refreshStyle(ui->grpOverriding);
-}
 
 void FrmMain::onActRecentFileTriggered()
 {
@@ -2697,8 +2646,8 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 
     m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),
-        ui->overrides->targetFeed(),
-        ui->overrides->targetRapid()
+        m_communicator->overrides()->targetFeed(),
+        m_communicator->overrides()->targetRapid()
     );
     ui->visualizer->setTimeEstimation(m_timeEstimator);
 
@@ -2742,8 +2691,8 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // Calculate initial time estimation
     m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),
-        ui->overrides->targetFeed(),
-        ui->overrides->targetRapid()
+        m_communicator->overrides()->targetFeed(),
+        m_communicator->overrides()->targetRapid()
     );
     ui->visualizer->setTimeEstimation(m_timeEstimator);
 

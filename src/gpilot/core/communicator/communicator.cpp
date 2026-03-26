@@ -1,4 +1,5 @@
 #include "communicator.h"
+#include "overrides.h"
 #include <QVector3D>
 #include <QDebug>
 #include <QCheckBox>
@@ -44,6 +45,7 @@ Communicator::Communicator(
     m_statusReceived = false;
     m_spindleCW = true;
     m_comApi = new CommunicatorApi(this);
+    m_overrides = new Overrides(this);
 
     m_sbManager.execute(new InitializationBehavior(), false, m_comApi);
 
