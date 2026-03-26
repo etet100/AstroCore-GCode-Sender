@@ -1002,12 +1002,12 @@ void FrmMain::increaseUiScale()
 
 void FrmMain::onFileOpen(QString filePath)
 {
-    if (!m_communicator->isMachineConfigurationReady()) {
-        qWarning() << "[FrmMain] Machine configuration is not ready";
-        ui->console->append("Machine configuration is not ready. Cannot open file.");
+    // if (!m_communicator->isMachineConfigurationReady()) {
+    //     qWarning() << "[FrmMain] Machine configuration is not ready";
+    //     ui->console->append("Machine configuration is not ready. Cannot open file.");
 
-        return;
-    }
+    //     return;
+    // }
 
     if (!m_heightmapMode) {
         if (!saveChanges(false)) return;

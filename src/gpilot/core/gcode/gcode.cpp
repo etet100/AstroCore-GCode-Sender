@@ -59,6 +59,12 @@ bool GCode::noMoreCommands()
     return m_commandIndex > m_data.count() - 1;
 }
 
+/*
+ * Returns true if m_commandIndex is less or equal to the last item index
+ * and there are items in the list, false otherwise
+ *
+ * If true, command can be safe accessed by command() method
+ */
 bool GCode::hasMoreCommands()
 {
     return !m_data.empty() && m_commandIndex <= m_data.count() - 1;

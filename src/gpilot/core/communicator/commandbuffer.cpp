@@ -21,6 +21,7 @@ static bool dataIsReset(const QString& data)
         "^(GRBL|GCARVIN)\\s\\d\\.\\d.",
         QRegularExpression::CaseInsensitiveOption
     );
+
     return re.match(data).hasMatch();
 }
 
@@ -30,6 +31,11 @@ CommandBuffer::CommandBuffer(Connection *connection)
     : QObject(nullptr)
     , m_connection(connection)
 {
+}
+
+void CommandBuffer::setConnection(Connection *connection)
+{
+    m_connection = connection;
 }
 
 void CommandBuffer::setResponseHandler(CommandResponseHandler handler)

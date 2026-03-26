@@ -36,6 +36,7 @@ class CommandBuffer : public QObject
 
 public:
     explicit CommandBuffer(Connection *connection);
+    void setConnection(Connection *connection);
 
     void setResponseHandler(CommandResponseHandler handler);
     void setQueuedCommandSender(QueuedCommandSender sender);

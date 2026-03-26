@@ -4,6 +4,7 @@
 
 #include "jogger.h"
 #include "core/communicator/communicator.h"
+#include "core/scripting/scriptvars.h"
 
 Jogger::Jogger(Communicator &communicator, const ConfigurationJogging &configuration) : m_communicator(communicator), m_configuration(configuration) {
 }
@@ -87,10 +88,12 @@ void Jogger::jogStart(QVector3D vector)
     QVector3D b = m_communicator.machineConfiguration().machineBounds();
     // Current machine coords
     // @TODO use m_communicator storedVars
+    PositionTracker* tracker = m_communicator.positionTracker();
+    ScriptVars& vars = tracker->scriptVars();
     QVector3D m(
-        m_communicator.toMetric(m_communicator.m_storedVars.Mx()),
-        m_communicator.toMetric(m_communicator.m_storedVars.My()),
-        m_communicator.toMetric(m_communicator.m_storedVars.Mz())
+        m_communicator.toMetric(vars.Mx()),
+        m_communicator.toMetric(vars.My()),
+        m_communicator.toMetric(vars.Mz())
     );
     // Distance to bounds
     QVector3D t;

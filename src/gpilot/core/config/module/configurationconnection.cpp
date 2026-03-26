@@ -6,7 +6,7 @@
 
 const QMap<QString,QVariant> DEFAULTS = {
     {"queryStateInterval", 100},
-    {"connectionMode", ConfigurationConnection::ConnectionMode::VIRTUAL_UCNC},
+    {"connectionMode", ConfigurationConnection::ConnectionMode::VIRTUAL_FLUIDNC},
     {"serialPort", ""},
     {"serialBaud", 115200},
     {"rawTcpHost", "localhost"},

@@ -1,4 +1,5 @@
 
+#include <QRegularExpression>
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
 
@@ -8,6 +9,7 @@ static bool dataIsReset(const QString& data)
         "^(GRBL|GCARVIN)\\s\\d\\.\\d.",
         QRegularExpression::CaseInsensitiveOption
     );
+
     return re.match(data).hasMatch();
 }
 #include "core/gcode/parser/gcodepreprocessorutils.h"

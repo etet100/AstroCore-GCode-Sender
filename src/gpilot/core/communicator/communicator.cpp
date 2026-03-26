@@ -264,6 +264,7 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     }
 
     m_connection = newConnection;
+
     if (!m_connection) {
         return true;
     }
@@ -271,6 +272,7 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
     connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
+    m_commandBuffer->setConnection(newConnection);
     emit connectionChanged(m_connection);
 
     return true;

@@ -1018,7 +1018,9 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     // Don't show rotation cube in 2D mode
     if (m_rotationCube && m_mode != ViewMode::View2D) {
         glDisable(GL_DEPTH_TEST);
-        m_cubeDrawer.draw(QRect(0, height() - 100, 100, 100), m_palette);
+        // Use this method to handle high dpi scaling properly, as cube drawer needs to know physical pixels
+        int physicalHeight = height() * devicePixelRatio();
+        m_cubeDrawer.draw(QRect(0, physicalHeight - 100, 100, 100), m_palette);
 
         // viewport was changed by cube drawer
         glViewport(0, 0, this->width(), this->height());
