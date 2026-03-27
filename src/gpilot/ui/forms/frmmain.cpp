@@ -283,7 +283,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->visualizer->initDrawables();
 
     connect(&m_program, &GCode::linesUpdated, this, [this]() {
-        updateParser();
+        // updateParser();
     });
 
     initializeVisualizer();
