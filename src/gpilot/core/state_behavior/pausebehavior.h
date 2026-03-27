@@ -18,6 +18,12 @@ class PauseBehavior : public StateBehavior
             External      // Pause from external source (e.g. hold signal)
         };
 
+        // Action to take when resuming from pause
+        enum class PauseAction {
+            Resume,
+            Abort
+        };
+
         explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
         QString description() override;
         QSet<Action::Type> availableActions() const override {
@@ -27,6 +33,8 @@ class PauseBehavior : public StateBehavior
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
+        // Lets next behavior know whether to resume or stop
+        PauseAction pauseAction() const { return m_action; }
 
     protected:
         QString name() const override { return "Pause"; }
@@ -34,8 +42,9 @@ class PauseBehavior : public StateBehavior
 
     private:
         PauseSource m_source;
-        bool m_resumed = false;
+        PauseAction m_action;
         void resume();
+        void abort();
 };
 
 #endif // PAUSEBEHAVIOR_H

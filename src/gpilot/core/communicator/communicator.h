@@ -234,6 +234,7 @@ class CommunicatorApi : public QObject
         bool willOverflowBuffer(QString command) { return m_communicator->commandBuffer()->willOverflow(command); }
         bool isCommandBufferEmpty() { return m_communicator->commandBuffer()->isEmpty(); }
         bool isQueueEmpty() { return m_communicator->commandBuffer()->isQueueEmpty(); }
+        CommandBuffer* commandBuffer() { return m_communicator->commandBuffer(); }
         QList<CommandAttributes>& commands() { return m_communicator->commandBuffer()->commands(); }
         int bufferLength() { return m_communicator->commandBuffer()->bufferLength(); }
 

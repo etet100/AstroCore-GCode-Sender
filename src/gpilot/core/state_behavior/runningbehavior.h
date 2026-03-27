@@ -15,6 +15,7 @@ class RunningBehavior : public StateBehavior
             Unknown,
             Resuming,
             Running,
+            Pausing,
             NoMoreCommands,
             Aborting,
         };
@@ -41,8 +42,6 @@ class RunningBehavior : public StateBehavior
         int m_feedOverride;
         int m_spindleOverride;
         GCode &m_program;
-        bool m_pause = false;
-
         void sendStreamerCommandsUntilBufferIsFull();
         void pause();
         void abort();

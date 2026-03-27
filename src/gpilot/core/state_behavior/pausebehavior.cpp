@@ -6,7 +6,8 @@
 #include "core/communicator/communicator.h"
 #include "pausebehavior.h"
 #include "runningbehavior.h"
-#include "joggingbehavior.h"
+#include "alarmbehavior.h"
+#include "idlebehavior.h"
 
 PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
     : StateBehavior{parent}
@@ -16,9 +17,14 @@ PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
 
 bool PauseBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::PauseResume) {
-        resume();
-        return true;
+    switch (action.type()) {
+        case Action::Type::PauseResume:
+            resume();
+            return true;
+
+        case Action::Type::Stop:
+            abort();
+            return true;
     }
 
     return StateBehavior::doAction(action);
@@ -48,8 +54,6 @@ StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, Stat
     qDebug() << "[Behavior][Pause] Entry";
     StateBehavior::onEntry(communicator, previous);
 
-    // if previous = RunningBehavio
-
     // Perform different actions based on pause source
     switch (m_source) {
         case PauseSource::Program:
@@ -62,6 +66,8 @@ StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, Stat
         default:
             break;
     }
+
+    communicator->startQueryingMachineState();
 
     return StateBehavior::Result::Ok;
 }
@@ -95,6 +101,11 @@ void PauseBehavior::onMachineStateChanged(MachineState state)
                 }
                 break;
         }
+    } else if (state == MachineState::Alarm) {
+        // Transition to Alarm state
+        emit transition(this, new AlarmBehavior());
+    } else if (state == MachineState::Idle) {
+        emit transition(this, new IdleBehavior());
     }
 }
 
@@ -107,9 +118,16 @@ void PauseBehavior::resume()
 {
     qDebug() << "[Behavior][Pause] Resuming";
 
+    m_action = PauseAction::Resume;
+
     emit transition(this, this->previous());
-//     // Send resume (cycle start) command to the controller
-//     if (m_communicator) {
-//         m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
-//     }
+}
+
+void PauseBehavior::abort()
+{
+    qDebug() << "[Behavior][Pause] Aborting";
+
+    m_action = PauseAction::Abort;
+
+    emit transition(this, this->previous());
 }

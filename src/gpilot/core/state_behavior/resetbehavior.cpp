@@ -43,7 +43,7 @@ StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, Stat
     communicator->clearCommandsAndQueue();
 
     qDebug() << "[Behavior][Reset] Soft reset";
-    communicator->connection()->sendByteArray(QByteArray(1, GRBL_LIVE_SOFT_RESET));
+    communicator->sendRealtimeCommand(GRBL_LIVE_SOFT_RESET);
     setTimeout(100, [this]() {
         qWarning() << "[Behavior][Reset] Timeout: no response after reset.";
         if (m_stage == SentReset) {
