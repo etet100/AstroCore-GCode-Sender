@@ -54,6 +54,7 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
                     case GCodeItem::Error: return tr("Error");
                     case GCodeItem::Skipped: return tr("Skipped");
                     case GCodeItem::Comment: return tr("Comment");
+                    case GCodeItem::Aborted: return tr("Aborted");
                 }
                 return tr("Unknown");
             case GCodeTableColumn::Response: return item.response;

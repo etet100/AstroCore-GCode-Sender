@@ -63,6 +63,7 @@ bool HeightmapTableModel::insertRow(int row, const QModelIndex &parent)
     Q_UNUSED(parent)
 
     m_data.insert(row, QVector<double>());
+
     return true;
 }
 
@@ -71,6 +72,7 @@ bool HeightmapTableModel::removeRow(int row, const QModelIndex &parent)
     Q_UNUSED(parent)
 
     m_data.remove(row);
+
     return true;
 }
 
@@ -104,6 +106,7 @@ QVariant HeightmapTableModel::headerData(int section, Qt::Orientation orientatio
 Qt::ItemFlags HeightmapTableModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid()) return Qt::NoItemFlags;
+
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
 

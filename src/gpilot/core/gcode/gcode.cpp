@@ -123,6 +123,13 @@ void GCode::setCommandResponse(int commandIndex, bool success, QString response)
     addUpdatedRange(commandIndex);
 }
 
+void GCode::setCommandAborted(int commandIndex)
+{
+    GCodeItem& item = m_data[commandIndex];
+    item.state = GCodeItem::Aborted;
+    addUpdatedRange(commandIndex);
+}
+
 void GCode::setCommandSkipped()
 {
     GCodeItem& item = m_data[m_commandIndex];
