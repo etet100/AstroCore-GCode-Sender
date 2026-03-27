@@ -10,7 +10,7 @@ class GCodeLoaderWorker : public QThread
 
     public:
         enum class Source {
-            File,
+            File = 1,
             Lines,
             UpdateGCode
         };
@@ -18,6 +18,7 @@ class GCodeLoaderWorker : public QThread
         GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const QString& fileName, QObject* parent = nullptr);
         GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const QStringList& lines, QObject* parent = nullptr);
         GCodeLoaderWorker(GCodeLoaderConfiguration& configuration, const GCode* gcode, QObject* parent = nullptr);
+        ~GCodeLoaderWorker();
 
         void run();
 

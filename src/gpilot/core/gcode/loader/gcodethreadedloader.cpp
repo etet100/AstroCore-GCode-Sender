@@ -9,13 +9,12 @@ GCodeThreadedLoader::GCodeThreadedLoader(QObject* parent) : AbstractGCodeLoader(
 
 GCodeThreadedLoader::~GCodeThreadedLoader()
 {
-    if (m_thread) {
-        delete m_thread;
-    }
+    deleteThread();
 }
 
 void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration)
 {
+    qDebug() << "[GCodeThreadedLoader] Creating worker thread to load file:" << fileName;
     m_thread = new GCodeLoaderWorker(
         configuration,
         fileName
@@ -28,6 +27,7 @@ void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfi
 
 void GCodeThreadedLoader::loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration)
 {
+    qDebug() << "[GCodeThreadedLoader] Creating worker thread to load from" << lines.size() << "lines";
     m_thread = new GCodeLoaderWorker(
         configuration,
         lines
@@ -40,6 +40,7 @@ void GCodeThreadedLoader::loadFromLines(const QStringList& lines, GCodeLoaderCon
 
 void GCodeThreadedLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
 {
+    qDebug() << "[GCodeThreadedLoader] Creating worker thread to update GCode with" << gcode->count() << "items";
     m_thread = new GCodeLoaderWorker(
         configuration,
         gcode
@@ -57,8 +58,18 @@ void GCodeThreadedLoader::cancel()
 
 void GCodeThreadedLoader::deleteThread()
 {
-    m_thread->deleteLater();
-    m_thread = nullptr;
+    if (m_thread) {
+        qDebug() << "[GCodeThreadedLoader] Deleting worker, waiting for worker thread to finish";
+        m_thread->requestInterruption();
+        if (!m_thread->wait(1500)) {
+            qWarning() << "[GCodeThreadedLoader] Worker thread did not finish in time, terminating";
+            m_thread->terminate();
+        }
+        delete m_thread;
+        m_thread = nullptr;
+    } else {
+        qDebug() << "[GCodeThreadedLoader] No worker to delete";
+    }
 }
 
 void GCodeThreadedLoader::connectSignals()
@@ -100,7 +111,14 @@ GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, co
     this->m_gcode = const_cast<GCode*>(gcode);
 }
 
+GCodeLoaderWorker::~GCodeLoaderWorker()
+{
+    qDebug() << "[GCodeLoader][Worker] Destructor";
+}
+
 void GCodeLoaderWorker::run() {
+    qDebug() << "[GCodeLoader][Worker] Thread started for source:" << static_cast<int>(m_source);
+
     GCodeLoader loader;
 
     connect(
@@ -127,4 +145,6 @@ void GCodeLoaderWorker::run() {
             loader.update(this->m_gcode, m_configuration);
             break;
     }
+
+    qDebug() << "[GCodeLoader][Worker] Thread finished";
 }

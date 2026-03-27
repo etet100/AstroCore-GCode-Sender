@@ -2511,26 +2511,29 @@ void FrmMain::updateParser()
 {
     assert(m_communicator->isMachineConfigurationReady());
 
-    if (m_visualizer_updater) {
+    if (m_visualizerUpdater) {
         // Update in progress, cancel it
-        m_visualizer_updater->cancel();
-        m_visualizer_updater = nullptr;
+        m_visualizerUpdater->cancel();
+        delete m_visualizerUpdater;
+        m_visualizerUpdater = nullptr;
     }
 
-    m_visualizer_updater = new GCodeThreadedLoader(this);
-    connect(m_visualizer_updater, &GCodeThreadedLoader::cancelled, this, [this]() {
-        m_visualizer_updater->deleteLater();
-        m_visualizer_updater = nullptr;
+    m_visualizerUpdater = new GCodeThreadedLoader(this);
+    connect(m_visualizerUpdater, &GCodeThreadedLoader::cancelled, this, [this]() {
+        qDebug() << "[FrmMain] Visualizer update cancelled";
+        m_visualizerUpdater->deleteLater();
+        m_visualizerUpdater = nullptr;
     });
-    connect(m_visualizer_updater, &GCodeThreadedLoader::finished, this, [this](GCodeLoaderData *data) {
+    connect(m_visualizerUpdater, &GCodeThreadedLoader::finished, this, [this](GCodeLoaderData *data) {
+        qDebug() << "[FrmMain] Finished updating visualizer data";
         this->applyUpdaterGCode(data);
         delete data;
-        m_visualizer_updater->deleteLater();
-        m_visualizer_updater = nullptr;
+        m_visualizerUpdater->deleteLater();
+        m_visualizerUpdater = nullptr;
     });
 
     GCodeLoaderConfiguration configuration(m_configuration.parserModule());
-    m_visualizer_updater->update(&m_program, configuration);
+    m_visualizerUpdater->update(&m_program, configuration);
 
 
     // GCodeViewParser *viewParse = ui->visualizer->getCurrentParser();
@@ -2616,10 +2619,12 @@ void FrmMain::loadFile(QString filePath)
         #endif
     });
     connect(loader, &GCodeThreadedLoader::cancelled, this, [this, loader]() {
+        qDebug() << "[FrmMain] Loading cancelled";
         ui->console->appendSystem("Cancelled loading");
         loader->deleteLater();
     });
     connect(loader, &GCodeThreadedLoader::finished, this, [this, loader, filePath](GCodeLoaderData *data) {
+        qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
         ui->console->appendSystem("Finished loading");
         this->applyLoaderGCode(data);
         delete data;
@@ -2635,8 +2640,6 @@ void FrmMain::loadFile(QString filePath)
 
 void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 {
-    qDebug() << "[FrmMain] Finished updating visualizer data";
-
     assert(m_communicator->isMachineConfigurationReady());
     if (!m_communicator->isMachineConfigurationReady()) {
         return;
@@ -2657,8 +2660,6 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 
 void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
-    qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
-
     assert(m_communicator->isMachineConfigurationReady());
     if (!m_communicator->isMachineConfigurationReady()) {
         return;

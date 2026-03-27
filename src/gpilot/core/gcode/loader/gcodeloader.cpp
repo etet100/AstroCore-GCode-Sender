@@ -18,9 +18,12 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "[GCodeLoader] Failed to open file:" << fileName;
         emit cancelled();
         return;
     }
+
+    qDebug() << "[GCodeLoader] Loading file:" << fileName << "size:" << file.size() << "bytes";
 
     emit started();
     m_cancel = false;
@@ -40,7 +43,9 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
     int lineNumber = 1;
     while (!stream.atEnd()) {
         GCodeItem item = GcodePreprocessorUtils::parseLine(stream.readLine());
-        if (item.state == GCodeItem::EmptyLine) continue;
+        if (item.state == GCodeItem::EmptyLine) {
+            continue;
+        }
 
         item.lineNumber = lineNumber++;
         item.commandNumber = parser.getCommandNumber();
@@ -87,6 +92,7 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
 
 void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration)
 {
+    qDebug() << "[GCodeLoader] Loading from" << lines.size() << "lines";
     emit started();
     m_cancel = false;
 
@@ -143,6 +149,7 @@ void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfigurati
 
 void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
 {
+    qDebug() << "[GCodeLoader] Updating" << gcode->count() << "items";
     emit started();
 
     m_cancel = false;
