@@ -273,7 +273,7 @@ private:
     // QString evaluateCommand(QString command);
 
     // Parser
-    GCodeThreadedLoader *m_visualizer_updater = nullptr;
+    GCodeThreadedLoader *m_visualizerUpdater = nullptr;
     void updateParser();
 
     // Files/models
