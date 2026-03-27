@@ -13,6 +13,7 @@
 #include "machinestatus.h"
 #include "overrides.h"
 #include "commandbuffer.h"
+#include "commandscanner.h"
 #include <QTimer>
 #include <QPointer>
 
@@ -89,6 +90,7 @@ class Communicator : public QObject
         Jogger m_jogger;
         Overrides *m_overrides = nullptr;
         CommandBuffer *m_commandBuffer = nullptr;
+        CommandScanner *m_commandScanner = nullptr;
         CommunicatorApi *m_comApi;
 
         // States

@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QHash>
+#include <QSet>
 #include <QTimer>
 #include "core/globals.h"
 #include "action.h"
@@ -37,6 +38,12 @@ class StateBehavior : public QObject
         void markEventsAttached() { m_eventsAttached = true; }
 
         virtual bool action(const Action &action);
+
+        // Returns the set of actions that this state accepts.
+        // UI uses this to enable / disable controls.
+        virtual QSet<Action::Type> availableActions() const { return {}; }
+
+        bool canExecute(Action::Type type) const { return availableActions().contains(type); }
 
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);

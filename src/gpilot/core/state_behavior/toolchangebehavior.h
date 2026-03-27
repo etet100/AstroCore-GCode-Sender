@@ -27,6 +27,9 @@ class ToolChangeBehavior : public StateBehavior
 
         explicit ToolChangeBehavior(int toolNumber, ToolChangeSource source = ToolChangeSource::Program, QObject *parent = nullptr);
         QString description() override;
+        QSet<Action::Type> availableActions() const override {
+            return { Action::PauseResume, Action::CycleStart };
+        }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;

@@ -14,6 +14,9 @@ class AlarmBehavior : public StateBehavior
     public:
         explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
         QString description() override;
+        QSet<Action::Type> availableActions() const override {
+            return { Action::Unlock };
+        }
         void onMachineStateChanged(MachineState state) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;

@@ -15,6 +15,9 @@ class CheckModeBehavior : public StateBehavior
     public:
         explicit CheckModeBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override;
+        QSet<Action::Type> availableActions() const override {
+            return { Action::Stop };
+        }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;

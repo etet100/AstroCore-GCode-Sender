@@ -51,6 +51,13 @@ Communicator::Communicator(
     connect(m_posTracker, &PositionTracker::machinePosChanged, this, &Communicator::machinePosChanged);
     connect(m_posTracker, &PositionTracker::toolPositionReceived, this, &Communicator::toolPositionReceived);
 
+    m_commandScanner = new CommandScanner(this);
+    // Re-query work offsets ($#) after any command that may have changed them.
+    // QueuedConnection avoids re-entering sendCommand() mid-call.
+    connect(m_commandScanner, &CommandScanner::workOffsetCommandDetected, this, [this]() {
+        sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+    }, Qt::QueuedConnection);
+
     // CommandBuffer: the two-level GRBL command queue.
     m_commandBuffer = new CommandBuffer(connection);
 
@@ -174,6 +181,8 @@ SendCommandResult Communicator::sendCommand(
             setSenderStateAndEmitSignal(SenderState::Pausing);
         }
     }
+
+    m_commandScanner->scan(commandLine);
 
     return m_commandBuffer->enqueue(source, commandLine, tableIndex, wait, callback);
 }

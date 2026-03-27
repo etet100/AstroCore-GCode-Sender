@@ -20,6 +20,9 @@ class RunningBehavior : public StateBehavior
 
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override { return "Running"; }
+        QSet<Action::Type> availableActions() const override {
+            return { Action::PauseResume, Action::Stop };
+        }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;

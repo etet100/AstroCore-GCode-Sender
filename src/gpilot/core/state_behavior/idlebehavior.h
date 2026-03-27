@@ -12,6 +12,9 @@ class IdleBehavior : public StateBehavior
     public:
         explicit IdleBehavior(QObject *parent = nullptr);
         QString description() override { return "Idle"; }
+        QSet<Action::Type> availableActions() const override {
+            return { Action::Run, Action::Home, Action::Jog, Action::GoTo, Action::Probe };
+        }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;

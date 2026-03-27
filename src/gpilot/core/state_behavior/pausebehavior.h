@@ -20,6 +20,9 @@ class PauseBehavior : public StateBehavior
 
         explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
         QString description() override;
+        QSet<Action::Type> availableActions() const override {
+            return { Action::PauseResume };
+        }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
