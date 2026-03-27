@@ -53,8 +53,8 @@ SendCommandResult CommandBuffer::enqueue(
     const QString& commandLine,
     int tableIndex,
     bool wait,
-    CommandCallback callback)
-{
+    CommandCallback callback
+) {
     if (wait || willOverflow(commandLine)) {
         m_queue.append(CommandQueue(source, commandLine, tableIndex, callback));
         return SendCommandResult::Queue;

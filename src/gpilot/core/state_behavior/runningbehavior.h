@@ -16,6 +16,7 @@ class RunningBehavior : public StateBehavior
             Resuming,
             Running,
             NoMoreCommands,
+            Aborting,
         };
 
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
@@ -44,6 +45,7 @@ class RunningBehavior : public StateBehavior
 
         void sendStreamerCommandsUntilBufferIsFull();
         void pause();
+        void abort();
 };
 
 #endif // RUNNINGBEHAVIOR_H

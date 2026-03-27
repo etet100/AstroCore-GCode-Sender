@@ -70,10 +70,14 @@ Communicator::Communicator(
         const QStringList& lines
     ) -> bool {
         Q_UNUSED(data)
-        if (!m_sbManager.hasCurrent()) return false;
+
+        if (!m_sbManager.hasCurrent()) {
+            return false;
+        }
         StateBehavior::Result result = m_sbManager.current()->onCommandResponse(
             command, attrs, status, data, lines
         );
+
         return result == StateBehavior::Result::Ok;
     });
 

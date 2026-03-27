@@ -1076,8 +1076,7 @@ void FrmMain::onFilePause(bool checked)
     // }
 
     // if (checked) {
-    Action action(Action::PauseResume);
-    if (m_communicator->stateBehavior()->action(action)) {
+    if (m_communicator->stateBehavior()->action(Action::PauseResume)) {
         // m_timer.pauseExecution();
         // ui->program->setPauseButtonText(tr("Resume"));
     }
@@ -1092,9 +1091,10 @@ void FrmMain::onFilePause(bool checked)
 
 void FrmMain::onFileAbort()
 {
-    ui->program->setAbortButtonEnabled(false);
-    m_timer.stopExecution();
-    m_communicator->abort();
+    // ui->program->setAbortButtonEnabled(false);
+    // m_timer.stopExecution();
+    // m_communicator->abort();
+    m_communicator->stateBehavior()->action(Action::Stop);
 }
 
 void FrmMain::onFileReset()
@@ -2823,7 +2823,7 @@ void FrmMain::updateControlsState()
     // }
     // ui->cmdFilePause->setEnabled(true);//portOpened && (process || paused) && (senderState != SenderState::Pausing) && (senderState != SenderState::Pausing2));
     // ui->cmdFilePause->setChecked(paused);
-    ui->program->setAbortButtonEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
+    // ui->program->setAbortButtonEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
     ui->menuRecent->setEnabled(
         (senderState == SenderState::Stopped) &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))

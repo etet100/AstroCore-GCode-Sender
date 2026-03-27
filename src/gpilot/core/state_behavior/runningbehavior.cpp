@@ -22,10 +22,12 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
-        if (m_stage == RunningStage::Running) {
+        if (m_stage == RunningStage::Aborting) {
+            qDebug() << "[Behavior][Running] Abort completed, transitioning to Idle";
+        } else if (m_stage == RunningStage::Running) {
             qWarning() << "[Behavior][Running] Unexpected transition to Idle state while running";
         } else if (m_stage == RunningStage::NoMoreCommands) {
-            qDebug() << "[Behavior][Running][Dbg] Transition to Idle state after finishing commands, expected behavior";
+            qDebug() << "[Behavior][Running] Program finished, transitioning to Idle";
         }
 
         emit transition(this, new IdleBehavior());
@@ -45,6 +47,12 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
 
     qDebug() << "[Behavior][Running][Resp] Response:" << command << "->" << response << "buffer length" << m_communicator->bufferLength();
 
+    if (commandAttributes.tableIndex < 0) {
+        qDebug() << "[Behavior][Running][Resp] Ignoring response for non-program command:" << command;
+
+        return Result::Ok;
+    }
+
     assert(commandAttributes.tableIndex >= 0);
     m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
 
@@ -62,7 +70,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
         sendStreamerCommandsUntilBufferIsFull();
     }
 
-    return Result::Ok;;
+    return Result::Ok;
 }
 
 void RunningBehavior::onAlarm(int code)
@@ -78,8 +86,7 @@ bool RunningBehavior::doAction(const Action &action)
 
         return true;
     } else if (action.type() == Action::Type::Stop) {
-        m_communicator->clearCommandsAndQueue();
-        m_communicator->sendRealtimeCommand(GRBL_LIVE_SOFT_RESET);
+        abort();
 
         return true;
     }
@@ -214,5 +221,13 @@ void RunningBehavior::pause()
     qDebug() << "[Behavior][Running] Pausing";
     m_pause = true;
     m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
+}
+
+void RunningBehavior::abort()
+{
+    qDebug() << "[Behavior][Running] Aborting — clearing queue and sending Soft Reset";
+    m_stage = RunningStage::Aborting;
+    m_communicator->clearQueue();
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_SOFT_RESET);
 }
 
