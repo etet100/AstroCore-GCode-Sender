@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
             QFile::remove("GPilot.log");
         }
 
+        logToFile = true;
         qInstallMessageHandler(messageHandler);
     }
 
