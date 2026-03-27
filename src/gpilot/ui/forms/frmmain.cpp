@@ -1002,13 +1002,6 @@ void FrmMain::increaseUiScale()
 
 void FrmMain::onFileOpen(QString filePath)
 {
-    // if (!m_communicator->isMachineConfigurationReady()) {
-    //     qWarning() << "[FrmMain] Machine configuration is not ready";
-    //     ui->console->append("Machine configuration is not ready. Cannot open file.");
-
-    //     return;
-    // }
-
     if (!m_heightmapMode) {
         if (!saveChanges(false)) return;
 
@@ -2509,8 +2502,6 @@ void FrmMain::applySettings()
 
 void FrmMain::updateParser()
 {
-    assert(m_communicator->isMachineConfigurationReady());
-
     if (m_visualizerUpdater) {
         // Update in progress, cancel it
         m_visualizerUpdater->cancel();
@@ -2640,11 +2631,6 @@ void FrmMain::loadFile(QString filePath)
 
 void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 {
-    assert(m_communicator->isMachineConfigurationReady());
-    if (!m_communicator->isMachineConfigurationReady()) {
-        return;
-    }
-
     m_viewParser = *data->viewParser;
 
     m_timeEstimator.calculateEstimatedTime(
@@ -2660,11 +2646,6 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 
 void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
-    assert(m_communicator->isMachineConfigurationReady());
-    if (!m_communicator->isMachineConfigurationReady()) {
-        return;
-    }
-
     ui->program->close();
     ui->visualizer->close();
 
