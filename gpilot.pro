@@ -28,7 +28,7 @@ install_grbl.path = bin
 install_grbl.files = src/vendor/grblHal/grblHal.dll
 
 install_fluidnc.path = bin
-install_fluidnc.files = src/vendor/grblHal/FluidddNC.dll
+install_fluidnc.files = src/vendor/FluidNC/FluidNC.dll
 
 INSTALLS += install_propertyeditor install_ucnc install_grbl install_fluidnc
 

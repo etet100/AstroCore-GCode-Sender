@@ -1952,7 +1952,6 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
 
 void FrmMain::onTableCurrentChanged(QModelIndex currentIndex, QModelIndex previousIndex)
 {
-    qDebug() << "[FrmMain]" << currentIndex.row() << previousIndex.row();
     ui->visualizer->updateToolpathHighlighting(currentIndex.row(), previousIndex.row());
 }
 
