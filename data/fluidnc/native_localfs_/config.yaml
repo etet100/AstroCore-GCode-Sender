@@ -1,0 +1,84 @@
+name: "GPilot FLUIDNC Controller"
+board: "GPilot FLUIDNC Controller"
+
+stepping:
+  engine: TIMED
+  idle_ms: 250
+  dir_delay_us: 1
+  pulse_us: 50
+  disable_delay_us: 0
+
+axes:
+  shared_stepper_disable_pin: gpio.13:low
+
+  x:
+    steps_per_mm: 100
+    max_rate_mm_per_min: 2000
+    acceleration_mm_per_sec2: 25
+    max_travel_mm: 250
+    soft_limits: false
+
+    homing:
+      cycle: 1
+      mpos_mm: 0
+      positive_direction: false
+      feed_mm_per_min: 100.000
+      seek_mm_per_min: 200.000
+
+    motor0:
+      limit_all_pin: gpio.17:high:pd
+      hard_limits: true
+      stepstick:
+        direction_pin: gpio.14
+        step_pin: gpio.12
+    motor1:
+      null_motor:
+
+  y:
+    steps_per_mm: 100
+    max_rate_mm_per_min: 2000
+    acceleration_mm_per_sec2: 25
+    max_travel_mm: 250
+    soft_limits: false
+
+    homing:
+      cycle: 1
+      mpos_mm: 0
+      positive_direction: false
+      feed_mm_per_min: 100.000
+      seek_mm_per_min: 200.000
+
+    motor0:
+      limit_all_pin: gpio.4:high:pd
+      hard_limits: true
+      stepstick:
+        direction_pin: gpio.15
+        step_pin: gpio.26
+    motor1:
+      null_motor:
+
+  z:
+    steps_per_mm: 100
+    max_rate_mm_per_min: 2000
+    acceleration_mm_per_sec2: 25
+    max_travel_mm: 50
+    soft_limits: false
+
+    homing:
+      cycle: 1
+      mpos_mm: 50
+      positive_direction: true
+      feed_mm_per_min: 100.000
+      seek_mm_per_min: 800.000
+
+    motor0:
+      limit_all_pin: gpio.16:high:pd
+      hard_limits: true
+      stepstick:
+        direction_pin: gpio.33
+        step_pin: gpio.27
+    motor1:
+      null_motor:
+
+probe:
+  pin: gpio.2:high:pd
