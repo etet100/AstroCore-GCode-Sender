@@ -29,11 +29,12 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         painter->fillRect(opt.rect, opt.palette.highlight());
     } else {
         GCodeItem::States state = (GCodeItem::States)index.data(Qt::UserRole + 2).toInt();
-        if (m_dark) {
-            painter->fillRect(opt.rect, m_stateColorsDark[state]);
-        } else {
-            painter->fillRect(opt.rect, m_stateColorsLight[state]);
+        QColor backgroundColor = m_dark ? m_stateColorsDark[state] : m_stateColorsLight[state];
+        bool isCurrent = index.data(Qt::UserRole + 3).toBool();
+        if (isCurrent) {
+            backgroundColor = backgroundColor.darker(m_dark ? 150 : 120);
         }
+        painter->fillRect(opt.rect, backgroundColor);
     }
 
     QString mainText = index.data(Qt::DisplayRole).toString();

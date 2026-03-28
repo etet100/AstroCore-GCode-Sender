@@ -46,7 +46,10 @@ QString GCode::command()
 
 void GCode::advanceCommandIndex()
 {
+    // Force update previous line and current line to update their states in the view (e.g. Sent -> Processed)
+    m_linesUpdatedFrom = qMin(m_linesUpdatedFrom, m_commandIndex);
     m_commandIndex++;
+    m_linesUpdatedTo = qMax(m_linesUpdatedTo, m_commandIndex);
 }
 
 bool GCode::isLastCommand()

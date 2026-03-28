@@ -1041,7 +1041,6 @@ void FrmMain::onFileOpen(QString filePath)
 
 void FrmMain::onFileSend()
 {
-    m_program.reset();
     m_timer.startExecution();
     m_communicator->sb()->action(RunAction(m_program));
 

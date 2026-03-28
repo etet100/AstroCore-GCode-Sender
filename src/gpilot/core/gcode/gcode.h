@@ -80,6 +80,7 @@ class GCode : public QObject
         void setCommandSkipped();
         GCodeItem& operator [] (int index) { return m_data[index]; }
         GCodeItem& at(int index) { return m_data[index]; }
+        GCodeItem& current() { return m_data[m_commandIndex]; }
         int count() { return m_data.count(); }
         bool empty() { return m_data.isEmpty(); }
         void clear() { m_data.clear(); }

@@ -74,6 +74,10 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
         return item.state;
     }
 
+    if (role == Qt::UserRole + 3) {
+        return (m_data->commandIndex() == rowNumber); // is current command
+    }
+
     if (role == Qt::TextAlignmentRole) {
         switch ((GCodeTableColumn)index.column()) {
             case GCodeTableColumn::Number: return Qt::AlignCenter;
