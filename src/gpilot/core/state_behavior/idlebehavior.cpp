@@ -121,9 +121,29 @@ bool IdleBehavior::doAction(const Action &action)
                 emit transition(this, new ProbingBehavior(params));
             }
             return true;
+
+        case Action::Type::ZeroZ:
+            zeroZ();
+
+            return true;
+
+        case Action::Type::ZeroXY:
+            zeroXY();
+
+            return true;
     }
 
     return false;
+}
+
+void IdleBehavior::zeroZ()
+{
+    m_communicator->sendCommand(CommandSource::System, "G10 L20 P0 Z0", TABLE_INDEX_UI);
+}
+
+void IdleBehavior::zeroXY()
+{
+    m_communicator->sendCommand(CommandSource::System, "G10 L20 P0 X0 Y0", TABLE_INDEX_UI);
 }
 
 StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)

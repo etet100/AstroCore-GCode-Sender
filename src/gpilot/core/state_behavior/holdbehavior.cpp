@@ -83,7 +83,7 @@ StateBehavior::Result HoldBehavior::onCommandResponse(QString command, CommandAt
 
 bool HoldBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::PauseResume || action.type() == Action::Type::CycleStart) {
+    if (action.type() == Action::Type::Resume || action.type() == Action::Type::CycleStart) {
         resume();
         return true;
     }

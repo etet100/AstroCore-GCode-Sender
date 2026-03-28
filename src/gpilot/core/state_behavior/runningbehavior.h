@@ -11,7 +11,7 @@
 class RunningBehavior : public StateBehavior
 {
     public:
-        enum class RunningStage {
+        enum class Stage {
             Unknown,
             Resuming,
             Running,
@@ -23,7 +23,10 @@ class RunningBehavior : public StateBehavior
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override { return "Running"; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::PauseResume, Action::Stop };
+            return {
+                Action::Pause,
+                Action::Abort
+            };
         }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
@@ -38,13 +41,16 @@ class RunningBehavior : public StateBehavior
         bool doAction(const Action &action) override;
 
     private:
-        RunningStage m_stage;
+        Stage m_stage;
         int m_feedOverride;
         int m_spindleOverride;
         GCode &m_program;
         void sendStreamerCommandsUntilBufferIsFull();
         void pause();
+        // Graceful stop - do not send new commands, wait for buffer to be empty and for idle state
         void abort();
+        // Instant stop - reset device, clear queue, mark unackedcommands as aborted,
+        void instantAbort();
 };
 
 #endif // RUNNINGBEHAVIOR_H

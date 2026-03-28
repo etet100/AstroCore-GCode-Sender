@@ -13,7 +13,15 @@ class IdleBehavior : public StateBehavior
         explicit IdleBehavior(QObject *parent = nullptr);
         QString description() override { return "Idle"; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::Run, Action::Home, Action::Jog, Action::GoTo, Action::Probe };
+            return {
+                Action::Run,
+                Action::Home,
+                Action::Jog,
+                Action::GoTo,
+                Action::Probe,
+                Action::ZeroZ,
+                Action::ZeroXY,
+            };
         }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
@@ -24,6 +32,9 @@ class IdleBehavior : public StateBehavior
         QString name() const override { return "Idle"; }
         bool doAction(const Action &action) override;
 
+    private:
+        void zeroZ();
+        void zeroXY();
 };
 
 #endif // IDLEBEHAVIOR_H

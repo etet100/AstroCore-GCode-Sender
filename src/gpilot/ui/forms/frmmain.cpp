@@ -155,6 +155,12 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->control, &PartMainControl::reset, this, [this]() {
         m_communicator->reset();
     });
+    connect(ui->control, &PartMainControl::zeroZ, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::ZeroZ);
+    });
+    connect(ui->control, &PartMainControl::zeroXY, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::ZeroXY);
+    });
     // connect(ui->control, &partMainControl::command, this, [=](GRBLCommand command) {
     //     qDebug() << "Command: " << command;
     // });
@@ -197,7 +203,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Stop);
+        m_communicator->stateBehavior()->action(Action::Abort);
     });
 
     // Drag&drop placeholders
@@ -1075,10 +1081,16 @@ void FrmMain::onFilePause(bool checked)
     // }
 
     // if (checked) {
-    if (m_communicator->stateBehavior()->action(Action::PauseResume)) {
-        // m_timer.pauseExecution();
-        // ui->program->setPauseButtonText(tr("Resume"));
+    StateBehavior* sb = m_communicator->stateBehavior();
+    if (sb->canExecute(Action::Pause)) {
+        sb->action(Action::Pause);
+    } else if (sb->canExecute(Action::Resume)) {
+        sb->action(Action::Resume);
     }
+    // if (m_communicator->stateBehavior()->action(Action::PauseResume)) {
+    //     // m_timer.pauseExecution();
+    //     // ui->program->setPauseButtonText(tr("Resume"));
+    // }
     // } else {
     //     Action action(Action::Resume);
     //     if (m_communicator->stateBehavior()->action(action)) {
@@ -1093,7 +1105,7 @@ void FrmMain::onFileAbort()
     // ui->program->setAbortButtonEnabled(false);
     // m_timer.stopExecution();
     // m_communicator->abort();
-    m_communicator->stateBehavior()->action(Action::Stop);
+    m_communicator->stateBehavior()->action(Action::Abort);
 }
 
 void FrmMain::onFileReset()
@@ -1843,9 +1855,13 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
         } else if (command == "start") {
             m_communicator->sb()->action(Action::Run);
         } else if (command == "pause") {
-            m_communicator->sb()->action(Action::PauseResume);
+            m_communicator->sb()->action(Action::Pause);
+        } else if (command == "resume") {
+            m_communicator->sb()->action(Action::Resume);
         } else if (command == "reset") {
             m_communicator->sb()->action(Action::Unlock);
+        } else if (command == "abort") {
+            m_communicator->sb()->action(Action::Abort);
         } else if (command == "open") {
             onFileOpen();
         }

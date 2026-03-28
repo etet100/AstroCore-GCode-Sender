@@ -18,11 +18,11 @@ PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
 bool PauseBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
-        case Action::Type::PauseResume:
+        case Action::Type::Resume:
             resume();
             return true;
 
-        case Action::Type::Stop:
+        case Action::Type::Abort:
             abort();
             return true;
     }

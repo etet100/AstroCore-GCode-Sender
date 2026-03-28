@@ -18,8 +18,9 @@ class Action
             None = 0,
             Reset,
             Run,
-            Stop,
-            PauseResume,
+            Abort,
+            Pause,
+            Resume,
             FeedHold,
             CycleStart,
             Jog,
@@ -30,6 +31,8 @@ class Action
             QueryMachineConfiguration,
             SaveMachineConfigurationParam,
             ToolChange,
+            ZeroZ,
+            ZeroXY,
         };
 
         Action(Type type);

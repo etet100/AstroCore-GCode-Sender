@@ -18,7 +18,7 @@ class JoggingBehavior : public StateBehavior
         explicit JoggingBehavior(int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString description() override { return "Jogging"; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::Stop, Action::Jog };
+            return { Action::Abort, Action::Jog };
         }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;

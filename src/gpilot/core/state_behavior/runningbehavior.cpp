@@ -22,17 +22,17 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
-        if (m_stage == RunningStage::Aborting) {
+        if (m_stage == Stage::Aborting) {
             qDebug() << "[Behavior][Running] Abort completed, transitioning to Idle";
-        } else if (m_stage == RunningStage::Running) {
+        } else if (m_stage == Stage::Running) {
             qWarning() << "[Behavior][Running] Unexpected transition to Idle state while running";
-        } else if (m_stage == RunningStage::NoMoreCommands) {
+        } else if (m_stage == Stage::NoMoreCommands) {
             qDebug() << "[Behavior][Running] Program finished, transitioning to Idle";
         }
 
         emit transition(this, new IdleBehavior());
-    } else if (m_stage == RunningStage::Pausing && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
-        PauseBehavior::PauseSource source = m_stage == RunningStage::Pausing
+    } else if (m_stage == Stage::Pausing && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
+        PauseBehavior::PauseSource source = m_stage == Stage::Pausing
             ? PauseBehavior::PauseSource::UserRequest
             : PauseBehavior::PauseSource::External;
         emit transition(this, new PauseBehavior(source));
@@ -66,7 +66,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
         return Result::Ok;
     }
 
-    if (m_stage == RunningStage::Running) {
+    if (m_stage == Stage::Running) {
         sendStreamerCommandsUntilBufferIsFull();
     } else {
         qDebug() << "[Behavior][Running][Dbg] Not sending next commands, current stage is" << static_cast<int>(m_stage);
@@ -83,11 +83,11 @@ void RunningBehavior::onAlarm(int code)
 
 bool RunningBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::PauseResume && m_stage == RunningStage::Running) {
+    if (action.type() == Action::Type::Pause && m_stage == Stage::Running) {
         pause();
 
         return true;
-    } else if (action.type() == Action::Type::Stop) {
+    } else if (action.type() == Action::Type::Abort) {
         abort();
 
         return true;
@@ -114,25 +114,25 @@ StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, St
             return Result::Ok;
         } else {
             // Machine is in Hold — send Cycle Start and wait for Run state before filling buffer
-            m_stage = RunningStage::Resuming;
+            m_stage = Stage::Resuming;
             m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
             waitForStateResponse([this](MachineState state) {
                 switch (state) {
                     case MachineState::Run:
                         qDebug() << "[Behavior][Running] Detected Run state";
-                        m_stage = RunningStage::Running;
+                        m_stage = Stage::Running;
                         sendStreamerCommandsUntilBufferIsFull();
                         break;
 
                     case MachineState::Unknown:
                         qDebug() << "[Behavior][Running] Timeout waiting for Run state";
-                        m_stage = RunningStage::Unknown;
+                        m_stage = Stage::Unknown;
                         break;
                 }
             }, MachineState::Run, 500);
         }
     } else {
-        m_stage = RunningStage::Running;
+        m_stage = Stage::Running;
     }
 
     sendStreamerCommandsUntilBufferIsFull();
@@ -188,7 +188,7 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
     if (!m_program.hasMoreCommands()) {
         qDebug() << "[Behavior][Running] No more commands to send";
 
-        m_stage = RunningStage::NoMoreCommands;
+        m_stage = Stage::NoMoreCommands;
 
         return;
     }
@@ -222,23 +222,22 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
 
 void RunningBehavior::pause()
 {
-    if (m_stage == RunningStage::Pausing) {
+    if (m_stage == Stage::Pausing) {
         qDebug() << "[Behavior][Running] Already pausing, ignoring pause request";
 
         return;
     }
 
     qDebug() << "[Behavior][Running] Pausing";
-    m_stage = RunningStage::Pausing;
+    m_stage = Stage::Pausing;
     m_communicator->sendRealtimeCommand(GRBL_LIVE_FEED_HOLD);
 }
 
-void RunningBehavior::abort()
+void RunningBehavior::instantAbort()
 {
     qDebug() << "[Behavior][Running] Aborting — clearing queue, waiting for idle or alarm state";
 
-    m_stage = RunningStage::Aborting;
-    m_communicator->clearQueue();
+    m_stage = Stage::Aborting;
 
     // Mark all non-acked commands as aborted
     for (auto &cmd : m_communicator->commandBuffer()->commands()) {
@@ -249,4 +248,11 @@ void RunningBehavior::abort()
     }
     m_communicator->clearCommandsAndQueue();
     m_communicator->sendRealtimeCommand(GRBL_LIVE_SOFT_RESET);
+}
+
+void RunningBehavior::abort()
+{
+    qDebug() << "[Behavior][Running] Aborting — waiting for idle or alarm state";
+
+    m_stage = Stage::Aborting;
 }

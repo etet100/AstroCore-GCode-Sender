@@ -324,7 +324,7 @@ void JoggingBehavior::setJoggingFeedRate(double feedRate)
 bool JoggingBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
-        case Action::Type::Stop:
+        case Action::Type::Abort:
             stopJogging();
 
             return true;

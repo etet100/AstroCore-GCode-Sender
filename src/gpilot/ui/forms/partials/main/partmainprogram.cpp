@@ -55,6 +55,11 @@ void PartMainProgram::setupUi()
     connect(ui->txtFilter, &QLineEdit::textChanged, this, [this](const QString& text) {
         m_programModel.setFilter(text);
     });
+
+    connect(&m_programModel, &GCodeTableModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight) {
+        // emit currentChanged(topLeft, bottomRight);
+        qDebug() << "Program model data changed from" << topLeft.row() << "to" << bottomRight.row();
+    });
 }
 
 void PartMainProgram::setupTableContextMenu()

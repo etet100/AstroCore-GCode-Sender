@@ -109,7 +109,7 @@ void PositionTracker::processWorkOffset(const QString& line)
 void PositionTracker::processNewToolPosition(bool isCheckMode, bool isLastCommandProcessed)
 {
     if (!(isCheckMode && !isLastCommandProcessed)) {
-        emit toolPositionReceived(m_machinePos);
+        emit toolPositionReceived(m_machinePos - m_workOffset);
     }
 }
 

@@ -30,7 +30,7 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
 {
     StateBehavior::onEntry(communicator, previous);
 
-    if (m_phase == Phase::Initial) {
+    if (m_phase == Stage::Initial) {
         m_grid = m_heightmap->probePoints(m_startPos, m_scanMode);
         m_currentPoint = 0;
         m_scannedPoints = 0;
@@ -50,7 +50,7 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
 
         processCurrentPoint();
 
-    } else if (m_phase == Phase::MovingToPoint) {
+    } else if (m_phase == Stage::MovingToPoint) {
         // ── Returned from GoToBehavior ──────────────────────────────────────
         // GoToBehavior waits for Idle before returning, so a non-Idle state
         // here means the move command failed (e.g. soft-limit error).
@@ -65,7 +65,7 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
 
         startProbeAtCurrentPoint();
 
-    } else if (m_phase == Phase::Probing) {
+    } else if (m_phase == Stage::Probing) {
         // ── Returned from ProbingBehavior ───────────────────────────────────
         auto *prob = qobject_cast<ProbingBehavior*>(previous);
         QPointF pt = m_grid[m_currentPoint];
@@ -128,7 +128,7 @@ void ScanTableBehavior::processCurrentPoint()
             .arg(pos.x(), 0, 'f', 3)
             .arg(pos.y(), 0, 'f', 3), {"ScanTable"});
 
-    m_phase = Phase::MovingToPoint;
+    m_phase = Stage::MovingToPoint;
     emit transition(this, new GoToBehavior(pos, m_moveFeedRate));
 }
 
@@ -150,7 +150,7 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
     params.setZeroAtProbe = false;
     params.useAbsolute = false;
 
-    m_phase = Phase::Probing;
+    m_phase = Stage::Probing;
     emit transition(this, new ProbingBehavior(params));
 }
 

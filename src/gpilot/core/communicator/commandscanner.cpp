@@ -6,13 +6,15 @@ CommandScanner::CommandScanner(QObject* parent)
     : QObject(parent)
 {}
 
-void CommandScanner::scan(const QString& commandLine)
+CommandScanner::CommandType CommandScanner::classify(const QString& commandLine) const
 {
     const QString cmd = GcodePreprocessorUtils::removeComment(commandLine)
                             .toUpper()
                             .simplified();
 
-    if (cmd.isEmpty()) return;
+    if (cmd.isEmpty()) {
+        return CommandType::None;
+    }
 
     // Commands that may change the active work coordinate offset.
     //   G10 Lx Px   — set coordinate system origin
@@ -20,50 +22,54 @@ void CommandScanner::scan(const QString& commandLine)
     //   G54–G59     — select active coordinate system
     //   $RST=#      — GRBL EEPROM reset (clears stored offsets)
     static const QRegularExpression workOffsetRe(
-        "G10(?!\\d)"     // G10, not G100/G101/...
-        "|G92(?!\\d)"    // G92 and all G92.x sub-codes
-        "|G5[4-9]"       // G54 through G59
+        "G10(?!\\d)"
+        "|G92(?!\\d)"
+        "|G5[4-9]"
         "|\\$RST=#"
     );
-
     if (workOffsetRe.match(cmd).hasMatch()) {
-        emit workOffsetCommandDetected();
+        return CommandType::WorkOffset;
     }
 
     // Homing cycle and move-to-home commands.
-    //   $H          — home all axes (GRBL / grblHAL)
-    //   $HX/Y/Z/... — home single axis (grblHAL)
-    //   G28 / G28.1 — move to stored home position
-    //   G30 / G30.1 — move to secondary stored home position
+    //   $H / $Hx  — home all / single axis
+    //   G28 / G28.1, G30 / G30.1 — move to stored home position
     static const QRegularExpression homingRe(
-        "\\$H[XYZABC]?"   // $H and single-axis variants
-        "|G28(?!\\d)"      // G28 / G28.1, not G280/G281/...
-        "|G30(?!\\d)"      // G30 / G30.1, not G300/G301/...
+        "\\$H[XYZABC]?"
+        "|G28(?!\\d)"
+        "|G30(?!\\d)"
     );
-
     if (homingRe.match(cmd).hasMatch()) {
-        emit homingCommandDetected();
+        return CommandType::Homing;
     }
 
-    // Pause commands — stop program, wait for operator to resume.
-    //   M0 / M00  — compulsory stop
-    //   M1 / M01  — optional stop
-    //   M25       — pause (grblHAL)
+    // Pause commands.
+    //   M0 / M00 — compulsory stop, M1 / M01 — optional stop, M25 — grblHAL pause
     static const QRegularExpression pauseRe(
-        "M0{1,2}(?!\\d)"   // M0, M00
-        "|M0?1(?!\\d)"     // M1, M01
-        "|M25(?!\\d)"      // M25 (grblHAL)
+        "M0{1,2}(?!\\d)"
+        "|M0?1(?!\\d)"
+        "|M25(?!\\d)"
     );
-
     if (pauseRe.match(cmd).hasMatch()) {
-        emit pauseCommandDetected();
+        return CommandType::Pause;
     }
 
-    // Tool change.
-    //   M6 / M06  — standard tool change command
+    // Tool change: M6 / M06
     static const QRegularExpression toolChangeRe("M0*6(?!\\d)");
-
     if (toolChangeRe.match(cmd).hasMatch()) {
-        emit toolChangeCommandDetected();
+        return CommandType::ToolChange;
+    }
+
+    return CommandType::None;
+}
+
+void CommandScanner::scan(const QString& commandLine)
+{
+    switch (classify(commandLine)) {
+        case CommandType::WorkOffset: emit workOffsetCommandDetected(); break;
+        case CommandType::Homing:     emit homingCommandDetected();     break;
+        case CommandType::Pause:      emit pauseCommandDetected();      break;
+        case CommandType::ToolChange: emit toolChangeCommandDetected(); break;
+        case CommandType::None:       break;
     }
 }

@@ -82,7 +82,7 @@ void CheckModeBehavior::onAlarm(int code)
 
 bool CheckModeBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::Stop) {
+    if (action.type() == Action::Type::Abort) {
         stop();
         return true;
     }

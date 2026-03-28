@@ -41,7 +41,7 @@ void GoToBehavior::onAlarm(int code)
 bool GoToBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
-        case Action::Type::Stop:
+        case Action::Type::Abort:
             stopJogging();
 
             return true;
@@ -88,7 +88,7 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
 
 StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[Behavior][GoTo] Entry";
+    qDebug() << "[Behavior][GoTo] Entry with target:" << m_target << "feed rate:" << m_feedRate;
     StateBehavior::onEntry(communicator, previous);
 
     // QString cmd = QString("G1 X%1 Y%2 F%3")

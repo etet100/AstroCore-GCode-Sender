@@ -46,7 +46,7 @@ protected:
     QString name() const override { return "ScanTable"; }
 
 private:
-    enum class Phase {
+    enum class Stage {
         Initial,        // not yet started
         MovingToPoint,  // GoToBehavior is active
         Probing         // ProbingBehavior is active
@@ -61,7 +61,7 @@ private:
     int             m_currentPoint = 0;
     int             m_scannedPoints = 0;
 
-    Phase m_phase = Phase::Initial;
+    Stage m_phase = Stage::Initial;
 
     void processCurrentPoint();
     void startProbeAtCurrentPoint();

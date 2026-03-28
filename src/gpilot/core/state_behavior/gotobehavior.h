@@ -14,7 +14,7 @@ class GoToBehavior : public StateBehavior
         explicit GoToBehavior(QPointF target, int feedRate, QObject *parent = nullptr);
         QString description() override { return "Go to..."; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::Stop };
+            return { Action::Abort };
         }
         void onMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
