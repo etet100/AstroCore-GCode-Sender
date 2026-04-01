@@ -89,6 +89,11 @@
         <file>../images/logs/square.svg</file>
         <file>../images/logs/refresh_cw.svg</file>
         <file>../images/logs/x.svg</file>
+        <file>../images/conntype/serial.svg</file>
+        <file>../images/conntype/tcpip.svg</file>
+        <file>../images/conntype/fluidnc.svg</file>
+        <file>../images/conntype/grbl.svg</file>
+        <file>../images/conntype/ucnc.svg</file>
         <file>../images/conn/connected.svg</file>
         <file>../images/conn/disconnected.svg</file>
     </qresource>
