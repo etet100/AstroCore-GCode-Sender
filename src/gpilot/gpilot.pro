@@ -96,6 +96,7 @@ SOURCES += main.cpp\
     core/communicator/statebehaviorgarbagecollector.cpp \
     core/communicator/statebehaviormanager.cpp \
     core/communicator/statusreportprocessor.cpp \
+    core/communicator/proberesponseparser.cpp \
     core/config/configuration.cpp \
     core/config/module/configurationai.cpp \
     core/config/module/configurationconnection.cpp \
@@ -134,6 +135,7 @@ SOURCES += main.cpp\
     core/jogger/jogger.cpp \
     core/machine/physicalmachineconfiguration.cpp \
     core/machine/physicalmachineconfigurationparser.cpp \
+    core/machine/modalstateparser.cpp \
     core/utils/filesmanager.cpp \
     core/utils/programtimeestimator.cpp \
     core/utils/timer.cpp \
@@ -268,6 +270,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/statebehaviorgarbagecollector.h \
     core/communicator/statebehaviormanager.h \
     core/communicator/statusreportprocessor.h \
+    core/communicator/proberesponseparser.h \
     core/config/configuration.h \
     core/config/implementations.h \
     core/config/module/configurationai.h \
@@ -311,6 +314,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/jogger/jogger.h \
     core/machine/physicalmachineconfiguration.h \
     core/machine/physicalmachineconfigurationparser.h \
+    core/machine/modalstateparser.h \
     core/utils/filesmanager.h \
     core/utils/programtimeestimator.h \
     core/utils/timer.h \
