@@ -236,7 +236,7 @@ void Communicator::processStatus(QString line)
 
     m_posTracker->processNewToolPosition(
         m_machineState == MachineState::Check,
-        m_streamer ? m_streamer->isLastCommandProcessed() : true
+        true
     );
 
     // Emit status signal

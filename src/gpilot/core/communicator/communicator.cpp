@@ -407,7 +407,6 @@ void Communicator::restoreParserState()
 void Communicator::completeTransfer()
 {
     setSenderStateAndEmitSignal(SenderState::Stopped);
-    m_streamer->resetProcessed();
     m_storedParserState.clear();
 
     if (m_configuration->senderModule().useProgramEndCommands())

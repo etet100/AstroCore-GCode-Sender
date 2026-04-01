@@ -227,7 +227,6 @@ private:
     Connection *m_connection = nullptr;
     Communicator *m_communicator;
     GCode m_program;
-    GCode *m_currentProgram = &m_program;
     FileDropOverlay *m_fileDropOverlay = nullptr;
 
     // Partials/Panels

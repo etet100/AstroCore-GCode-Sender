@@ -5,14 +5,14 @@
 #include "gcodetablemodel.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 
-GCodeTableModel::GCodeTableModel(GCode* data, QObject *parent) :
+GCodeTableModel::GCodeTableModel(GCode* program, QObject *parent) :
     QAbstractTableModel(parent),
-    m_data(data)
+    m_data(program)
 {
     m_headers << tr("#") << tr("Command") << tr("State") << tr("Response");
 
-    if (data) {
-        connect(data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
+    if (program) {
+        connect(program, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
     }
 }
 
@@ -132,10 +132,10 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
     return false;
 }
 
-void GCodeTableModel::setProgram(GCode* data)
+void GCodeTableModel::setProgram(GCode* program)
 {
     beginResetModel();
-    m_data = data;
+    m_data = program;
     applyFilters();
     // connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
     endResetModel();

@@ -21,11 +21,11 @@ class GCodeTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GCodeTableModel(GCode* data, QObject* parent = 0);
+    explicit GCodeTableModel(GCode* program, QObject* parent = 0);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
-    void setProgram(GCode* data);
+    void setProgram(GCode* program);
     bool insertRow(int row, const QModelIndex& parent = QModelIndex());
     bool removeRow(int row, const QModelIndex& parent = QModelIndex());
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
