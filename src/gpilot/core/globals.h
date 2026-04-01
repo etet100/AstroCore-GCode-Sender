@@ -244,10 +244,21 @@ enum class MachineState : int {
     Sleep = 14
 };
 
-enum class SendCommandResult : int {
-    Done = 0,
-    Empty = 1,
-    Queue = 2
+struct SendCommandResult {
+    enum Status : int {
+        Done = 0,
+        Empty = 1,
+        Queue = 2
+    };
+
+    Status status = Done;
+    int commandIndex = -1;  // Index assigned by CommandBuffer (-1 = not yet sent)
+
+    SendCommandResult() = default;
+    SendCommandResult(Status s, int idx = -1) : status(s), commandIndex(idx) {}
+
+    bool operator==(Status s) const { return status == s; }
+    bool operator!=(Status s) const { return status != s; }
 };
 
 enum class CommandSource : uint8_t {
@@ -257,6 +268,8 @@ enum class CommandSource : uint8_t {
     // Commands like "send before/after pause" confugured by user
     ProgramAdditionalCommands,
     System,
+    Communicator,
+    StateBehavior,
 };
 
 typedef std::function<void(void *)> CommandCallback;
