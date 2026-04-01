@@ -30,3 +30,15 @@
 [submodule "src/vendor/vedis"]
 	path = src/vendor/vedis
 	url = https://github.com/symisc/vedis
+[submodule "src/vendor/lilacstyle"]
+	path = src/vendor/lilacstyle
+	url = https://github.com/zalesyc/lilac
+[submodule "src/vendor/qlementinestyle"]
+	path = src/vendor/qlementinestyle
+	url = https://github.com/oclero/qlementine
+[submodule "src/vendor/FluentUIStyle"]
+	path = src/vendor/FluentUIStyle
+	url = https://github.com/XHY-ChuJian/FluentUIStyle
+[submodule "src/vendor/qcoro"]
+	path = src/vendor/qcoro
+	url = https://github.com/danvratil/qcoro.git

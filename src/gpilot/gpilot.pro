@@ -490,6 +490,7 @@ include(../vendor/QtValueSlider.pri)
 include(../vendor/PropertyEditor/PropertyEditor.pri)
 include(../vendor/phantomstyle/src/phantom/phantom.pri)
 include(../vendor/vedis.pri)
+include(../vendor/qcoro.pri)
 
 LIBS += -L. -lgpilot-customwidgets
 
