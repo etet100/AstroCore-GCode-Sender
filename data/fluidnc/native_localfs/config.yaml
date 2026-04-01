@@ -31,8 +31,6 @@ axes:
       stepstick:
         direction_pin: gpio.14
         step_pin: gpio.12
-    motor1:
-      null_motor:
 
   y:
     steps_per_mm: 100
@@ -54,8 +52,6 @@ axes:
       stepstick:
         direction_pin: gpio.15
         step_pin: gpio.26
-    motor1:
-      null_motor:
 
   z:
     steps_per_mm: 100
@@ -77,8 +73,9 @@ axes:
       stepstick:
         direction_pin: gpio.33
         step_pin: gpio.27
-    motor1:
-      null_motor:
 
 probe:
   pin: gpio.2:high:pd
+
+control:
+  estop_pin: gpio.5:high:pd
