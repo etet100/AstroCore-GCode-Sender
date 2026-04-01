@@ -4,364 +4,239 @@
 
 #include "probingbehavior.h"
 #include "alarmbehavior.h"
-#include "idlebehavior.h"
 #include "core/communicator/communicator.h"
-#include <QRegularExpression>
 
 ProbingBehavior::ProbingBehavior(QObject* parent)
     : StateBehavior{parent}
-    , m_params{}  // Uses default member initializers
-    , m_stage(ProbeStage::InitialSetup)
-    , m_alarmOccurred(false)
-    , m_alarmCode(0)
-    , m_success(false)
-    , m_initialStateAbsolute(true)
 {}
 
 ProbingBehavior::ProbingBehavior(ProbeParameters params, QObject* parent)
     : StateBehavior{parent}
     , m_params(params)
-    , m_stage(ProbeStage::InitialSetup)
-    , m_alarmOccurred(false)
-    , m_alarmCode(0)
-    , m_success(false)
-    , m_initialStateAbsolute(true)
 {}
 
 QString ProbingBehavior::description()
 {
-    return QString("Probing - %1").arg(stageDescription());
+    return QString("Probing - %1").arg(m_stageDescription);
 }
 
 StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
 {
-    qDebug() << "[Behavior][Probing] Entry - starting two-phase probing sequence";
+    qDebug() << "[Behavior][Probing] Entry - starting probing sequence"
+             << (m_params.doubleProbe ? "(two-phase)" : "");
     StateBehavior::onEntry(communicator, previous);
 
     m_communicator->startQueryingMachineState();
-
-    // Start with initial setup
-    log("Starting probing sequence...", {"Probing"});
-
-    // Setup: Switch to relative positioning, ensure metric units
-    m_communicator->sendCommand(CommandSource::GeneralUI, "G91 G21", TABLE_INDEX_UI);
-    m_stage = ProbeStage::InitialSetup;
+    m_probingTask = runProbingSequence();
 
     return StateBehavior::Result::Ok;
 }
 
 StateBehavior::Result ProbingBehavior::onExit(StateBehavior *next)
 {
-    Q_UNUSED(next);
     qDebug() << "[Behavior][Probing] Exit";
 
+    m_probingTask.reset();
     m_communicator->stopQueryingMachineState();
 
     return StateBehavior::onExit(next);
 }
 
-void ProbingBehavior::onAlarm(int code)
+// ---------------------------------------------------------------------------
+// Main probing coroutine — single top-to-bottom flow
+// ---------------------------------------------------------------------------
+
+QCoro::Task<void> ProbingBehavior::runProbingSequence()
 {
-    qDebug() << "[Behavior][Probing] Alarm received:" << code;
+    log("Starting probing sequence...", {"Probing"});
 
-    m_alarmOccurred = true;
-    m_alarmCode = code;
+    // ── Step 1: Switch to relative positioning + metric ──────────────
+    m_stageDescription = "Setup";
+    auto r = co_await sendAndAwait("G91 G21", m_params.setupTimeout);
 
-    // Check if it's a probe failure alarm
-    if (code == GRBL_ALARM_PROBE_FAIL_1 || code == GRBL_ALARM_PROBE_FAIL_2) {
-        log("Probe failed - no contact detected", {"Probing", "Error"});
-        emit probeFailed("No contact detected during probing");
-    } else {
-        log(QString("Alarm during probing: %1").arg(code), {"Probing", "Error"});
-        emit probeFailed(QString("Alarm %1").arg(code));
+    if (!r) {
+        log("Timeout during initial setup", {"Probing", "Error"});
+        emit probeFailed("Timeout during setup");
+        transitionToPreviousState();
+        co_return;
     }
-}
-
-void ProbingBehavior::onMachineStateChanged(MachineState state)
-{
-    qDebug() << "[Behavior][Probing] Machine state changed:" << static_cast<int>(state)
-             << "Stage:" << static_cast<int>(m_stage);
-
-    // If alarm occurred, transition to alarm state
     if (m_alarmOccurred) {
+        log(QString("Alarm during setup: %1").arg(m_alarmCode), {"Probing", "Error"});
+        emit probeFailed(QString("Alarm %1 during setup").arg(m_alarmCode));
         emit transition(this, new AlarmBehavior(m_alarmCode));
-        return;
+        co_return;
+    }
+    if (!r->status.ok) {
+        log(QString("Setup error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
+        emit probeFailed("Setup command failed");
+        transitionToPreviousState();
+        co_return;
     }
 
-    // When machine becomes idle, we can proceed to next stage for movement commands
-    if (state == MachineState::Idle) {
-        // Some stages need to wait for idle state before proceeding
-        // This is handled in onCommandResponse
-    }
-}
-
-StateBehavior::Result ProbingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes,
-                                                          CmdStatus cmdStatus, QString response,
-                                                          QStringList fullResponse)
-{
-    Q_UNUSED(commandAttributes);
-
-    qDebug() << "[Behavior][Probing] Command Response:" << command << "->" << response
-             << "Stage:" << static_cast<int>(m_stage);
-
-    // If alarm occurred, stop processing
-    if (m_alarmOccurred) {
-        return StateBehavior::Result::Ok;
-    }
-
-    // Check for errors
-    if (!cmdStatus.ok) {
-        qDebug() << "[Behavior][Probing] Command error:" << cmdStatus.errorCode;
-        log(QString("Probing command error: %1").arg(enrichErrorMessage(response)), {"Probing", "Error"});
-        finishProbing(false);
-        return StateBehavior::Result::Ok;
-    }
-
-    // Process based on current stage
-    switch (m_stage) {
-        case ProbeStage::InitialSetup:
-            if (command.contains("G91")) {
-                qDebug() << "[Behavior][Probing] Initial setup complete, starting fast probe";
-                startFastProbe();
-            }
-            break;
-
-        case ProbeStage::FastProbeWait:
-            if (command.contains("G38.2")) {
-                QVector3D position;
-                bool contacted = false;
-
-                if (parseProbeResponse(fullResponse, position, contacted)) {
-                    if (contacted) {
-                        m_fastProbePosition = position;
-                        log(QString("Fast probe contact at Z=%1").arg(position.z(), 0, 'f', 3), {"Probing"});
-                        qDebug() << "[Behavior][Probing] Fast probe successful, retracting...";
-                        startRetract();
-                    } else {
-                        log("Fast probe failed - no contact detected", {"Probing", "Error"});
-                        emit probeFailed("No contact during fast probe");
-                        finishProbing(false);
-                    }
-                } else {
-                    log("Failed to parse probe response", {"Probing", "Error"});
-                    finishProbing(false);
-                }
-            }
-            break;
-
-        case ProbeStage::RetractWait:
-            if (command.contains("G0") || command.contains("G1")) {
-                qDebug() << "[Behavior][Probing] Retract complete, starting slow probe";
-                if (m_params.doubleProbe) {
-                    startSlowProbe();
-                } else {
-                    // If not doing double probe, use fast probe result as final
-                    m_probedPosition = m_fastProbePosition;
-                    m_success = true;
-                    log("Probing completed (single probe mode)", {"Probing"});
-                    emit probeCompleted(m_probedPosition);
-
-                    if (m_params.setZeroAtProbe) {
-                        setZeroPosition();
-                    } else {
-                        moveToSafePosition();
-                    }
-                }
-            }
-            break;
-
-        case ProbeStage::SlowProbeWait:
-            if (command.contains("G38.2")) {
-                QVector3D position;
-                bool contacted = false;
-
-                if (parseProbeResponse(fullResponse, position, contacted)) {
-                    if (contacted) {
-                        m_probedPosition = position;
-                        m_success = true;
-                        log(QString("Precise probe contact at Z=%1").arg(position.z(), 0, 'f', 3), {"Probing"});
-                        qDebug() << "[Behavior][Probing] Slow probe successful";
-                        emit probeCompleted(m_probedPosition);
-
-                        if (m_params.setZeroAtProbe) {
-                            setZeroPosition();
-                        } else {
-                            moveToSafePosition();
-                        }
-                    } else {
-                        log("Slow probe failed - no contact detected", {"Probing", "Error"});
-                        emit probeFailed("No contact during slow probe");
-                        finishProbing(false);
-                    }
-                } else {
-                    log("Failed to parse slow probe response", {"Probing", "Error"});
-                    finishProbing(false);
-                }
-            }
-            break;
-
-        case ProbeStage::SetZero:
-            if (command.contains("G92")) {
-                qDebug() << "[Behavior][Probing] Z zero set, moving to safe position";
-                log("Z axis zeroed at probe position", {"Probing"});
-                moveToSafePosition();
-            }
-            break;
-
-        case ProbeStage::MoveToSafe:
-            if (command.contains("G0") || command.contains("G1")) {
-                qDebug() << "[Behavior][Probing] Moved to safe position";
-
-                // Return to absolute positioning if needed
-                if (m_params.useAbsolute) {
-                    m_communicator->sendCommand(CommandSource::GeneralUI, "G90", TABLE_INDEX_UI);
-                }
-
-                m_stage = ProbeStage::Completed;
-                log("Probing completed successfully", {"Probing"});
-                finishProbing(true);
-            }
-            break;
-
-        case ProbeStage::Completed:
-            // Finalize
-            if (m_params.useAbsolute && command.contains("G90")) {
-                qDebug() << "[Behavior][Probing] Returned to absolute mode, transitioning back";
-                transitionToPreviousState();
-            }
-            break;
-
-        default:
-            break;
-    }
-
-    return StateBehavior::Result::Ok;
-}
-
-void ProbingBehavior::startFastProbe()
-{
-    m_stage = ProbeStage::FastProbe;
-
-    QString cmd = QString("G38.2 Z-%1 F%2")
+    // ── Step 2: Fast probe ───────────────────────────────────────────
+    m_stageDescription = "Fast Probe";
+    QString fastProbeCmd = QString("G38.2 Z-%1 F%2")
         .arg(m_params.maxDistance, 0, 'f', 3)
         .arg(m_params.fastFeedRate, 0, 'f', 1);
+    log(QString("Fast probe: %1").arg(fastProbeCmd), {"Probing"});
 
-    log(QString("Fast probe: %1").arg(cmd), {"Probing"});
-    m_communicator->sendCommand(CommandSource::GeneralUI, cmd, TABLE_INDEX_UI);
-    m_stage = ProbeStage::FastProbeWait;
-}
+    r = co_await sendAndAwait(fastProbeCmd, m_params.probeTimeout);
 
-void ProbingBehavior::startRetract()
-{
-    m_stage = ProbeStage::Retract;
+    if (!r) {
+        log("Timeout during fast probe", {"Probing", "Error"});
+        emit probeFailed("Timeout during fast probe");
+        if (m_params.useAbsolute) {
+            co_await sendAndAwait("G90", m_params.setupTimeout);
+        }
+        transitionToPreviousState();
+        co_return;
+    }
+    if (m_alarmOccurred) {
+        if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
+            log("Probe failed - no contact detected", {"Probing", "Error"});
+            emit probeFailed("No contact detected during probing");
+        } else {
+            log(QString("Alarm during fast probe: %1").arg(m_alarmCode), {"Probing", "Error"});
+            emit probeFailed(QString("Alarm %1").arg(m_alarmCode));
+        }
+        emit transition(this, new AlarmBehavior(m_alarmCode));
+        co_return;
+    }
+    if (!r->status.ok) {
+        log(QString("Fast probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
+        emit probeFailed("Fast probe command failed");
+        if (m_params.useAbsolute) {
+            co_await sendAndAwait("G90", m_params.setupTimeout);
+        }
+        transitionToPreviousState();
+        co_return;
+    }
 
-    QString cmd = QString("G0 Z%1")
-        .arg(m_params.retractDistance, 0, 'f', 3);
+    auto fastProbe = ProbeResponseParser::parse(r->fullResponse);
+    if (!fastProbe || !fastProbe->contacted) {
+        log("Fast probe - no contact or unparseable response", {"Probing", "Error"});
+        emit probeFailed("No contact during fast probe");
+        if (m_params.useAbsolute) {
+            co_await sendAndAwait("G90", m_params.setupTimeout);
+        }
+        transitionToPreviousState();
+        co_return;
+    }
 
+    log(QString("Fast probe contact at Z=%1").arg(fastProbe->position.z(), 0, 'f', 3), {"Probing"});
+
+    QVector3D fastProbePosition = fastProbe->position;
+
+    // ── Step 3: Retract ──────────────────────────────────────────────
+    m_stageDescription = "Retract";
+    QString retractCmd = QString("G0 Z%1").arg(m_params.retractDistance, 0, 'f', 3);
     log(QString("Retracting: %1mm").arg(m_params.retractDistance, 0, 'f', 3), {"Probing"});
-    m_communicator->sendCommand(CommandSource::GeneralUI, cmd, TABLE_INDEX_UI);
-    m_stage = ProbeStage::RetractWait;
-}
 
-void ProbingBehavior::startSlowProbe()
-{
-    m_stage = ProbeStage::SlowProbe;
+    r = co_await sendAndAwait(retractCmd, m_params.moveTimeout);
 
-    // Probe slightly more than retract distance to ensure contact
-    double probeDistance = m_params.retractDistance + 1.0;
-    QString cmd = QString("G38.2 Z-%1 F%2")
-        .arg(probeDistance, 0, 'f', 3)
-        .arg(m_params.slowFeedRate, 0, 'f', 1);
+    if (!r || m_alarmOccurred || !r->status.ok) {
+        log("Error during retract", {"Probing", "Error"});
+        emit probeFailed("Retract failed");
+        if (m_alarmOccurred) {
+            emit transition(this, new AlarmBehavior(m_alarmCode));
+        } else {
+            if (m_params.useAbsolute) {
+                co_await sendAndAwait("G90", m_params.setupTimeout);
+            }
+            transitionToPreviousState();
+        }
+        co_return;
+    }
 
-    log(QString("Slow probe: %1").arg(cmd), {"Probing"});
-    m_communicator->sendCommand(CommandSource::GeneralUI, cmd, TABLE_INDEX_UI);
-    m_stage = ProbeStage::SlowProbeWait;
-}
+    // ── Step 4: Slow probe (optional, for precision) ─────────────────
+    QVector3D finalPosition = fastProbePosition;
 
-void ProbingBehavior::setZeroPosition()
-{
-    m_stage = ProbeStage::SetZero;
+    if (m_params.doubleProbe) {
+        m_stageDescription = "Slow Probe";
+        double slowProbeDistance = m_params.retractDistance + 1.0;
+        QString slowProbeCmd = QString("G38.2 Z-%1 F%2")
+            .arg(slowProbeDistance, 0, 'f', 3)
+            .arg(m_params.slowFeedRate, 0, 'f', 1);
+        log(QString("Slow probe: %1").arg(slowProbeCmd), {"Probing"});
 
-    log("Setting Z=0 at probe position", {"Probing"});
-    m_communicator->sendCommand(CommandSource::GeneralUI, "G92 Z0", TABLE_INDEX_UI);
-}
+        r = co_await sendAndAwait(slowProbeCmd, m_params.probeTimeout);
 
-void ProbingBehavior::moveToSafePosition()
-{
-    m_stage = ProbeStage::MoveToSafe;
+        if (!r) {
+            log("Timeout during slow probe", {"Probing", "Error"});
+            emit probeFailed("Timeout during slow probe");
+            if (m_params.useAbsolute) {
+                co_await sendAndAwait("G90", m_params.setupTimeout);
+            }
+            transitionToPreviousState();
+            co_return;
+        }
+        if (m_alarmOccurred) {
+            if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
+                log("Slow probe failed - no contact detected", {"Probing", "Error"});
+                emit probeFailed("No contact during slow probe");
+            } else {
+                log(QString("Alarm during slow probe: %1").arg(m_alarmCode), {"Probing", "Error"});
+                emit probeFailed(QString("Alarm %1").arg(m_alarmCode));
+            }
+            emit transition(this, new AlarmBehavior(m_alarmCode));
+            co_return;
+        }
+        if (!r->status.ok) {
+            log(QString("Slow probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
+            emit probeFailed("Slow probe command failed");
+            if (m_params.useAbsolute) {
+                co_await sendAndAwait("G90", m_params.setupTimeout);
+            }
+            transitionToPreviousState();
+            co_return;
+        }
 
-    QString cmd = QString("G0 Z%1")
-        .arg(m_params.safeDistance, 0, 'f', 3);
+        auto slowProbe = ProbeResponseParser::parse(r->fullResponse);
+        if (!slowProbe || !slowProbe->contacted) {
+            log("Slow probe - no contact or unparseable response", {"Probing", "Error"});
+            emit probeFailed("No contact during slow probe");
+            if (m_params.useAbsolute) {
+                co_await sendAndAwait("G90", m_params.setupTimeout);
+            }
+            transitionToPreviousState();
+            co_return;
+        }
 
-    log(QString("Moving to safe position: +%1mm").arg(m_params.safeDistance, 0, 'f', 3), {"Probing"});
-    m_communicator->sendCommand(CommandSource::GeneralUI, cmd, TABLE_INDEX_UI);
-}
+        finalPosition = slowProbe->position;
+        log(QString("Precise probe contact at Z=%1").arg(slowProbe->position.z(), 0, 'f', 3), {"Probing"});
+    }
 
-bool ProbingBehavior::parseProbeResponse(const QStringList &fullResponse, QVector3D &position, bool &contacted)
-{
-    // Look for [PRB:x,y,z:success] in response
-    // Example: [PRB:0.000,0.000,-8.530:1]
-    // Last digit: 1 = contact, 0 = no contact
+    m_probedPosition = finalPosition;
+    m_success = true;
+    emit probeCompleted(m_probedPosition);
 
-    static QRegularExpression probeRegex(R"(\[PRB:([\-\d\.]+),([\-\d\.]+),([\-\d\.]+):(\d)\])");
+    // ── Step 5: Set Z=0 at probe position (optional) ────────────────
+    if (m_params.setZeroAtProbe) {
+        m_stageDescription = "Set Zero";
+        log("Setting Z=0 at probe position", {"Probing"});
 
-    for (const QString &line : fullResponse) {
-        QRegularExpressionMatch match = probeRegex.match(line);
-        if (match.hasMatch()) {
-            position.setX(match.captured(1).toDouble());
-            position.setY(match.captured(2).toDouble());
-            position.setZ(match.captured(3).toDouble());
-            contacted = (match.captured(4) == "1");
+        r = co_await sendAndAwait("G92 Z0", m_params.setupTimeout);
 
-            qDebug() << "[Behavior][Probing] Parsed probe response:"
-                     << "X=" << position.x()
-                     << "Y=" << position.y()
-                     << "Z=" << position.z()
-                     << "Contacted=" << contacted;
-
-            return true;
+        if (r && r->status.ok) {
+            log("Z axis zeroed at probe position", {"Probing"});
         }
     }
 
-    qDebug() << "[Behavior][Probing] Failed to parse probe response:" << fullResponse;
-    return false;
-}
+    // ── Step 6: Move to safe height ─────────────────────────────────
+    m_stageDescription = "Move to Safe";
+    QString safeCmd = QString("G0 Z%1").arg(m_params.safeDistance, 0, 'f', 3);
+    log(QString("Moving to safe position: +%1mm").arg(m_params.safeDistance, 0, 'f', 3), {"Probing"});
 
-void ProbingBehavior::finishProbing(bool success)
-{
-    m_success = success;
+    co_await sendAndAwait(safeCmd, m_params.moveTimeout);
 
-    if (!success) {
-        log("Probing sequence failed", {"Probing", "Error"});
-
-        // Try to return to safe position even on failure
-        m_communicator->sendCommand(CommandSource::GeneralUI,
-                                   QString("G0 Z%1").arg(m_params.safeDistance),
-                                   TABLE_INDEX_UI);
-    }
-
-    // Return to absolute if needed
+    // ── Step 7: Restore absolute positioning ────────────────────────
     if (m_params.useAbsolute) {
-        m_communicator->sendCommand(CommandSource::GeneralUI, "G90", TABLE_INDEX_UI);
+        m_stageDescription = "Restore Mode";
+        co_await sendAndAwait("G90", m_params.setupTimeout);
     }
 
-    // Transition back
+    // ── Done ─────────────────────────────────────────────────────────
+    m_stageDescription = "Completed";
+    log("Probing completed successfully", {"Probing"});
     transitionToPreviousState();
-}
-
-QString ProbingBehavior::stageDescription() const
-{
-    switch (m_stage) {
-        case ProbeStage::InitialSetup: return "Setup";
-        case ProbeStage::FastProbe:
-        case ProbeStage::FastProbeWait: return "Fast Probe";
-        case ProbeStage::Retract:
-        case ProbeStage::RetractWait: return "Retract";
-        case ProbeStage::SlowProbe:
-        case ProbeStage::SlowProbeWait: return "Slow Probe";
-        case ProbeStage::SetZero: return "Set Zero";
-        case ProbeStage::MoveToSafe: return "Move to Safe";
-        case ProbeStage::Completed: return "Completed";
-        default: return "Unknown";
-    }
 }

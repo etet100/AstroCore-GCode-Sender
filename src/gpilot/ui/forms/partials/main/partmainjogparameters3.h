@@ -33,7 +33,7 @@ class PartMainJogParameters3 : public PartMainJogParametersInterface
         float feedRateZ() const override;
 
     private:
-        void populateButtonGroup(QWidget* container, QList<QPushButton*>& buttons, const QStringList& options, std::function<void(float)> onSelected);
+        void populateButtonGroup(QWidget* container, QList<QPushButton*>& buttons, const QStringList& options, bool infOption, std::function<void(float)> onSelected);
         void selectButton(QList<QPushButton*>& buttons, float value);
 
         Ui::PartMainJogParameters3* ui;

@@ -15,6 +15,9 @@
 #include <functional>
 #include <QMap>
 #include <QPointer>
+#include <optional>
+#include <chrono>
+#include <qcorotask.h>
 
 class CommunicatorApi;
 
@@ -23,6 +26,15 @@ class StateBehavior : public QObject
     Q_OBJECT
 
     public:
+        // Common type for delivering a complete command response to a coroutine.
+        struct CommandResult {
+            QString command;
+            CommandAttributes attributes;
+            CmdStatus status;
+            QString response;
+            QStringList fullResponse;
+        };
+
         enum Result : int {
             Ok = 0,
             ReturnCommandToQueue,
@@ -37,13 +49,17 @@ class StateBehavior : public QObject
         bool eventsAttached() const { return m_eventsAttached; }
         void markEventsAttached() { m_eventsAttached = true; }
 
-        virtual bool action(const Action &action);
+        bool action(const Action &action);
 
         // Returns the set of actions that this state accepts.
         // UI uses this to enable / disable controls.
-        virtual QSet<Action::Type> availableActions() const { return {}; }
+        virtual QSet<Action::Type> availableActions() const {
+            return { Action::Type::Reset };
+        }
 
-        bool canExecute(Action::Type type) const { return availableActions().contains(type); }
+        bool canExecute(Action::Type type) const {
+            return availableActions().contains(type);
+        }
 
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
@@ -54,21 +70,17 @@ class StateBehavior : public QObject
         // async exit means that onExit will emit exitCompleted signal when done
         // virtual bool exitAsync() { return false; };
 
-        virtual void reset();
-        virtual void unlock() {};
-
         StateBehavior* previous() const { return m_previous; }
 
         virtual Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) = 0;
         virtual Result onExit(StateBehavior *next = nullptr);
 
-        virtual void onAlarm(int code) {
-            qDebug() << QString("[%1] Alarm: %2").arg(this->name()).arg(ALARMS.value(code, QString("Unknown (%1)").arg(code)));
-        }
+        // Default: logs the alarm, sets m_alarmOccurred/m_alarmCode, and wakes any
+        // co_awaiting coroutine via commandResponseReceived.
+        virtual void onAlarm(int code);
 
-        virtual void onMachineStateChanged(MachineState state) {
-            Q_UNUSED(state);
-        }
+        // Default: emits machineStateChangedSignal for coroutine co_await.
+        virtual void onMachineStateChanged(MachineState state);
 
         using StateResponseCallback = std::function<void(MachineState)>;
 
@@ -79,16 +91,10 @@ class StateBehavior : public QObject
         // passed to onCommandResponse.
         virtual Result onRawResponse(QString response);
 
-        // returns true if the response was handled and should not be processed further.
-        virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) {
-            Q_UNUSED(command);
-            Q_UNUSED(commandAttributes);
-            Q_UNUSED(cmdStatus);
-            Q_UNUSED(response);
-            Q_UNUSED(fullResponse);
-
-            return Result::Unhandled;
-        }
+        // Default: emits commandResponseReceived for coroutine co_await and returns Ok.
+        // Behaviors that need custom response handling should override this.
+        virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes,
+                                         CmdStatus cmdStatus, QString response, QStringList fullResponse);
 
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
@@ -108,10 +114,24 @@ class StateBehavior : public QObject
         void logSignal(QString message);
         void asyncCompleted();
 
+        // QCoro bridge signals — emitted from the default onCommandResponse / onMachineStateChanged
+        // implementations so that coroutine-based behaviors can co_await them.
+        void commandResponseReceived(StateBehavior::CommandResult result);
+        void machineStateChangedSignal(MachineState state);
+
     protected:
         StateBehavior *m_previous = nullptr;
         QPointer<CommunicatorApi> m_communicator = nullptr;
         QTimer *m_timer = nullptr;
+
+        bool m_alarmOccurred = false;
+        int m_alarmCode = 0;
+
+        // Coroutine helpers: send a command and wait for its specific response by commandIndex.
+        QCoro::Task<std::optional<CommandResult>> sendAndAwait(const QString &command,
+                                                                std::chrono::milliseconds timeout);
+        QCoro::Task<std::optional<CommandResult>> awaitResponse(int commandIndex,
+                                                                 std::chrono::milliseconds timeout);
 
         struct StateResponseEntry {
             int id;
@@ -149,6 +169,7 @@ class StateBehavior : public QObject
     private:
         QHash<int, QTimer*> m_timers;
         bool m_eventsAttached = false; // used by Communicator
+        void reset();
 };
 
 #endif // STATEBEHAVIOR_H

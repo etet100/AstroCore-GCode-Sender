@@ -30,6 +30,8 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
     // Handle device state changes
     if (state == MachineState::Idle) {
         emit transition(this, new IdleBehavior());
+    } else {
+        qWarning() << "[Behavior][Alarm] Unexpected machine state after unlock attempt:" << static_cast<int>(state);
     }
 }
 
@@ -53,30 +55,30 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
 {
     qDebug() << "[Behavior][Alarm] Command Response:" << command << response;
     // Handle command responses in alarm state
-    if (command == "$X") {  // Unlock command
-        if (!fullResponse.contains("error")) {
-            // Unlock successful, go to idle state
-            // emit transition(this, new IdleBehavior());
-        } else {
-            // Unlock failed, stay in alarm state
-            // emit error(this, "Failed to unlock alarm: " + response.join(" "));
-        }
+    // if (command == "$X") {  // Unlock command
+    //     if (cmdStatus.ok !fullResponse.contains("error")) {
+    //         // Unlock successful, go to idle state
+    //         // emit transition(this, new IdleBehavior());
+    //     } else {
+    //         // Unlock failed, stay in alarm state
+    //         // emit error(this, "Failed to unlock alarm: " + response.join(" "));
+    //     }
 
-        return Result::Ok;
-    }
+    //     return Result::Ok;
+    // }
 
-    if (command == "$$") {
-        if (!cmdStatus.ok) {
-            qDebug() << "[Behavior][Alarm] Error receiving device configuration.";
+    // if (command == "$$") {
+    //     if (!cmdStatus.ok) {
+    //         qDebug() << "[Behavior][Alarm] Error receiving device configuration.";
 
-            return Result::Ok;
-        }
+    //         return Result::Ok;
+    //     }
 
-        qDebug() << "[Behavior][Alarm] Processing device configuration.";
-        m_communicator->processDeviceConfiguration(fullResponse);
+    //     qDebug() << "[Behavior][Alarm] Processing device configuration.";
+    //     m_communicator->processDeviceConfiguration(fullResponse);
 
-        return Result::Ok;
-    }
+    //     return Result::Ok;
+    // }
 
     return Result::Unhandled;
 }
@@ -105,6 +107,7 @@ bool AlarmBehavior::doAction(const Action &action)
     switch (action.type()) {
         case Action::Type::Unlock:
             unlock();
+
             return true;
     }
 

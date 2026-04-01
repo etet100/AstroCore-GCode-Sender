@@ -7,6 +7,7 @@
 
 #include "statebehavior.h"
 #include "core/gcode/gcode.h"
+#include "core/communicator/commandscanner.h"
 
 class RunningBehavior : public StateBehavior
 {
@@ -45,7 +46,10 @@ class RunningBehavior : public StateBehavior
         int m_feedOverride;
         int m_spindleOverride;
         GCode &m_program;
+        CommandScanner m_commandScanner;
+        int m_lastLookAheadIndex = -1;
         void sendStreamerCommandsUntilBufferIsFull();
+        void checkNextCommand();
         void pause();
         // Graceful stop - do not send new commands, wait for buffer to be empty and for idle state
         void abort();

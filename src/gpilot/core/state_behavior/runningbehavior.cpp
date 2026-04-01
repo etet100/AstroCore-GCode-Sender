@@ -200,6 +200,7 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
         !m_communicator->willOverflowBuffer(command) && m_program.hasMoreCommands()
         && !(!m_communicator->isCommandBufferEmpty() && GcodePreprocessorUtils::removeComment(m_communicator->commands().last().commandLine).contains(M230))
     )) {
+        checkNextCommand();
         if (command.isEmpty()) {
             m_program.setCommandSkipped();
         } else {
@@ -218,6 +219,29 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
     }
 
     qDebug() << "[Behavior][Running][Dbg] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
+}
+
+void RunningBehavior::checkNextCommand()
+{
+    const int currentIndex = m_program.commandIndex();
+    if (currentIndex == m_lastLookAheadIndex) {
+        return;
+    }
+    m_lastLookAheadIndex = currentIndex;
+
+    const GCodeItem *next = m_program.lookAhead(currentIndex, 1);
+    if (!next) {
+        qDebug() << "[Behavior][Running] Look-ahead: no next command after index" << currentIndex;
+
+        return;
+    }
+
+    const CommandScanner::CommandType type = m_commandScanner.classify(next->command);
+    if (type == CommandScanner::CommandType::Pause) {
+        qDebug() << "[Behavior][Running] Look-ahead: next command is Pause:" << next->command << "at index" << (currentIndex + 1);
+    } else if (type == CommandScanner::CommandType::ToolChange) {
+        qDebug() << "[Behavior][Running] Look-ahead: next command is ToolChange:" << next->command << "at index" << (currentIndex + 1);
+    }
 }
 
 void RunningBehavior::pause()

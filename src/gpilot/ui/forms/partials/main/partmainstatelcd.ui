@@ -51,21 +51,15 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>6</number>
-     </property>
-     <item row="0" column="2">
-      <widget class="QLabel" name="txtConName">
-       <property name="styleSheet">
-        <string notr="true">border: 1px solid silver;</string>
-       </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="labelStatus">
        <property name="text">
-        <string>No connection</string>
+        <string>Status:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item>
       <widget class="QLineEdit" name="txtStatus">
        <property name="enabled">
         <bool>false</bool>
@@ -87,10 +81,16 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelStatus">
+     <item>
+      <widget class="QLabel" name="txtConName">
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid silver;</string>
+       </property>
        <property name="text">
-        <string>Status:</string>
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../../../resources/images.qrc">:/images/conn/disconnected.svg</pixmap>
        </property>
       </widget>
      </item>
@@ -679,6 +679,8 @@ c&lt;br&gt;</string>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../resources/images.qrc"/>
+ </resources>
  <connections/>
 </ui>

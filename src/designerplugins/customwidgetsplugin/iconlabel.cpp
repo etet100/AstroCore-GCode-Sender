@@ -118,13 +118,13 @@ QImage IconLabel::renderSvg() const
 {
     QFile file(m_svgPath);
     if (!file.open(QFile::ReadOnly)) {
-        qDebug() << "IconLabel: failed to open SVG:" << m_svgPath;
+        qWarning() << "[IconLabel] Failed to open SVG:" << m_svgPath;
+
         return QImage();
     }
 
     QPalette::ColorGroup cg = isEnabled() ? QPalette::Normal : QPalette::Disabled;
     QColor color = m_iconColor.isValid() ? m_iconColor : palette().color(cg, QPalette::WindowText);
-    qDebug() << "IconLabel: rendering SVG with color:" << color.name() << "(m_iconColor valid:" << m_iconColor.isValid() << ")";
 
     QString svg = QString::fromUtf8(file.readAll());
     svg.replace("currentColor", color.name());

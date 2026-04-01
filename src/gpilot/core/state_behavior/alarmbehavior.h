@@ -29,7 +29,7 @@ class AlarmBehavior : public StateBehavior
         int m_alarmCode;
         QString m_alarmMessage;
         void setAlarmMessage();
-        void unlock() override;
+        void unlock();
 };
 
 #endif // ALARMBEHAVIOR_H

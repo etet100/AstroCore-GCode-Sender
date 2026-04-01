@@ -1,36 +1,35 @@
+// This file is a part of "G-Pilot GCode Sender" application.
+// Copyright 2015-2021 Hayrullin Denis Ravilevich
+// Copyright 2024 BTS
+
 #ifndef PROBINGBEHAVIOR_H
 #define PROBINGBEHAVIOR_H
 
 #include "statebehavior.h"
+#include "core/communicator/proberesponseparser.h"
 #include <QVector3D>
+#include <optional>
+#include <chrono>
 
 class ProbingBehavior : public StateBehavior
 {
     Q_OBJECT
 
     public:
-        enum class ProbeStage {
-            InitialSetup,           // Setup initial state (G91, units)
-            FastProbe,              // First probe - fast to find surface
-            FastProbeWait,          // Waiting for fast probe result
-            Retract,                // Retract after fast probe
-            RetractWait,            // Waiting for retract
-            SlowProbe,              // Second probe - slow for precision
-            SlowProbeWait,          // Waiting for slow probe result
-            SetZero,                // Set Z=0 at probe position (optional)
-            MoveToSafe,             // Move to safe position
-            Completed               // All done
-        };
-
         struct ProbeParameters {
             double fastFeedRate = 50.0;     // Fast probe speed (mm/min)
-            double slowFeedRate = 20.0;      // Slow probe speed (mm/min)
-            double maxDistance = 30.0;       // Maximum probe distance (mm)
-            double retractDistance = 2.0;    // Retract distance between probes (mm)
-            double safeDistance = 5.0;       // Safe distance to move up after probing (mm)
-            bool doubleProbe = false;        // Whether to do a second slow probe for precision
-            bool setZeroAtProbe = false;     // Set Z=0 at probed position
-            bool useAbsolute = false;        // Return to absolute positioning
+            double slowFeedRate = 20.0;     // Slow probe speed (mm/min)
+            double maxDistance = 5.0;      // Maximum probe distance (mm)
+            double retractDistance = 2.0;   // Retract distance between probes (mm)
+            double safeDistance = 5.0;      // Safe distance to move up after probing (mm)
+            bool doubleProbe = false;       // Whether to do a second slow probe for precision
+            bool setZeroAtProbe = true;     // Set Z=0 at probed position
+            bool useAbsolute = true;        // Return to absolute positioning
+
+            // Timeouts
+            std::chrono::milliseconds setupTimeout{5000};
+            std::chrono::milliseconds probeTimeout{60000};
+            std::chrono::milliseconds moveTimeout{30000};
         };
 
         explicit ProbingBehavior(QObject* parent = nullptr);
@@ -38,9 +37,6 @@ class ProbingBehavior : public StateBehavior
         QString description() override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
-        void onAlarm(int code) override;
-        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
-        void onMachineStateChanged(MachineState state) override;
 
         QVector3D probedPosition() const { return m_probedPosition; }
         bool wasSuccessful() const { return m_success; }
@@ -50,22 +46,13 @@ class ProbingBehavior : public StateBehavior
 
     private:
         ProbeParameters m_params;
-        ProbeStage m_stage;
-        bool m_alarmOccurred;
-        int m_alarmCode;
-        QVector3D m_fastProbePosition;
-        QVector3D m_probedPosition;  // Final precise position
-        bool m_success;
-        bool m_initialStateAbsolute;  // Remember if we started in absolute mode
+        QVector3D m_probedPosition;
+        bool m_success = false;
+        QString m_stageDescription = "Setup";
 
-        void startFastProbe();
-        void startRetract();
-        void startSlowProbe();
-        void setZeroPosition();
-        void moveToSafePosition();
-        bool parseProbeResponse(const QStringList &fullResponse, QVector3D &position, bool &contacted);
-        void finishProbing(bool success);
-        QString stageDescription() const;
+        std::optional<QCoro::Task<void>> m_probingTask;
+
+        QCoro::Task<void> runProbingSequence();
 
     signals:
         void probeCompleted(QVector3D position);

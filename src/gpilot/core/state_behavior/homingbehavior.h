@@ -16,7 +16,7 @@ class HomingBehavior : public StateBehavior
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
-        bool action(const Action &action) override;
+        bool doAction(const Action &action);
 
     protected:
         QString name() const override { return "Homing"; }

@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QString>
 #include <QMap>
+#include <optional>
 #include "machinestatus.h"
 #include "core/globals.h"
 
@@ -18,7 +19,7 @@ class StatusReportProcessor : public QObject
 public:
     explicit StatusReportProcessor(QObject *parent = nullptr);
 
-    MachineStatusReport parse(const QString &statusLine);
+    std::optional<MachineStatusReport> parse(const QString &statusLine);
 
 private:
     void parseMachineState(const QString &stateStr, MachineStatusReport &status);

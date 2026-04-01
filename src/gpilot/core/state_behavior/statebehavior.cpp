@@ -7,6 +7,8 @@
 #include <QRegularExpression>
 #include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
+#include "core/state_behavior/alarmbehavior.h"
+#include <qcorosignal.h>
 
 const QMap<int, QString> StateBehavior::ERRORS = {
     { GRBL_ERROR_EXPECTED_COMMAND_LETTER,     "Missing letter" },
@@ -207,6 +209,73 @@ void StateBehavior::log(QString message, std::initializer_list<QString> context)
 //     return data.contains(re);
 // }
 
+void StateBehavior::onAlarm(int code)
+{
+    qDebug() << QString("[%1] Alarm: %2").arg(name()).arg(ALARMS.value(code, QString("Unknown (%1)").arg(code)));
+
+    m_alarmOccurred = true;
+    m_alarmCode = code;
+
+    // CommandResult alarmResult;
+    // alarmResult.command = QString("ALARM:%1").arg(code);
+    // alarmResult.status.ok = false;
+    // alarmResult.status.errorCode = code;
+
+    emit transition(this, new AlarmBehavior(code));
+}
+
+void StateBehavior::onMachineStateChanged(MachineState state)
+{
+    emit machineStateChangedSignal(state);
+}
+
+StateBehavior::Result StateBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes,
+                                                        CmdStatus cmdStatus, QString response,
+                                                        QStringList fullResponse)
+{
+    emit commandResponseReceived({command, commandAttributes, cmdStatus, response, fullResponse});
+
+    return Result::Ok;
+}
+
+QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::awaitResponse(
+    int commandIndex, std::chrono::milliseconds timeout)
+{
+    using namespace std::chrono;
+    auto deadline = steady_clock::now() + timeout;
+
+    while (true) {
+        auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
+        if (remaining <= milliseconds::zero()) {
+            co_return std::nullopt;
+        }
+
+        auto result = co_await qCoro(this, &StateBehavior::commandResponseReceived, remaining);
+        if (!result) {
+            co_return std::nullopt;
+        }
+
+        if (m_alarmOccurred) {
+            co_return *result;
+        }
+
+        if (result->attributes.commandIndex == commandIndex) {
+            co_return *result;
+        }
+
+        qDebug() << QString("[%1] Skipping response for command index %2 (waiting for %3)")
+                        .arg(name()).arg(result->attributes.commandIndex).arg(commandIndex);
+    }
+}
+
+QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::sendAndAwait(
+    const QString &command, std::chrono::milliseconds timeout)
+{
+    auto r = m_communicator->sendCommand(CommandSource::StateBehavior, command, TABLE_INDEX_UI);
+
+    co_return co_await awaitResponse(r.commandIndex, timeout);
+}
+
 bool StateBehavior::transitionToPreviousState() {
     if (m_previous) {
         emit transition(this, m_previous);
@@ -248,6 +317,12 @@ QString StateBehavior::enrichErrorMessage(QString message)
 
 bool StateBehavior::action(const Action &action)
 {
+    if (action.type() == Action::Type::Reset) {
+        this->reset();
+
+        return true;
+    }
+
     bool result = doAction(action);
     if (!result) {
         qDebug() << qPrintable(QString("[Behavior][%1] Action rejected: %2").arg(name()).arg(action.name()));

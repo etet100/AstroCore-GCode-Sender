@@ -73,9 +73,9 @@ StateBehavior::Result HomingBehavior::onCommandResponse(QString command, Command
             // Some controllers don't give direct response about homing completion
             // So we check machine state in onMachineStateChanged
 
-            qDebug() << "[Behavior][Homing] Test";
-            qDebug() << "[Behavior][Homing] Test" << response;
-            qDebug() << "[Behavior][Homing] Test" << fullResponse;
+            // qDebug() << "[Behavior][Homing] Test";
+            // qDebug() << "[Behavior][Homing] Test" << response;
+            // qDebug() << "[Behavior][Homing] Test" << fullResponse;
 
             emit transition(this, new IdleBehavior(this));
         }
@@ -93,11 +93,11 @@ void HomingBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
-bool HomingBehavior::action(const Action &action)
+bool HomingBehavior::doAction(const Action &action)
 {
     if (handleMachineConfigurationActions(action)) {
         return true;
     }
 
-    return StateBehavior::action(action);
+    return false;
 }

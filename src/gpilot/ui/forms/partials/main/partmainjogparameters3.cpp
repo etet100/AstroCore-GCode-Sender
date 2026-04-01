@@ -17,7 +17,7 @@ PartMainJogParameters3::~PartMainJogParameters3()
 }
 
 void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPushButton*>& buttons,
-    const QStringList& options, std::function<void(float)> onSelected)
+    const QStringList& options, bool infOption, std::function<void(float)> onSelected)
 {
     // Remove existing buttons and layout
     for (QPushButton* btn : buttons) {
@@ -30,6 +30,20 @@ void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPush
     flowLayout->setSpacing(2);
 
     QList<QPushButton*>* buttonsPtr = &buttons;
+    if (infOption) {
+        QPushButton *btn = new QPushButton();
+        btn->setIcon(QIcon(":/images/infinity.svg"));
+        btn->setCheckable(true);
+        btn->setProperty("val", -1.0f);
+        connect(btn, &QPushButton::clicked, this, [btn, buttonsPtr, onSelected]() {
+            for (auto* b : *buttonsPtr) {
+                b->setChecked(b == btn);
+            }
+            onSelected(btn->property("val").toFloat());
+        });
+        flowLayout->addWidget(btn);
+        buttons.append(btn);
+    }
     for (const QString& opt : options) {
         QPushButton *btn = new QPushButton(opt);
         btn->setCheckable(true);
@@ -57,19 +71,19 @@ void PartMainJogParameters3::selectButton(QList<QPushButton*>& buttons, float va
 
 void PartMainJogParameters3::setStepSizeOptions(const QStringList& options)
 {
-    populateButtonGroup(ui->contStep, m_stepButtons, options,
+    populateButtonGroup(ui->contStep, m_stepButtons, options, true,
         [this](float v) { emit stepSizeChanged(v); });
 }
 
 void PartMainJogParameters3::setFeedRateXYOptions(const QStringList& options)
 {
-    populateButtonGroup(ui->contFeedXY, m_feedXYButtons, options,
+    populateButtonGroup(ui->contFeedXY, m_feedXYButtons, options, false,
         [this](float v) { emit feedRateXYChanged(v); });
 }
 
 void PartMainJogParameters3::setFeedRateZOptions(const QStringList& options)
 {
-    populateButtonGroup(ui->contFeedZ, m_feedZButtons, options,
+    populateButtonGroup(ui->contFeedZ, m_feedZButtons, options, false,
         [this](float v) { emit feedRateZChanged(v); });
 }
 

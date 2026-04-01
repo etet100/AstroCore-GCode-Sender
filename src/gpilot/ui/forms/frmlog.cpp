@@ -230,7 +230,9 @@ class CategoriesModel : public QAbstractItemModel
             if (ctrl && state == Qt::Checked) {
                 checkAncestors(item);
             } else if (ctrl && state == Qt::Unchecked) {
-                uncheckAncestorsIfNoCheckedSiblings(item);
+                for (auto* child : item->children) {
+                    propagateDown(child, Qt::Unchecked);
+                }
             }
 
             return true;

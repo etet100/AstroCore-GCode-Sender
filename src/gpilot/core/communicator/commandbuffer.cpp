@@ -57,16 +57,18 @@ SendCommandResult CommandBuffer::enqueue(
 ) {
     if (wait || willOverflow(commandLine)) {
         m_queue.append(CommandQueue(source, commandLine, tableIndex, callback));
-        return SendCommandResult::Queue;
+
+        return SendCommandResult::Status::Queue;
     }
 
-    CommandAttributes attrs(source, m_commandIndex++, tableIndex, commandLine, callback);
+    int index = m_commandIndex++;
+    CommandAttributes attrs(source, index, tableIndex, commandLine, callback);
     m_commands.append(attrs);
     m_connection->sendLine(commandLine);
 
     emit commandSent(attrs);
 
-    return SendCommandResult::Done;
+    return {SendCommandResult::Done, index};
 }
 
 void CommandBuffer::sendRealtime(const QString& command)
@@ -154,8 +156,8 @@ bool CommandBuffer::processResponse(const QString& data)
         bool ok = m_responseHandler(command, attrs, status, data, m_responseLines);
         if (!ok) {
             // Behavior wants to process this command again on the next response.
-            qDebug() << "[CommandBuffer] Returning command to front:" << attrs.commandLine;
-            m_commands.prepend(attrs);
+            // qDebug() << "[CommandBuffer] Returning command to front:" << attrs.commandLine << attrs.commandIndex;
+            // m_commands.prepend(attrs);
         } else {
             behaviorHandledIt = true;
         }
@@ -192,12 +194,12 @@ void CommandBuffer::drainQueue()
             queued.source, queued.commandLine, queued.tableIndex, queued.callback
         );
 
-        if (r == SendCommandResult::Done) {
+        if (r == SendCommandResult::Status::Done) {
             // One command sent — stop until next response arrives.
             break;
         }
 
-        if (r == SendCommandResult::Queue) {
+        if (r == SendCommandResult::Status::Queue) {
             // Buffer full — the sender re-added it to m_queue as the last element.
             // Move it back to the front to preserve order.
             if (!m_queue.isEmpty()) {

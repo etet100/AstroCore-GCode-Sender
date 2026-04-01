@@ -29,30 +29,32 @@ StatusReportProcessor::StatusReportProcessor(QObject *parent)
     };
 }
 
-MachineStatusReport StatusReportProcessor::parse(const QString &statusLine)
+std::optional<MachineStatusReport> StatusReportProcessor::parse(const QString &statusLine)
 {
-    MachineStatusReport status;
-    status.rawLine = statusLine;
-
     // Remove < and >, split by |
     // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|FS:673,1000|WCO:0.000,0.000,0.000>
     if (!statusLine.startsWith('<') || !statusLine.endsWith('>')) {
         qDebug() << "[StatusProcessor] Invalid status line format:" << statusLine;
-        return status;
+
+        return std::nullopt;
     }
 
     QStringList sections = statusLine.mid(1, statusLine.length() - 2).split("|");
 
     if (sections.isEmpty()) {
         qDebug() << "[StatusProcessor] Empty status line";
-        return status;
+
+        return std::nullopt;
     }
+
+    MachineStatusReport status;
+    status.rawLine = statusLine;
 
     // First section is always machine state
     parseMachineState(sections.takeFirst(), status);
 
     // Process remaining sections
-    for (QString section : sections) {
+    for (const QString &section : sections) {
         if (section.startsWith("MPos:")) {
             parseMachinePosition(section.mid(5), status);
         } else if (section.startsWith("WPos:")) {

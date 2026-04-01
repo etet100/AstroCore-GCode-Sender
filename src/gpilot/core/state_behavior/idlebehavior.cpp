@@ -54,7 +54,7 @@ StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAt
         return Result::Ok;
     }
 
-    return Result::Unhandled;;
+    return Result::Unhandled;
 }
 
 bool IdleBehavior::doAction(const Action &action)

@@ -197,12 +197,14 @@ void PartMainConsole::clear()
 void PartMainConsole::send()
 {
     QString command = ui->cboCommand->currentText().trimmed();
-    ui->cboCommand->clearEditText();
 
     if (command.isEmpty()) {
+        ui->cboCommand->clearEditText();
+
         return;
     }
 
+    ui->cboCommand->storeText();
     m_configurationConsole->setCommandHistory(ui->cboCommand->items());
 
     if (command.startsWith(":")) {
@@ -296,6 +298,13 @@ bool PartMainConsole::eventFilter(QObject *watched, QEvent *event)
 
         if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
             send();
+
+            return true;
+        }
+
+        if (keyEvent->key() == Qt::Key_Up && ui->cboCommand->currentIndex() == 0) {
+            ui->cboCommand->setCurrentIndex(-1);
+            ui->cboCommand->clearEditText();
 
             return true;
         }

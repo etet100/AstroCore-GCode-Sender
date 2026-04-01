@@ -8,6 +8,7 @@
 #include <CStringProperty.h>
 #include <CSwitchProperty.h>
 #include <CIntegerProperty.h>
+#include <qcorosignal.h>
 #include <CColorProperty.h>
 #include <CPropertyHeader.h>
 #include <CSwitchProperty.h>
@@ -302,7 +303,7 @@ FrmGrblConfigurator::FrmGrblConfigurator(QWidget *parent, ConfigurationUI &uiCon
 
     connect(ui->editor, &QTreeWidget::itemChanged, this, &FrmGrblConfigurator::itemChanged);
 
-    update();
+    m_activeTask = update();
 }
 
 FrmGrblConfigurator::~FrmGrblConfigurator()
@@ -343,31 +344,72 @@ void FrmGrblConfigurator::moveEvent(QMoveEvent *me)
     }
 }
 
-void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration configuration)
+void FrmGrblConfigurator::onUpdateClicked()
 {
-    Q_UNUSED(configuration);
+    m_activeTask = update();
+}
 
-    disconnectConfReceivedEvent();
+void FrmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
+{
+    Q_UNUSED(column);
 
-    QMap<int, double> rawConfiguration = configuration.raw();
+    CBaseProperty *property = dynamic_cast<CBaseProperty*>(item);
 
-    if (m_isSaving) {
-        m_isSaving = false;
-        findParametersToBeSaved(rawConfiguration);
-
-        return;
+    int entryIndex = property->data(0, Qt::UserRole).toInt();
+    Axis axis = Axis::None;
+    if (entryIndex > 1000) {
+        axis = Axis(entryIndex % 10000);
+        entryIndex = entryIndex / 10000;
     }
 
+    if (entryIndex == REPORT_POS_TYPE_SETTING_ID) {
+        setSettingsBit(10, REPORT_POS_TYPE_SETTING_BIT, property->getVariantValue().toBool());
+    } else
+    if (entryIndex == REPORT_BUFFER_SETTING_ID) {
+        setSettingsBit(10, REPORT_BUFFER_SETTING_BIT, property->getVariantValue().toBool());
+    } else
+    if (axis != Axis::None) {
+        setSettingsBit(entryIndex, 1 << (int) axis, property->getVariantValue().toBool());
+    } else {
+        m_currentSettings[entryIndex] = property->getVariantValue().toDouble();
+    }
+}
+
+QCoro::Task<void> FrmGrblConfigurator::update()
+{
+    setInfo("Updating...", Qt::blue);
+    ui->btnRefresh->setEnabled(false);
+
+    QTimer delay;
+    delay.setSingleShot(true);
+    delay.start(250);
+    co_await qCoro(&delay, &QTimer::timeout);
+
+    m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
+
+    auto result = co_await qCoro(
+        m_communicator,
+        &Communicator::machineConfigurationReceived,
+        std::chrono::milliseconds{1000}
+    );
+
+    if (!result) {
+        setInfo("Error: No response from machine", Qt::red);
+        ui->btnRefresh->setEnabled(true);
+
+        co_return;
+    }
+
+    QMap<int, double> rawConfiguration = result->raw();
     m_currentSettings = rawConfiguration;
 
-    setInfo("Updated", Qt::black);
+    setInfo("Updated");
     qDebug() << "[GRBLConfigurator] Settings received" << rawConfiguration;
 
     // ugly hack! split status report setting into two separate settings
     int statusReportSetting = rawConfiguration[10];
     rawConfiguration[REPORT_BUFFER_SETTING_ID] = statusReportSetting & REPORT_BUFFER_SETTING_BIT;
     rawConfiguration[REPORT_POS_TYPE_SETTING_ID] = statusReportSetting & REPORT_POS_TYPE_SETTING_BIT;
-    //
 
     for (std::vector<ConfigGroup>::iterator it = ConfigMap.begin(); it != ConfigMap.end(); it++) {
         ConfigGroup &group = *it;
@@ -403,82 +445,17 @@ void FrmGrblConfigurator::onConfigurationReceived(PhysicalMachineConfiguration c
         }
     }
 
-    m_updating = false;
     ui->btnRefresh->setEnabled(true);
-}
-
-void FrmGrblConfigurator::onUpdateClicked()
-{
-    update();
-}
-
-void FrmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
-{
-    Q_UNUSED(column);
-
-    CBaseProperty *property = dynamic_cast<CBaseProperty*>(item);
-
-    int entryIndex = property->data(0, Qt::UserRole).toInt();
-    Axis axis = Axis::None;
-    if (entryIndex > 1000) {
-        axis = Axis(entryIndex % 10000);
-        entryIndex = entryIndex / 10000;
-    }
-
-    if (entryIndex == REPORT_POS_TYPE_SETTING_ID) {
-        setSettingsBit(10, REPORT_POS_TYPE_SETTING_BIT, property->getVariantValue().toBool());
-    } else
-    if (entryIndex == REPORT_BUFFER_SETTING_ID) {
-        setSettingsBit(10, REPORT_BUFFER_SETTING_BIT, property->getVariantValue().toBool());
-    } else
-    if (axis != Axis::None) {
-        setSettingsBit(entryIndex, 1 << (int) axis, property->getVariantValue().toBool());
-    } else {
-        m_currentSettings[entryIndex] = property->getVariantValue().toDouble();
-    }
-}
-
-void FrmGrblConfigurator::disconnectConfReceivedEvent()
-{
-    disconnect(
-        m_communicator,
-        &Communicator::machineConfigurationReceived,
-        this,
-        &FrmGrblConfigurator::onConfigurationReceived
-        );
-}
-
-void FrmGrblConfigurator::update()
-{
-    m_updating = true;
-    setInfo("Updating...", Qt::blue);
-    ui->btnRefresh->setEnabled(false);
-
-    connect(
-        m_communicator,
-        &Communicator::machineConfigurationReceived,
-        this,
-        &FrmGrblConfigurator::onConfigurationReceived
-    );
-    QTimer::singleShot(50, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
-    });
-    QTimer::singleShot(250, this, [this]() {
-        if (!m_updating) {
-            return;
-        }
-
-        disconnectConfReceivedEvent();
-        m_updating = false;
-        setInfo("Error: No response from machine", Qt::red);
-        ui->btnRefresh->setEnabled(true);
-    });
 }
 
 void FrmGrblConfigurator::setInfo(QString text, QColor color)
 {
     ui->lblInfo->setText(text);
-    ui->lblInfo->setStyleSheet(QString("color: %1").arg(color.name()));
+    if (color == Qt::transparent) {
+        ui->lblInfo->setStyleSheet("");
+    } else {
+        ui->lblInfo->setStyleSheet(QString("color: %1").arg(color.name()));
+    }
 }
 
 QMap<Axis, CBaseProperty*> FrmGrblConfigurator::addAxesProperty(CPropertyHeader *header, ConfigEntry entry)
@@ -530,8 +507,37 @@ void FrmGrblConfigurator::accept()
         return;
     }
 
-    m_isSaving = true;
-    update();
+    m_activeTask = save();
+}
+
+QCoro::Task<void> FrmGrblConfigurator::save()
+{
+    setInfo("Reading current settings...", Qt::blue);
+    ui->btnRefresh->setEnabled(false);
+
+    QTimer delay;
+    delay.setSingleShot(true);
+    delay.start(250);
+    co_await qCoro(&delay, &QTimer::timeout);
+
+    m_communicator->stateBehavior()->action(Action::QueryMachineConfiguration);
+
+    auto result = co_await qCoro(
+        m_communicator,
+        &Communicator::machineConfigurationReceived,
+        std::chrono::milliseconds{1000}
+    );
+
+    ui->btnRefresh->setEnabled(true);
+
+    if (!result) {
+        setInfo("Error: No response from machine", Qt::red);
+
+        co_return;
+    }
+
+    QMap<int, double> rawConfiguration = result->raw();
+    findParametersToBeSaved(rawConfiguration);
 }
 
 void FrmGrblConfigurator::findParametersToBeSaved(QMap<int, double> settings)

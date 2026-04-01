@@ -179,7 +179,12 @@ void Communicator::processStatus(QString line)
     m_statusReceived = true;
 
     static StatusReportProcessor statusProcessor;
-    emit machineStatusReportReceived(statusProcessor.parse(line));
+    auto report = statusProcessor.parse(line);
+    if (!report) {
+        return;
+    }
+
+    emit machineStatusReportReceived(*report);
 
     // processMachinePosition()
     // // Update machine coordinates
@@ -651,9 +656,9 @@ bool Communicator::processCommandResponse(QString data)
         while (m_queue.length() > 0) {
             CommandQueue command = m_queue.takeFirst();
             SendCommandResult r = sendCommand(command.source, command.commandLine, command.tableIndex, false, command.callback);
-            if (r == SendCommandResult::Done) {
+            if (r == SendCommandResult::Status::Done) {
                 break;
-            } else if (r == SendCommandResult::Queue) {
+            } else if (r == SendCommandResult::Status::Queue) {
                 m_queue.prepend(m_queue.takeLast());
                 break;
             }

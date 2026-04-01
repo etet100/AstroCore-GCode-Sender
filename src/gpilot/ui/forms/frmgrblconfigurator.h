@@ -9,6 +9,8 @@
 #include "core/communicator/communicator.h"
 #include <CPropertyHeader.h>
 #include <CBaseProperty.h>
+#include <qcorotask.h>
+#include <optional>
 
 namespace Ui {
 class frmGrblConfigurator;
@@ -49,9 +51,8 @@ class FrmGrblConfigurator : public QDialog
         ConfigurationUI &m_uiConfiguration;
         Communicator *m_communicator;
         QMap<int, double> m_currentSettings;
-        bool m_isSaving = false;
-        bool m_updating = false;
-        void setInfo(QString text, QColor color);
+        std::optional<QCoro::Task<void>> m_activeTask;
+        void setInfo(QString text, QColor color = Qt::transparent);
         bool m_firstShow = true;
         QMap<Axis, CBaseProperty*> addAxesProperty(CPropertyHeader *, ConfigEntry);
         CBaseProperty* addBooleanProperty(CPropertyHeader *, ConfigEntry);
@@ -61,12 +62,10 @@ class FrmGrblConfigurator : public QDialog
         void setSettingsBit(int, int, bool);
         void accept() override;
         void findParametersToBeSaved(QMap<int, double>);
-        void update();
-
-        void disconnectConfReceivedEvent();
+        QCoro::Task<void> update();
+        QCoro::Task<void> save();
 
     private slots:
-        void onConfigurationReceived(PhysicalMachineConfiguration);
         void onUpdateClicked();
         void itemChanged(QTreeWidgetItem *item, int column);
 };

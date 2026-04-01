@@ -8,6 +8,7 @@
 #include "idlebehavior.h"
 #include "errorbehavior.h"
 #include "alarmbehavior.h"
+#include <algorithm>
 
 JoggingBehavior::JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
     : StateBehavior{parent}
@@ -211,17 +212,13 @@ void JoggingBehavior::startJogging()
     if (m_continuous) {
         qDebug() << "[Behavior][Jogging] Continuous mode";
 
-        // Segment covers exactly one timer interval of travel at the configured feed rate.
-        // This gives the shortest possible segments while maintaining continuous motion.
         double effectiveFeedRate = (m_joggingVector.z() != 0) ? m_feedRateZ : m_feedRate;
-        m_segmentDist = std::max(effectiveFeedRate / 60000.0 * TIMER_INTERVAL_MS, 0.5);
+        double feedMmPerMs = effectiveFeedRate / 60000.0;
+        m_segmentDist = std::clamp(feedMmPerMs * m_profile.timerIntervalMs, m_profile.minSegmentMm, m_profile.maxSegmentMm);
+        m_targetLookahead = std::clamp(feedMmPerMs * m_profile.targetBufferTimeMs, m_profile.minLookaheadMm, m_profile.maxLookaheadMm);
         if (m_joggingVector.x() != 0 && m_joggingVector.y() != 0) {
             m_segmentDist /= std::sqrt(2.0);
         }
-
-        // Keep 2.5 segments ahead: enough to cover one full poll cycle with margin,
-        // so the planner never empties between timer ticks.
-        m_targetLookahead = 2.5 * m_segmentDist;
 
         buildJogCommand(m_segmentDist);
 
@@ -248,7 +245,7 @@ void JoggingBehavior::startJogging()
         // status and react to changes as quickly as possible. Remember to restart querying on stop jogging!
         m_communicator->stopQueryingMachineState();
 
-        m_joggingTimer.start(TIMER_INTERVAL_MS);
+        m_joggingTimer.start(m_profile.timerIntervalMs);
 
         return;
     }

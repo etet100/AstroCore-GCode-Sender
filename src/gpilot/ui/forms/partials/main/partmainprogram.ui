@@ -165,6 +165,9 @@
          <property name="text">
           <string>Start</string>
          </property>
+         <property name="shortcut">
+          <string>Ctrl+S</string>
+         </property>
         </widget>
        </item>
        <item>

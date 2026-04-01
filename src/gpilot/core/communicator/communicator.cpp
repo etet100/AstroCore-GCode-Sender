@@ -10,6 +10,7 @@
 #include "core/state_behavior/initializationbehavior.h"
 #include "core/state_behavior/reconnectingbehavior.h"
 #include "core/state_behavior/homingbehavior.h"
+#include "core/machine/modalstateparser.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 
 Communicator::Communicator(
@@ -55,7 +56,7 @@ Communicator::Communicator(
     // Re-query work offsets ($#) after any command that may have changed them.
     // QueuedConnection avoids re-entering sendCommand() mid-call.
     connect(m_commandScanner, &CommandScanner::workOffsetCommandDetected, this, [this]() {
-        sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
+        sendCommand(CommandSource::Communicator, "$#", TABLE_INDEX_UTIL1, true);
     }, Qt::QueuedConnection);
 
     // CommandBuffer: the two-level GRBL command queue.
@@ -69,7 +70,18 @@ Communicator::Communicator(
         const QString& data,
         const QStringList& lines
     ) -> bool {
-        Q_UNUSED(data)
+        // Store current coordinate system
+        if (command == "$G" && status.ok) {
+            auto modal = ModalStateParser::parse(lines[0]);
+            if (modal) {
+                qDebug() << "[Communicator] Detected coordinate system: " << modal->coordinateSystem;
+            }
+        }
+
+        if (attrs.source == CommandSource::Communicator) {
+            // Don't send responses to behaviors for commands they originated.
+            return true;
+        }
 
         if (!m_sbManager.hasCurrent()) {
             return false;
@@ -78,7 +90,7 @@ Communicator::Communicator(
             command, attrs, status, data, lines
         );
 
-        return result == StateBehavior::Result::Ok;
+        return result != StateBehavior::Result::ReturnCommandToQueue;
     });
 
     // Callback: drain queue through the normal sendCommand path
@@ -162,29 +174,33 @@ SendCommandResult Communicator::sendCommand(
         QString trimmed = GcodePreprocessorUtils::removeComment(commandLine);
         if (trimmed == "$H") {
             m_sbManager.current()->action(Action::Home);
-            return SendCommandResult::Done;
+            return SendCommandResult::Status::Done;
         }
     }
 
-    if (!m_connection->isConnected() || !m_resetCompleted) return SendCommandResult::Done;
+    if (!m_connection->isConnected() || !m_resetCompleted) {
+        return SendCommandResult::Status::Done;
+    }
 
-    if (commandLine.isEmpty()) return SendCommandResult::Empty;
+    if (commandLine.isEmpty()) {
+        return SendCommandResult::Status::Empty;
+    }
 
     commandLine = commandLine.toUpper();
 
     // Detect M2/M30/M6/M25 end-of-program commands to update sender state.
-    const QString command = GcodePreprocessorUtils::removeComment(commandLine);
-    static QRegularExpression M230("(M0*2|M30|M0*6|M25)(?!\\d)");
-    static QRegularExpression M6("(M0*6)(?!\\d)");
-    if ((m_senderState == SenderState::Transferring) && command.contains(M230)) {
-        if (
-            !command.contains(M6) ||
-            m_configuration->senderModule().useToolChangeCommands() ||
-            m_configuration->senderModule().pauseSenderOnToolChange()
-        ) {
-            setSenderStateAndEmitSignal(SenderState::Pausing);
-        }
-    }
+    // const QString command = GcodePreprocessorUtils::removeComment(commandLine);
+    // static QRegularExpression M230("(M0*2|M30|M0*6|M25)(?!\\d)");
+    // static QRegularExpression M6("(M0*6)(?!\\d)");
+    // if ((m_senderState == SenderState::Transferring) && command.contains(M230)) {
+    //     if (
+    //         !command.contains(M6) ||
+    //         m_configuration->senderModule().useToolChangeCommands() ||
+    //         m_configuration->senderModule().pauseSenderOnToolChange()
+    //     ) {
+    //         setSenderStateAndEmitSignal(SenderState::Pausing);
+    //     }
+    // }
 
     m_commandScanner->scan(commandLine);
 
@@ -234,7 +250,7 @@ void Communicator::sendCommands(CommandSource source, QStringList commands, int 
     bool waitFlag = false;
     foreach (QString cmd, commands) {
         SendCommandResult r = sendCommand(source, cmd.trimmed(), tableIndex, waitFlag);
-        if (r == SendCommandResult::Done || r == SendCommandResult::Queue) waitFlag = true;
+        if (r == SendCommandResult::Status::Done || r == SendCommandResult::Status::Queue) waitFlag = true;
     }
 }
 
@@ -251,7 +267,7 @@ void Communicator::clearQueue()
 void Communicator::reset()
 {
     assert(m_sbManager.current() != nullptr);
-    m_sbManager.current()->reset();
+    m_sbManager.current()->action(Action::Reset);
 }
 
 void Communicator::unlock()

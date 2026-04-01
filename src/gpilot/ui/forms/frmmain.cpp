@@ -2750,6 +2750,12 @@ void FrmMain::resetHeightmap()
     fm.setHeightmapModified(false);
 }
 
+// 1. Zamknac ui program i visualizer
+// 2. Zresetować parsery
+// 3. Wyczyścić program
+// 4. Zresetować estymację czasu
+// ...
+// 7.
 void FrmMain::newFile()
 {
     ui->program->close();
