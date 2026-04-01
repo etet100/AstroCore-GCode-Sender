@@ -13,6 +13,7 @@ class GoToBehavior : public StateBehavior
     public:
         explicit GoToBehavior(QPointF target, int feedRate, QObject *parent = nullptr);
         QString description() override { return "Go to..."; }
+        Type type() const override { return Type::GoTo; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }

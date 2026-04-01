@@ -144,16 +144,19 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     });
 
     connect(ui->control, &PartMainControl::unlock, this, [this]() {
-        m_communicator->unlock();
+        m_communicator->stateBehavior()->action(Action::Unlock);
     });
     connect(ui->control, &PartMainControl::home, this, [this]() {
-        m_communicator->home();
+        m_communicator->stateBehavior()->action(Action::Home);
+        // m_communicator->home();
     });
     connect(ui->control, &PartMainControl::probe, this, [this]() {
-        m_communicator->probe();
+        // m_communicator->probe();
+        m_communicator->stateBehavior()->action(Action::Probe);
     });
     connect(ui->control, &PartMainControl::reset, this, [this]() {
-        m_communicator->reset();
+        // m_communicator->reset();
+        m_communicator->stateBehavior()->action(Action::Reset);
     });
     connect(ui->control, &PartMainControl::zeroZ, this, [this]() {
         m_communicator->stateBehavior()->action(Action::ZeroZ);
@@ -490,7 +493,7 @@ void FrmMain::initializeCommunicator()
     connect(m_communicator, &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
-    connect(m_communicator, &Communicator::stateBehaviorChanged, this, &FrmMain::onStateBehaviorChanged);
+    connect(m_communicator->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
     connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
         ui->state->setConName(connection->name());
     });
@@ -1874,10 +1877,11 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
     m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
 }
 
-void FrmMain::onStateBehaviorChanged(StateBehavior *sb)
+void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
 {
     ui->state->setStatusText(sb->description(), "black", "white");
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
+    updateControlsState();
 }
 
 void FrmMain::onTimerConnection()
@@ -2810,7 +2814,7 @@ void FrmMain::updateControlsState()
     SenderState senderState = m_communicator->senderState();
 
     ui->grpState->setEnabled(portOpened);
-    ui->control->setEnabled(portOpened);
+    // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
     ui->jog->setEnabled(portOpened && ((senderState == SenderState::Stopped)
         || (senderState == SenderState::ChangingTool)));

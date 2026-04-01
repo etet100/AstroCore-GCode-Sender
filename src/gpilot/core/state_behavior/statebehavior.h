@@ -43,8 +43,32 @@ class StateBehavior : public QObject
             WaitForAsyncResult,
         };
 
+        enum class Type {
+            Alarm,
+            CheckMode,
+            Connecting,
+            Disconnection,
+            Error,
+            ExternalProcess,
+            GoTo,
+            Handshake,
+            Hold,
+            Homing,
+            Idle,
+            Initialization,
+            Jogging,
+            Pause,
+            Probing,
+            Reconnecting,
+            Reset,
+            Running,
+            ScanTable,
+            ToolChange,
+        };
+
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString description() = 0;
+        virtual Type type() const = 0;
 
         bool eventsAttached() const { return m_eventsAttached; }
         void markEventsAttached() { m_eventsAttached = true; }

@@ -159,6 +159,7 @@ SOURCES += main.cpp\
     core/state_behavior/scantablebehavior.cpp \
     core/state_behavior/handshakebehavior.cpp \
     core/state_behavior/externalprocessbehavior.cpp \
+    core/state_behavior/disconnectionbehavior.cpp \
     core/state_behavior/toolchangebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
@@ -339,6 +340,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/scantablebehavior.h \
     core/state_behavior/handshakebehavior.h \
     core/state_behavior/externalprocessbehavior.h \
+    core/state_behavior/disconnectionbehavior.h \
     core/state_behavior/toolchangebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
@@ -422,6 +424,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
     ui/utils/flowlayout.h \
+    ui/utils/uipermissions.h \
     ui/utils/syntaxhighlighter.h \
     ui/utils/thememanager.h \
     ui/utils/windowstaskbar.h \

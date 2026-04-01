@@ -30,6 +30,7 @@ public:
     );
 
     QString description() override;
+    Type type() const override { return Type::ScanTable; }
 
     Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
     Result onExit(StateBehavior *next = nullptr) override;

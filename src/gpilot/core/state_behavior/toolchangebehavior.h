@@ -27,6 +27,7 @@ class ToolChangeBehavior : public StateBehavior
 
         explicit ToolChangeBehavior(int toolNumber, ToolChangeSource source = ToolChangeSource::Program, QObject *parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::ToolChange; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Resume, Action::CycleStart };
         }

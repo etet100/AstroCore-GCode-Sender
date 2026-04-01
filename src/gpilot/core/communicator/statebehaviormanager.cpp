@@ -4,7 +4,8 @@
 #include <QDebug>
 
 StateBehaviorManager::StateBehaviorManager(QObject *signalEmitter)
-    : m_signalEmitter(signalEmitter)
+    : QObject(nullptr),
+      m_signalEmitter(signalEmitter)
 {
 }
 
@@ -81,15 +82,13 @@ bool StateBehaviorManager::finalizeExecute(StateBehavior *sb, CommunicatorApi *c
 
     QPointer<StateBehavior> psb = m_sb;
     if (sb->onEntry(comApi, psb) == StateBehavior::Result::WaitForAsyncResult) {
-        QObject::connect(sb, &StateBehavior::asyncCompleted, m_signalEmitter, [this, sb, communicator = qobject_cast<Communicator*>(m_signalEmitter)]() {
+        QObject::connect(sb, &StateBehavior::asyncCompleted, m_signalEmitter, [this, sb]() {
             qDebug() << "[Behavior][Manager] State behavior entry completed"
                      << sb->description() << " (async enter)";
 
             m_sb = sb;
             m_gc.track(sb);
-            if (communicator) {
-                emit communicator->stateBehaviorChanged(sb);
-            }
+            emit stateBehaviorChanged(sb);
         }, Qt::ConnectionType::SingleShotConnection);
 
         return true;
@@ -97,11 +96,7 @@ bool StateBehaviorManager::finalizeExecute(StateBehavior *sb, CommunicatorApi *c
 
     m_sb = sb;
     m_gc.track(sb);
-
-    Communicator *communicator = qobject_cast<Communicator*>(m_signalEmitter);
-    if (communicator) {
-        emit communicator->stateBehaviorChanged(sb);
-    }
+    emit stateBehaviorChanged(sb);
 
     return true;
 }

@@ -46,3 +46,15 @@ void ExternalProcessBehavior::onAlarm(int code)
 {
     emit transition(this, new AlarmBehavior(code));
 }
+
+bool ExternalProcessBehavior::doAction(const Action &action)
+{
+    switch (action.type()) {
+        case Action::Type::Disconnect:
+            emit transition(this, new DisconnectionBehavior());
+
+            return true;
+    }
+
+    return false;
+}

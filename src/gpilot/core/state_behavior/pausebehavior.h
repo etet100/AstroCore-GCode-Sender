@@ -26,6 +26,7 @@ class PauseBehavior : public StateBehavior
 
         explicit PauseBehavior(PauseSource source = PauseSource::Program, QObject *parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::Pause; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Resume };
         }

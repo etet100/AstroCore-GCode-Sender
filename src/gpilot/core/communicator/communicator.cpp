@@ -43,7 +43,7 @@ Communicator::Communicator(
 {
     m_reseting = false;
     m_resetCompleted = true;
-    m_aborting = false;
+    // m_aborting = false;
     m_statusReceived = false;
     m_spindleCW = true;
     m_comApi = new CommunicatorApi(this);
@@ -264,27 +264,27 @@ void Communicator::clearQueue()
     m_commandBuffer->clearQueue();
 }
 
-void Communicator::reset()
-{
-    assert(m_sbManager.current() != nullptr);
-    m_sbManager.current()->action(Action::Reset);
-}
+// void Communicator::reset()
+// {
+//     assert(m_sbManager.current() != nullptr);
+//     m_sbManager.current()->action(Action::Reset);
+// }
 
-void Communicator::unlock()
-{
-    assert(m_sbManager.current() != nullptr);
-    m_sbManager.current()->action(Action::Unlock);
-}
+// void Communicator::unlock()
+// {
+//     assert(m_sbManager.current() != nullptr);
+//     m_sbManager.current()->action(Action::Unlock);
+// }
 
-void Communicator::abort()
-{
-    // @TODO is CommandSource::Program correct here??
-    if (isSenderState(SenderState::Paused, SenderState::ChangingTool)) {
-        sendCommand(CommandSource::GeneralUI, "M2", TABLE_INDEX_UI, false);
-    } else {
-        sendCommand(CommandSource::GeneralUI, "M2", TABLE_INDEX_UI, true);
-    }
-}
+// void Communicator::abort()
+// {
+//     // @TODO is CommandSource::Program correct here??
+//     if (isSenderState(SenderState::Paused, SenderState::ChangingTool)) {
+//         sendCommand(CommandSource::GeneralUI, "M2", TABLE_INDEX_UI, false);
+//     } else {
+//         sendCommand(CommandSource::GeneralUI, "M2", TABLE_INDEX_UI, true);
+//     }
+// }
 
 bool Communicator::setConnection(Connection *newConnection, bool force)
 {
@@ -351,20 +351,20 @@ bool Communicator::isSenderState(SenderState state) const
     return m_senderState == state;
 }
 
-void Communicator::probe()
-{
-    m_sbManager.current()->action(Action::Probe);
-}
+// void Communicator::probe()
+// {
+//     m_sbManager.current()->action(Action::Probe);
+// }
 
 void Communicator::resetGRBLConfiguration()
 {
     sendCommand(CommandSource::GeneralUI, "$RST=$", TABLE_INDEX_UI);
 }
 
-void Communicator::home()
-{
-    m_sbManager.current()->action(Action::Home);
-}
+// void Communicator::home()
+// {
+//     m_sbManager.current()->action(Action::Home);
+// }
 
 bool Communicator::execute(StateBehavior *sb, bool force)
 {

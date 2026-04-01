@@ -131,6 +131,11 @@ bool IdleBehavior::doAction(const Action &action)
             zeroXY();
 
             return true;
+
+        case Action::Type::Disconnect:
+            emit transition(this, new DisconnectionBehavior());
+
+            return true;
     }
 
     return false;

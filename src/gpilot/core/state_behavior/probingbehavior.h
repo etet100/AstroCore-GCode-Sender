@@ -35,6 +35,7 @@ class ProbingBehavior : public StateBehavior
         explicit ProbingBehavior(QObject* parent = nullptr);
         explicit ProbingBehavior(ProbeParameters params, QObject* parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::Probing; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
 

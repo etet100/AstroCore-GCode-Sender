@@ -10,6 +10,7 @@ class InitializationBehavior : public StateBehavior
     public:
         explicit InitializationBehavior(QObject *parent = nullptr);
         QString description() override { return "Idle"; }
+        Type type() const override { return Type::Initialization; }
         void onMachineStateChanged(MachineState state) override;
         // bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onConnectionStateChanged(ConnectionState state) override;

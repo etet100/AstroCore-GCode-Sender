@@ -28,5 +28,6 @@
 #include "scantablebehavior.h"
 #include "handshakebehavior.h"
 #include "externalprocessbehavior.h"
+#include "disconnectionbehavior.h"
 
 #endif // BEHAVIORS_H

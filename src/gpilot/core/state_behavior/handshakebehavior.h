@@ -19,6 +19,7 @@ class HandshakeBehavior : public StateBehavior
 public:
     explicit HandshakeBehavior(QObject *parent = nullptr);
     QString description() override;
+    Type type() const override { return Type::Handshake; }
 
     Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
     Result onExit(StateBehavior *next = nullptr) override;

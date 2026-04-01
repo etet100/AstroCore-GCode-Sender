@@ -55,6 +55,7 @@ class JoggingBehavior : public StateBehavior
         explicit JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent = nullptr);
         explicit JoggingBehavior(int feedRate, int feedRateZ, QObject *parent = nullptr);
         QString description() override { return "Jogging"; }
+        Type type() const override { return Type::Jogging; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort, Action::Jog };
         }

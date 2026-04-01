@@ -41,13 +41,13 @@ class Communicator : public QObject
         // bool streamCommands(GCode &streamer);
         void clearCommandsAndQueue();
         void clearQueue();
-        void reset();
-        void unlock();
-        void home();
-        void probe();
+        // void reset();
+        // void unlock();
+        // void home();
+        // void probe();
         void resetGRBLConfiguration();
         // @TODO abort what?? find more self descriptive name, move to streamer??
-        void abort();
+        // void abort();
         // may be used to set connection for the first time, if m_connection is no null,
         // ReconnectingBehavior should be used instead!!
 
@@ -70,7 +70,6 @@ class Communicator : public QObject
         bool isSenderState(SenderState state, Args... args) const {
             return isSenderState(state) || isSenderState(args...);
         }
-        // void probe();
 
         // @TODO to be removed!! another local timer? how it works??
         void processConnectionTimer();
@@ -82,10 +81,11 @@ class Communicator : public QObject
         void processStateBehaviorTransition();
 
         StateBehavior* stateBehavior() const { return m_sbManager.current(); }
+        StateBehaviorManager* stateBehaviorManager() { return &m_sbManager; }
     private:
         Connection *m_connection = nullptr;
         Configuration *m_configuration;
-        GCode *m_streamer = nullptr;
+
         PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
         Jogger m_jogger;
         Overrides *m_overrides = nullptr;
@@ -105,7 +105,7 @@ class Communicator : public QObject
         // Flags
         bool m_reseting;
         bool m_resetCompleted;
-        bool m_aborting;
+        // bool m_aborting;
         bool m_statusReceived;
         bool m_homing;
         bool m_spindleCW; // Spindle is rotating clockwise
@@ -194,7 +194,6 @@ class Communicator : public QObject
         // @TODO aborted what?? find better name
         void aborted();
         void transferCompleted();
-        void stateBehaviorChanged(StateBehavior *sb);
         void log(QString message);
 };
 

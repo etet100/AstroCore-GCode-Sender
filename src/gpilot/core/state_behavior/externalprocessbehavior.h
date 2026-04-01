@@ -17,6 +17,11 @@ class ExternalProcessBehavior : public StateBehavior
 public:
     explicit ExternalProcessBehavior(QObject *parent = nullptr);
     QString description() override;
+    Type type() const override { return Type::ExternalProcess; }
+
+    QSet<Action::Type> availableActions() const override {
+        return { Action::Disconnect };
+    }
 
     Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
     void onMachineStateChanged(MachineState state) override;
@@ -24,6 +29,7 @@ public:
 
 protected:
     QString name() const override { return "ExternalProcess"; }
+    bool doAction(const Action &action) override;
 };
 
 #endif // EXTERNALPROCESSBEHAVIOR_H

@@ -23,6 +23,7 @@ class RunningBehavior : public StateBehavior
 
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override { return "Running"; }
+        Type type() const override { return Type::Running; }
         QSet<Action::Type> availableActions() const override {
             return {
                 Action::Pause,

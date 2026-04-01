@@ -12,6 +12,7 @@ class HomingBehavior : public StateBehavior
     public:
         explicit HomingBehavior(QObject *parent = nullptr);
         QString description() override { return "Homing"; }
+        Type type() const override { return Type::Homing; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;

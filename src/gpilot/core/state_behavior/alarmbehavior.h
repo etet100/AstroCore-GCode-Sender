@@ -14,6 +14,7 @@ class AlarmBehavior : public StateBehavior
     public:
         explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::Alarm; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Unlock };
         }

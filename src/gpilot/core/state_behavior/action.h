@@ -33,6 +33,8 @@ class Action
             ToolChange,
             ZeroZ,
             ZeroXY,
+            Connect,
+            Disconnect,
         };
 
         Action(Type type);

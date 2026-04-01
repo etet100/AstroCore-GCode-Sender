@@ -165,7 +165,7 @@ private slots:
     void onTransferCompleted();
     void onConnectionError(QString error);
     void onConsoleNewCommand(QString command, bool isInternal);
-    void onStateBehaviorChanged(StateBehavior *sb);
+    void updateOnStateBehaviorChanged(StateBehavior *sb);
 
     void onTimerConnection();
     void programInsertLines(int current, bool before);

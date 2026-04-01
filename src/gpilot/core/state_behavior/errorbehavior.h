@@ -12,6 +12,7 @@ class ErrorBehavior : public StateBehavior
         ~ErrorBehavior();
 
         QString description() override;
+        Type type() const override { return Type::Error; }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         Result onExit(StateBehavior *next = nullptr) override;
 

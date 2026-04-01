@@ -12,6 +12,7 @@ class IdleBehavior : public StateBehavior
     public:
         explicit IdleBehavior(QObject *parent = nullptr);
         QString description() override { return "Idle"; }
+        Type type() const override { return Type::Idle; }
         QSet<Action::Type> availableActions() const override {
             return {
                 Action::Run,
@@ -21,6 +22,7 @@ class IdleBehavior : public StateBehavior
                 Action::Probe,
                 Action::ZeroZ,
                 Action::ZeroXY,
+                Action::Disconnect,
             };
         }
         void onMachineStateChanged(MachineState state) override;

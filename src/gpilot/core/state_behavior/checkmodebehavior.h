@@ -15,6 +15,7 @@ class CheckModeBehavior : public StateBehavior
     public:
         explicit CheckModeBehavior(GCode &program, QObject *parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::CheckMode; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }

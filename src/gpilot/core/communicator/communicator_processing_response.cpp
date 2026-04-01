@@ -330,45 +330,45 @@ void Communicator::processMachineState(QString stateStr)
     static double y = sNan;
     static double z = sNan;
 
-    if (m_aborting) {
-        switch (state) {
-            case MachineState::Idle: // Idle
-                if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
-                    m_aborting = false;
-                    restoreParserState();
-                    m_posTracker->restoreOffsets(m_machineConfiguration);
-                    return;
-                }
-                break;
-            case MachineState::Hold0: // Hold
-            case MachineState::Hold1:
-            case MachineState::Queue:
-                if (!m_reseting && m_posTracker->compareCoordinates(x, y, z)) {
-                    x = sNan;
-                    y = sNan;
-                    z = sNan;
-                    reset();
-                } else {
-                    const QVector3D pos = m_posTracker->machinePos();
-                    x = pos.x();
-                    y = pos.y();
-                    z = pos.z();
-                }
-                break;
-            case MachineState::Unknown:
-            case MachineState::Alarm:
-            case MachineState::Run:
-            case MachineState::Home:
-            case MachineState::Check:
-            case MachineState::Door0:
-            case MachineState::Door1:
-            case MachineState::Door2:
-            case MachineState::Door3:
-            case MachineState::Jog:
-            case MachineState::Sleep:
-                break;
-        }
-    }
+    // if (m_aborting) {
+    //     switch (state) {
+    //         case MachineState::Idle: // Idle
+    //             if ((m_senderState == SenderState::Stopped) && m_resetCompleted) {
+    //                 m_aborting = false;
+    //                 restoreParserState();
+    //                 m_posTracker->restoreOffsets(m_machineConfiguration);
+    //                 return;
+    //             }
+    //             break;
+    //         case MachineState::Hold0: // Hold
+    //         case MachineState::Hold1:
+    //         case MachineState::Queue:
+    //             if (!m_reseting && m_posTracker->compareCoordinates(x, y, z)) {
+    //                 x = sNan;
+    //                 y = sNan;
+    //                 z = sNan;
+    //                 reset();
+    //             } else {
+    //                 const QVector3D pos = m_posTracker->machinePos();
+    //                 x = pos.x();
+    //                 y = pos.y();
+    //                 z = pos.z();
+    //             }
+    //             break;
+    //         case MachineState::Unknown:
+    //         case MachineState::Alarm:
+    //         case MachineState::Run:
+    //         case MachineState::Home:
+    //         case MachineState::Check:
+    //         case MachineState::Door0:
+    //         case MachineState::Door1:
+    //         case MachineState::Door2:
+    //         case MachineState::Door3:
+    //         case MachineState::Jog:
+    //         case MachineState::Sleep:
+    //             break;
+    //     }
+    // }
 
     // Store device state
     setMachineStateAndEmitSignal(state);

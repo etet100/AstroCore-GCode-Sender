@@ -20,6 +20,7 @@ class HoldBehavior : public StateBehavior
 
         explicit HoldBehavior(HoldSource source = HoldSource::UserRequest, QObject *parent = nullptr);
         QString description() override;
+        Type type() const override { return Type::Hold; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Resume, Action::CycleStart };
         }
