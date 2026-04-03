@@ -65,21 +65,8 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->menuShowLog->setVisible(m_logForm != nullptr);
-    connect(ui->menuShowLog, &QMenu::aboutToShow, this, [this]() {
-        if (m_logForm != nullptr) {
-            m_logForm->show();
-            m_logForm->raise();
-            m_logForm->activateWindow();
-            ui->menuShowLog->hide();
-        } else {
-            qWarning() << "[FrmMain] No log window available to show";
-            QMessageBox::warning(this, tr("No log window"), tr("Log window is disabled"));
-        }
-    });
-
+    initializeLogMenu();
     initializeDockTitles();
-
     initializeUiScaleMenu();
     preloadSettings();
     Utils::setVisualMode(this, m_configuration.uiModule().darkTheme());
@@ -100,17 +87,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     ui->fraDropModification->setVisible(false);
     ui->fraDropUser->setVisible(false);
 
-    FilesManager& fm = FilesManager::instance();
-    connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this, &fm](bool opened, const QString& filePath, bool modified) {
-        Q_UNUSED(filePath);
-
-        if (!opened) {
-            this->setWindowTitle(qApp->applicationDisplayName());
-        } else {
-            QString mod = modified ? " (*)" : "";
-            this->setWindowTitle(fm.gcodeFileName() + mod + " - " + qApp->applicationDisplayName());
-        }
-    });
+    connectWindowTitleUpdater();
 
     // Initialize OpenAI key
     if (m_configuration.aiModule().openAIKey() != "") {
@@ -122,41 +99,13 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_programLoading = false;
     //updateCurrentModel(&m_programModel);
 
-    // Dock widgets
-    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    initializeDockCorners();
 
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
 
-    ui->visualizer->setHeightmap(m_heightmap);
-    ui->visualizer->setProgram(&m_program, nullptr);
-    ui->visualizer->setProbeParser(&m_probeParser);
-    ui->visualizer->initDrawables();
-
-    connect(&m_program, &GCode::linesUpdated, this, [this]() {
-        // updateParser();
-    });
-
-    initializeVisualizer();
-    initializeMainMenu();
-
-    connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
-        DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, m_heightmap.at(point), this);
-        connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
-            if (result == QDialog::Accepted) {
-                setHeightmapPoint(dialog->point(), dialog->height());
-            }
-            sender()->deleteLater();
-        });
-        dialog->open();
-    });
-    connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
-        m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
-    });
+    initializeVisualizerPanel();
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
                                        QMessageBox::Ignore | QMessageBox::Abort, this);
@@ -191,49 +140,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     // Pendant
     Pendant *pendant = new Pendant(m_configuration, *m_communicator, this);
 
-    // Virtual uCNC settings
-    m_partMainVirtualSettings = new PartMainVirtualSettings();
-    m_partMainVirtualSettings->setEnabled(false);
-    appendPanel(
-        ui->scrollContentsDevice,
-        "VirtualSettings",
-        "Virtual uCNC settings",
-        m_partMainVirtualSettings
-    );
-    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::lockProbeAtCurrentPosition, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->lockProbeAtCurrentPosition();
-        }
-    });
-    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::resetProbePosition, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->resetProbePosition();
-        }
-    });
-    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setHome, this, [this](bool abs, double x, double y, double z) {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->setHome(abs, x, y, z);
-        }
-    });
-    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setSingleLimit, this, [this](Axis axis, float pos) {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->setSingleLimit(axis, pos);
-        }
-    });
-    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::estop, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->estop();
-        }
-    });
-
-    appendSpacer(
-        ui->scrollContentsDevice
-    );
+    initializeVirtualSettingsPanel();
 
     updateLayouts();
 
@@ -526,6 +433,120 @@ void FrmMain::initializeOverridesPanel()
         ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
         Utils::refreshStyle(ui->grpOverriding);
     });
+}
+
+void FrmMain::initializeLogMenu()
+{
+    ui->menuShowLog->setVisible(m_logForm != nullptr);
+    connect(ui->menuShowLog, &QMenu::aboutToShow, this, [this]() {
+        if (m_logForm != nullptr) {
+            m_logForm->show();
+            m_logForm->raise();
+            m_logForm->activateWindow();
+            ui->menuShowLog->hide();
+        } else {
+            qWarning() << "[FrmMain] No log window available to show";
+            QMessageBox::warning(this, tr("No log window"), tr("Log window is disabled"));
+        }
+    });
+}
+
+void FrmMain::connectWindowTitleUpdater()
+{
+    FilesManager& fm = FilesManager::instance();
+    connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this, &fm](bool opened, const QString& filePath, bool modified) {
+        Q_UNUSED(filePath);
+
+        if (!opened) {
+            this->setWindowTitle(qApp->applicationDisplayName());
+        } else {
+            QString mod = modified ? " (*)" : "";
+            this->setWindowTitle(fm.gcodeFileName() + mod + " - " + qApp->applicationDisplayName());
+        }
+    });
+}
+
+void FrmMain::initializeDockCorners()
+{
+    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+}
+
+void FrmMain::initializeVisualizerPanel()
+{
+    ui->visualizer->setHeightmap(m_heightmap);
+    ui->visualizer->setProgram(&m_program, nullptr);
+    ui->visualizer->setProbeParser(&m_probeParser);
+    ui->visualizer->initDrawables();
+
+    connect(&m_program, &GCode::linesUpdated, this, [this]() {
+        // updateParser();
+    });
+
+    initializeVisualizer();
+    initializeMainMenu();
+
+    connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
+        DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, m_heightmap.at(point), this);
+        connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
+            if (result == QDialog::Accepted) {
+                setHeightmapPoint(dialog->point(), dialog->height());
+            }
+            sender()->deleteLater();
+        });
+        dialog->open();
+    });
+    connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
+        m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
+    });
+}
+
+void FrmMain::initializeVirtualSettingsPanel()
+{
+    m_partMainVirtualSettings = new PartMainVirtualSettings();
+    m_partMainVirtualSettings->setEnabled(true);
+    appendPanel(
+        ui->scrollContentsDevice,
+        "VirtualSettings",
+        "Virtual uCNC settings",
+        m_partMainVirtualSettings
+    );
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::lockProbeAtCurrentPosition, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->lockProbeAtCurrentPosition();
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::resetProbePosition, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->resetProbePosition();
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setHome, this, [this](bool abs, double x, double y, double z) {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->setHome(abs, x, y, z);
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setSingleLimit, this, [this](Axis axis, float pos) {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->setSingleLimit(axis, pos);
+        }
+    });
+    connect(m_partMainVirtualSettings, &PartMainVirtualSettings::estop, this, [this]() {
+        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
+        if (connection) {
+            connection->estop();
+        }
+    });
+
+    appendSpacer(
+        ui->scrollContentsDevice
+    );
 }
 
 void FrmMain::initializeDockTitles()
