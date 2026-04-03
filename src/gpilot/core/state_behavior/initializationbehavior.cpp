@@ -49,7 +49,7 @@ StateBehavior::Result InitializationBehavior::onEntry(CommunicatorApi *communica
     connect(m_timer, &QTimer::timeout, this, [this]() {
         if ((bool) m_communicator->connection()) {
             stopTimer();
-            qDebug() << "[Behavior][Initialization] Connection object exists";
+            qDebug() << "[Behavior][Initialization] Connection object exists, transitioning to ConnectingBehavior.";
             emit transition(this, new ConnectingBehavior());
 
             return;

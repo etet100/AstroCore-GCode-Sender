@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
 #include "core/state_behavior/alarmbehavior.h"
+#include "core/state_behavior/disconnectionbehavior.h"
 #include <qcorosignal.h>
 
 const QMap<int, QString> StateBehavior::ERRORS = {
@@ -52,6 +53,11 @@ StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 void StateBehavior::reset()
 {
     emit transition(this, new ResetBehavior(this));
+}
+
+void StateBehavior::disconnectAction()
+{
+    emit transition(this, new DisconnectionBehavior(this));
 }
 
 void StateBehavior::onMachineState(MachineState state) {
@@ -317,8 +323,14 @@ QString StateBehavior::enrichErrorMessage(QString message)
 
 bool StateBehavior::action(const Action &action)
 {
-    if (action.type() == Action::Type::Reset) {
+    if (canExecute(Action::Type::Reset) && action.type() == Action::Type::Reset) {
         this->reset();
+
+        return true;
+    }
+
+    if (canExecute(Action::Type::Disconnect) && action.type() == Action::Type::Disconnect) {
+        this->disconnectAction();
 
         return true;
     }

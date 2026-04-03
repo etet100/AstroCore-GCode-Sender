@@ -13,20 +13,26 @@ class DisconnectionBehavior : public StateBehavior
 {
     Q_OBJECT
 
-public:
-    explicit DisconnectionBehavior(QObject *parent = nullptr);
-    QString description() override { return "Disconnected"; }
-    Type type() const override { return Type::Disconnection; }
-    QSet<Action::Type> availableActions() const override {
-        return { Action::Connect };
-    }
+    public:
+        explicit DisconnectionBehavior(QObject *parent = nullptr);
+        QString description() override { return "Disconnected"; }
+        Type type() const override { return Type::Disconnection; }
+        QSet<Action::Type> availableActions() const override {
+            return { Action::Connect };
+        }
 
-    Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-    Result onExit(StateBehavior *next = nullptr) override;
+        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        Result onExit(StateBehavior *next = nullptr) override;
 
-protected:
-    QString name() const override { return "Disconnection"; }
-    bool doAction(const Action &action) override;
+    protected:
+        QString name() const override { return "Disconnection"; }
+        bool doAction(const Action &action) override;
+
+    private slots:
+        void onConnectionStateChanged(ConnectionState state);
+
+    private:
+        int m_disconnectionTimeoutId = 0;
 };
 
 #endif // DISCONNECTIONBEHAVIOR_H

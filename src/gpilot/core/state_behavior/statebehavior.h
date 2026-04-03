@@ -181,8 +181,6 @@ class StateBehavior : public QObject
         void stopTimer();
         void log(QString message, QStringList context = QStringList());
         void log(QString message, std::initializer_list<QString> context);
-        // This is something we will need in almost every behavior
-        // bool dataIsReset(QString data);
 
         // No need to call base implementation of doAction if you override it
         virtual bool doAction(const Action &action) {
@@ -204,6 +202,7 @@ class StateBehavior : public QObject
         QHash<int, QTimer*> m_timers;
         bool m_eventsAttached = false; // used by Communicator
         void reset();
+        void disconnectAction();
 };
 
 #endif // STATEBEHAVIOR_H

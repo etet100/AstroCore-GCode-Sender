@@ -166,6 +166,7 @@ class Communicator : public QObject
         void responseReceived(QString command, int tableIndex, QString response);
         void statusReceived(QString status);
         void connectionChanged(Connection *connection);
+        void connectionStateChanged(ConnectionState state);
         void alarm(int code);
         void welcomeMessageReceived(QString message);
         void senderStateReceived(SenderState state);

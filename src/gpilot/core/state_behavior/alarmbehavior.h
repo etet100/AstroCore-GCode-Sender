@@ -16,7 +16,10 @@ class AlarmBehavior : public StateBehavior
         QString description() override;
         Type type() const override { return Type::Alarm; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::Unlock };
+            return {
+                Action::Unlock,
+                Action::Disconnect,
+            };
         }
         void onMachineStateChanged(MachineState state) override;
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;

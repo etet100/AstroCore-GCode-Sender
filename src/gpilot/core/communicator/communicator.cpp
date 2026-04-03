@@ -429,6 +429,8 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
     }
 
     m_sbManager.current()->onConnectionStateChanged(state);
+
+    emit connectionStateChanged(state);
 }
 
 void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
