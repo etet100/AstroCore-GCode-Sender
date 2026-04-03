@@ -7,7 +7,6 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include <QBasicTimer>
 #include <QStringList>
 #include <QList>
 #include <QTime>
@@ -167,7 +166,6 @@ private slots:
     void onConsoleNewCommand(QString command, bool isInternal);
     void updateOnStateBehaviorChanged(StateBehavior *sb);
 
-    void onTimerConnection();
     void programInsertLines(int current, bool before);
     void programDeleteLines(int from, int to);
     void programEditLines(int from, int to);
@@ -190,7 +188,6 @@ protected:
     void showEvent(QShowEvent *se) override;
     void hideEvent(QHideEvent *he) override;
     void resizeEvent(QResizeEvent *re) override;
-    void timerEvent(QTimerEvent *) override;
     void closeEvent(QCloseEvent *ce) override;
     void dragEnterEvent(QDragEnterEvent *dee) override;
     void dragLeaveEvent(QDragLeaveEvent *dle) override;
@@ -232,10 +229,6 @@ private:
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;
     FrmLog* m_logForm = nullptr;
-
-    // Timers
-    QTimer m_timerConnection;
-    QBasicTimer m_timerToolAnimation;
 
     // Time estimation
     Timer m_timer;
@@ -315,8 +308,10 @@ private:
     static bool actionTextLessThan(const QAction *a1, const QAction *a2);
 
     void initializeConnection(ConfigurationConnection::ConnectionMode mode);
+    void initializeDockTitles();
     void initializeVisualizer();
     void initializeMainMenu();
+    void initializeEventFilter();
 
     void applySpindleConfiguration(ConfigurationMachine &machineConfiguration);
     void applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration);

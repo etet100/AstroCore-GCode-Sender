@@ -78,12 +78,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         }
     });
 
-    ui->dockDevice->setTitleBarWidget(new DockableTitle(ui->dockDevice));
-    ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
-    ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
-    ui->dockUser->setTitleBarWidget(new DockableTitle(ui->dockUser));
-    ui->dockProgram->setTitleBarWidget(new DockableTitle(ui->dockProgram));
-    ui->dockModification->setTitleBarWidget(new DockableTitle(ui->dockModification));
+    initializeDockTitles();
 
     initializeUiScaleMenu();
     preloadSettings();
@@ -370,15 +365,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         loadFile(qApp->arguments().last());
     }
 
-    // Signals/slots
-    connect(&m_timerConnection, SIGNAL(timeout()), this, SLOT(onTimerConnection()));
-
-    // Event filter
-    qApp->installEventFilter(this);
-
-    // Start timers
-    m_timerConnection.start(1000);
-    m_timerToolAnimation.start(25, this);
+    initializeEventFilter();
 
     // Pendant
     Pendant *pendant = new Pendant(m_configuration, *m_communicator, this);
@@ -514,6 +501,16 @@ void FrmMain::setLogFormWindow(FrmLog *logForm)
     m_logForm = logForm;
 }
 
+void FrmMain::initializeDockTitles()
+{
+    ui->dockDevice->setTitleBarWidget(new DockableTitle(ui->dockDevice));
+    ui->dockConsole->setTitleBarWidget(new DockableTitle(ui->dockConsole));
+    ui->dockVisualizer->setTitleBarWidget(new DockableTitle(ui->dockVisualizer));
+    ui->dockUser->setTitleBarWidget(new DockableTitle(ui->dockUser));
+    ui->dockProgram->setTitleBarWidget(new DockableTitle(ui->dockProgram));
+    ui->dockModification->setTitleBarWidget(new DockableTitle(ui->dockModification));
+}
+
 void FrmMain::initializeVisualizer()
 {
     connect(ui->visualizer, &PartMainVisualizer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
@@ -529,6 +526,11 @@ void FrmMain::initializeVisualizer()
                 break;
         }
     });
+}
+
+void FrmMain::initializeEventFilter()
+{
+    qApp->installEventFilter(this);
 }
 
 void FrmMain::initializeMainMenu()
@@ -587,17 +589,6 @@ void FrmMain::resizeEvent(QResizeEvent *re)
     }
 }
 
-void FrmMain::timerEvent(QTimerEvent *te)
-{
-    if (te->timerId() == m_timerToolAnimation.timerId()) {
-        // ui->visualizer->toolDrawer()->rotate((m_communicator->m_spindleCW ? -40 : 40) * (double)(ui->slbSpindle->currentValue())
-        //                     / (ui->slbSpindle->maximum()));
-        // ui->visualizer->cursorDrawer()->rotate();
-    } else {
-        QMainWindow::timerEvent(te);
-    }
-}
-
 void FrmMain::closeEvent(QCloseEvent *ce)
 {
     bool mode = m_heightmapMode;
@@ -623,7 +614,6 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     closingForm.show();
     qApp->processEvents();
 
-    m_timerConnection.stop();
     m_communicator->deinit();
     m_connection->close();
 
@@ -1750,16 +1740,7 @@ void FrmMain::onSenderStateReceived(SenderState state)
 
 void FrmMain::onSpindleStateReceived(bool state)
 {
-    switch (state) {
-        case true:
-            m_timerToolAnimation.start(25, this);
-            // ui->cmdSpindle->setChecked(true);
-            break;
-        default:
-            //m_timerToolAnimation.stop();
-            // ui->cmdSpindle->setChecked(false);
-            break;
-    }
+    // @TODO Pass spindle state to visualizator
 }
 
 void FrmMain::onFloodStateReceived(bool state)
@@ -1896,14 +1877,6 @@ void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
     ui->state->setStatusText(sb->description(), "black", "white");
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
     updateControlsState();
-}
-
-void FrmMain::onTimerConnection()
-{
-    // /openPortIfNeeded();
-
-    // @TODO move it completely to communicator
-    m_communicator->processConnectionTimer();
 }
 
 void FrmMain::programEditLines(int from, int to)
@@ -3298,12 +3271,10 @@ void FrmMain::onTransferCompleted()
     // Show message box
     qApp->beep();
     // m_communicator->stopUpdatingState();
-    // m_timerConnection.stop();
 
     QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
                                 .arg(m_timeEstimator.elapsedTime().toString("hh:mm:ss")));
 
-    // m_timerConnection.start();
     // m_communicator->startUpdatingState();
 }
 

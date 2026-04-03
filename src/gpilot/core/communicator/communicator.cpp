@@ -120,6 +120,9 @@ Communicator::Communicator(
         connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived, Qt::QueuedConnection);
     }
 
+    connect(&m_stateBehaviorTransitionTimer, &QTimer::timeout, this, &Communicator::processStateBehaviorTransition);
+    m_stateBehaviorTransitionTimer.start(1000);
+
     setSenderStateAndEmitSignal(SenderState::Stopped);
 }
 
@@ -130,6 +133,7 @@ Communicator::~Communicator()
 
 void Communicator::deinit()
 {
+    m_stateBehaviorTransitionTimer.stop();
     stopQueryingMachineState();
     clearCommandsAndQueue();
 }
@@ -375,12 +379,6 @@ bool Communicator::finalizeExecute(StateBehavior *sb)
 {
     return m_sbManager.finalizeExecute(sb, m_comApi);
 }
-
-void Communicator::processConnectionTimer()
-{
-    processStateBehaviorTransition();
-}
-
 
 double Communicator::toMetric(double value)
 {

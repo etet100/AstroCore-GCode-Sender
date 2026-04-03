@@ -72,7 +72,6 @@ class Communicator : public QObject
         }
 
         // @TODO to be removed!! another local timer? how it works??
-        void processConnectionTimer();
         Jogger& jogger() { return m_jogger; }
         Overrides* overrides() { return m_overrides; }
         CommandBuffer* commandBuffer() { return m_commandBuffer; }
@@ -117,6 +116,7 @@ class Communicator : public QObject
         QString m_storedParserState; // saved by storeParserState
 
         // Timers
+        QTimer m_stateBehaviorTransitionTimer;
         QTimer *m_queryMachineStateTimer = nullptr;
 
         // Dictionary
@@ -210,7 +210,6 @@ class CommunicatorApi : public QObject
         void queryMachineState() { m_communicator->queryMachineState(); }
         void processDeviceConfiguration(QStringList response) { m_communicator->processDeviceConfiguration(response); }
         void processOffsetsVars(QStringList response) { m_communicator->processOffsetsVars(response); }
-        void processConnectionTimer() { m_communicator->processConnectionTimer(); }
         void processGCodeParserState(CommandAttributes commandAttributes, QString response) { m_communicator->processGCodeParserState(commandAttributes, response); }
         bool setConnection(Connection *connection, bool force) { return m_communicator->setConnection(connection, force); }
         int lastAlarmCode() const { return m_communicator->m_lastAlarmCode; }
