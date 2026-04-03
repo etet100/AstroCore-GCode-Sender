@@ -85,131 +85,21 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     Utils::setVisualMode(this, m_configuration.uiModule().darkTheme());
     initializeCommunicator();
 
-    ui->jog->initialize(m_configuration.joggingModule());
-
-    ui->console->initialize(m_configuration.consoleModule());
-    connect(ui->console, &PartMainConsole::newCommand, this, &FrmMain::onConsoleNewCommand);
-    ui->console->append(QString("G-Pilot %1 started").arg( qApp->applicationVersion()));
-    ui->console->append("---");
-
-    connect(&m_program, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
-        Q_UNUSED(fromLine);
-        Q_UNUSED(toLine);
-
-        if (!ui->program->isAutoScroll()) {
-            return;
-        }
-
-        // int tableIndex = ui->program->getCurrentModelFilteredIndex(m_program.commandIndex());
-        // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
-
-        GCodeViewParser *parser = &m_viewParser;
-        QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
-        QList<LineSegment>& list = parser->getLineSegmentList();
-        QList<int> indexes;
-
-        for (int i = fromLine; i <= toLine; i++) {
-            GCodeItem &item = m_program[i];
-            // int j = item.commandNumber;
-            // if (j != -1) {
-            //     foreach (int l, lineIndexes.at(j)) {
-            //         if (item.state == GCodeItem::Sent) {
-            //             list[l].setIsHightlight(true);
-            //             list[l].setDrawn(false);
-            //             indexes.append(l);
-            //         } else if (item.state == GCodeItem::Processed) {
-            //             list[l].setIsHightlight(false);
-            //             list[l].setDrawn(true);
-            //             indexes.append(l);
-            //         }
-            //     }
-            // }
-        }
-
-        if (!indexes.isEmpty()) {
-            ui->visualizer->updateCodeDrawer(indexes);
-        }
-    });
-    connect(&m_program, &GCode::lastSentCommandChanged, this, [this](int index) {
-        ui->program->scrollToIndex(index);
-    });
-
-    connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
-        clearRecentFiles();
-    });
-
-    connect(ui->control, &PartMainControl::unlock, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Unlock);
-    });
-    connect(ui->control, &PartMainControl::home, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Home);
-        // m_communicator->home();
-    });
-    connect(ui->control, &PartMainControl::probe, this, [this]() {
-        // m_communicator->probe();
-        m_communicator->stateBehavior()->action(Action::Probe);
-    });
-    connect(ui->control, &PartMainControl::reset, this, [this]() {
-        // m_communicator->reset();
-        m_communicator->stateBehavior()->action(Action::Reset);
-    });
-    connect(ui->control, &PartMainControl::zeroZ, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::ZeroZ);
-    });
-    connect(ui->control, &PartMainControl::zeroXY, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::ZeroXY);
-    });
-    // connect(ui->control, &partMainControl::command, this, [=](GRBLCommand command) {
-    //     qDebug() << "Command: " << command;
-    // });
-
-    // toggle section visibility
-    connect(ui->grpControl, &QGroupBox::toggled, this, [this](bool checked) {
-        updateLayouts();
-        ui->control->setVisible(checked);
-    });
-    connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
-        updateLayouts();
-        ui->state->setVisible(checked);
-    });
-    connect(ui->grpSpindle, &QGroupBox::toggled, this, [this](bool checked) {
-        updateLayouts();
-        ui->spindle->setVisible(checked);
-    });
-    connect(ui->grpSpindle, &QGroupBox::toggled, this, [this](bool checked) {
-        ui->grpSpindle->setProperty("overrided", checked);
-        style()->unpolish(ui->grpSpindle);
-        ui->grpSpindle->ensurePolished();
-
-        if (checked) {
-            // if (!ui->grpSpindle->isChecked()) ui->grpSpindle->setTitle(tr("Spindle") + QString(tr(" (%1)")).arg(ui->slbSpindle->value()));
-        } else {
-            ui->grpSpindle->setTitle(tr("Spindle"));
-        }
-    });
-
-    connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
-        if (dir != JoggindDir::None) {
-            ConfigurationJogging& jogging = m_configuration.joggingModule();
-            m_communicator->sb()->action(JoggingAction(
-                vector,
-                jogging.step(),
-                jogging.continuous(),
-                jogging.feed(),
-                jogging.finalFeedZ()
-            ));
-        }
-    });
-    connect(ui->jog, &PartMainJog::stop, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Abort);
-    });
+    // Panels
+    initializeConsolePanel();
+    initializeJogPanel();
+    initializeControlPanel();
+    initializeStatePanel();
+    initializeSpindlePanel();
+    initializeProgramPanel();
+    initializeHeightmapPanel();
+    initializeOverridesPanel();
 
     // Drag&drop placeholders
     ui->fraDropDevice->setVisible(false);
     ui->fraDropModification->setVisible(false);
     ui->fraDropUser->setVisible(false);
 
-    //
     FilesManager& fm = FilesManager::instance();
     connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this, &fm](bool opened, const QString& filePath, bool modified) {
         Q_UNUSED(filePath);
@@ -238,56 +128,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-    connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
-        ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
-    });
-    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::fileNew);
-    connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
-    connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
-    connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
-    connect(ui->heightmap, &PartMainHeightmap::showVisualizationChanged, this, [this](PartMainHeightmap::VisualizationDrawers drawers) {
-        ui->visualizer->showHeightmapBorder(drawers.border);
-        ui->visualizer->showHeightmapProbeGrid(drawers.grid);
-        ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
-    });
-    connect(ui->heightmap, &PartMainHeightmap::areaChanged, this, [this](QRectF area) {
-        if (area != m_heightmap.area()) {
-            m_heightmap.setArea(area);
-            ui->visualizer->updateHeightmap();
-        }
-    });
-    connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
-        ui->visualizer->setHeightmapInterpolationMode(mode);
-        ui->visualizer->updateHeightmap();
-    });
-
-    connect(ui->overrides, &PartMainOverride::overrideChanged, this, [this](bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle) {
-        m_communicator->overrides()->setTargets(feedOverridden, (int)feed, rapidOverridden, (int)rapid, spindleOverridden, (int)spindle);
-        ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
-        Utils::refreshStyle(ui->grpOverriding);
-    });
-
-    connect(ui->state, &PartMainStateBase::connectClicked, this, [this]() {
-        m_communicator->sb()->action(Action::Connect);
-    });
-    connect(ui->state, &PartMainStateBase::disconnectClicked, this, [this]() {
-        m_communicator->sb()->action(Action::Disconnect);
-    });
-
-    // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
-    // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-    // ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-    // ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
-
-    // Prepare Open and Send menus
-    ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
-
     foreach (StyledToolButton* button, this->findChildren<StyledToolButton*>(QRegularExpression("cmdUser\\d"))) {
         connect(button, SIGNAL(clicked(bool)), this, SLOT(onCmdUserClicked(bool)));
     }
 
-    // ui->visualizer = new PartMainVisualizer(this);
-    // m_program, m_heightmap
     ui->visualizer->setHeightmap(m_heightmap);
     ui->visualizer->setProgram(&m_program, nullptr);
     ui->visualizer->setProbeParser(&m_probeParser);
@@ -313,29 +157,6 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
         m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
-
-    // Initialize program models in PartMainProgram
-    ui->program->initialize(&m_program, &m_heightmap);
-
-    // Connect model signals from PartMainProgram
-    // connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
-    connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
-    // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
-
-    connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
-        if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping))
-            ui->program->setAutoScroll(false);
-    });
-    connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
-    connect(ui->program, &PartMainProgram::insertLinesRequested, this, &FrmMain::programInsertLines);
-    connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::programDeleteLines);
-    connect(ui->program, &PartMainProgram::editLinesRequested, this, &FrmMain::programEditLines);
-
-    connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
-    connect(ui->program, &PartMainProgram::startRequested, this, &FrmMain::onFileSend);
-    connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
-    connect(ui->program, &PartMainProgram::abortRequested, this, &FrmMain::onFileAbort);
-    connect(ui->program, &PartMainProgram::programResetRequested, this, &FrmMain::onFileReset);
 
     m_senderErrorBox = new QMessageBox(QMessageBox::Warning, qApp->applicationDisplayName(), QString(),
                                        QMessageBox::Ignore | QMessageBox::Abort, this);
@@ -499,6 +320,212 @@ void FrmMain::initializeCommunicator()
 void FrmMain::setLogFormWindow(FrmLog *logForm)
 {
     m_logForm = logForm;
+}
+
+void FrmMain::initializeConsolePanel()
+{
+    ui->console->initialize(m_configuration.consoleModule());
+    connect(ui->console, &PartMainConsole::newCommand, this, &FrmMain::onConsoleNewCommand);
+    ui->console->append(QString("G-Pilot %1 started").arg(qApp->applicationVersion()));
+    ui->console->append("---");
+}
+
+void FrmMain::initializeJogPanel()
+{
+    ui->jog->initialize(m_configuration.joggingModule());
+
+    connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
+        if (dir != JoggindDir::None) {
+            ConfigurationJogging& jogging = m_configuration.joggingModule();
+            m_communicator->sb()->action(JoggingAction(
+                vector,
+                jogging.step(),
+                jogging.continuous(),
+                jogging.feed(),
+                jogging.finalFeedZ()
+            ));
+        }
+    });
+    connect(ui->jog, &PartMainJog::stop, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::Abort);
+    });
+}
+
+void FrmMain::initializeControlPanel()
+{
+    connect(ui->control, &PartMainControl::unlock, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::Unlock);
+    });
+    connect(ui->control, &PartMainControl::home, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::Home);
+        // m_communicator->home();
+    });
+    connect(ui->control, &PartMainControl::probe, this, [this]() {
+        // m_communicator->probe();
+        m_communicator->stateBehavior()->action(Action::Probe);
+    });
+    connect(ui->control, &PartMainControl::reset, this, [this]() {
+        // m_communicator->reset();
+        m_communicator->stateBehavior()->action(Action::Reset);
+    });
+    // connect(ui->control, &partMainControl::command, this, [=](GRBLCommand command) {
+    //     qDebug() << "Command: " << command;
+    // });
+    connect(ui->control, &PartMainControl::zeroZ, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::ZeroZ);
+    });
+    connect(ui->control, &PartMainControl::zeroXY, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::ZeroXY);
+    });
+
+    connect(ui->grpControl, &QGroupBox::toggled, this, [this](bool checked) {
+        updateLayouts();
+        ui->control->setVisible(checked);
+    });
+}
+
+void FrmMain::initializeStatePanel()
+{
+    connect(ui->state, &PartMainStateBase::connectClicked, this, [this]() {
+        m_communicator->sb()->action(Action::Connect);
+    });
+    connect(ui->state, &PartMainStateBase::disconnectClicked, this, [this]() {
+        m_communicator->sb()->action(Action::Disconnect);
+    });
+
+    connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
+        updateLayouts();
+        ui->state->setVisible(checked);
+    });
+}
+
+void FrmMain::initializeSpindlePanel()
+{
+    connect(ui->grpSpindle, &QGroupBox::toggled, this, [this](bool checked) {
+        updateLayouts();
+        ui->spindle->setVisible(checked);
+    });
+    connect(ui->grpSpindle, &QGroupBox::toggled, this, [this](bool checked) {
+        ui->grpSpindle->setProperty("overrided", checked);
+        style()->unpolish(ui->grpSpindle);
+        ui->grpSpindle->ensurePolished();
+
+        if (checked) {
+            // if (!ui->grpSpindle->isChecked()) ui->grpSpindle->setTitle(tr("Spindle") + QString(tr(" (%1)")).arg(ui->slbSpindle->value()));
+        } else {
+            ui->grpSpindle->setTitle(tr("Spindle"));
+        }
+    });
+}
+
+void FrmMain::initializeProgramPanel()
+{
+    ui->program->initialize(&m_program, &m_heightmap);
+    ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
+
+    connect(&m_program, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+        Q_UNUSED(fromLine);
+        Q_UNUSED(toLine);
+
+        if (!ui->program->isAutoScroll()) {
+            return;
+        }
+
+        // int tableIndex = ui->program->getCurrentModelFilteredIndex(m_program.commandIndex());
+        // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
+
+        GCodeViewParser *parser = &m_viewParser;
+        QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+        QList<LineSegment>& list = parser->getLineSegmentList();
+        QList<int> indexes;
+
+        for (int i = fromLine; i <= toLine; i++) {
+            GCodeItem &item = m_program[i];
+            // int j = item.commandNumber;
+            // if (j != -1) {
+            //     foreach (int l, lineIndexes.at(j)) {
+            //         if (item.state == GCodeItem::Sent) {
+            //             list[l].setIsHightlight(true);
+            //             list[l].setDrawn(false);
+            //             indexes.append(l);
+            //         } else if (item.state == GCodeItem::Processed) {
+            //             list[l].setIsHightlight(false);
+            //             list[l].setDrawn(true);
+            //             indexes.append(l);
+            //         }
+            //     }
+            // }
+        }
+
+        if (!indexes.isEmpty()) {
+            ui->visualizer->updateCodeDrawer(indexes);
+        }
+    });
+    connect(&m_program, &GCode::lastSentCommandChanged, this, [this](int index) {
+        ui->program->scrollToIndex(index);
+    });
+
+    connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
+        clearRecentFiles();
+    });
+    // connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
+    connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
+    // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
+    connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
+        if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) {
+            ui->program->setAutoScroll(false);
+        }
+    });
+    connect(ui->program, &PartMainProgram::currentChanged, this, &FrmMain::onTableCurrentChanged);
+    connect(ui->program, &PartMainProgram::insertLinesRequested, this, &FrmMain::programInsertLines);
+    connect(ui->program, &PartMainProgram::deleteLinesRequested, this, &FrmMain::programDeleteLines);
+    connect(ui->program, &PartMainProgram::editLinesRequested, this, &FrmMain::programEditLines);
+
+    connect(ui->program, &PartMainProgram::openFile, this, &FrmMain::onFileOpen);
+    connect(ui->program, &PartMainProgram::startRequested, this, &FrmMain::onFileSend);
+    connect(ui->program, &PartMainProgram::pause, this, &FrmMain::onFilePause);
+    connect(ui->program, &PartMainProgram::abortRequested, this, &FrmMain::onFileAbort);
+    connect(ui->program, &PartMainProgram::programResetRequested, this, &FrmMain::onFileReset);
+}
+
+void FrmMain::initializeHeightmapPanel()
+{
+    connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
+        ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
+    });
+    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::fileNew);
+    connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
+    connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
+    connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
+    connect(ui->heightmap, &PartMainHeightmap::showVisualizationChanged, this, [this](PartMainHeightmap::VisualizationDrawers drawers) {
+        ui->visualizer->showHeightmapBorder(drawers.border);
+        ui->visualizer->showHeightmapProbeGrid(drawers.grid);
+        ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
+    });
+    connect(ui->heightmap, &PartMainHeightmap::areaChanged, this, [this](QRectF area) {
+        if (area != m_heightmap.area()) {
+            m_heightmap.setArea(area);
+            ui->visualizer->updateHeightmap();
+        }
+    });
+    connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
+        ui->visualizer->setHeightmapInterpolationMode(mode);
+        ui->visualizer->updateHeightmap();
+    });
+
+    // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
+    // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+    // ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+    // ui->cmdHeightMapMode->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
+}
+
+void FrmMain::initializeOverridesPanel()
+{
+    connect(ui->overrides, &PartMainOverride::overrideChanged, this, [this](bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle) {
+        m_communicator->overrides()->setTargets(feedOverridden, (int)feed, rapidOverridden, (int)rapid, spindleOverridden, (int)spindle);
+        ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
+        Utils::refreshStyle(ui->grpOverriding);
+    });
 }
 
 void FrmMain::initializeDockTitles()

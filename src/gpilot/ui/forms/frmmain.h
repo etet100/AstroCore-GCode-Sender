@@ -307,6 +307,15 @@ private:
     static bool actionLessThan(const QAction *a1, const QAction *a2);
     static bool actionTextLessThan(const QAction *a1, const QAction *a2);
 
+    void initializeConsolePanel();
+    void initializeJogPanel();
+    void initializeControlPanel();
+    void initializeStatePanel();
+    void initializeSpindlePanel();
+    void initializeProgramPanel();
+    void initializeHeightmapPanel();
+    void initializeOverridesPanel();
+
     void initializeConnection(ConfigurationConnection::ConnectionMode mode);
     void initializeDockTitles();
     void initializeVisualizer();
