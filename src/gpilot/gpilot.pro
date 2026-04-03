@@ -199,6 +199,7 @@ SOURCES += main.cpp\
     ui/forms/partials/settings/partsettingsvisualizer.cpp \
     ui/forms/frmgrblconfigurator.cpp \
     ui/forms/frmmain.cpp \
+    ui/forms/frmmain_uiscale.cpp \
     ui/forms/frmsettings.cpp \
     ui/forms/frmabout.cpp \
     ui/drawers/gcodedrawer.cpp \
