@@ -74,7 +74,7 @@ void VirtualGRBLWorkerThread::run()
     lib.unload();
 #endif
     qInfo() << "[IO][GRBL] Stopped.";
-    *m_stopFlag = 3;
+    *m_stopFlag = VirtualConnection::WorkerStopFlag::Stopped;
 }
 
 #endif // !VIRTUAL_SIMULATOR_PROCESS

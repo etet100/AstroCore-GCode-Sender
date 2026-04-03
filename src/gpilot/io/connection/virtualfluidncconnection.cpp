@@ -73,8 +73,9 @@ void VirtualFluidNCWorkerThread::run()
     }
     lib.unload();
 #endif
-    qInfo() << "[IO][FluidNC] Stopped.";
-    *m_stopFlag = 3;
+    qInfo() << "[IO][FluidNC] FluidNC stopped!";
+
+    *m_stopFlag = VirtualConnection::WorkerStopFlag::Stopped;
 }
 
 #endif // !VIRTUAL_SIMULATOR_PROCESS

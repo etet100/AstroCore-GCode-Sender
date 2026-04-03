@@ -20,10 +20,9 @@ VirtualUCNCConnection::~VirtualUCNCConnection()
 
 #include <QLibrary>
 #ifdef WINDOWS
-    Q_OS_WIN
     #include <windows.h>
     #ifndef _MSC_VER
-        #define STATIC_UCNC
+        // #define STATIC_UCNC
     #endif
 #endif
 #ifdef LINUX
@@ -75,7 +74,7 @@ void VirtualUCNCWorkerThread::run()
     lib.unload();
 #endif
     qInfo() << "[IO][uCNC] Stopped.";
-    *m_stopFlag = 3;
+    *m_stopFlag = VirtualConnection::WorkerStopFlag::Stopped;
 }
 
 #endif // !VIRTUAL_SIMULATOR_PROCESS
