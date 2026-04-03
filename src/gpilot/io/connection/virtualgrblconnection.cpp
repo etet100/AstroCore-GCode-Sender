@@ -4,8 +4,21 @@
 
 #include "virtualgrblconnection.h"
 #include <QDebug>
+
+VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent)
+    : VirtualConnection("GRBL", parent)
+{
+}
+
+VirtualGRBLConnection::~VirtualGRBLConnection()
+{
+}
+
+// DLL / QThread mode only
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+
 #include <QLibrary>
-#include <QUuid>
 #ifdef WINDOWS
     #include <windows.h>
     #ifndef _MSC_VER
@@ -24,15 +37,6 @@ extern "C" {
 typedef void (*GRBLFunction)(QString serverName, QAtomicInt* stopFlag);
 #endif
 
-VirtualGRBLConnection::VirtualGRBLConnection(QObject *parent)
-    : VirtualConnection("GRBL", parent)
-{
-}
-
-VirtualGRBLConnection::~VirtualGRBLConnection()
-{
-}
-
 QThread* VirtualGRBLConnection::createWorkerThread(const QString& serverName)
 {
     return new VirtualGRBLWorkerThread(serverName, &m_stopFlag);
@@ -45,29 +49,32 @@ VirtualGRBLWorkerThread::VirtualGRBLWorkerThread(QString serverName, QAtomicInt*
 {
 }
 
-void VirtualGRBLWorkerThread::run() {
-    qInfo() << "[IO][GRBL] Starting virtual GRBL, server " << m_serverName;
-    #ifdef STATIC_GRBL
-        #ifdef WINDOWS
-             GRBL(m_serverName.toStdString().c_str());
-        #endif
-    #else
-        qDebug() << "[IO][GRBL] GRBL dynamic mode";
-        QLibrary lib("grblHal.dll");
-        if (!lib.load()) {
-            qWarning() << "[IO][GRBL] GRBL library could not be loaded!";
-            return;
-        }
-        GRBLFunction GRBL = (GRBLFunction) lib.resolve("GRBL");
-        if (GRBL != nullptr) {
-            qDebug() << "[IO][GRBL] Calling GRBL() function";
-            GRBL(m_serverName.toStdString().c_str(), m_stopFlag);
-        } else {
-            qInfo() << "[IO][GRBL] GRBL not initialized. GRBL() not found!";
-        }
-        lib.unload();
+void VirtualGRBLWorkerThread::run()
+{
+    qInfo() << "[IO][GRBL] Starting virtual GRBL, server" << m_serverName;
+#ifdef STATIC_GRBL
+    #ifdef WINDOWS
+        GRBL(m_serverName.toStdString().c_str(), m_stopFlag);
     #endif
-    qInfo() << "[IO][GRBL] GRBL stopped!";
+#else
+    qDebug() << "[IO][GRBL] Dynamic mode";
+    QLibrary lib("grblHal.dll");
+    if (!lib.load()) {
+        qWarning() << "[IO][GRBL] Library could not be loaded!";
 
+        return;
+    }
+    GRBLFunction GRBL = (GRBLFunction) lib.resolve("GRBL");
+    if (GRBL != nullptr) {
+        qDebug() << "[IO][GRBL] Calling GRBL()";
+        GRBL(m_serverName.toStdString().c_str(), m_stopFlag);
+    } else {
+        qWarning() << "[IO][GRBL] GRBL() not found in library!";
+    }
+    lib.unload();
+#endif
+    qInfo() << "[IO][GRBL] Stopped.";
     *m_stopFlag = 3;
 }
+
+#endif // !VIRTUAL_SIMULATOR_PROCESS

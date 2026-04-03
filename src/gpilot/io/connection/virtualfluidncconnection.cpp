@@ -4,25 +4,6 @@
 
 #include "virtualfluidncconnection.h"
 #include <QDebug>
-#include <QLibrary>
-#include <QUuid>
-#ifdef WINDOWS
-#include <windows.h>
-#ifndef _MSC_VER
-// #define STATIC_FLUIDNC
-#endif
-#endif
-#ifdef LINUX
-#define STATIC_FLUIDNC
-#endif
-
-#ifdef STATIC_FLUIDNC
-    extern "C" {
-    Q_DECL_IMPORT void FluidNC(QString serverName);
-}
-#else
-    typedef void (*FluidNCFunction)(QString serverName);
-#endif
 
 VirtualFluidNCConnection::VirtualFluidNCConnection(QObject *parent)
     : VirtualConnection("FluidNC", parent)
@@ -32,6 +13,29 @@ VirtualFluidNCConnection::VirtualFluidNCConnection(QObject *parent)
 VirtualFluidNCConnection::~VirtualFluidNCConnection()
 {
 }
+
+// DLL / QThread mode only
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+
+#include <QLibrary>
+#ifdef WINDOWS
+    #include <windows.h>
+    #ifndef _MSC_VER
+        // #define STATIC_FLUIDNC
+    #endif
+#endif
+#ifdef LINUX
+    #define STATIC_FLUIDNC
+#endif
+
+#ifdef STATIC_FLUIDNC
+extern "C" {
+    Q_DECL_IMPORT void FluidNC(QString serverName, QAtomicInt* stopFlag);
+}
+#else
+typedef void (*FluidNCFunction)(QString serverName, QAtomicInt* stopFlag);
+#endif
 
 QThread* VirtualFluidNCConnection::createWorkerThread(const QString& serverName)
 {
@@ -45,29 +49,32 @@ VirtualFluidNCWorkerThread::VirtualFluidNCWorkerThread(QString serverName, QAtom
 {
 }
 
-void VirtualFluidNCWorkerThread::run() {
-    qInfo() << "[IO][FluidNC] Starting virtual FluidNC, server " << m_serverName;
+void VirtualFluidNCWorkerThread::run()
+{
+    qInfo() << "[IO][FluidNC] Starting virtual FluidNC, server" << m_serverName;
 #ifdef STATIC_FLUIDNC
-#ifdef WINDOWS
-    FluidNC(m_serverName.toStdString().c_str());
-#endif
+    #ifdef WINDOWS
+        FluidNC(m_serverName.toStdString().c_str(), m_stopFlag);
+    #endif
 #else
-    qDebug() << "[IO][FluidNC] FluidNC dynamic mode";
+    qDebug() << "[IO][FluidNC] Dynamic mode";
     QLibrary lib("FluidNC.dll");
     if (!lib.load()) {
-        qWarning() << "[IO][FluidNC] FluidNC library could not be loaded!";
+        qWarning() << "[IO][FluidNC] Library could not be loaded!";
+
         return;
     }
     FluidNCFunction FluidNC = (FluidNCFunction) lib.resolve("FluidNC");
     if (FluidNC != nullptr) {
-        qDebug() << "[IO][FluidNC] Calling FluidNC() function";
-        FluidNC(m_serverName.toStdString().c_str());
+        qDebug() << "[IO][FluidNC] Calling FluidNC()";
+        FluidNC(m_serverName.toStdString().c_str(), m_stopFlag);
     } else {
-        qInfo() << "[IO][FluidNC] FluidNC not initialized. FluidNC() not found!";
+        qWarning() << "[IO][FluidNC] FluidNC() not found in library!";
     }
     lib.unload();
 #endif
-    qInfo() << "[IO][FluidNC] FluidNC stopped!";
-
+    qInfo() << "[IO][FluidNC] Stopped.";
     *m_stopFlag = 3;
 }
+
+#endif // !VIRTUAL_SIMULATOR_PROCESS

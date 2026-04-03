@@ -8,15 +8,18 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+#ifdef VIRTUAL_SIMULATOR_PROCESS
+    #include <QProcess>
+    #include <QCoreApplication>
+#endif
+
 VirtualConnection::VirtualConnection(QString deviceName, QObject *parent)
     : Connection(parent)
-    , m_stopFlag(0)
     , m_deviceName(deviceName)
 {
-    m_socket = nullptr;
-    m_controlSocket = nullptr;
-    m_server = nullptr;
-    m_thread = nullptr;
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+    m_stopFlag = 0;
+#endif
 }
 
 VirtualConnection::~VirtualConnection()
@@ -31,12 +34,6 @@ void VirtualConnection::startLocalServer()
     m_server->listen(serverPrefix() + QUuid::createUuid().toString());
 }
 
-void VirtualConnection::startWorkerThread()
-{
-    m_thread = createWorkerThread(m_server->serverName());
-    m_thread->start();
-}
-
 bool VirtualConnection::open()
 {
     if (m_state == ConnectionState::Connecting) {
@@ -49,11 +46,130 @@ bool VirtualConnection::open()
     setState(ConnectionState::Connecting);
 
     startLocalServer();
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
     startWorkerThread();
+#else
+    startProcess();
+#endif
 
     return false;
 }
 
+void VirtualConnection::close()
+{
+    cleanup();
+}
+
+void VirtualConnection::cleanup()
+{
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Closing connection";
+
+    if (m_state == ConnectionState::Disconnected) {
+        return;
+    }
+
+    setState(ConnectionState::Disconnected);
+
+    if (m_socket != nullptr) {
+        if (m_socket->isOpen()) {
+            disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
+            m_socket->abort();
+        }
+        delete m_socket;
+        m_socket = nullptr;
+    }
+    if (m_controlSocket != nullptr) {
+        if (m_controlSocket->isOpen()) {
+            disconnect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
+            m_controlSocket->abort();
+        }
+        delete m_controlSocket;
+        m_controlSocket = nullptr;
+    }
+    if (m_server != nullptr && m_server->isListening()) {
+        m_server->close();
+        delete m_server;
+        m_server = nullptr;
+    }
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+    cleanupThread();
+#else
+    killProcess();
+#endif
+}
+
+// DLL / QThread mode
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+
+void VirtualConnection::startWorkerThread()
+{
+    m_thread = createWorkerThread(m_server->serverName());
+    m_thread->start();
+}
+
+void VirtualConnection::cleanupThread()
+{
+    if (m_thread == nullptr) {
+        return;
+    }
+
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Stopping thread...";
+
+    m_stopFlag = 2;
+
+    if (!m_thread->wait(1500)) {
+        m_thread->terminate();
+    }
+    m_thread->deleteLater();
+    m_thread = nullptr;
+}
+
+#endif // !VIRTUAL_SIMULATOR_PROCESS
+
+// QProcess mode
+#ifdef VIRTUAL_SIMULATOR_PROCESS
+
+void VirtualConnection::startProcess()
+{
+    // The simulator exe lives next to the main application binary.
+    QString exePath = QCoreApplication::applicationDirPath() + "/gpilot-simulator.exe";
+
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+             << "Launching simulator process:" << exePath
+             << "server:" << m_server->serverName()
+             << "type:" << simulatorType();
+
+    m_process = new QProcess(this);
+    m_process->start(exePath, {m_server->serverName(), simulatorType()});
+
+    if (!m_process->waitForStarted(3000)) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                   << "Failed to start simulator process:" << m_process->errorString();
+        delete m_process;
+        m_process = nullptr;
+        setState(ConnectionState::Disconnected);
+    }
+}
+
+void VirtualConnection::killProcess()
+{
+    if (m_process == nullptr) {
+        return;
+    }
+
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Killing simulator process...";
+
+    m_process->kill();
+    m_process->waitForFinished(2000);
+    delete m_process;
+    m_process = nullptr;
+}
+
+#endif // VIRTUAL_SIMULATOR_PROCESS
+
+// Data transfer
 void VirtualConnection::flushOutgoingData()
 {
     if (!m_socket) {
@@ -84,20 +200,8 @@ void VirtualConnection::sendLine(QString line)
 
     std::string str = QString(line + "\n").toStdString();
     m_socket->write(str.c_str(), str.length());
-
     m_socket->flush();
 }
-
-// void VirtualConnection::sendControlCommand(QString command)
-// {
-//     if (!m_controlSocket || !m_controlSocket->isOpen()) {
-//         qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket not available!";
-//         return;
-//     }
-
-//     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control >>" << command;
-//     m_controlSocket->flush();
-// }
 
 void VirtualConnection::sendControlCommand(QJsonObject cmd)
 {
@@ -106,7 +210,8 @@ void VirtualConnection::sendControlCommand(QJsonObject cmd)
     m_controlSocket->write(json);
     m_controlSocket->flush();
 
-    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Control >>" << QString::fromUtf8(json).trimmed();
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName))
+             << "Control >>" << QString::fromUtf8(json).trimmed();
 }
 
 void VirtualConnection::lockProbeAtCurrentPosition()
@@ -116,13 +221,8 @@ void VirtualConnection::lockProbeAtCurrentPosition()
 
         return;
     }
-
     qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Locking probe at current position.";
-
-    QJsonObject cmd;
-    cmd["cmd"] = "probe_at_current";
-
-    sendControlCommand(cmd);
+    sendControlCommand({{"cmd", "probe_at_current"}});
 }
 
 void VirtualConnection::resetProbePosition()
@@ -132,13 +232,8 @@ void VirtualConnection::resetProbePosition()
 
         return;
     }
-
     qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Resetting probe position.";
-
-    QJsonObject cmd;
-    cmd["cmd"] = "reset_probe";
-
-    sendControlCommand(cmd);
+    sendControlCommand({{"cmd", "reset_probe"}});
 }
 
 void VirtualConnection::setHome(bool abs, double x, double y, double z)
@@ -148,18 +243,10 @@ void VirtualConnection::setHome(bool abs, double x, double y, double z)
 
         return;
     }
-
-    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Setting home position to"
-             << (abs ? "absolute" : "relative") << "(" << x << "," << y << "," << z << ")";
-
-    QJsonObject cmd;
-    cmd["cmd"] = "set_home";
-    cmd["abs"] = abs;
-    cmd["x"] = x;
-    cmd["y"] = y;
-    cmd["z"] = z;
-
-    sendControlCommand(cmd);
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName))
+             << "Setting home position to" << (abs ? "absolute" : "relative")
+             << "(" << x << "," << y << "," << z << ")";
+    sendControlCommand({{"cmd", "set_home"}, {"abs", abs}, {"x", x}, {"y", y}, {"z", z}});
 }
 
 void VirtualConnection::setSingleLimit(Axis axis, float pos)
@@ -169,15 +256,9 @@ void VirtualConnection::setSingleLimit(Axis axis, float pos)
 
         return;
     }
-
-    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Setting single limit for axis" << (int) axis << "to" << pos;
-
-    QJsonObject cmd;
-    cmd["cmd"] = "set_single_limit";
-    cmd["axis"] = (int) axis;
-    cmd["pos"] = pos;
-
-    sendControlCommand(cmd);
+    qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName))
+             << "Setting single limit for axis" << (int) axis << "to" << pos;
+    sendControlCommand({{"cmd", "set_single_limit"}, {"axis", (int) axis}, {"pos", pos}});
 }
 
 void VirtualConnection::estop()
@@ -187,13 +268,8 @@ void VirtualConnection::estop()
 
         return;
     }
-
     qDebug() << qPrintable(QString("[IO][%1][Ctrl]").arg(m_deviceName)) << "Emergency stop!";
-
-    QJsonObject cmd;
-    cmd["cmd"] = "estop";
-
-    sendControlCommand(cmd);
+    sendControlCommand({{"cmd", "estop"}});
 }
 
 QString VirtualConnection::deviceName() const
@@ -201,63 +277,7 @@ QString VirtualConnection::deviceName() const
     return m_deviceName;
 }
 
-void VirtualConnection::cleanupThread()
-{
-    if (m_thread == nullptr) {
-        return;
-    }
-
-    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Stopping thread...";
-
-    if (!m_thread->wait(1500)) {
-        m_thread->terminate();
-    }
-    m_thread->deleteLater();
-    m_thread = nullptr;
-}
-
-void VirtualConnection::close()
-{
-    cleanup();
-}
-
-void VirtualConnection::cleanup()
-{
-    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Closing connection";
-
-    if (m_state == ConnectionState::Disconnected) {
-        return;
-    }
-
-    setState(ConnectionState::Disconnected);
-
-    m_stopFlag = 2;
-
-    if (m_socket != nullptr) {
-        if (m_socket->isOpen()) {
-            disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
-            m_socket->abort();
-        }
-        delete m_socket;
-        m_socket = nullptr;
-    }
-    if (m_controlSocket != nullptr) {
-        if (m_controlSocket->isOpen()) {
-            disconnect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
-            m_controlSocket->abort();
-        }
-        delete m_controlSocket;
-        m_controlSocket = nullptr;
-    }
-    if (m_server != nullptr && m_server->isListening()) {
-        m_server->close();
-        delete m_server;
-        m_server = nullptr;
-    }
-
-    cleanupThread();
-}
-
+// Socket slots
 void VirtualConnection::onNewConnection()
 {
     if (m_socket == nullptr) {
@@ -268,32 +288,28 @@ void VirtualConnection::onNewConnection()
         connect(m_socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
 
         setState(ConnectionState::Connected);
-    }
-    else if (m_controlSocket == nullptr) {
+    } else if (m_controlSocket == nullptr) {
         qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control connection received.";
 
         m_controlSocket = m_server->nextPendingConnection();
         connect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
-    }
-    else {
+    } else {
         qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Too many connections, rejecting.";
-        QLocalSocket* extraSocket = m_server->nextPendingConnection();
-        extraSocket->abort();
-        extraSocket->deleteLater();
+        QLocalSocket* extra = m_server->nextPendingConnection();
+        extra->abort();
+        extra->deleteLater();
     }
 }
 
 void VirtualConnection::onDisconnected()
 {
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Disconnected.";
-
     close();
 }
 
 void VirtualConnection::onControlDisconnected()
 {
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control connection disconnected.";
-
     if (m_controlSocket != nullptr) {
         m_controlSocket->deleteLater();
         m_controlSocket = nullptr;

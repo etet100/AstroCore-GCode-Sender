@@ -4,10 +4,23 @@
 
 #include "virtualucncconnection.h"
 #include <QDebug>
+
+VirtualUCNCConnection::VirtualUCNCConnection(QObject *parent)
+    : VirtualConnection("uCNC", parent)
+{
+}
+
+VirtualUCNCConnection::~VirtualUCNCConnection()
+{
+}
+
+// DLL / QThread mode only
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+
 #include <QLibrary>
-#include <QUuid>
 #ifdef WINDOWS
-Q_OS_WIN
+    Q_OS_WIN
     #include <windows.h>
     #ifndef _MSC_VER
         #define STATIC_UCNC
@@ -19,21 +32,11 @@ Q_OS_WIN
 
 #ifdef STATIC_UCNC
 extern "C" {
-    // Q_DECL_IMPORT
     void uCNC(QString serverName, QAtomicInt* stopFlag);
 }
 #else
 typedef void (*uCNCFunction)(QString serverName, QAtomicInt* stopFlag);
 #endif
-
-VirtualUCNCConnection::VirtualUCNCConnection(QObject *parent)
-    : VirtualConnection("uCNC", parent)
-{
-}
-
-VirtualUCNCConnection::~VirtualUCNCConnection()
-{
-}
 
 QThread* VirtualUCNCConnection::createWorkerThread(const QString& serverName)
 {
@@ -47,29 +50,32 @@ VirtualUCNCWorkerThread::VirtualUCNCWorkerThread(QString serverName, QAtomicInt*
 {
 }
 
-void VirtualUCNCWorkerThread::run() {
-    qInfo() << "Starting virtual uCNC, server " << m_serverName;
-    #ifdef STATIC_UCNC
-        #ifdef WINDOWS
-             uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
-        #endif
-    #else
-        qDebug() << "[IO][uCNC] Dynamic mode";
-        QLibrary lib("uCNC.dll");
-        if (!lib.load()) {
-            qWarning() << "[IO][uCNC] uCNC library could not be loaded!";
-            return;
-        }
-        uCNCFunction uCNC = (uCNCFunction) lib.resolve("uCNC");
-        if (uCNC != nullptr) {
-            qDebug() << "[IO][uCNC] Calling uCNC() function";
-            uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
-        } else {
-            qInfo() << "[IO][uCNC] uCNC not initialized. uCNC() not found!";
-        }
-        lib.unload();
+void VirtualUCNCWorkerThread::run()
+{
+    qInfo() << "[IO][uCNC] Starting virtual uCNC, server" << m_serverName;
+#ifdef STATIC_UCNC
+    #ifdef WINDOWS
+        uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
     #endif
-    qInfo() << "uCNC stopped!";
+#else
+    qDebug() << "[IO][uCNC] Dynamic mode";
+    QLibrary lib("uCNC.dll");
+    if (!lib.load()) {
+        qWarning() << "[IO][uCNC] Library could not be loaded!";
 
+        return;
+    }
+    uCNCFunction uCNC = (uCNCFunction) lib.resolve("uCNC");
+    if (uCNC != nullptr) {
+        qDebug() << "[IO][uCNC] Calling uCNC()";
+        uCNC(m_serverName.toStdString().c_str(), m_stopFlag);
+    } else {
+        qWarning() << "[IO][uCNC] uCNC() not found in library!";
+    }
+    lib.unload();
+#endif
+    qInfo() << "[IO][uCNC] Stopped.";
     *m_stopFlag = 3;
 }
+
+#endif // !VIRTUAL_SIMULATOR_PROCESS

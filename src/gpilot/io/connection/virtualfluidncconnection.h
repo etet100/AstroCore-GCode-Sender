@@ -1,21 +1,20 @@
 #ifndef VIRTUALFLUIDNCCONNECTION_H
 #define VIRTUALFLUIDNCCONNECTION_H
 
-#include <QThread>
 #include "virtualconnection.h"
-#include <QLocalSocket>
-#include <QLocalServer>
 
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+#include <QThread>
 class VirtualFluidNCWorkerThread : public QThread
 {
     public:
         VirtualFluidNCWorkerThread(QString serverName, QAtomicInt* stopFlag);
-
         void run() override;
     private:
-        QString m_serverName;
+        QString     m_serverName;
         QAtomicInt* m_stopFlag;
 };
+#endif
 
 class VirtualFluidNCConnection : public VirtualConnection
 {
@@ -31,7 +30,12 @@ public:
 protected:
     QString deviceName() const override { return "FluidNC"; }
     QString serverPrefix() const override { return "gpilotfluidnc_"; }
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
     QThread* createWorkerThread(const QString& serverName) override;
+#else
+    QString simulatorType() const override { return "fluidnc"; }
+#endif
 };
 
 #endif // VIRTUALFLUIDNCCONNECTION_H

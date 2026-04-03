@@ -8,16 +8,17 @@
 #include <QObject>
 #include "virtualconnection.h"
 
+#ifndef VIRTUAL_SIMULATOR_PROCESS
 class VirtualUCNCWorkerThread : public QThread
 {
     public:
         VirtualUCNCWorkerThread(QString serverName, QAtomicInt* stopFlag);
-
         void run() override;
     private:
-        QString m_serverName;
+        QString     m_serverName;
         QAtomicInt* m_stopFlag;
 };
+#endif
 
 class VirtualUCNCConnection : public VirtualConnection
 {
@@ -33,7 +34,12 @@ public:
 protected:
     QString deviceName() const override { return "uCNC"; }
     QString serverPrefix() const override { return "gpilotucnc_"; }
+
+#ifndef VIRTUAL_SIMULATOR_PROCESS
     QThread* createWorkerThread(const QString& serverName) override;
+#else
+    QString simulatorType() const override { return "ucnc"; }
+#endif
 };
 
 #endif // VIRTUALUCNCCONNECTION_H
