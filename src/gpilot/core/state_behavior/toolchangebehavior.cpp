@@ -41,7 +41,7 @@ StateBehavior::Result ToolChangeBehavior::onEntry(CommunicatorApi *communicator,
 
     qDebug() << "[Behavior][ToolChange] Tool change requested for tool:" << m_toolNumber;
 
-    emit toolChangeRequested(m_toolNumber);
+    emit stateEvent("toolChangeRequested", {{"toolNumber", m_toolNumber}});
 
     // Save current work position
     if (m_communicator) {
@@ -155,7 +155,7 @@ void ToolChangeBehavior::complete()
     m_changeState = ToolChangeState::Completed;
     qDebug() << "[Behavior][ToolChange] Tool change completed for tool:" << m_toolNumber;
 
-    emit toolChangeCompleted(m_toolNumber);
+    emit stateEvent("toolChangeCompleted", {{"toolNumber", m_toolNumber}});
 
     // Return to previous state (usually RunningBehavior) or IdleBehavior
     if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {

@@ -75,13 +75,13 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
             double z = prob->probedPosition().z();
             m_heightmap->setHeightAt(QPoint(ix, iy), z);
             log(QString("Point (%1,%2): Z=%3").arg(ix).arg(iy).arg(z, 0, 'f', 3), {"ScanTable"});
-            emit pointScanned(ix, iy, z);
+            emit stateEvent("pointScanned", {{"x", ix}, {"y", iy}, {"z", z}});
         } else {
             log(QString("Point (%1,%2): probe missed, skipping").arg(ix).arg(iy), {"ScanTable"});
         }
 
         m_scannedPoints++;
-        emit progressChanged(m_scannedPoints, m_grid.size());
+        emit progressChanged(m_scannedPoints, m_grid.size());  // base class signal
 
         m_currentPoint++;
         if (m_currentPoint < m_grid.size()) {
@@ -103,7 +103,7 @@ void ScanTableBehavior::onAlarm(int code)
 {
     qDebug() << "[Behavior][ScanTable] Alarm" << code << "during scan";
     log(QString("Alarm %1 during scan").arg(code), {"ScanTable", "Error"});
-    emit scanFailed(QString("Alarm %1").arg(code));
+    emit stateEvent("scanFailed", {{"reason", QString("Alarm %1").arg(code)}});
     emit transition(this, new AlarmBehavior(code));
 }
 
@@ -113,7 +113,7 @@ void ScanTableBehavior::onMachineStateChanged(MachineState state)
         int code = m_communicator->lastAlarmCode();
         qDebug() << "[Behavior][ScanTable] Machine alarm during scan, code" << code;
         log("Machine alarm during scan", {"ScanTable", "Error"});
-        emit scanFailed("Machine alarm");
+        emit stateEvent("scanFailed", {{"reason", "Machine alarm"}});
         emit transition(this, new AlarmBehavior(code));
     }
 }
@@ -159,10 +159,10 @@ void ScanTableBehavior::finishScanning(bool success, const QString &reason)
     if (success) {
         log(QString("Table scan completed: %1/%2 points measured")
                 .arg(m_scannedPoints).arg(m_grid.size()), {"ScanTable"});
-        emit scanCompleted();
+        emit stateEvent("scanCompleted", {});
     } else {
         log(QString("Table scan aborted: %1").arg(reason), {"ScanTable", "Error"});
-        emit scanFailed(reason);
+        emit stateEvent("scanFailed", {{"reason", reason}});
     }
 
     emit transition(this, new IdleBehavior());

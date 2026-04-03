@@ -56,19 +56,19 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     if (!r) {
         log("Timeout during initial setup", {"Probing", "Error"});
-        emit probeFailed("Timeout during setup");
+        emit stateEvent("probeFailed", {{"reason", "Timeout during setup"}});
         transitionToPreviousState();
         co_return;
     }
     if (m_alarmOccurred) {
         log(QString("Alarm during setup: %1").arg(m_alarmCode), {"Probing", "Error"});
-        emit probeFailed(QString("Alarm %1 during setup").arg(m_alarmCode));
+        emit stateEvent("probeFailed", {{"reason", QString("Alarm %1 during setup").arg(m_alarmCode)}});
         emit transition(this, new AlarmBehavior(m_alarmCode));
         co_return;
     }
     if (!r->status.ok) {
         log(QString("Setup error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
-        emit probeFailed("Setup command failed");
+        emit stateEvent("probeFailed", {{"reason", "Setup command failed"}});
         transitionToPreviousState();
         co_return;
     }
@@ -84,7 +84,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     if (!r) {
         log("Timeout during fast probe", {"Probing", "Error"});
-        emit probeFailed("Timeout during fast probe");
+        emit stateEvent("probeFailed", {{"reason", "Timeout during fast probe"}});
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
@@ -94,17 +94,17 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     if (m_alarmOccurred) {
         if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
             log("Probe failed - no contact detected", {"Probing", "Error"});
-            emit probeFailed("No contact detected during probing");
+            emit stateEvent("probeFailed", {{"reason", "No contact detected during probing"}});
         } else {
             log(QString("Alarm during fast probe: %1").arg(m_alarmCode), {"Probing", "Error"});
-            emit probeFailed(QString("Alarm %1").arg(m_alarmCode));
+            emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
         }
         emit transition(this, new AlarmBehavior(m_alarmCode));
         co_return;
     }
     if (!r->status.ok) {
         log(QString("Fast probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
-        emit probeFailed("Fast probe command failed");
+        emit stateEvent("probeFailed", {{"reason", "Fast probe command failed"}});
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
@@ -115,7 +115,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     auto fastProbe = ProbeResponseParser::parse(r->fullResponse);
     if (!fastProbe || !fastProbe->contacted) {
         log("Fast probe - no contact or unparseable response", {"Probing", "Error"});
-        emit probeFailed("No contact during fast probe");
+        emit stateEvent("probeFailed", {{"reason", "No contact during fast probe"}});
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
@@ -136,7 +136,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     if (!r || m_alarmOccurred || !r->status.ok) {
         log("Error during retract", {"Probing", "Error"});
-        emit probeFailed("Retract failed");
+        emit stateEvent("probeFailed", {{"reason", "Retract failed"}});
         if (m_alarmOccurred) {
             emit transition(this, new AlarmBehavior(m_alarmCode));
         } else {
@@ -163,7 +163,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
         if (!r) {
             log("Timeout during slow probe", {"Probing", "Error"});
-            emit probeFailed("Timeout during slow probe");
+            emit stateEvent("probeFailed", {{"reason", "Timeout during slow probe"}});
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
@@ -173,17 +173,17 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         if (m_alarmOccurred) {
             if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
                 log("Slow probe failed - no contact detected", {"Probing", "Error"});
-                emit probeFailed("No contact during slow probe");
+                emit stateEvent("probeFailed", {{"reason", "No contact during slow probe"}});
             } else {
                 log(QString("Alarm during slow probe: %1").arg(m_alarmCode), {"Probing", "Error"});
-                emit probeFailed(QString("Alarm %1").arg(m_alarmCode));
+                emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
             }
             emit transition(this, new AlarmBehavior(m_alarmCode));
             co_return;
         }
         if (!r->status.ok) {
             log(QString("Slow probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
-            emit probeFailed("Slow probe command failed");
+            emit stateEvent("probeFailed", {{"reason", "Slow probe command failed"}});
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
@@ -194,7 +194,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         auto slowProbe = ProbeResponseParser::parse(r->fullResponse);
         if (!slowProbe || !slowProbe->contacted) {
             log("Slow probe - no contact or unparseable response", {"Probing", "Error"});
-            emit probeFailed("No contact during slow probe");
+            emit stateEvent("probeFailed", {{"reason", "No contact during slow probe"}});
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
@@ -208,7 +208,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     m_probedPosition = finalPosition;
     m_success = true;
-    emit probeCompleted(m_probedPosition);
+    emit stateEvent("probeCompleted", {{"x", m_probedPosition.x()}, {"y", m_probedPosition.y()}, {"z", m_probedPosition.z()}});
 
     // ── Step 5: Set Z=0 at probe position (optional) ────────────────
     if (m_params.setZeroAtProbe) {

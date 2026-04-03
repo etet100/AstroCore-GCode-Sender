@@ -10,6 +10,7 @@
 #include <QHash>
 #include <QSet>
 #include <QTimer>
+#include <QVariantMap>
 #include "core/globals.h"
 #include "action.h"
 #include <functional>
@@ -137,6 +138,15 @@ class StateBehavior : public QObject
         void error(StateBehavior *state, QString message);
         void logSignal(QString message);
         void asyncCompleted();
+
+        // Progress of the current operation (e.g. scanning, running).
+        // Emit when the behavior has a natural concept of progress.
+        void progressChanged(int current, int total);
+
+        // Generic event for behavior-specific notifications that don't fit
+        // into other signals. Use a short camelCase type string and a flat
+        // QVariantMap with the relevant data.
+        void stateEvent(QString type, QVariantMap data);
 
         // QCoro bridge signals — emitted from the default onCommandResponse / onMachineStateChanged
         // implementations so that coroutine-based behaviors can co_await them.

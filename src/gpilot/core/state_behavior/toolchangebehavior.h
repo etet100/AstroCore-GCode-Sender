@@ -55,9 +55,6 @@ class ToolChangeBehavior : public StateBehavior
         void returnToWorkPosition();
         void complete();
 
-    signals:
-        void toolChangeRequested(int toolNumber);
-        void toolChangeCompleted(int toolNumber);
 };
 
 #endif // TOOLCHANGEBEHAVIOR_H

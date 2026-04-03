@@ -55,9 +55,6 @@ class ProbingBehavior : public StateBehavior
 
         QCoro::Task<void> runProbingSequence();
 
-    signals:
-        void probeCompleted(QVector3D position);
-        void probeFailed(QString reason);
 };
 
 #endif // PROBINGBEHAVIOR_H

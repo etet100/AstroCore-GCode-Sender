@@ -37,12 +37,6 @@ public:
     void onAlarm(int code) override;
     void onMachineStateChanged(MachineState state) override;
 
-signals:
-    void scanCompleted();
-    void scanFailed(QString reason);
-    void pointScanned(int x, int y, double z);
-    void progressChanged(int scanned, int total);
-
 protected:
     QString name() const override { return "ScanTable"; }
 
