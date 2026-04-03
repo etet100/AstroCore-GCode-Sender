@@ -61,19 +61,14 @@ QGroupBox[checkable=&quot;true&quot;]::indicator:unchecked {
 	image: url(:/images/expand.png);
 }
 
-QFrame#frameManualControlXY,#frameManualControlZ {
-	border: 1px solid lightgray;
-	border-radius: 4px;
-}
-
 QSplitter::handle {
     background-repeat: no-repeat;
     background-position: center center;
 }
 
 QTableView {
-    selection-background-color: #cdcdff;
-    selection-color: rgb(0, 0, 0);
+/*    selection-background-color: #cdcdff;
+    selection-color: rgb(0, 0, 0);*/
 }
 
 QSlider::horizontal {
@@ -99,6 +94,9 @@ QSlider::handle:horizontal:hover {
     background-image: url(:/images/handle2sh.png);
 }
 
+QGroupBox::title {
+    padding-top: 2px;
+}
  </string>
   </property>
   <property name="dockNestingEnabled">

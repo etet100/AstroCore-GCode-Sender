@@ -25,6 +25,10 @@ public:
     virtual void setMachineState(QString n) { m_machineState = n; up(); }
     virtual void setMachineStateReport(QString report) = 0;
 
+signals:
+    void connectClicked();
+    void disconnectClicked();
+
 protected:
     QMap<MachineState, QString> m_statusCaptions;
     QMap<MachineState, QString> m_statusBackColors;

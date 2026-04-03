@@ -95,7 +95,19 @@ class PartMainConsole : public QWidget
 
         int m_index = 0;
 
-        QStringList m_internalCommands = {"start", "stop", "status", "pause", "resume", "open", "abort", "reset", "ai"};
+        QStringList m_internalCommands = {
+            "start",
+            "stop",
+            "status",
+            "pause",
+            "resume",
+            "open",
+            "abort",
+            "reset",
+            "ai",
+            "disconnect",
+            "connect",
+        };
         QString m_autocompletePrefix;
         int m_autocompleteIndex = -1;
         QStringList m_autocompleteMatches;

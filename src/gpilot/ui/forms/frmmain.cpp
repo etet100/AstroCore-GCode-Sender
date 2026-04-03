@@ -272,6 +272,13 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
         Utils::refreshStyle(ui->grpOverriding);
     });
 
+    connect(ui->state, &PartMainStateBase::connectClicked, this, [this]() {
+        m_communicator->sb()->action(Action::Connect);
+    });
+    connect(ui->state, &PartMainStateBase::disconnectClicked, this, [this]() {
+        m_communicator->sb()->action(Action::Disconnect);
+    });
+
     // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
     // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
     // ui->cmdHeightMapLoad->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
@@ -495,7 +502,10 @@ void FrmMain::initializeCommunicator()
     });
     connect(m_communicator->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
     connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
-        ui->state->setConName(connection->name());
+        ui->state->setConnectionName(connection->name());
+    });
+    connect(m_communicator, &Communicator::connectionStateChanged, this, [this](ConnectionState state) {
+        ui->state->setConnectionState(state == ConnectionState::Connected);
     });
 }
 
@@ -1867,9 +1877,13 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
             m_communicator->sb()->action(Action::Abort);
         } else if (command == "open") {
             onFileOpen();
+        } else if (command == "disconnect") {
+            m_communicator->sb()->action(Action::Disconnect);
+        } else if (command == "connect") {
+            m_communicator->sb()->action(Action::Connect);
+        } else {
+            qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
         }
-
-        qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
 
         return;
     }
@@ -2813,7 +2827,7 @@ void FrmMain::updateControlsState()
     bool paused = (m_communicator->senderState() == SenderState::Pausing) || (m_communicator->senderState() == SenderState::Pausing2) || (m_communicator->senderState() == SenderState::Paused) || (m_communicator->senderState() == SenderState::ChangingTool);
     SenderState senderState = m_communicator->senderState();
 
-    ui->grpState->setEnabled(portOpened);
+    // ui->grpState->setEnabled(portOpened);
     // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
     ui->jog->setEnabled(portOpened && ((senderState == SenderState::Stopped)

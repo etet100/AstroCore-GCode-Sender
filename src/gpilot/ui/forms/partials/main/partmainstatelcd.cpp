@@ -3,6 +3,7 @@
 #include "ui_partmainstatelcd.h"
 #include "utils/utils.h"
 #include <QFontDatabase>
+#include <QPushButton>
 #include "ui/utils/thememanager.h"
 
 PartMainStateLcd::PartMainStateLcd(QWidget *parent)
@@ -22,6 +23,14 @@ PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this]() {
         this->resizeEvent(nullptr);
     });
+
+    connect(ui->btnConnection, &QPushButton::clicked, this, [this]() {
+        if (ui->btnConnection->property("connected").toBool() == false) {
+            emit connectClicked();
+        } else {
+            emit disconnectClicked();
+        }
+    });
 }
 
 PartMainStateLcd::~PartMainStateLcd()
@@ -35,9 +44,23 @@ void PartMainStateLcd::setStatusText(QString status, QString bgColor, QString fg
     ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor, fgColor));
 }
 
-void PartMainStateLcd::setConName(QString name)
+void PartMainStateLcd::setConnectionName(QString name)
 {
-    ui->txtConName->setText(name);
+    ui->btnConnection->setToolTip(name);
+}
+
+void PartMainStateLcd::setConnectionState(bool connected)
+{
+    QString color = connected ? "green" : "red";
+    QString image;
+    if (connected) {
+        image = ":/images/conn/connected.svg";
+    } else {
+        image = ":/images/conn/disconnected.svg";
+    }
+    ui->btnConnection->setProperty("connected", connected);
+    ui->btnConnection->setIcon(QIcon(image));
+    ui->btnConnection->setStyleSheet(QString("background-color: %1;").arg(color));
 }
 
 void PartMainStateLcd::setMachineStateReport(QString report)
