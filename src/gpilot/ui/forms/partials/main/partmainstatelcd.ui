@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>244</width>
-    <height>249</height>
+    <height>263</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,7 +34,7 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,0,0">
    <property name="spacing">
     <number>6</number>
    </property>
@@ -639,9 +639,22 @@
     </widget>
    </item>
    <item>
+    <widget class="XSwitchButtonWithLabel" name="chkMachineInfo">
+     <property name="text">
+      <string>Show details</string>
+     </property>
+     <property name="fontScaleFactor">
+      <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="txtMachineInfo">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -649,7 +662,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>40</height>
+       <height>0</height>
       </size>
      </property>
      <property name="frameShape">
@@ -659,9 +672,7 @@
       <number>0</number>
      </property>
      <property name="text">
-      <string>a&lt;br&gt;
-b&lt;br&gt;
-c&lt;br&gt;</string>
+      <string/>
      </property>
      <property name="textFormat">
       <enum>Qt::TextFormat::MarkdownText</enum>
@@ -676,6 +687,13 @@ c&lt;br&gt;</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>XSwitchButtonWithLabel</class>
+   <extends>QWidget</extends>
+   <header>xswitchbuttonwithlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

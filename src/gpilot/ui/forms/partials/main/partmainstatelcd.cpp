@@ -11,6 +11,12 @@ PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     , ui(new Ui::partMainStateLcd)
 {
     ui->setupUi(this);
+
+    ui->txtMachineInfo->setVisible(false);
+    connect(ui->chkMachineInfo, &XSwitchButtonWithLabel::stateChanged, this, [this](bool state) {
+        ui->txtMachineInfo->setVisible(state);
+    });
+
     initializeColorsAndCaptions();
     setWorkCoordinates(QVector3D(0, 0, 0));
     setMachineCoordinates(QVector3D(0, 0, 0));
