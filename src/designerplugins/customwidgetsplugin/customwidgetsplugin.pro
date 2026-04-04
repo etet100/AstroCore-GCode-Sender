@@ -22,7 +22,9 @@ HEADERS +=  colorpicker.h \
             styledtoolbuttonplugin.h \
             customwidgetsplugin.h \
             xswitchbutton.h \
-            xswitchbuttonplugin.h
+            xswitchbuttonplugin.h \
+            xswitchbuttonwithlabel.h \
+            xswitchbuttonwithlabelplugin.h
 
 SOURCES +=  colorpicker.cpp \
             iconlabel.cpp \
@@ -38,7 +40,9 @@ SOURCES +=  colorpicker.cpp \
             styledtoolbuttonplugin.cpp \
             customwidgetsplugin.cpp \
             xswitchbutton.cpp \
-            xswitchbuttonplugin.cpp
+            xswitchbuttonplugin.cpp \
+            xswitchbuttonwithlabel.cpp \
+            xswitchbuttonwithlabelplugin.cpp
 
 FORMS +=    sliderbox.ui
 
@@ -47,10 +51,12 @@ include(../../vendor/QtValueSlider.pri)
 # Install plugin to Qt Creator plugins directory
 # Use environment variable or qmake argument to override, e.g.:
 # qmake QTCREATOR_PLUGINS_PATH="C:/custom/path"
-isEmpty(QTCREATOR_PLUGINS_PATH) {
-    QTCREATOR_PLUGINS_PATH = C:/Programy/Qt/Tools/QtCreator/bin/plugins/designer
-}
-target.path = $$QTCREATOR_PLUGINS_PATH
-INSTALLS += target
+# isEmpty(QTCREATOR_PLUGINS_PATH) {
+#     QTCREATOR_PLUGINS_PATH = C:/Programy/Qt/Tools/QtCreator/bin/plugins/designer
+# }
+# target.path = $$QTCREATOR_PLUGINS_PATH
+# INSTALLS += target
 
-DESTDIR = $$OUT_PWD/../../gpilot
+!win32-msvc* {
+            DESTDIR = $$OUT_PWD/../../gpilot
+}

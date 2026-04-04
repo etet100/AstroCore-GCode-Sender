@@ -1,4 +1,5 @@
 #include "xswitchbutton.h"
+#include <QFontMetrics>
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
@@ -44,6 +45,10 @@ XSwitchButton::XSwitchButton(QWidget *parent) : QWidget(parent)
     m_outRadiuslist[6] = 1;
     m_outRadiuslist[7] = 1;
 #endif
+
+    if (m_scaleWithFont) {
+        updateFixedSizeFromFont();
+    }
 }
 
 void XSwitchButton::drawBackGround(QPainter *painter)
@@ -63,11 +68,13 @@ void XSwitchButton::drawBackGround(QPainter *painter)
 
     // Left semicircle
     QPainterPath path1;
-    path1.addEllipse(rect.x(), rect.y(), side, side);
+    // path1.addEllipse(rect.x(), rect.y(), side, side);
+    path1.addRoundedRect(rect.x(), rect.y(), side, side, m_radius, m_radius);
 
     // Right semicircle
     QPainterPath path2;
-    path2.addEllipse(rect.width() - side, rect.y(), side, side);
+    // path2.addEllipse(rect.width() - side, rect.y(), side, side);
+    path2.addRoundedRect(rect.width() - side, rect.y(), side, side, m_radius, m_radius);
 
     // Middle rectangle
     QPainterPath path3;
@@ -103,7 +110,8 @@ void XSwitchButton::drawSlider(QPainter *painter)
 
     m_sliderWidth = qMin(width(), height()) - m_space * 2;
     QRect rect(m_space + m_aniStartX, m_space, m_sliderWidth, m_sliderWidth);
-    painter->drawEllipse(rect);
+    // painter->drawEllipse(rect);
+    painter->drawRoundedRect(rect, m_radius * 0.8, m_radius * 0.8);
 
     painter->restore();
 }
@@ -153,6 +161,16 @@ void XSwitchButton::resizeEvent(QResizeEvent *ev)
     Q_UNUSED(ev)
 
     m_sliderWidth = qMin(width(), height()) - m_space * 2;
+    m_slideStep = width() / 10;
+
+    if (m_checked) {
+        m_aniStartX = width() - height();
+        m_aniEndX = m_aniStartX;
+    } else {
+        m_aniStartX = 0;
+        m_aniEndX = 0;
+    }
+
 #ifdef ENABLE_LOADING
     m_outRadius = m_sliderWidth/2 + m_space;
     m_inRadius = m_sliderWidth/2 - m_space*2;
@@ -199,6 +217,15 @@ void XSwitchButton::paintEvent(QPaintEvent *ev)
 #endif
 }
 
+void XSwitchButton::changeEvent(QEvent *ev)
+{
+    if (ev->type() == QEvent::FontChange && m_scaleWithFont) {
+        updateFixedSizeFromFont();
+    }
+
+    QWidget::changeEvent(ev);
+}
+
 void XSwitchButton::statChanged()
 {
     // Calculate step
@@ -220,6 +247,7 @@ void XSwitchButton::statChanged()
     }
 
     if (c_stateChangedCallback) c_stateChangedCallback(m_checked);
+    emit stateChanged(m_checked);
 }
 
 void XSwitchButton::mousePressEvent(QMouseEvent *ev)
@@ -271,6 +299,25 @@ void XSwitchButton::updateValue()
     }
 
     update();
+}
+
+QSize XSwitchButton::sizeHint() const
+{
+    int h;
+    if (m_scaleWithFont) {
+        QFontMetrics fm(font());
+        h = qRound(fm.height() * m_fontScaleFactor);
+    } else {
+        h = 20;
+    }
+    int w = h * 2;
+
+    return QSize(w, h);
+}
+
+QSize XSwitchButton::minimumSizeHint() const
+{
+    return sizeHint();
 }
 
 int XSwitchButton::space() const
@@ -457,4 +504,45 @@ void XSwitchButton::setTextOff(const QString &text)
         m_textStrOff = text;
         update();
     }
+}
+
+bool XSwitchButton::scaleWithFont() const
+{
+    return m_scaleWithFont;
+}
+
+void XSwitchButton::setScaleWithFont(bool enabled)
+{
+    if (m_scaleWithFont != enabled) {
+        m_scaleWithFont = enabled;
+        if (m_scaleWithFont) {
+            updateFixedSizeFromFont();
+        } else {
+            setMinimumSize(0, 0);
+            setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        }
+    }
+}
+
+double XSwitchButton::fontScaleFactor() const
+{
+    return m_fontScaleFactor;
+}
+
+void XSwitchButton::setFontScaleFactor(double factor)
+{
+    if (!qFuzzyCompare(m_fontScaleFactor, factor)) {
+        m_fontScaleFactor = factor;
+        if (m_scaleWithFont) {
+            updateFixedSizeFromFont();
+        }
+    }
+}
+
+void XSwitchButton::updateFixedSizeFromFont()
+{
+    QFontMetrics fm(font());
+    int h = qRound(fm.height() * m_fontScaleFactor);
+    int w = h * 2;
+    setFixedSize(w, h);
 }
