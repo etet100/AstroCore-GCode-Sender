@@ -323,16 +323,18 @@ QString StateBehavior::enrichErrorMessage(QString message)
 
 bool StateBehavior::action(const Action &action)
 {
-    if (canExecute(Action::Type::Reset) && action.type() == Action::Type::Reset) {
-        this->reset();
+    if (canExecute(action.type())) {
+        switch (action.type()) {
+            case Action::Type::Reset:
+                this->reset();
 
-        return true;
-    }
+                return true;
 
-    if (canExecute(Action::Type::Disconnect) && action.type() == Action::Type::Disconnect) {
-        this->disconnectAction();
+            case Action::Type::Disconnect:
+                this->disconnectAction();
 
-        return true;
+                return true;
+        }
     }
 
     bool result = doAction(action);

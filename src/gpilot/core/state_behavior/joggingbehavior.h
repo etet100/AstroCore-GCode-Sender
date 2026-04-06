@@ -57,7 +57,11 @@ class JoggingBehavior : public StateBehavior
         QString description() override { return "Jogging"; }
         Type type() const override { return Type::Jogging; }
         QSet<Action::Type> availableActions() const override {
-            return { Action::Abort, Action::Jog };
+            return {
+                Action::Reset,
+                Action::Abort,
+                Action::Jog
+            };
         }
         Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;

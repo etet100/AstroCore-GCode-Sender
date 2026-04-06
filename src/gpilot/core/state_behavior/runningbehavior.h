@@ -26,6 +26,7 @@ class RunningBehavior : public StateBehavior
         Type type() const override { return Type::Running; }
         QSet<Action::Type> availableActions() const override {
             return {
+                Action::Reset,
                 Action::Pause,
                 Action::Abort
             };

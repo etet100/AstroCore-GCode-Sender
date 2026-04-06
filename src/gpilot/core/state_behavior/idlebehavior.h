@@ -15,6 +15,7 @@ class IdleBehavior : public StateBehavior
         Type type() const override { return Type::Idle; }
         QSet<Action::Type> availableActions() const override {
             return {
+                Action::Reset,
                 Action::Run,
                 Action::Home,
                 Action::Jog,

@@ -17,6 +17,7 @@ class AlarmBehavior : public StateBehavior
         Type type() const override { return Type::Alarm; }
         QSet<Action::Type> availableActions() const override {
             return {
+                Action::Reset,
                 Action::Unlock,
                 Action::Disconnect,
             };
