@@ -215,6 +215,8 @@ void FrmSettings::initializeWidgets()
     ui->pendant->setWifiSsid(pendant.wifiSsid());
     ui->pendant->setWifiPassword(pendant.wifiPassword());
     ui->pendant->setHostIp(pendant.hostIp());
+    ui->pendant->setPort(pendant.port());
+    ui->pendant->setEnabled(pendant.enabled());
 }
 
 void FrmSettings::applySettings()
@@ -322,6 +324,8 @@ void FrmSettings::applySettings()
     pendant.m_wifiSsid = ui->pendant->wifiSsid();
     pendant.m_wifiPassword = ui->pendant->wifiPassword();
     pendant.m_hostIp = ui->pendant->hostIp();
+    pendant.m_port = ui->pendant->port();
+    pendant.m_enabled = ui->pendant->enabled();
 
     ConfigurationAI &ai = m_configuration.aiModule();
     ai.m_openAIKey = ui->ai->openAIKey();

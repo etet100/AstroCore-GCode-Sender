@@ -16,6 +16,8 @@ class ConfigurationPendant : public ConfigurationModule
     Q_PROPERTY(QString wifiSsid MEMBER m_wifiSsid NOTIFY changed)
     Q_PROPERTY(QString wifiPassword MEMBER m_wifiPassword NOTIFY changed)
     Q_PROPERTY(QString hostIp MEMBER m_hostIp NOTIFY changed)
+    Q_PROPERTY(int port MEMBER m_port NOTIFY changed)
+    Q_PROPERTY(bool enabled MEMBER m_enabled NOTIFY changed)
 
     public:
         ConfigurationPendant(QObject *parent);
@@ -24,11 +26,15 @@ class ConfigurationPendant : public ConfigurationModule
         QString wifiSsid() const { return m_wifiSsid; }
         QString wifiPassword() const { return m_wifiPassword; }
         QString hostIp() const { return m_hostIp; }
+        int port() const { return m_port; }
+        bool enabled() const { return m_enabled; }
 
     private:
         QString m_wifiSsid;
         QString m_wifiPassword;
         QString m_hostIp;
+        int m_port;
+        bool m_enabled;
 };
 
 #endif // CONFIGURATIONPENDANT_H

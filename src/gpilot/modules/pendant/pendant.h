@@ -30,6 +30,8 @@ class Pendant : public QObject
         Configuration &m_configuration;
         Communicator &m_communicator;
         qint64 m_lastMessageTime = 0;
+        void initialize();
+        void deinitialize();
         void sendState();
         void sendWifiConfig(const QString &ssid, const QString &password);
         void sendStepSizeSelections();

@@ -19,8 +19,27 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 {
     qDebug() << "[Pendant] Created";
 
+    connect(&configuration.pendantModule(), &ConfigurationPendant::changed, this, [this]() {
+        qDebug() << "[Pendant] Configuration changed";
+
+        if (!m_configuration.pendantModule().enabled()) {
+            deinitialize();
+
+            return;
+        }
+
+        if (m_server != nullptr && m_server->serverPort() != m_configuration.pendantModule().port()) {
+            deinitialize();
+        }
+
+        initialize();
+    });
+}
+
+void Pendant::initialize()
+{
     m_server = new QTcpServer(this);
-    m_server->listen(QHostAddress::Any, 5555);
+    m_server->listen(QHostAddress::Any, m_configuration.pendantModule().port());
 
     connect(m_server, &QTcpServer::newConnection, [this]() {
         qDebug() << "[Pendant] New pendant connection";
@@ -145,6 +164,20 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
         sendStepSizeSelections();
         sendWifiConfig("", "");
     });
+}
+
+void Pendant::deinitialize()
+{
+    if (m_socket == nullptr) {
+        return;
+    }
+
+    m_socket->disconnectFromHost();
+    if (m_socket->state() != QAbstractSocket::UnconnectedState) {
+     m_socket->waitForDisconnected();
+    }
+    m_socket->deleteLater();
+    m_socket = nullptr;
 }
 
 void Pendant::sendState()

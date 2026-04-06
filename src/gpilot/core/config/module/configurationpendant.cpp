@@ -7,7 +7,9 @@
 const QMap<QString,QVariant> DEFAULTS = {
     {"wifiSsid", "wifi"},
     {"wifiPassword", "password"},
-    {"hostIp", "192.168.1.100"}
+    {"hostIp", "192.168.1.100"},
+    {"port", 8000},
+    {"enabled", false}
 };
 
 ConfigurationPendant::ConfigurationPendant(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
