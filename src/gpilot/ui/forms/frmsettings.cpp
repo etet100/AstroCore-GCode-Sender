@@ -227,6 +227,7 @@ void FrmSettings::applySettings()
     console.m_showProgramCommands = ui->chkConsoleShowProgramCommands->isChecked();
     console.m_showUiCommands = ui->chkConsoleShowUICommands->isChecked();
     console.m_showSystemCommands = ui->chkConsoleShowSystemCommands->isChecked();
+    console.emitChanged();
 
     ConfigurationConnection &connection = m_configuration.connectionModule();
     connection.m_connectionMode = static_cast<ConfigurationConnection::ConnectionMode>(ui->cboConnectionMode->currentIndex());
@@ -235,6 +236,7 @@ void FrmSettings::applySettings()
     connection.m_serialBaud = ui->cboSerialBaud->currentText().toInt();
     connection.m_rawTcpHost = ui->txtRawTcpHost->text();
     connection.m_rawTcpPort = ui->txtRawTcpPort->text().toInt();
+    connection.emitChanged();
 
     ConfigurationVisualizer &visualizer = m_configuration.visualizerModule();
     visualizer.m_antialiasing = ui->chkAntialiasing->isChecked();
@@ -280,6 +282,7 @@ void FrmSettings::applySettings()
     visualizer.m_startPointColorDark = colorsGroups.dark.toolpathStart;
     visualizer.m_endPointColorDark = colorsGroups.dark.toolpathEnd;
     visualizer.m_tableSurfaceGridColorDark = colorsGroups.dark.visualizerTableGrid;
+    visualizer.emitChanged();
 
     ConfigurationSender &sender = m_configuration.senderModule();
     sender.m_useProgramStartCommands = ui->sender->useStartCommands();
@@ -295,12 +298,14 @@ void FrmSettings::applySettings()
     sender.m_toolChangePause = ui->sender->pauseOnToolChange();
     sender.m_ignoreErrorResponses = ui->sender->ignoreResponseErrors();
     sender.m_setParserStateBeforeSendingFromSelectedLine = ui->sender->setParseStateBeforeSendFromLine();
+    sender.emitChanged();
 
     ConfigurationParser &parser = m_configuration.parserModule();
     parser.m_arcApproximationMode = ui->radArcDegreeMode->isChecked() ? ConfigurationParser::ByAngle : ConfigurationParser::ByLength;
     parser.m_arcApproximationLength = ui->txtArcLength->value();
     parser.m_arcApproximationAngle = ui->txtArcDegree->value();
     onArcApproximationModeChanged(false);
+    parser.emitChanged();
 
     ConfigurationMachine &machine = m_configuration.machineModule();
     machine.m_spindleSpeedRange = {ui->txtSpindleSpeedMin->value(), ui->txtSpindleSpeedMax->value()};
@@ -310,15 +315,18 @@ void FrmSettings::applySettings()
     machine.m_referencePositionDirZ = ui->radReferenceZMinus->isChecked() ? ConfigurationMachine::Negative : ConfigurationMachine::Positive;
     machine.m_overrideMaxTravel = ui->chkOverrideMaxTravel->isChecked();
     machine.m_maxTravel = QVector3D(ui->txtMaxTravelX->value(), ui->txtMaxTravelY->value(), ui->txtMaxTravelZ->value());
+    machine.emitChanged();
 
     ConfigurationUI &ui_ = m_configuration.uiModule();
     ui_.m_uiScale = ui->cboUIScale->currentText().toInt() / 100.0f;
     ui_.m_language = ui->cboLanguage->currentData().toString();
     ui_.m_darkMode = ui->chkDarkTheme->isChecked();
+    ui_.emitChanged();
 
     ConfigurationJogging &jogging = m_configuration.joggingModule();
     jogging.m_stepChoices = ui->jogging->stepChoices();
     jogging.m_feedChoices = ui->jogging->feedChoices();
+    jogging.emitChanged();
 
     ConfigurationPendant &pendant = m_configuration.pendantModule();
     pendant.m_wifiSsid = ui->pendant->wifiSsid();
@@ -326,9 +334,11 @@ void FrmSettings::applySettings()
     pendant.m_hostIp = ui->pendant->hostIp();
     pendant.m_port = ui->pendant->port();
     pendant.m_enabled = ui->pendant->enabled();
+    pendant.emitChanged();
 
     ConfigurationAI &ai = m_configuration.aiModule();
     ai.m_openAIKey = ui->ai->openAIKey();
+    ai.emitChanged();
 }
 
 void FrmSettings::widgetValidity(QString widgetName, bool valid)
