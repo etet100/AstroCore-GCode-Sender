@@ -8,6 +8,8 @@ class PartMainJogParametersInterface : public QFrame
     Q_OBJECT
 
     public:
+        static constexpr float CONTINUOUS = -1.0f;
+
         explicit PartMainJogParametersInterface(QWidget *parent = nullptr) : QFrame(parent) {}
         virtual ~PartMainJogParametersInterface() = default;
 
@@ -18,8 +20,10 @@ class PartMainJogParametersInterface : public QFrame
         virtual void setStepSize(float value) = 0;
         virtual void setFeedRateXY(float value) = 0;
         virtual void setFeedRateZ(float value) = 0;
-
         virtual void setSeparateZFeedrate(bool enabled) = 0;
+
+        virtual bool handlesContinuous() const { return false; }
+        virtual void setContinuous() {}
 
         virtual float stepSize() const = 0;
         virtual float feedRateXY() const = 0;

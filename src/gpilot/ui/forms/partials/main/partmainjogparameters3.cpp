@@ -1,6 +1,7 @@
 #include "partmainjogparameters3.h"
 #include "ui_partmainjogparameters3.h"
 #include "ui/utils/flowlayout.h"
+#include "styledtoolbutton.h"
 #include <QPushButton>
 #include <functional>
 
@@ -16,11 +17,11 @@ PartMainJogParameters3::~PartMainJogParameters3()
     delete ui;
 }
 
-void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPushButton*>& buttons,
+void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QToolButton*>& buttons,
     const QStringList& options, bool infOption, std::function<void(float)> onSelected)
 {
     // Remove existing buttons and layout
-    for (QPushButton* btn : buttons) {
+    for (QToolButton* btn : buttons) {
         btn->deleteLater();
     }
     buttons.clear();
@@ -29,13 +30,13 @@ void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPush
     flowLayout->setContentsMargins(0, 1, 0, 1);
     flowLayout->setSpacing(2);
 
-    QList<QPushButton*>* buttonsPtr = &buttons;
+    QList<QToolButton*>* buttonsPtr = &buttons;
     if (infOption) {
-        QPushButton *btn = new QPushButton();
+        StyledToolButton *btn = new StyledToolButton();
         btn->setIcon(QIcon(":/images/infinity.svg"));
         btn->setCheckable(true);
-        btn->setProperty("val", -1.0f);
-        connect(btn, &QPushButton::clicked, this, [btn, buttonsPtr, onSelected]() {
+        btn->setProperty("val", CONTINUOUS);
+        connect(btn, &QToolButton::clicked, this, [btn, buttonsPtr, onSelected]() {
             for (auto* b : *buttonsPtr) {
                 b->setChecked(b == btn);
             }
@@ -45,10 +46,11 @@ void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPush
         buttons.append(btn);
     }
     for (const QString& opt : options) {
-        QPushButton *btn = new QPushButton(opt);
+        QToolButton *btn = new QToolButton();
+        btn->setText(opt);
         btn->setCheckable(true);
         btn->setProperty("val", opt.toFloat());
-        connect(btn, &QPushButton::clicked, this, [btn, buttonsPtr, onSelected]() {
+        connect(btn, &QToolButton::clicked, this, [btn, buttonsPtr, onSelected]() {
             for (auto* b : *buttonsPtr) {
                 b->setChecked(b == btn);
             }
@@ -62,9 +64,9 @@ void PartMainJogParameters3::populateButtonGroup(QWidget* container, QList<QPush
     container->setLayout(flowLayout);
 }
 
-void PartMainJogParameters3::selectButton(QList<QPushButton*>& buttons, float value)
+void PartMainJogParameters3::selectButton(QList<QToolButton*>& buttons, float value)
 {
-    for (QPushButton* btn : buttons) {
+    for (QToolButton* btn : buttons) {
         btn->setChecked(btn->property("val").toFloat() == value);
     }
 }
@@ -106,6 +108,13 @@ void PartMainJogParameters3::setSeparateZFeedrate(bool enabled)
 {
     ui->lblFeedZ->setVisible(enabled);
     ui->contFeedZ->setVisible(enabled);
+}
+
+void PartMainJogParameters3::setContinuous()
+{
+    for (auto& btn : m_stepButtons) {
+        btn->setChecked(btn->property("val").toFloat() == CONTINUOUS);
+    }
 }
 
 float PartMainJogParameters3::stepSize() const

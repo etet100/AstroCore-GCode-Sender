@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <functional>
 #include "partmainjogparametersinterface.h"
-#include <QPushButton>
+#include <QToolButton>
 
 namespace Ui {
 class PartMainJogParameters3;
@@ -28,18 +28,21 @@ class PartMainJogParameters3 : public PartMainJogParametersInterface
 
         void setSeparateZFeedrate(bool enabled) override;
 
+        bool handlesContinuous() const override { return true; }
+        void setContinuous() override;
+
         float stepSize() const override;
         float feedRateXY() const override;
         float feedRateZ() const override;
 
     private:
-        void populateButtonGroup(QWidget* container, QList<QPushButton*>& buttons, const QStringList& options, bool infOption, std::function<void(float)> onSelected);
-        void selectButton(QList<QPushButton*>& buttons, float value);
+        void populateButtonGroup(QWidget* container, QList<QToolButton*>& buttons, const QStringList& options, bool infOption, std::function<void(float)> onSelected);
+        void selectButton(QList<QToolButton*>& buttons, float value);
 
         Ui::PartMainJogParameters3* ui;
-        QList<QPushButton*> m_stepButtons;
-        QList<QPushButton*> m_feedXYButtons;
-        QList<QPushButton*> m_feedZButtons;
+        QList<QToolButton*> m_stepButtons;
+        QList<QToolButton*> m_feedXYButtons;
+        QList<QToolButton*> m_feedZButtons;
 
         float m_stepSize = 0.0f;
         float m_feedRateXY = 0.0f;

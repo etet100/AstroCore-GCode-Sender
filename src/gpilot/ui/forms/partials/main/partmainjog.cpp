@@ -25,17 +25,30 @@ PartMainJog::PartMainJog(QWidget *parent)
     // ui->cmdYPlus->setBackColor(backgroundColor);
 
     connect(ui->jogParameters, &PartMainJogParameters3::stepSizeChanged, this, [this](double val) {
-        m_configurationJogging->setStep(val);
+        if (val == PartMainJogParametersInterface::CONTINUOUS) {
+            qDebug() << "[UI][PartMainJog] Continuous mode enabled";
+            m_configurationJogging->setContinuous(true);
+        } else {
+            qDebug() << "[UI][PartMainJog] Step size set to" << val;
+            m_configurationJogging->setContinuous(false);
+            m_configurationJogging->setStep(val);
+        }
     });
     connect(ui->jogParameters, &PartMainJogParameters3::feedRateXYChanged, this, [this](double val) {
+        qDebug() << "[UI][PartMainJog] Feed rate XY set to" << val;
         m_configurationJogging->setFeed(static_cast<int>(val));
     });
     connect(ui->jogParameters, &PartMainJogParameters3::feedRateZChanged, this, [this](double val) {
+        qDebug() << "[UI][PartMainJog] Feed rate Z set to" << val;
         m_configurationJogging->setFeedZ(static_cast<int>(val));
     });
     connect(ui->chkContinuous, &QCheckBox::toggled, this, [this](bool checked) {
+        qDebug() << "[UI][PartMainJog] Continuous mode toggled" << checked;
         m_configurationJogging->setContinuous(checked);
     });
+    if (ui->jogParameters->handlesContinuous()) {
+        ui->chkContinuous->setVisible(false);
+    }
 }
 
 void PartMainJog::configurationUpdated()
@@ -45,7 +58,11 @@ void PartMainJog::configurationUpdated()
     // Sep. feed settings for Z axis
 
     ui->chkSeparateZFeed->setChecked(m_configurationJogging->separateFeedZ());
+
     ui->chkContinuous->setChecked(m_configurationJogging->continuous());
+    if (ui->jogParameters->handlesContinuous()) {
+        ui->jogParameters->setContinuous();
+    }
 
     ui->jogParameters->setFeedRateXYOptions(m_configurationJogging->feedChoices());
     ui->jogParameters->setFeedRateXY(m_configurationJogging->feed());

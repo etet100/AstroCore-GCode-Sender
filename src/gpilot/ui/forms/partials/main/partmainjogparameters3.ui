@@ -63,10 +63,11 @@
    <item>
     <widget class="QWidget" name="contStep" native="true">
      <property name="styleSheet">
-      <string notr="true">QPushButton::checked {
+      <string notr="true">QPushButton::checked, QToolButton::checked {
 	background-color: red;
 	color: white;
 }
+
 </string>
      </property>
     </widget>
@@ -105,7 +106,7 @@
    <item>
     <widget class="QWidget" name="contFeedXY" native="true">
      <property name="styleSheet">
-      <string notr="true">QPushButton::checked {
+      <string notr="true">QPushButton::checked, QToolButton::checked {
 	background-color: blue;
 	color: white;
 }
@@ -144,7 +145,7 @@
    <item>
     <widget class="QWidget" name="contFeedZ" native="true">
      <property name="styleSheet">
-      <string notr="true">QPushButton::checked {
+      <string notr="true">QPushButton::checked, QToolButton::checked {
 	background-color: green;
 	color: white;
 }
