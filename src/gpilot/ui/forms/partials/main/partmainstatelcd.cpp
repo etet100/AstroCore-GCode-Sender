@@ -20,6 +20,7 @@ PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     initializeColorsAndCaptions();
     setWorkCoordinates(QVector3D(0, 0, 0));
     setMachineCoordinates(QVector3D(0, 0, 0));
+    setConnectionState(false);
 
     int fontId = QFontDatabase::addApplicationFont(":/fonts/Patopian1986.ttf");
     if (fontId != -1) {
@@ -57,16 +58,17 @@ void PartMainStateLcd::setConnectionName(QString name)
 
 void PartMainStateLcd::setConnectionState(bool connected)
 {
-    QString color = connected ? "green" : "red";
+    QColor color = connected ? QColor("lightgreen") : QColor("lightcoral");
     QString image;
     if (connected) {
         image = ":/images/conn/connected.svg";
     } else {
         image = ":/images/conn/disconnected.svg";
     }
+    ui->btnConnection->setBackColor(color);
     ui->btnConnection->setProperty("connected", connected);
     ui->btnConnection->setIcon(QIcon(image));
-    ui->btnConnection->setStyleSheet(QString("background-color: %1;").arg(color));
+    // ui->btnConnection->setStyleSheet(QString("color: white; border: 0px; background-color: %1;").arg(color));
 }
 
 void PartMainStateLcd::setMachineStateReport(QString report)

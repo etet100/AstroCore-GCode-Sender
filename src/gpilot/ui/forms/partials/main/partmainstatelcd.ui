@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>244</width>
-    <height>263</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -51,12 +51,21 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
      <property name="spacing">
-      <number>5</number>
+      <number>3</number>
+     </property>
+     <property name="sizeConstraint">
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <item>
       <widget class="QLabel" name="labelStatus">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Status:</string>
        </property>
@@ -66,6 +75,12 @@
       <widget class="QLineEdit" name="txtStatus">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="acceptDrops">
         <bool>false</bool>
@@ -85,9 +100,53 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="btnConnection">
-       <property name="text">
-        <string>...</string>
+      <widget class="StyledToolButton" name="btnConnection">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777214</width>
+         <height>16777214</height>
+        </size>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/images.qrc">
+         <normaloff>:/images/conn/disconnected.svg</normaloff>:/images/conn/disconnected.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="backgroundColor" stdset="0">
+        <color>
+         <red>0</red>
+         <green>240</green>
+         <blue>240</blue>
+        </color>
+       </property>
+       <property name="invertedDartThemeIconColors" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="customColors" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="imagePadding" stdset="0">
+        <number>-1</number>
+       </property>
+       <property name="keepSquare">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -104,7 +163,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="axesLayout" rowstretch="0,0,0,0" columnstretch="1,7,7" columnminimumwidth="30,0,0">
+    <layout class="QGridLayout" name="axesLayout" rowstretch="0,0,0,0" columnstretch="1,3,3" columnminimumwidth="2,1,1">
      <property name="sizeConstraint">
       <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
      </property>
@@ -139,18 +198,33 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="labelMachine">
+     <item row="1" column="2">
+      <widget class="QLabel" name="txtWX">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>90</width>
+         <height>42</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
-         <width>16777215</width>
-         <height>20</height>
+         <width>250</width>
+         <height>42</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <bold>true</bold>
-         <underline>true</underline>
+         <family>Patopian 1986</family>
+         <pointsize>31</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
+         <kerning>false</kerning>
         </font>
        </property>
        <property name="styleSheet">
@@ -160,69 +234,95 @@
         <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Shadow::Raised</enum>
+        <enum>QFrame::Shadow::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
        </property>
        <property name="text">
-        <string>Machine</string>
+        <string>123.456</string>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+       </property>
+       <property name="smallDecimalPoint" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="digitCount" stdset="0">
+        <number>6</number>
+       </property>
+       <property name="value" stdset="0">
+        <double>0.000000000000000</double>
+       </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
+     <item row="3" column="2">
+      <widget class="QLabel" name="txtWZ">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
-         <height>40</height>
+         <width>90</width>
+         <height>42</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>16777215</width>
-         <height>40</height>
+         <width>250</width>
+         <height>42</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <pointsize>14</pointsize>
-         <bold>true</bold>
+         <family>Patopian 1986</family>
+         <pointsize>31</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
+         <kerning>false</kerning>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
+       </property>
        <property name="text">
-        <string>X</string>
+        <string>123.456</string>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>40</height>
-        </size>
+       <property name="textInteractionFlags">
+        <set>Qt::TextInteractionFlag::NoTextInteraction</set>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>40</height>
-        </size>
+       <property name="smallDecimalPoint" stdset="0">
+        <bool>true</bool>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <bold>true</bold>
-        </font>
+       <property name="digitCount" stdset="0">
+        <number>6</number>
        </property>
-       <property name="text">
-        <string>Y</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+       <property name="value" stdset="0">
+        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -254,11 +354,8 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="txtMX">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
+     <item row="2" column="2">
+      <widget class="QLabel" name="txtWY">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
          <horstretch>0</horstretch>
@@ -286,11 +383,17 @@
          <kerning>false</kerning>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Shadow::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
        </property>
        <property name="text">
         <string>123.456</string>
@@ -303,6 +406,77 @@
        </property>
        <property name="textInteractionFlags">
         <set>Qt::TextInteractionFlag::NoTextInteraction</set>
+       </property>
+       <property name="smallDecimalPoint" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="digitCount" stdset="0">
+        <number>6</number>
+       </property>
+       <property name="value" stdset="0">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>X</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="labelMachine">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <bold>true</bold>
+         <underline>true</underline>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Raised</enum>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ma&lt;a href=&quot;aaa&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#27bf73;&quot;&gt;chin&lt;/span&gt;&lt;/a&gt;e&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::TextFormat::MarkdownText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -434,72 +608,39 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="txtWX">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="minimumSize">
         <size>
-         <width>90</width>
-         <height>42</height>
+         <width>0</width>
+         <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>250</width>
-         <height>42</height>
+         <width>16777215</width>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
         <font>
-         <family>Patopian 1986</family>
-         <pointsize>31</pointsize>
-         <italic>false</italic>
-         <bold>false</bold>
-         <kerning>false</kerning>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
         </font>
        </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Shadow::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>1</number>
-       </property>
        <property name="text">
-        <string>123.456</string>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
+        <string>Y</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-       </property>
-       <property name="smallDecimalPoint" stdset="0">
-        <bool>true</bool>
-       </property>
-       <property name="digitCount" stdset="0">
-        <number>6</number>
-       </property>
-       <property name="value" stdset="0">
-        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QLabel" name="txtWY">
+     <item row="1" column="1">
+      <widget class="QLabel" name="txtMX">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
          <horstretch>0</horstretch>
@@ -527,17 +668,11 @@
          <kerning>false</kerning>
         </font>
        </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Shadow::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>1</number>
        </property>
        <property name="text">
         <string>123.456</string>
@@ -550,79 +685,6 @@
        </property>
        <property name="textInteractionFlags">
         <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-       </property>
-       <property name="smallDecimalPoint" stdset="0">
-        <bool>true</bool>
-       </property>
-       <property name="digitCount" stdset="0">
-        <number>6</number>
-       </property>
-       <property name="value" stdset="0">
-        <double>0.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QLabel" name="txtWZ">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>90</width>
-         <height>42</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>250</width>
-         <height>42</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Patopian 1986</family>
-         <pointsize>31</pointsize>
-         <italic>false</italic>
-         <bold>false</bold>
-         <kerning>false</kerning>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Shape::NoFrame</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Shadow::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>1</number>
-       </property>
-       <property name="text">
-        <string>123.456</string>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::TextInteractionFlag::NoTextInteraction</set>
-       </property>
-       <property name="smallDecimalPoint" stdset="0">
-        <bool>true</bool>
-       </property>
-       <property name="digitCount" stdset="0">
-        <number>6</number>
-       </property>
-       <property name="value" stdset="0">
-        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -689,11 +751,18 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>StyledToolButton</class>
+   <extends>QToolButton</extends>
+   <header>styledtoolbutton.h</header>
+  </customwidget>
+  <customwidget>
    <class>XSwitchButtonWithLabel</class>
    <extends>QWidget</extends>
    <header>xswitchbuttonwithlabel.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../resources/images.qrc"/>
+ </resources>
  <connections/>
 </ui>
