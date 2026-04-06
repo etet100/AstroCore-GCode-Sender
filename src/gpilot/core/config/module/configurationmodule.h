@@ -11,6 +11,8 @@
 
 class ConfigurationModule : public QObject
 {
+    friend class FrmSettings;
+
     Q_OBJECT
 
     public:
@@ -39,6 +41,7 @@ class ConfigurationModule : public QObject
 
     private:
         QMap<QString, QVariant> m_defaults;
+        void emitChanged() { emit changed(); }
 
     signals:
         void changed();
