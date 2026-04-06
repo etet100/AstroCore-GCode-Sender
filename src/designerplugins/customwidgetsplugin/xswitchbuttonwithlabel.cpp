@@ -2,7 +2,7 @@
 
 #include <QHBoxLayout>
 
-XSwitchButtonWithLabel::XSwitchButtonWithLabel(QWidget *parent) : QWidget(parent)
+XSwitchButtonWithLabel::XSwitchButtonWithLabel(QWidget *parent) : QFrame(parent)
 {
     m_switch = new XSwitchButton(this);
     m_switch->setTextOff("");
@@ -12,6 +12,9 @@ XSwitchButtonWithLabel::XSwitchButtonWithLabel(QWidget *parent) : QWidget(parent
     });
 
     m_label = new QLabel(this);
+    connect(m_label, &QLabel::linkActivated, this, [this](const QString &link) {
+        emit linkActivated(link);
+    });
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -126,10 +129,14 @@ QLabel *XSwitchButtonWithLabel::label() const
 
 QSize XSwitchButtonWithLabel::sizeHint() const
 {
-    return layout()->sizeHint();
+    ensurePolished();
+
+    return layout()->sizeHint().grownBy(contentsMargins());
 }
 
 QSize XSwitchButtonWithLabel::minimumSizeHint() const
 {
-    return layout()->minimumSize();
+    ensurePolished();
+
+    return layout()->minimumSize().grownBy(contentsMargins());
 }

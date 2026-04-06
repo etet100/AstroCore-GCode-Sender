@@ -1,12 +1,12 @@
 #ifndef XSWITCHBUTTONWITHLABEL_H
 #define XSWITCHBUTTONWITHLABEL_H
 
-#include <QWidget>
+#include <QFrame>
 #include <QLabel>
 #include "xswitchbutton.h"
 #include "customwidgetsshared.h"
 
-class CUSTOMWIDGETS_DLLSPEC XSwitchButtonWithLabel : public QWidget
+class CUSTOMWIDGETS_DLLSPEC XSwitchButtonWithLabel : public QFrame
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText)
@@ -66,6 +66,7 @@ public:
 
 signals:
     void stateChanged(bool checked);
+    void linkActivated(const QString& link);
 
 private:
     void updateSwitchSize();

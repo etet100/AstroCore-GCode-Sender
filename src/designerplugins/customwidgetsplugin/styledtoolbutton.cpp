@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QGuiApplication>
 #include <QStyleHints>
+#include <QResizeEvent>
 
 StyledToolButton::StyledToolButton(QWidget *parent) : QToolButton(parent)
 {
@@ -33,9 +34,29 @@ void StyledToolButton::leaveEvent(QEvent *e)
     emit hoverChanged(false);
 }
 
+void StyledToolButton::paintSimple(QPaintEvent *e)
+{
+    if (!icon().isNull()) {
+        const bool isDark = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+        if (m_dark != isDark) {
+            m_dark = isDark;
+            // QIcon ico = icon();
+            // QSize sz = iconSize().shrunkBy(QMargins(m_imagePadding, m_imagePadding, m_imagePadding, m_imagePadding));
+            // QImage img = ico.pixmap(ico.actualSize(sz), QIcon::Normal).toImage();
+            // img.invertPixels();
+            // setIcon(QIcon(QPixmap::fromImage(img)));
+            invertIconColors();
+        }
+    }
+
+    QToolButton::paintEvent(e);
+}
+
 void StyledToolButton::paintEvent(QPaintEvent *e)
 {
-    Q_UNUSED(e)
+    // Simple version
+    paintSimple(e);
+    return;
 
     const qreal radius = 4.0;
     const bool isDark = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
@@ -106,6 +127,7 @@ void StyledToolButton::paintEvent(QPaintEvent *e)
         painter.drawText(innerRect, Qt::AlignCenter, text());
     }
 }
+
 QColor StyledToolButton::highlightColor() const
 {
     return m_highlightColor;
@@ -150,6 +172,7 @@ void StyledToolButton::invertIconColors()
 {
     QIcon icon = this->icon();
     QImage img = icon.pixmap(icon.actualSize(iconSize()), QIcon::Normal).toImage();
+    img.invertPixels();
 
     setIcon(QIcon(QPixmap::fromImage(img)));
 }

@@ -58,8 +58,10 @@ private:
     QColor m_backColor;
     QColor m_foreColor;
     QColor m_highlightColor;
+    bool m_dark = false;
 
     void invertIconColors();
+    void paintSimple(QPaintEvent *e);
 };
 
 #endif // STYLEDTOOLBUTTON_H
