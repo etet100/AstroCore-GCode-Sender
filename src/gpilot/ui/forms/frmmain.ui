@@ -514,6 +514,25 @@ QGroupBox::title {
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QGroupBox" name="grpMacros">
+           <property name="title">
+            <string>Macros</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="overrided" stdset="0">
+            <bool>false</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <widget class="PartMainMacros" name="jog" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+
         </layout>
        </widget>
       </widget>
@@ -1199,6 +1218,11 @@ QGroupBox::title {
    <class>PartMainJog</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainjog.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PartMainMacros</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/main/partmainmacros.h</header>
   </customwidget>
   <customwidget>
    <class>PartMainConsole</class>
