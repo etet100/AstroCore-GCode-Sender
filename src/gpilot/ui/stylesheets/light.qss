@@ -10,6 +10,7 @@ QSplitter::handle:vertical, QMainWindow::separator:horizontal {
 }
 
 QGroupBox::title {
-    ph-title-background: #96DFCF;
+    ph-title-background: #324A45;
+    color: white;
 }
 

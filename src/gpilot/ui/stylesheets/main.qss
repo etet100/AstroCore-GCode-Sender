@@ -61,7 +61,7 @@ QDockWidget[floating="true"] {
 }
 
 QGroupBox::title {
-    padding: 1px;
-    ph-title-background: green;
+    padding-top: 2px;
+    /* ph-title-background: green; */
 }
 
