@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>319</width>
-    <height>88</height>
+    <height>140</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,38 +31,38 @@
      <property name="fieldGrowthPolicy">
       <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
      </property>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="lblWifiSsid">
        <property name="text">
         <string>WiFi SSID:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QLineEdit" name="txtWifiSsid"/>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="lblWifiPassword">
        <property name="text">
         <string>WiFi Password:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="txtWifiPassword">
        <property name="echoMode">
         <enum>QLineEdit::EchoMode::Password</enum>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="lblHostIp">
        <property name="text">
         <string>Host (app) IP address:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLineEdit" name="txtHostIp"/>
@@ -76,10 +76,50 @@
        </item>
       </layout>
      </item>
+     <item row="0" column="1">
+      <widget class="XSwitchButton" name="chkEnabled">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="textOn">
+        <string/>
+       </property>
+       <property name="textOff">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblEnabled">
+       <property name="text">
+        <string>Enabled</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lblPort">
+       <property name="text">
+        <string>Port</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="txtPort"/>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>XSwitchButton</class>
+   <extends>QWidget</extends>
+   <header>xswitchbutton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -51,6 +51,26 @@ QString PartSettingsPendant::hostIp() const
     return ui->txtHostIp->text();
 }
 
+void PartSettingsPendant::setPort(int port)
+{
+    ui->txtPort->setText(QString::number(port));
+}
+
+int PartSettingsPendant::port() const
+{
+    return ui->txtPort->text().toInt();
+}
+
+void PartSettingsPendant::setEnabled(bool enabled)
+{
+    return ui->chkEnabled->setChecked(enabled);
+}
+
+bool PartSettingsPendant::enabled() const
+{
+    return ui->chkEnabled->checked();
+}
+
 void PartSettingsPendant::onAutoSelectClicked()
 {
     QList<QHostAddress> addresses = QNetworkInterface::allAddresses();

@@ -28,6 +28,12 @@ class PartSettingsPendant : public QWidget
         void setHostIp(const QString &ip);
         QString hostIp() const;
 
+        void setPort(int port);
+        int port() const;
+
+        void setEnabled(bool enabled);
+        bool enabled() const;
+
     private slots:
         void onAutoSelectClicked();
 

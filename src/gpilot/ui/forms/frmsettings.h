@@ -19,7 +19,6 @@ namespace Ui {
 class frmSettings;
 }
 
-// TODO: Add overriding bounds settings
 class FrmSettings : public QDialog
 {
     Q_OBJECT
