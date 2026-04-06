@@ -8,13 +8,16 @@
 #include <QDebug>
 #include <QTextStream>
 
+GCodeLoaderConfiguration GCodeLoaderConfiguration::s_current;
+
 GCodeLoader::GCodeLoader(QObject *parent)
     : AbstractGCodeLoader(parent)
 {
 }
 
-void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration &configuration)
+void GCodeLoader::loadFromFile(const QString &fileName)
 {
+    const auto& configuration = GCodeLoaderConfiguration::current();
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -90,8 +93,9 @@ void GCodeLoader::loadFromFile(const QString &fileName, GCodeLoaderConfiguration
     }
 }
 
-void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfiguration &configuration)
+std::optional<GCodeLoaderData> GCodeLoader::loadFromLines(const QStringList &lines)
 {
+    const auto& configuration = GCodeLoaderConfiguration::current();
     qDebug() << "[GCodeLoader] Loading from" << lines.size() << "lines";
     emit started();
     m_cancel = false;
@@ -124,7 +128,8 @@ void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfigurati
         if (m_cancel || QThread::currentThread()->isInterruptionRequested()) {
             delete gcode;
             emit cancelled();
-            return;
+
+            return std::nullopt;
         }
     }
 
@@ -138,17 +143,22 @@ void GCodeLoader::loadFromLines(const QStringList &lines, GCodeLoaderConfigurati
     if (m_cancel) {
         delete gcode;
         emit cancelled();
-    } else {
-        emit progress(100);
-        GCodeLoaderData *result = new GCodeLoaderData();
-        result->gcode = gcode;
-        result->viewParser = viewParser;
-        emit finished(result);
+
+        return std::nullopt;
     }
+
+    emit progress(100);
+    GCodeLoaderData *resultPtr = new GCodeLoaderData();
+    resultPtr->gcode = gcode;
+    resultPtr->viewParser = viewParser;
+    emit finished(resultPtr);
+
+    return GCodeLoaderData{gcode, viewParser};
 }
 
-void GCodeLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
+void GCodeLoader::update(GCode* gcode)
 {
+    const auto& configuration = GCodeLoaderConfiguration::current();
     qDebug() << "[GCodeLoader] Updating" << gcode->count() << "items";
     emit started();
 

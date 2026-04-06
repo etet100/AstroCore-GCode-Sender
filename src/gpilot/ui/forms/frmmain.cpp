@@ -65,6 +65,7 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    initializeGCodeLoaderConfiguration();
     initializeLogMenu();
     initializeDockTitles();
     initializeUiScaleMenu();
@@ -168,6 +169,11 @@ FrmMain::~FrmMain()
     delete m_connection;
     delete m_senderErrorBox;
     delete ui; ui = nullptr;
+}
+
+void FrmMain::initializeGCodeLoaderConfiguration()
+{
+    GCodeLoaderConfiguration::setCurrent(m_configuration.parserModule());
 }
 
 void FrmMain::initializeCommunicator()
@@ -2512,8 +2518,7 @@ void FrmMain::updateParser()
         m_visualizerUpdater = nullptr;
     });
 
-    GCodeLoaderConfiguration configuration(m_configuration.parserModule());
-    m_visualizerUpdater->update(&m_program, configuration);
+    m_visualizerUpdater->update(&m_program);
 
 
     // GCodeViewParser *viewParse = ui->visualizer->getCurrentParser();
@@ -2614,8 +2619,7 @@ void FrmMain::loadFile(QString filePath)
         filesManager.setGcodeFilePath(filePath);
     });
 
-    GCodeLoaderConfiguration configuration(m_configuration.parserModule());
-    loader->loadFromFile(filePath, configuration);
+    loader->loadFromFile(filePath);
 }
 
 void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)

@@ -10,6 +10,7 @@
 #include "core/config/module/configurationparser.h"
 #include <QFile>
 #include <QThread>
+#include <optional>
 
 struct GCodeLoaderData {
     GCode *gcode;
@@ -18,16 +19,21 @@ struct GCodeLoaderData {
 
 class GCodeLoaderConfiguration {
     public:
-        GCodeLoaderConfiguration(ConfigurationParser &configuration) {
-            m_arcApproximationMode = configuration.arcApproximationMode();
-            m_arcApproximationValue = configuration.arcApproximationValue();
+        static void setCurrent(ConfigurationParser &configuration) {
+            s_current.m_arcApproximationMode = configuration.arcApproximationMode();
+            s_current.m_arcApproximationValue = configuration.arcApproximationValue();
         }
+        static const GCodeLoaderConfiguration& current() { return s_current; }
+
         double arcApproximationValue() const { return m_arcApproximationValue; }
         ConfigurationParser::ParserArcApproximationMode arcApproximationMode() const { return m_arcApproximationMode; }
 
     private:
-        ConfigurationParser::ParserArcApproximationMode m_arcApproximationMode;
-        double m_arcApproximationValue;
+        GCodeLoaderConfiguration() = default;
+        static GCodeLoaderConfiguration s_current;
+
+        ConfigurationParser::ParserArcApproximationMode m_arcApproximationMode = ConfigurationParser::ParserArcApproximationMode::ByAngle;
+        double m_arcApproximationValue = 0;
 };
 
 class AbstractGCodeLoader : public QObject
@@ -37,9 +43,9 @@ class AbstractGCodeLoader : public QObject
     public:
         explicit AbstractGCodeLoader(QObject* parent = nullptr)
             : QObject(parent) {}
-        virtual void loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration) = 0;
-        virtual void loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration) = 0;
-        virtual void update(GCode* gcode, GCodeLoaderConfiguration& configuration) = 0;
+        virtual void loadFromFile(const QString& fileName) = 0;
+        virtual std::optional<GCodeLoaderData> loadFromLines(const QStringList& lines) = 0;
+        virtual void update(GCode* gcode) = 0;
         virtual void cancel() = 0;
 
     signals:
@@ -53,14 +59,14 @@ class GCodeLoader : public AbstractGCodeLoader
 {
     public:
         explicit GCodeLoader(QObject* parent = nullptr);
-        void loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration) override;
-        void loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration) override;
-        void update(GCode* gcode, GCodeLoaderConfiguration& configuration) override;
+        void loadFromFile(const QString& fileName) override;
+        std::optional<GCodeLoaderData> loadFromLines(const QStringList& lines) override;
+        void update(GCode* gcode) override;
         void cancel() override;
 
     private:
         bool m_cancel;
-        void loadFromIODevice(QIODevice& io, int size, GCodeLoaderConfiguration& configuration);
+        void loadFromIODevice(QIODevice& io, int size);
 };
 
 #endif // GCODELOADER_H

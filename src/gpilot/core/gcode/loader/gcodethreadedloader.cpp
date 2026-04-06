@@ -12,39 +12,32 @@ GCodeThreadedLoader::~GCodeThreadedLoader()
     deleteThread();
 }
 
-void GCodeThreadedLoader::loadFromFile(const QString& fileName, GCodeLoaderConfiguration& configuration)
+void GCodeThreadedLoader::loadFromFile(const QString& fileName)
 {
     qDebug() << "[GCodeThreadedLoader] Creating worker thread to load file:" << fileName;
-    m_thread = new GCodeLoaderWorker(
-        configuration,
-        fileName
-    );
+    m_thread = new GCodeLoaderWorker(fileName);
     connectSignals();
     m_thread->start();
 
     emit started();
 }
 
-void GCodeThreadedLoader::loadFromLines(const QStringList& lines, GCodeLoaderConfiguration& configuration)
+std::optional<GCodeLoaderData> GCodeThreadedLoader::loadFromLines(const QStringList& lines)
 {
     qDebug() << "[GCodeThreadedLoader] Creating worker thread to load from" << lines.size() << "lines";
-    m_thread = new GCodeLoaderWorker(
-        configuration,
-        lines
-    );
+    m_thread = new GCodeLoaderWorker(lines);
     connectSignals();
     m_thread->start();
 
     emit started();
+
+    return std::nullopt;
 }
 
-void GCodeThreadedLoader::update(GCode* gcode, GCodeLoaderConfiguration& configuration)
+void GCodeThreadedLoader::update(GCode* gcode)
 {
     qDebug() << "[GCodeThreadedLoader] Creating worker thread to update GCode with" << gcode->count() << "items";
-    m_thread = new GCodeLoaderWorker(
-        configuration,
-        gcode
-    );
+    m_thread = new GCodeLoaderWorker(gcode);
     connectSignals();
     m_thread->start();
 
@@ -87,25 +80,22 @@ void GCodeThreadedLoader::connectSignals()
     });
 }
 
-GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const QString &fileName, QObject *parent)
+GCodeLoaderWorker::GCodeLoaderWorker(const QString &fileName, QObject *parent)
     : QThread(parent)
-    , m_configuration(configuration)
 {
     this->m_source = Source::File;
     this->m_fileName = fileName;
 }
 
-GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const QStringList &lines, QObject *parent)
+GCodeLoaderWorker::GCodeLoaderWorker(const QStringList &lines, QObject *parent)
     : QThread(parent)
-    , m_configuration(configuration)
 {
     this->m_source = Source::Lines;
     this->m_lines = lines;
 }
 
-GCodeLoaderWorker::GCodeLoaderWorker(GCodeLoaderConfiguration &configuration, const GCode *gcode, QObject *parent)
+GCodeLoaderWorker::GCodeLoaderWorker(const GCode *gcode, QObject *parent)
     : QThread(parent)
-    , m_configuration(configuration)
 {
     this->m_source = Source::UpdateGCode;
     this->m_gcode = const_cast<GCode*>(gcode);
@@ -136,13 +126,13 @@ void GCodeLoaderWorker::run() {
 
     switch (this->m_source) {
         case Source::File:
-            loader.loadFromFile(this->m_fileName, m_configuration);
+            loader.loadFromFile(this->m_fileName);
             break;
         case Source::Lines:
-            loader.loadFromLines(this->m_lines, m_configuration);
+            loader.loadFromLines(this->m_lines);
             break;
         case Source::UpdateGCode:
-            loader.update(this->m_gcode, m_configuration);
+            loader.update(this->m_gcode);
             break;
     }
 

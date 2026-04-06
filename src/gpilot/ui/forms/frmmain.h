@@ -340,6 +340,7 @@ private:
     void initializeUiScaleMenu();
     void setHeightmapPoint(QPoint point, double height);
     void updateUiScaleMenu();
+    void initializeGCodeLoaderConfiguration();
 };
 
 typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;
