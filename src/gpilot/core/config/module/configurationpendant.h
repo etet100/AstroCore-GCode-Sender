@@ -20,7 +20,7 @@ class ConfigurationPendant : public ConfigurationModule
     Q_PROPERTY(bool enabled MEMBER m_enabled NOTIFY changed)
 
     public:
-        ConfigurationPendant(QObject *parent);
+        ConfigurationPendant(QObject *parent = nullptr);
         QString getSectionName() override { return "module.pendant"; }
 
         QString wifiSsid() const { return m_wifiSsid; }

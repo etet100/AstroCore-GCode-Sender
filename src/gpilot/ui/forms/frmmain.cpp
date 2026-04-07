@@ -50,7 +50,7 @@
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
-FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
+FrmMain::FrmMain(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::frmMain),
 #ifdef WINDOWS
@@ -58,10 +58,10 @@ FrmMain::FrmMain(Configuration &configuration, QWidget *parent) :
     m_taskBar(this),
 #endif
     m_heightmap(),
-    m_connectionManager(this, configuration.connectionModule()),
+    m_connectionManager(this, Core::instance().configuration().connectionModule()),
     m_program(),
     m_timeEstimator(m_timer),
-    m_configuration(configuration)
+    m_configuration(Core::instance().configuration())
 {
     ui->setupUi(this);
 

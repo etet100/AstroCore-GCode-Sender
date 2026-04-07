@@ -19,7 +19,7 @@ class ConfigurationParser : public ConfigurationModule
     Q_PROPERTY(ParserArcApproximationMode arcApproximationMode MEMBER m_arcApproximationMode NOTIFY changed)
 
     public:
-        explicit ConfigurationParser(QObject *parent);
+        explicit ConfigurationParser(QObject *parent = nullptr);
         ConfigurationParser& operator=(const ConfigurationParser&) { return *this; }
         QString getSectionName() override { return "parser"; }
 

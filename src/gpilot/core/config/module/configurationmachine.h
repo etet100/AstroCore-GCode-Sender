@@ -30,7 +30,7 @@ class ConfigurationMachine : public ConfigurationModule
     Q_PROPERTY(int overrideSpindleSpeedValue MEMBER m_overrideSpindleSpeedValue NOTIFY changed)
 
     public:
-        ConfigurationMachine(QObject *parent);
+        ConfigurationMachine(QObject *parent = nullptr);
         QString getSectionName() override { return "machine"; }
 
         enum ReferencePositionDir : int {

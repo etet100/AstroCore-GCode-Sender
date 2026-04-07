@@ -22,7 +22,7 @@ class ConfigurationConnection : public ConfigurationModule
     Q_PROPERTY(int serialBaud MEMBER m_serialBaud NOTIFY changed)
 
     public:
-        explicit ConfigurationConnection(QObject *parent);
+        explicit ConfigurationConnection(QObject *parent = nullptr);
         ConfigurationConnection& operator=(const ConfigurationConnection&) { return *this; }
         QString getSectionName() override { return "connection"; }
 

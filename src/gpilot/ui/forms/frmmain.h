@@ -48,6 +48,7 @@
 #include "ui/widgets/filedropoverlay.h"
 #include "core/utils/programtimeestimator.h"
 #include "core/utils/timer.h"
+#include "core/core.h"
 
 namespace Ui {
 class frmMain;
@@ -80,7 +81,7 @@ class FrmMain : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FrmMain(Configuration& configuration, QWidget *parent = 0);
+    explicit FrmMain(QWidget *parent = 0);
     ~FrmMain();
 
     void initializeCommunicator();

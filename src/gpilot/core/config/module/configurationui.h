@@ -50,7 +50,7 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(QByteArray shortcuts MEMBER m_shortcuts NOTIFY changed)
 
     public:
-        explicit ConfigurationUI(QObject *parent);
+        explicit ConfigurationUI(QObject *parent = nullptr);
         QString getSectionName() override { return "baseui.main"; }
 
         double uiScale() const { return m_uiScale; }

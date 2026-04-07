@@ -58,7 +58,7 @@ class ConfigurationVisualizer : public ConfigurationModule
     Q_PROPERTY(ViewMode viewMode MEMBER m_viewMode NOTIFY changed)
 
     public:
-        explicit ConfigurationVisualizer(QObject *parent);
+        explicit ConfigurationVisualizer(QObject *parent = nullptr);
         ConfigurationVisualizer& operator=(const ConfigurationVisualizer&) { return *this; }
         QString getSectionName() override { return "baseui.visualizer"; }
 

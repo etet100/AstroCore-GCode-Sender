@@ -27,7 +27,7 @@ class ConfigurationHeightmap : public ConfigurationModule
     Q_PROPERTY(bool interpolationShow MEMBER m_interpolationShow NOTIFY changed)
 
     public:
-        ConfigurationHeightmap(QObject *parent);
+        ConfigurationHeightmap(QObject *parent = nullptr);
 
         QString getSectionName() override { return "heightmap"; }
 

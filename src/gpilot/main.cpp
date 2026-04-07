@@ -17,7 +17,7 @@
 #include "ui/forms/frmmain.h"
 #include "ui/forms/frmlog.h"
 #include "ui/utils/thememanager.h"
-#include "core/config/implementations.h"
+#include "core/core.h"
 #ifdef WINDOWS
 #include <windows.h>
 #endif
@@ -175,29 +175,13 @@ int main(int argc, char *argv[])
 //     }
 // #endif
 
-    Provider *provider = nullptr;
-    Persister *persister = nullptr;
-    QString configFilePath = app.applicationDirPath() + "/config.";
-    if (parser.value(configTypeOption) == "json") {
-        provider = new JsonProvider(nullptr, configFilePath + "json");
-        persister = new JsonPersister(nullptr, configFilePath + "json");
-    } else if (parser.value(configTypeOption) == "ini") {
-        provider = new IniProvider(nullptr, configFilePath + "ini");
-        persister = new IniPersister(nullptr, configFilePath + "ini");
-    } else if (parser.value(configTypeOption) == "xml") {
-        provider = new XmlProvider(nullptr, configFilePath + "xml");
-        persister = new XmlPersister(nullptr, configFilePath + "xml");
-    } else {
-        qCritical() << "[Main] Unknown config type specified:" << parser.value(configTypeOption);
+    if (!Core::instance().configuration().init(QCoreApplication::applicationDirPath(), parser.value(configTypeOption))) {
         return -1;
     }
 
-    Configuration configuration(nullptr, persister, provider);
-    configuration.load();
+    ThemeManager::instance().initialize(&app, Core::instance().configuration().uiModule().darkTheme());
 
-    ThemeManager::instance().initialize(&app, configuration.uiModule().darkTheme());
-
-    FrmMain form(configuration);
+    FrmMain form;
     form.show();
 
     if (tempLogFormBuffer != nullptr) {

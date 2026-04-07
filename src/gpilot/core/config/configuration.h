@@ -22,9 +22,11 @@ class Configuration : public QObject
     Q_OBJECT;
 
     public:
-        Configuration(QObject *parent, Persister *persister, Provider *provider);
+        Configuration();
         QString language();
         void setLanguage(QString);
+        // Call this before loading/saving to set the config type (json, ini, xml)
+        bool init(const QString& appPath, const QString& configType);
         void save();
         void load();
         void setDefaults();
@@ -58,8 +60,8 @@ class Configuration : public QObject
         ConfigurationPendant m_pendant;
 
         // Read/Write
-        Persister* m_persister;
-        Provider* m_provider;
+        Persister* m_persister = nullptr;
+        Provider* m_provider = nullptr;
 
         void saveModule(ConfigurationModule*);
         void setModuleDefaults(ConfigurationModule*);

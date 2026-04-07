@@ -3,22 +3,27 @@
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QDebug>
+#include <QCoreApplication>
+#include "core/config/persistence/ini/iniprovider.h"
+#include "core/config/persistence/ini/inipersister.h"
+#include "core/config/persistence/json/jsonprovider.h"
+#include "core/config/persistence/json/jsonpersister.h"
+#include "core/config/persistence/xml/xmlprovider.h"
+#include "core/config/persistence/xml/xmlpersister.h"
 
-Configuration::Configuration(QObject *parent, Persister *persister, Provider *provider)
-    : QObject(parent),
-    m_sender(parent),
-    m_connection(parent),
-    m_visualizer(parent),
-    m_console(parent),
-    m_parser(parent),
-    m_ui(parent),
-    m_machine(parent),
-    m_heightmap(parent),
-    m_jogging(parent),
-    m_ai(parent),
-    m_pendant(parent),
-    m_persister(persister),
-    m_provider(provider)
+Configuration::Configuration()
+    : QObject(nullptr),
+    m_sender(),
+    m_connection(),
+    m_visualizer(),
+    m_console(),
+    m_parser(),
+    m_ui(),
+    m_machine(),
+    m_heightmap(),
+    m_jogging(),
+    m_ai(),
+    m_pendant()
 {
     m_modules << &m_sender
         << &m_connection
@@ -31,6 +36,30 @@ Configuration::Configuration(QObject *parent, Persister *persister, Provider *pr
         << &m_jogging
         << &m_ai
         << &m_pendant;
+}
+
+bool Configuration::init(const QString& appPath, const QString& configType)
+{
+    QString configFilePath = appPath + "/config.";
+
+    if (configType == "json") {
+        m_provider = new JsonProvider(nullptr, configFilePath + "json");
+        m_persister = new JsonPersister(nullptr, configFilePath + "json");
+    } else if (configType == "ini") {
+        m_provider = new IniProvider(nullptr, configFilePath + "ini");
+        m_persister = new IniPersister(nullptr, configFilePath + "ini");
+    } else if (configType == "xml") {
+        m_provider = new XmlProvider(nullptr, configFilePath + "xml");
+        m_persister = new XmlPersister(nullptr, configFilePath + "xml");
+    } else {
+        qCritical() << "[Configuration] Unknown config type:" << configType;
+
+        return false;
+    }
+
+    load();
+
+    return true;
 }
 
 QString Configuration::language()

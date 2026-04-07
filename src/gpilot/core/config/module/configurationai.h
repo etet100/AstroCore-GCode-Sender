@@ -12,7 +12,7 @@ class ConfigurationAI : public ConfigurationModule
     Q_PROPERTY(QString openAIKey MEMBER m_openAIKey NOTIFY changed)
 
     public:
-        explicit  ConfigurationAI(QObject *parent);
+        explicit  ConfigurationAI(QObject *parent = nullptr);
         ConfigurationAI& operator=(const ConfigurationAI&) { return *this; }
         QString getSectionName() override { return "ai"; }
 
