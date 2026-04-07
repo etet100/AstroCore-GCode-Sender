@@ -7,6 +7,38 @@ PartMainControl::PartMainControl(QWidget *parent)
     , ui(new Ui::partMainControl)
 {
     ui->setupUi(this);
+    setupProbeMenu();
+}
+
+void PartMainControl::setupProbeMenu()
+{
+    auto *menu = new QMenu(this);
+
+    m_actSingleProbe = menu->addAction(tr("Single probe"));
+    m_actSingleProbe->setCheckable(true);
+    m_actSingleProbe->setChecked(true);
+
+    m_actDualProbe = menu->addAction(tr("Dual probe"));
+    m_actDualProbe->setCheckable(true);
+
+    // Use exclusive action group so only one mode is checked at a time
+    auto *group = new QActionGroup(this);
+    group->addAction(m_actSingleProbe);
+    group->addAction(m_actDualProbe);
+    group->setExclusive(true);
+
+    connect(m_actSingleProbe, &QAction::triggered, this, [this]() {
+        m_probeMode = ProbeMode::Single;
+    });
+    connect(m_actDualProbe, &QAction::triggered, this, [this]() {
+        m_probeMode = ProbeMode::Dual;
+    });
+
+    // Show menu on right-click; left-click still fires clicked() -> probe
+    ui->cmdProbe->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->cmdProbe, &QWidget::customContextMenuRequested, this, [this, menu](const QPoint &pos) {
+        menu->exec(ui->cmdProbe->mapToGlobal(pos));
+    });
 }
 
 PartMainControl::~PartMainControl()
@@ -96,7 +128,7 @@ void PartMainControl::onCmdFloodClicked(bool checked)
 
 void PartMainControl::onCmdProbeClicked()
 {
-    emit this->probe();
+    emit this->probe(m_probeMode);
     emit this->command(GRBLCommand::Probe);
 }
 

@@ -154,6 +154,11 @@ enum GRBLCommand {
     ZeroXY,
 };
 
+enum class ProbeMode {
+    Single, // one fast probe
+    Dual,   // fast probe, retract, then slow probe for precision
+};
+
 enum class HomingDir {
     Negative = 0,
     Positive

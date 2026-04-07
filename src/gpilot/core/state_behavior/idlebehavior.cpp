@@ -114,6 +114,7 @@ bool IdleBehavior::doAction(const Action &action)
                     params.maxDistance = actionParams.maxDistance;
                     params.retractDistance = actionParams.retractDistance;
                     params.safeDistance = actionParams.safeDistance;
+                    params.doubleProbe = actionParams.doubleProbe;
                     params.setZeroAtProbe = actionParams.setZeroAtProbe;
                     params.useAbsolute = actionParams.useAbsolute;
                 }

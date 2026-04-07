@@ -7,6 +7,8 @@
 
 #include "core/globals.h"
 #include <QWidget>
+#include <QMenu>
+#include <QAction>
 
 namespace Ui {
 class partMainControl;
@@ -33,13 +35,18 @@ signals:
     void unlock();
     void sleep();
     void door();
-    void probe();
+    void probe(ProbeMode mode);
     void zeroZ();
     void zeroXY();
     void command(GRBLCommand command);
 
 private:
     Ui::partMainControl *ui;
+    ProbeMode m_probeMode = ProbeMode::Single;
+    QAction *m_actSingleProbe = nullptr;
+    QAction *m_actDualProbe = nullptr;
+
+    void setupProbeMenu();
 
 private slots:
     void onCmdHomeClicked();

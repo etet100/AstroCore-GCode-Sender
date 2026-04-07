@@ -128,6 +128,7 @@ class ProbeAction : public Action
             double maxDistance = 30.0;
             double retractDistance = 2.0;
             double safeDistance = 5.0;
+            bool doubleProbe = false;   // true = fast + slow dual probe
             bool setZeroAtProbe = true;
             bool useAbsolute = false;
         };
