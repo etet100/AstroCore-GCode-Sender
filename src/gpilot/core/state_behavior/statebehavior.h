@@ -86,6 +86,10 @@ class StateBehavior : public QObject
             return availableActions().contains(type);
         }
 
+        bool is(Type t) const {
+            return type() == t;
+        }
+
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
             Q_UNUSED(forced);

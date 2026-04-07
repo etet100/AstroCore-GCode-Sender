@@ -6,6 +6,7 @@
 #define PARTMAINCONTROL_H
 
 #include "core/globals.h"
+#include "core/state_behavior/statebehavior.h"
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
@@ -24,7 +25,7 @@ public:
     void enable();
     void disable();
     void updateControlsState(bool portOpened, bool process);
-    void updateControlsState(SenderState senderState, MachineState machineState);
+    void updateControlsState(StateBehavior *sb);
     bool hold();
     void setFlood(bool);
     void initialize();

@@ -341,4 +341,3 @@ enum class ConnectionState
 };
 
 #endif // GLOBALS_H
-

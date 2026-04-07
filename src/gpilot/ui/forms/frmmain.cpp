@@ -273,9 +273,10 @@ void FrmMain::initializeControlPanel()
         m_communicator->stateBehavior()->action(Action::Home);
         // m_communicator->home();
     });
-    connect(ui->control, &PartMainControl::probe, this, [this]() {
-        // m_communicator->probe();
-        m_communicator->stateBehavior()->action(Action::Probe);
+    connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
+        ProbeAction::ProbeParameters params;
+        params.doubleProbe = (mode == ProbeMode::Dual);
+        m_communicator->stateBehavior()->action(ProbeAction(params));
     });
     connect(ui->control, &PartMainControl::reset, this, [this]() {
         // m_communicator->reset();
@@ -385,7 +386,7 @@ void FrmMain::initializeProgramPanel()
     connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
     // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
     connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
-        if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) {
+        if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
             ui->program->setAutoScroll(false);
         }
     });
@@ -654,7 +655,7 @@ void FrmMain::closeEvent(QCloseEvent *ce)
         return;
     }
 
-    if ((m_communicator->senderState() != SenderState::Stopped) &&
+    if ((m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) &&
         QMessageBox::warning(this, this->windowTitle(), tr("File sending in progress. Terminate and exit?"),
         QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
     {
@@ -692,7 +693,7 @@ void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
     // Accept all, we will validate in drop event
     dee->acceptProposedAction();
 
-    if (m_communicator->senderState() != SenderState::Stopped || dee->mimeData()->hasFormat("application/widget")) {
+    if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Idle) || dee->mimeData()->hasFormat("application/widget")) {
         m_fileDropOverlay->showForbidden();
 
         return;
@@ -1334,8 +1335,9 @@ void FrmMain::on_chkKeyboardControl_toggled(bool checked)
         if (m_absoluteCoordinates) m_communicator->sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
     }
 
-    if ((m_communicator->senderState() != SenderState::Transferring) && (m_communicator->senderState() != SenderState::Stopping))
+    if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
         ui->jog->setKeyboardControl(checked);
+    }
 
     updateJogTitle();
     updateControlsState();
@@ -1749,7 +1751,7 @@ void FrmMain::onMachineStateChanged(MachineState state)
 {
     ui->state->setState(state);
 
-    ui->control->updateControlsState(m_communicator->senderState(), state);
+    ui->control->updateControlsState(m_communicator->stateBehavior());
 
     // ui->spindle->...
     // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&                                                        (m_communicator->senderState() != SenderStopping)));
@@ -1765,7 +1767,7 @@ void FrmMain::onMachineStateReceived(MachineState state)
     //                                                     (m_communicator->senderState() != SenderStopping)));
 
     // Update elapsed time and remaining time with adaptive correction
-    if ((m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping)) {
+    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
         ui->visualizer->setTimeEstimation(m_timeEstimator);
     }
 
@@ -1922,7 +1924,9 @@ void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
 
 void FrmMain::programEditLines(int from, int to)
 {
-    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+        return;
+    }
 
     DlgEditProgram dlg(this);
     dlg.setProgramText(m_program.linesAsText(from, to));
@@ -1938,7 +1942,9 @@ void FrmMain::programEditLines(int from, int to)
 
 void FrmMain::programInsertLines(int current, bool before)
 {
-    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+        return;
+    }
 
     DlgEditProgram dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
@@ -1957,7 +1963,9 @@ void FrmMain::programInsertLines(int current, bool before)
 
 void FrmMain::programDeleteLines(int from, int to)
 {
-    if (m_communicator->senderState() == SenderState::Transferring || m_communicator->senderState() == SenderState::Stopping) return;
+    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+        return;
+    }
 
     m_program.deleteLines(from, to);
 
@@ -2784,29 +2792,30 @@ void FrmMain::newHeightmap()
 void FrmMain::updateControlsState()
 {
     bool portOpened = m_connection && m_connection->isConnected();
-    bool process = (m_communicator->senderState() == SenderState::Transferring) || (m_communicator->senderState() == SenderState::Stopping);
-    bool paused = (m_communicator->senderState() == SenderState::Pausing) || (m_communicator->senderState() == SenderState::Pausing2) || (m_communicator->senderState() == SenderState::Paused) || (m_communicator->senderState() == SenderState::ChangingTool);
-    SenderState senderState = m_communicator->senderState();
+    StateBehavior *sb = m_communicator->stateBehavior();
+    bool running = sb->is(StateBehavior::Type::Running);
+    bool paused = sb->is(StateBehavior::Type::Pause) || sb->is(StateBehavior::Type::ToolChange);
+    bool idle = sb->is(StateBehavior::Type::Idle);
 
     // ui->grpState->setEnabled(portOpened);
     // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
-    ui->jog->setEnabled(portOpened && ((senderState == SenderState::Stopped)
-        || (senderState == SenderState::ChangingTool)));
+    // TODO: add Action::Jog to ToolChangeBehavior::availableActions(), then simplify to sb->canExecute(Action::Jog)
+    ui->jog->setEnabled(portOpened && (idle || sb->is(StateBehavior::Type::ToolChange)));
 
     ui->console->setEnabled(portOpened && !m_configuration.joggingModule().keyboardControl());
     // ui->cmdCommandSend->setEnabled(portOpened);
 
-    ui->control->updateControlsState(portOpened, process);
+    ui->control->updateControlsState(sb);
 
     //ui->spindle->...
-    // ui->cmdSpindle->setEnabled(!process);
+    // ui->cmdSpindle->setEnabled(!running);
 
-    ui->actFileNew->setEnabled(senderState == SenderState::Stopped);
-    ui->actFileOpen->setEnabled(senderState == SenderState::Stopped);
-    ui->program->setOpenButtonEnabled(senderState == SenderState::Stopped);
-    ui->program->setResetButtonEnabled((senderState == SenderState::Stopped) && !m_program.empty());
-    ui->program->setSendButtonEnabled(portOpened && (senderState == SenderState::Stopped) && !m_program.empty());
+    ui->actFileNew->setEnabled(idle);
+    ui->actFileOpen->setEnabled(idle);
+    ui->program->setOpenButtonEnabled(idle);
+    ui->program->setResetButtonEnabled(idle && !m_program.empty());
+    ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !m_program.empty());
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -2824,13 +2833,13 @@ void FrmMain::updateControlsState()
     // ui->cmdFilePause->setChecked(paused);
     // ui->program->setAbortButtonEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
     ui->menuRecent->setEnabled(
-        (senderState == SenderState::Stopped) &&
+        idle &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
     );
     ui->actFileSave->setEnabled(!m_program.empty());
     ui->actFileSaveAs->setEnabled(!m_program.empty());
 
-    ui->program->setProgramTableEditTriggers((senderState != SenderState::Stopped) ? QAbstractItemView::NoEditTriggers :
+    ui->program->setProgramTableEditTriggers(!idle ? QAbstractItemView::NoEditTriggers :
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
         QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
 
@@ -2839,11 +2848,13 @@ void FrmMain::updateControlsState()
         emit machineStateChanged(-1);
     }
 
-    if (!process) ui->jog->restoreKeyboardControl();
+    if (!running) {
+        ui->jog->restoreKeyboardControl();
+    }
 
 #ifdef WINDOWS
     m_taskBar.setPaused(paused);
-    if (m_communicator->senderState() == SenderState::Stopped) {
+    if (idle) {
         m_taskBar.hide();
     }
 #endif
@@ -3047,7 +3058,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
             }
         }
 
-        if ((m_communicator->senderState() != SenderState::Transferring) && (m_communicator->senderState() != SenderState::Stopping)
+        if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Running)
             && m_configuration.joggingModule().keyboardControl() && !ev->isAutoRepeat())
         {
             static QList<QAction*> acts;
@@ -3147,12 +3158,10 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 // during active program execution (excluding check mode)
 void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
-    SenderState senderState = m_communicator->senderState();
-    MachineState deviceState = m_communicator->machineState();
+    StateBehavior *sb = m_communicator->stateBehavior();
 
-    if (((senderState == SenderState::Transferring) || (senderState == SenderState::Stopping)
-         || (senderState == SenderState::Pausing) || (senderState == SenderState::Pausing2) || (senderState == SenderState::Paused))
-         && deviceState != MachineState::Check) {
+    // CheckMode has its own behavior type, so it's automatically excluded here
+    if (sb->is(StateBehavior::Type::Running) || sb->is(StateBehavior::Type::Pause)) {
         int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(m_program.processedCommandIndex(), 4)).toInt();
         ui->visualizer->updateToolTracking(toolPosition, lineIndex);
     } else {

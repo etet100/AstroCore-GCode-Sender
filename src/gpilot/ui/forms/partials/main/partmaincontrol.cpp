@@ -66,14 +66,15 @@ void PartMainControl::updateControlsState(bool portOpened, bool process)
     // ui->cmdSleep->setEnabled(!process);
 }
 
-void PartMainControl::updateControlsState(SenderState senderState, MachineState machineState)
+void PartMainControl::updateControlsState(StateBehavior *sb)
 {
-    ui->cmdCheck->setEnabled(machineState != MachineState::Run && (senderState == SenderState::Stopped));
-    ui->cmdCheck->setChecked(machineState == MachineState::Check);
-    ui->cmdHold->setChecked(machineState == MachineState::Hold0 || machineState == MachineState::Hold1 || machineState == MachineState::Queue);
-    ui->cmdProbe->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
-    ui->cmdZeroZ->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
-    ui->cmdZeroXY->setEnabled(machineState == MachineState::Idle && senderState == SenderState::Stopped);
+    // TODO: replace with sb->canExecute(Action::CheckMode) once Action::CheckMode is added
+    ui->cmdCheck->setEnabled(sb->is(StateBehavior::Type::Idle));
+    ui->cmdCheck->setChecked(sb->is(StateBehavior::Type::CheckMode));
+    ui->cmdHold->setChecked(sb->is(StateBehavior::Type::Hold));
+    ui->cmdProbe->setEnabled(sb->canExecute(Action::Type::Probe));
+    ui->cmdZeroZ->setEnabled(sb->canExecute(Action::Type::ZeroZ));
+    ui->cmdZeroXY->setEnabled(sb->canExecute(Action::Type::ZeroXY));
 }
 
 bool PartMainControl::hold()
