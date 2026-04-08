@@ -2884,7 +2884,7 @@ void FrmMain::updateControlsState()
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
     ui->heightmap->updateControlsState(
-        !process && !m_program.empty(),
+        !m_program.empty(),
         m_heightmapMode
     );
 
