@@ -12,6 +12,8 @@
 #include <QToolButton>
 #include "customwidgetsshared.h"
 
+class QMenu;
+
 class CUSTOMWIDGETS_DLLSPEC StyledToolButton : public QToolButton
 {
     Q_OBJECT
@@ -21,6 +23,9 @@ class CUSTOMWIDGETS_DLLSPEC StyledToolButton : public QToolButton
     Q_PROPERTY(bool invertedDartThemeIconColors MEMBER m_invertedDartThemeIconColors)
     Q_PROPERTY(bool customColors MEMBER m_useCustomColors)
     Q_PROPERTY(int imagePadding MEMBER m_imagePadding)
+    Q_PROPERTY(QIcon menuIndicatorIcon READ menuIndicatorIcon WRITE setMenuIndicatorIcon)
+    Q_PROPERTY(double indicatorScaleFactor READ indicatorScaleFactor WRITE setIndicatorScaleFactor)
+    Q_PROPERTY(int menuIndicatorMargin READ menuIndicatorMargin WRITE setMenuIndicatorMargin)
 
 public:
     explicit StyledToolButton(QWidget *parent = 0);
@@ -39,17 +44,46 @@ public:
     bool useCustomColors() const;
     void setUseCustomColors(bool use);
 
+    QIcon menuIndicatorIcon() const;
+    void setMenuIndicatorIcon(const QIcon &icon);
+
+    double indicatorScaleFactor() const;
+    void setIndicatorScaleFactor(double factor);
+
+    int menuIndicatorMargin() const;
+    void setMenuIndicatorMargin(int margin);
+
+    QMenu *buttonMenu() const;
+    void setButtonMenu(QMenu *menu);
+
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
+
 signals:
     void hoverChanged(bool hovered);
+    void menuRequested();
 
 protected:
     void enterEvent(QEnterEvent *) override;
     void leaveEvent(QEvent *) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void contextMenuEvent(QContextMenuEvent *e) override;
 
 private:
     Q_DISABLE_COPY(StyledToolButton)
 
     void paintEvent(QPaintEvent *e) override;
+    void paintSimple(QPaintEvent *e);
+    void paintMenuIndicator(QPainter &painter);
+    void invertIconColors();
+
+    bool hasButtonMenu() const;
+    int indicatorSize() const;
+    QRect menuIndicatorRect() const;
+    bool isMenuIndicatorClick(const QPoint &pos) const;
+    void showButtonMenu();
 
     bool m_hovered = false;
     bool m_useCustomColors = false;
@@ -60,8 +94,12 @@ private:
     QColor m_highlightColor;
     bool m_dark = false;
 
-    void invertIconColors();
-    void paintSimple(QPaintEvent *e);
+    QIcon m_menuIndicatorIcon;
+    double m_indicatorScaleFactor = 1.0;
+    int m_menuIndicatorMargin = 1;
+    QMenu *m_menu = nullptr;
+    bool m_menuIndicatorPressed = false;
+    bool m_menuIndicatorHovered = false;
 };
 
 #endif // STYLEDTOOLBUTTON_H

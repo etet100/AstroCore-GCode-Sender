@@ -21,6 +21,8 @@ HEADERS +=  colorpicker.h \
             styledtoolbutton.h \
             styledtoolbuttonplugin.h \
             customwidgetsplugin.h \
+            qtoolbuttonwithmenu.h \
+            qtoolbuttonwithmenuplugin.h \
             xswitchbutton.h \
             xswitchbuttonplugin.h \
             xswitchbuttonwithlabel.h \
@@ -39,6 +41,8 @@ SOURCES +=  colorpicker.cpp \
             styledtoolbutton.cpp \
             styledtoolbuttonplugin.cpp \
             customwidgetsplugin.cpp \
+            qtoolbuttonwithmenu.cpp \
+            qtoolbuttonwithmenuplugin.cpp \
             xswitchbutton.cpp \
             xswitchbuttonplugin.cpp \
             xswitchbuttonwithlabel.cpp \

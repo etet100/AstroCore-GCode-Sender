@@ -1,4 +1,5 @@
 #include "colorpicker.h"
 #include "slider.h"
 #include "sliderbox.h"
+#include "qtoolbuttonwithmenu.h"
 #include "styledtoolbutton.h"

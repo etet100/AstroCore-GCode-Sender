@@ -6,6 +6,7 @@
 #include "styledtoolbuttonplugin.h"
 #include "qtvaluesliderplugin.h"
 #include "xswitchbuttonplugin.h"
+#include "qtoolbuttonwithmenuplugin.h"
 #include "xswitchbuttonwithlabelplugin.h"
 
 CustomWidgetsPlugin::CustomWidgetsPlugin(QObject *parent): QObject(parent)
@@ -17,6 +18,7 @@ CustomWidgetsPlugin::CustomWidgetsPlugin(QObject *parent): QObject(parent)
     widgets.append(new StyledToolButtonPlugin(this));
     widgets.append(new QtValueSliderPlugin(this));
     widgets.append(new XSwitchButtonWithLabelPlugin(this));
+    widgets.append(new QToolButtonWithMenuPlugin(this));
     widgets.append(new XSwitchButtonPlugin(this));
 }
 
