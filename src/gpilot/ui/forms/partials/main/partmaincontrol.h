@@ -46,8 +46,8 @@ private:
     ProbeMode m_probeMode = ProbeMode::Single;
     QAction *m_actSingleProbe = nullptr;
     QAction *m_actDualProbe = nullptr;
-
     void setupProbeMenu();
+    void updateProbeIcon();
 
 private slots:
     void onCmdHomeClicked();

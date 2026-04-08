@@ -1,6 +1,7 @@
 #include "partmaincontrol.h"
 #include "ui_partmaincontrol.h"
 #include <QDebug>
+#include <QActionGroup>
 
 PartMainControl::PartMainControl(QWidget *parent)
     : QWidget(parent)
@@ -29,16 +30,28 @@ void PartMainControl::setupProbeMenu()
 
     connect(m_actSingleProbe, &QAction::triggered, this, [this]() {
         m_probeMode = ProbeMode::Single;
+        updateProbeIcon();
     });
     connect(m_actDualProbe, &QAction::triggered, this, [this]() {
         m_probeMode = ProbeMode::Dual;
+        updateProbeIcon();
     });
 
     // Show menu on right-click; left-click still fires clicked() -> probe
     ui->cmdProbe->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->cmdProbe, &QWidget::customContextMenuRequested, this, [this, menu](const QPoint &pos) {
-        menu->exec(ui->cmdProbe->mapToGlobal(pos));
-    });
+    ui->cmdProbe->setMenu(menu);
+    // connect(ui->cmdProbe, &QWidget::customContextMenuRequested, this, [this, menu](const QPoint &pos) {
+    //     menu->exec(ui->cmdProbe->mapToGlobal(pos));
+    // });
+}
+
+void PartMainControl::updateProbeIcon()
+{
+    if (m_probeMode == ProbeMode::Single) {
+        ui->cmdProbe->setIcon(QIcon(":/images/probe_z.svg"));
+    } else {
+        ui->cmdProbe->setIcon(QIcon(":/images/probe_z_dual.svg"));
+    }
 }
 
 PartMainControl::~PartMainControl()

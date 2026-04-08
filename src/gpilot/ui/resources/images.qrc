@@ -33,7 +33,8 @@
         <file>../images/gpilot.ico</file>
         <file>../images/visualizer_toggle_view_mode.png</file>
         <file>../images/search_for_z.png</file>
-        <file>../images/search_z.svg</file>
+        <file>../images/probe_z.svg</file>
+        <file>../images/probe_z_dual.svg</file>
         <file>../images/axis_zero.png</file>
         <file>../images/axis_zero.svg</file>
         <file>../images/zero_z.png</file>
