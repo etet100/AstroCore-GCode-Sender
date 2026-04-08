@@ -17,6 +17,7 @@ class IniPersister : public Persister
         bool setBool(const QString group, const QString key, const bool value) override;
         bool setStringList(const QString group, const QString key, const QStringList value) override;
         bool setVariantMap(const QString group, const QString key, const QVariantMap value) override;
+        bool setVariantList(const QString group, const QString key, const QVariantList value) override;
         bool setVariant(const QString group, const QString key, const QVariant value) override;
 
     private:

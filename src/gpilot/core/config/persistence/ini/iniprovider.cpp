@@ -2,6 +2,9 @@
 #include "core/globals.h"
 #include "qguiapplication.h"
 #include <QDebug>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 IniProvider::IniProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
 {
@@ -76,6 +79,36 @@ QVariantMap IniProvider::getVariantMap(const QString group, const QString key, Q
     while (it.hasNext()) {
         it.next();
         result[it.key()] = m_settings->value(group + "/" + key + "." + it.key(), it.value());
+    }
+
+    return result;
+}
+
+QVariantList IniProvider::getVariantList(const QString group, const QString key, QVariantList defaultValue)
+{
+    QVariant raw = m_settings->value(group + "/" + key);
+    if (!raw.isValid()) {
+        return defaultValue;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(raw.toString().toUtf8());
+    if (!doc.isArray()) {
+        return defaultValue;
+    }
+
+    QJsonArray array = doc.array();
+    QVariantList result;
+    for (const QJsonValue& val : array) {
+        if (val.isObject()) {
+            QJsonObject obj = val.toObject();
+            QVariantMap map;
+            for (auto it = obj.begin(); it != obj.end(); ++it) {
+                map[it.key()] = it.value().toVariant();
+            }
+            result.append(map);
+        } else {
+            result.append(val.toVariant());
+        }
     }
 
     return result;

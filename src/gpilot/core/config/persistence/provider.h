@@ -19,6 +19,7 @@ class Provider : public QObject
         virtual QStringList getStringList(const QString group, const QString key, QStringList defaultValue) = 0;
         virtual QVariant getVariant(const QString group, const QString key, QVariant defaultValue) = 0;
         virtual QVariantMap getVariantMap(const QString group, const QString key, QVariantMap defaultValue) = 0;
+        virtual QVariantList getVariantList(const QString group, const QString key, QVariantList defaultValue) = 0;
         virtual bool isReady() { return true; };
 };
 

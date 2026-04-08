@@ -13,6 +13,7 @@
 #include "module/configurationjogging.h"
 #include "module/configurationpendant.h"
 #include "module/configurationai.h"
+#include "module/configurationmacros.h"
 #include "persistence/persister.h"
 #include "persistence/provider.h"
 #include <QObject>
@@ -41,6 +42,7 @@ class Configuration : public QObject
         ConfigurationJogging& joggingModule() { return m_jogging; };
         ConfigurationAI& aiModule() { return m_ai; };
         ConfigurationPendant& pendantModule() { return m_pendant; };
+        ConfigurationMacros& macrosModule() { return m_macros; };
 
     private:
         QString m_language;
@@ -58,6 +60,7 @@ class Configuration : public QObject
         ConfigurationJogging m_jogging;
         ConfigurationAI m_ai;
         ConfigurationPendant m_pendant;
+        ConfigurationMacros m_macros;
 
         // Read/Write
         Persister* m_persister = nullptr;

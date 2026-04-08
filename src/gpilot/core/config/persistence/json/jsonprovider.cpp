@@ -125,3 +125,28 @@ QVariantMap JsonProvider::getVariantMap(const QString group, const QString key, 
     }
     return defaultValue;
 }
+
+QVariantList JsonProvider::getVariantList(const QString group, const QString key, QVariantList defaultValue)
+{
+    QJsonObject groupObj = getGroup(group);
+    if (groupObj.contains(key) && groupObj[key].isArray()) {
+        QJsonArray array = groupObj[key].toArray();
+        QVariantList result;
+        for (const QJsonValue& val : array) {
+            if (val.isObject()) {
+                QJsonObject obj = val.toObject();
+                QVariantMap map;
+                for (auto it = obj.begin(); it != obj.end(); ++it) {
+                    map[it.key()] = it.value().toVariant();
+                }
+                result.append(map);
+            } else {
+                result.append(val.toVariant());
+            }
+        }
+
+        return result;
+    }
+
+    return defaultValue;
+}

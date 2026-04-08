@@ -17,6 +17,7 @@ class Persister : public QObject
         virtual bool setDouble(const QString group, const QString key, const double value) = 0;
         virtual bool setStringList(const QString group, const QString key, const QStringList value) = 0;
         virtual bool setVariantMap(const QString group, const QString key, const QVariantMap value) = 0;
+        virtual bool setVariantList(const QString group, const QString key, const QVariantList value) = 0;
         virtual bool setVariant(const QString group, const QString key, const QVariant value) = 0;
 };
 

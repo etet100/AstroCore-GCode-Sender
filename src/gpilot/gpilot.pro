@@ -104,6 +104,7 @@ SOURCES += main.cpp\
     core/config/module/configurationheightmap.cpp \
     core/config/module/configurationjogging.cpp \
     core/config/module/configurationmachine.cpp \
+    core/config/module/configurationmacros.cpp \
     core/config/module/configurationmodule.cpp \
     core/config/module/configurationparser.cpp \
     core/config/module/configurationpendant.cpp \
@@ -282,6 +283,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationheightmap.h \
     core/config/module/configurationjogging.h \
     core/config/module/configurationmachine.h \
+    core/config/module/configurationmacros.h \
     core/config/module/configurationmodule.h \
     core/config/module/configurationparser.h \
     core/config/module/configurationpendant.h \

@@ -10,6 +10,9 @@
 #include <QDir>
 #include <QDebug>
 #include <QTextStream>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 XmlPersister::XmlPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
 {
@@ -251,6 +254,47 @@ bool XmlPersister::setVariantMap(const QString group, const QString key, const Q
     QDomText text = m_doc.createTextNode(parts.join(";"));
     newEntry.appendChild(text);
     groupElem.appendChild(newEntry);
+    return true;
+}
+
+bool XmlPersister::setVariantList(const QString group, const QString key, const QVariantList value)
+{
+    QJsonArray array;
+    for (const QVariant& item : value) {
+        if (item.typeId() == QMetaType::QVariantMap) {
+            QJsonObject obj;
+            QMapIterator<QString, QVariant> it(item.toMap());
+            while (it.hasNext()) {
+                it.next();
+                obj[it.key()] = it.value().toJsonValue();
+            }
+            array.append(obj);
+        } else {
+            array.append(QJsonValue::fromVariant(item));
+        }
+    }
+    QJsonDocument doc(array);
+    QString jsonStr = QString(doc.toJson(QJsonDocument::Compact));
+
+    QDomElement groupElem = getOrCreateGroup(group);
+    QDomNodeList entries = groupElem.elementsByTagName("entry");
+    for (int i = 0; i < entries.size(); ++i) {
+        QDomElement entry = entries.at(i).toElement();
+        if (entry.attribute("key") == key) {
+            entry.setAttribute("type", "variantlist");
+            entry.firstChild().setNodeValue(jsonStr);
+
+            return true;
+        }
+    }
+
+    QDomElement newEntry = m_doc.createElement("entry");
+    newEntry.setAttribute("key", key);
+    newEntry.setAttribute("type", "variantlist");
+    QDomText text = m_doc.createTextNode(jsonStr);
+    newEntry.appendChild(text);
+    groupElem.appendChild(newEntry);
+
     return true;
 }
 

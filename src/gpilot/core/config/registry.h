@@ -15,7 +15,8 @@ class ConfigurationRegistry
             Unknown,
             Struct,
             Enum,
-            Value
+            Value,
+            StructList
         };
 
     private:
@@ -23,6 +24,8 @@ class ConfigurationRegistry
         typedef std::function<QVariant(QVariantMap)> DenormalizeStructFunc;
         typedef std::function<QVariant(QVariant)> NormalizeValueFunc;
         typedef std::function<QVariant(QVariant)> DenormalizeValueFunc;
+        typedef std::function<QVariantList(const char*)> NormalizeStructListFunc;
+        typedef std::function<QVariant(QVariantList)> DenormalizeStructListFunc;
 
         struct StructInfo {
             Type type;
@@ -31,6 +34,8 @@ class ConfigurationRegistry
             DenormalizeStructFunc denormalizeStruct = nullptr;
             NormalizeValueFunc normalizeValue = nullptr;
             DenormalizeValueFunc denormalizeValue = nullptr;
+            NormalizeStructListFunc normalizeStructList = nullptr;
+            DenormalizeStructListFunc denormalizeStructList = nullptr;
         };
 
         typedef QMap<QString, StructInfo> ConfigRegistryItem;
@@ -74,6 +79,46 @@ class ConfigurationRegistry
                 .normalizeValue=normalizeFunc,
                 .denormalizeValue=denormalizeFunc,
             };
+        }
+
+        static void registerStructList(
+            const QString& listTypeName,
+            const NormalizeStructListFunc& normalizeFunc,
+            const DenormalizeStructListFunc& denormalizeFunc
+        ) {
+            getRegistry()[listTypeName] = {
+                .type=Type::StructList,
+                .name=listTypeName,
+                .normalizeStructList=normalizeFunc,
+                .denormalizeStructList=denormalizeFunc,
+            };
+        }
+
+        // Template helper: auto-builds list normalize/denormalize from element struct registration
+        template<typename T>
+        static void registerStructList(const QString& listTypeName, const QString& elementTypeName) {
+            registerStructList(
+                listTypeName,
+                [elementTypeName](const char* data) -> QVariantList {
+                    auto& elementInfo = getInfo(elementTypeName);
+                    QList<T>* list = (QList<T>*)data;
+                    QVariantList result;
+                    for (const T& item : *list) {
+                        result.append(elementInfo.normalizeStruct((const char*)&item));
+                    }
+
+                    return result;
+                },
+                [elementTypeName](QVariantList list) -> QVariant {
+                    auto& elementInfo = getInfo(elementTypeName);
+                    QList<T> result;
+                    for (const QVariant& item : list) {
+                        result.append(elementInfo.denormalizeStruct(item.toMap()).template value<T>());
+                    }
+
+                    return QVariant::fromValue(result);
+                }
+            );
         }
 
         static StructInfo& getInfo(const QString& name) {

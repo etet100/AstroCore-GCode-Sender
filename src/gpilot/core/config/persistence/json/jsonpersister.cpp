@@ -128,6 +128,29 @@ bool JsonPersister::setVariantMap(const QString group, const QString key, const 
     return true;
 }
 
+bool JsonPersister::setVariantList(const QString group, const QString key, const QVariantList value)
+{
+    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonArray array;
+    for (const QVariant& item : value) {
+        if (item.typeId() == QMetaType::QVariantMap) {
+            QJsonObject obj;
+            QMapIterator<QString, QVariant> it(item.toMap());
+            while (it.hasNext()) {
+                it.next();
+                obj[it.key()] = QJsonValue::fromVariant(it.value());
+            }
+            array.append(obj);
+        } else {
+            array.append(QJsonValue::fromVariant(item));
+        }
+    }
+    groupObj[key] = array;
+    m_rootObject[group] = groupObj;
+
+    return true;
+}
+
 bool JsonPersister::setVariant(const QString group, const QString key, const QVariant value)
 {
     QJsonObject& groupObj = getOrCreateGroup(group);

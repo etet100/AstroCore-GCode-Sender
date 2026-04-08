@@ -23,7 +23,8 @@ Configuration::Configuration()
     m_heightmap(),
     m_jogging(),
     m_ai(),
-    m_pendant()
+    m_pendant(),
+    m_macros()
 {
     m_modules << &m_sender
         << &m_connection
@@ -35,7 +36,8 @@ Configuration::Configuration()
         << &m_heightmap
         << &m_jogging
         << &m_ai
-        << &m_pendant;
+        << &m_pendant
+        << &m_macros;
 }
 
 bool Configuration::init(const QString& appPath, const QString& configType)
@@ -97,6 +99,8 @@ bool Configuration::persistByType(QString module, QString name, QVariant value, 
         m_persister->setStringList(module, name, value.toStringList());
     } else if (type == "QVariantMap") {
         m_persister->setVariantMap(module, name, value.toMap());
+    } else if (type == "QVariantList") {
+        m_persister->setVariantList(module, name, value.toList());
     } else if (type == "QVariant") {
         m_persister->setVariant(module, name, value);
     } else {
@@ -136,6 +140,12 @@ void Configuration::saveModule(ConfigurationModule *module)
                 case ConfigurationRegistry::Type::Struct: {
                     QVariant normalized = registryItem.normalizeStruct((const char*)value.constData());
                     persistByType(module->getSectionName(), prop.name(), normalized, "QVariantMap");
+
+                    break;
+                }
+                case ConfigurationRegistry::Type::StructList: {
+                    QVariantList normalized = registryItem.normalizeStructList((const char*)value.constData());
+                    persistByType(module->getSectionName(), prop.name(), QVariant::fromValue(normalized), "QVariantList");
 
                     break;
                 }
@@ -180,6 +190,8 @@ void Configuration::setModuleDefaults(ConfigurationModule *module)
             //m_persister->setStringList(module, name, value.toStringList());
         } else if (type == "QVariantMap") {
             prop.write(module, defaults[prop.name()].toMap());
+        } else if (type == "QVariantList") {
+            prop.write(module, defaults[prop.name()].toList());
         } else if (type == "QVariant") {
             prop.write(module, defaults[prop.name()]);
         };
@@ -233,6 +245,8 @@ void Configuration::loadModule(ConfigurationModule *module)
             prop.write(module, m_provider->getDouble(module->getSectionName(), name, defaults[prop.name()].toDouble()));
         } else if (type == "QStringList") {
             prop.write(module, m_provider->getStringList(module->getSectionName(), name, defaults[prop.name()].toStringList()));
+        } else if (type == "QVariantList") {
+            prop.write(module, m_provider->getVariantList(module->getSectionName(), name, defaults[prop.name()].toList()));
         } else if (prop.isEnumType()) {
             QString value = m_provider->getString(module->getSectionName(), name, defaults[prop.name()].toString());
             QStringList typeNameElements = QString(prop.typeName()).split("::");
@@ -285,6 +299,21 @@ void Configuration::loadModule(ConfigurationModule *module)
                         m_provider->getVariantMap(module->getSectionName(), prop.name(), defaults[prop.name()].toMap())
                     );
 
+                    prop.write(module, denormalized);
+
+                    break;
+                }
+                case ConfigurationRegistry::Type::StructList: {
+                    QVariantList normalizedDefaults;
+                    if (defaults.contains(prop.name())) {
+                        normalizedDefaults = registryItem.normalizeStructList(
+                            (const char*)defaults[prop.name()].constData()
+                        );
+                    }
+                    QVariantList rawList = m_provider->getVariantList(
+                        module->getSectionName(), prop.name(), normalizedDefaults
+                    );
+                    QVariant denormalized = registryItem.denormalizeStructList(rawList);
                     prop.write(module, denormalized);
 
                     break;

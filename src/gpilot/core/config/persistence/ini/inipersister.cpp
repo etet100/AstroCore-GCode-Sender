@@ -1,6 +1,7 @@
 #include "inipersister.h"
 #include "core/globals.h"
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QGuiApplication>
 #include <QStringList>
 #include <QJsonObject>
@@ -102,6 +103,32 @@ bool IniPersister::setVariantMap(const QString group, const QString key, const Q
     }
     QJsonDocument doc(obj);
 
+    m_settings->setValue(group + "/" + key, QString(doc.toJson(QJsonDocument::Compact)));
+
+    return true;
+}
+
+bool IniPersister::setVariantList(const QString group, const QString key, const QVariantList value)
+{
+    if (!m_settings) {
+        return false;
+    }
+
+    QJsonArray array;
+    for (const QVariant& item : value) {
+        if (item.typeId() == QMetaType::QVariantMap) {
+            QJsonObject obj;
+            QMapIterator<QString, QVariant> it(item.toMap());
+            while (it.hasNext()) {
+                it.next();
+                obj[it.key()] = it.value().toJsonValue();
+            }
+            array.append(obj);
+        } else {
+            array.append(QJsonValue::fromVariant(item));
+        }
+    }
+    QJsonDocument doc(array);
     m_settings->setValue(group + "/" + key, QString(doc.toJson(QJsonDocument::Compact)));
 
     return true;

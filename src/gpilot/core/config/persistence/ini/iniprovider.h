@@ -18,6 +18,7 @@ class IniProvider : public Provider
         QVariant getVariant(const QString group, const QString key, QVariant defaultValue) override;
         QStringList getStringList(const QString group, const QString key, QStringList defaultValue) override;
         QVariantMap getVariantMap(const QString group, const QString key, QVariantMap defaultValue) override;
+        QVariantList getVariantList(const QString group, const QString key, QVariantList defaultValue) override;
 
     private:
         QSettings *m_settings;

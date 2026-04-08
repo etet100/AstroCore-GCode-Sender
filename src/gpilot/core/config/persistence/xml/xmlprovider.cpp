@@ -6,6 +6,8 @@
 #include "core/globals.h"
 #include <QGuiApplication>
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QVariant>
 #include <QDebug>
 
@@ -215,6 +217,44 @@ QVariantMap XmlProvider::getVariantMap(const QString group, const QString key, Q
                 }
             }
             return map;
+        }
+    }
+
+    return defaultValue;
+}
+
+QVariantList XmlProvider::getVariantList(const QString group, const QString key, QVariantList defaultValue)
+{
+    QDomElement groupElem = getGroup(group);
+    if (groupElem.isNull()) {
+        return defaultValue;
+    }
+
+    QDomNodeList entries = groupElem.elementsByTagName("entry");
+    for (int i = 0; i < entries.size(); ++i) {
+        QDomElement entry = entries.at(i).toElement();
+        if (entry.attribute("key") == key && entry.attribute("type") == "variantlist") {
+            QJsonDocument doc = QJsonDocument::fromJson(entry.text().toUtf8());
+            if (!doc.isArray()) {
+                return defaultValue;
+            }
+
+            QJsonArray array = doc.array();
+            QVariantList result;
+            for (const QJsonValue& val : array) {
+                if (val.isObject()) {
+                    QJsonObject obj = val.toObject();
+                    QVariantMap map;
+                    for (auto it = obj.begin(); it != obj.end(); ++it) {
+                        map[it.key()] = it.value().toVariant();
+                    }
+                    result.append(map);
+                } else {
+                    result.append(val.toVariant());
+                }
+            }
+
+            return result;
         }
     }
 
