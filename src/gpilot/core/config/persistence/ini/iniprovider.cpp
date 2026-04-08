@@ -86,30 +86,28 @@ QVariantMap IniProvider::getVariantMap(const QString group, const QString key, Q
 
 QVariantList IniProvider::getVariantList(const QString group, const QString key, QVariantList defaultValue)
 {
-    QVariant raw = m_settings->value(group + "/" + key);
-    if (!raw.isValid()) {
+    int size = m_settings->beginReadArray(group + "/" + key);
+    if (size == 0) {
+        m_settings->endArray();
+
         return defaultValue;
     }
 
-    QJsonDocument doc = QJsonDocument::fromJson(raw.toString().toUtf8());
-    if (!doc.isArray()) {
-        return defaultValue;
-    }
-
-    QJsonArray array = doc.array();
     QVariantList result;
-    for (const QJsonValue& val : array) {
-        if (val.isObject()) {
-            QJsonObject obj = val.toObject();
+    for (int i = 0; i < size; ++i) {
+        m_settings->setArrayIndex(i);
+        QStringList keys = m_settings->childKeys();
+        if (keys.size() == 1 && keys.first() == "value") {
+            result.append(m_settings->value("value"));
+        } else {
             QVariantMap map;
-            for (auto it = obj.begin(); it != obj.end(); ++it) {
-                map[it.key()] = it.value().toVariant();
+            for (const QString& k : keys) {
+                map[k] = m_settings->value(k);
             }
             result.append(map);
-        } else {
-            result.append(val.toVariant());
         }
     }
+    m_settings->endArray();
 
     return result;
 }

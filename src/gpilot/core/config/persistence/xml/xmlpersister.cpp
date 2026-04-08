@@ -259,41 +259,52 @@ bool XmlPersister::setVariantMap(const QString group, const QString key, const Q
 
 bool XmlPersister::setVariantList(const QString group, const QString key, const QVariantList value)
 {
-    QJsonArray array;
-    for (const QVariant& item : value) {
-        if (item.typeId() == QMetaType::QVariantMap) {
-            QJsonObject obj;
-            QMapIterator<QString, QVariant> it(item.toMap());
-            while (it.hasNext()) {
-                it.next();
-                obj[it.key()] = it.value().toJsonValue();
-            }
-            array.append(obj);
-        } else {
-            array.append(QJsonValue::fromVariant(item));
-        }
-    }
-    QJsonDocument doc(array);
-    QString jsonStr = QString(doc.toJson(QJsonDocument::Compact));
-
     QDomElement groupElem = getOrCreateGroup(group);
-    QDomNodeList entries = groupElem.elementsByTagName("entry");
-    for (int i = 0; i < entries.size(); ++i) {
-        QDomElement entry = entries.at(i).toElement();
-        if (entry.attribute("key") == key) {
-            entry.setAttribute("type", "variantlist");
-            entry.firstChild().setNodeValue(jsonStr);
 
-            return true;
+    // Remove existing list element
+    QDomNodeList lists = groupElem.elementsByTagName("list");
+    for (int i = 0; i < lists.size(); ++i) {
+        QDomElement list = lists.at(i).toElement();
+        if (list.attribute("key") == key) {
+            groupElem.removeChild(list);
+
+            break;
         }
     }
 
-    QDomElement newEntry = m_doc.createElement("entry");
-    newEntry.setAttribute("key", key);
-    newEntry.setAttribute("type", "variantlist");
-    QDomText text = m_doc.createTextNode(jsonStr);
-    newEntry.appendChild(text);
-    groupElem.appendChild(newEntry);
+    QDomElement listElem = m_doc.createElement("list");
+    listElem.setAttribute("key", key);
+
+    for (const QVariant& item : value) {
+        QDomElement itemElem = m_doc.createElement("item");
+        if (item.typeId() == QMetaType::QVariantMap) {
+            QVariantMap map = item.toMap();
+            for (auto it = map.begin(); it != map.end(); ++it) {
+                QDomElement entryElem = m_doc.createElement("entry");
+                entryElem.setAttribute("key", it.key());
+                QString typeStr;
+                switch (it.value().typeId()) {
+                    case QMetaType::Int: typeStr = "int"; break;
+                    case QMetaType::Bool: typeStr = "bool"; break;
+                    case QMetaType::Double: typeStr = "double"; break;
+                    default: typeStr = "string"; break;
+                }
+                entryElem.setAttribute("type", typeStr);
+                QString valueStr = (it.value().typeId() == QMetaType::Bool)
+                    ? (it.value().toBool() ? "true" : "false")
+                    : it.value().toString();
+                QDomText text = m_doc.createTextNode(valueStr);
+                entryElem.appendChild(text);
+                itemElem.appendChild(entryElem);
+            }
+        } else {
+            QDomText text = m_doc.createTextNode(item.toString());
+            itemElem.appendChild(text);
+        }
+        listElem.appendChild(itemElem);
+    }
+
+    groupElem.appendChild(listElem);
 
     return true;
 }

@@ -230,27 +230,24 @@ QVariantList XmlProvider::getVariantList(const QString group, const QString key,
         return defaultValue;
     }
 
-    QDomNodeList entries = groupElem.elementsByTagName("entry");
-    for (int i = 0; i < entries.size(); ++i) {
-        QDomElement entry = entries.at(i).toElement();
-        if (entry.attribute("key") == key && entry.attribute("type") == "variantlist") {
-            QJsonDocument doc = QJsonDocument::fromJson(entry.text().toUtf8());
-            if (!doc.isArray()) {
-                return defaultValue;
-            }
-
-            QJsonArray array = doc.array();
+    QDomNodeList lists = groupElem.elementsByTagName("list");
+    for (int i = 0; i < lists.size(); ++i) {
+        QDomElement list = lists.at(i).toElement();
+        if (list.attribute("key") == key) {
             QVariantList result;
-            for (const QJsonValue& val : array) {
-                if (val.isObject()) {
-                    QJsonObject obj = val.toObject();
+            QDomNodeList items = list.elementsByTagName("item");
+            for (int j = 0; j < items.size(); ++j) {
+                QDomElement item = items.at(j).toElement();
+                QDomNodeList entries = item.elementsByTagName("entry");
+                if (entries.isEmpty()) {
+                    result.append(item.text());
+                } else {
                     QVariantMap map;
-                    for (auto it = obj.begin(); it != obj.end(); ++it) {
-                        map[it.key()] = it.value().toVariant();
+                    for (int k = 0; k < entries.size(); ++k) {
+                        QDomElement entry = entries.at(k).toElement();
+                        map[entry.attribute("key")] = stringToVariant(entry.text(), entry.attribute("type"));
                     }
                     result.append(map);
-                } else {
-                    result.append(val.toVariant());
                 }
             }
 

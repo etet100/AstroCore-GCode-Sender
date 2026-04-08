@@ -114,22 +114,19 @@ bool IniPersister::setVariantList(const QString group, const QString key, const 
         return false;
     }
 
-    QJsonArray array;
-    for (const QVariant& item : value) {
-        if (item.typeId() == QMetaType::QVariantMap) {
-            QJsonObject obj;
-            QMapIterator<QString, QVariant> it(item.toMap());
-            while (it.hasNext()) {
-                it.next();
-                obj[it.key()] = it.value().toJsonValue();
+    m_settings->beginWriteArray(group + "/" + key);
+    for (int i = 0; i < value.size(); ++i) {
+        m_settings->setArrayIndex(i);
+        if (value[i].typeId() == QMetaType::QVariantMap) {
+            QVariantMap map = value[i].toMap();
+            for (auto it = map.begin(); it != map.end(); ++it) {
+                m_settings->setValue(it.key(), it.value());
             }
-            array.append(obj);
         } else {
-            array.append(QJsonValue::fromVariant(item));
+            m_settings->setValue("value", value[i]);
         }
     }
-    QJsonDocument doc(array);
-    m_settings->setValue(group + "/" + key, QString(doc.toJson(QJsonDocument::Compact)));
+    m_settings->endArray();
 
     return true;
 }
