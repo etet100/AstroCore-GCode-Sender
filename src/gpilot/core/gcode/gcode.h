@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QMap>
 #include <vector>
 #include <string>
 
@@ -51,10 +52,22 @@ struct GCodeItem
     std::vector<std::string> args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
     bool isMovement = false;
+    int overlayId = 0;          // 0 = main program, >0 = overlay id
 
     bool isArc() const {
         return command.startsWith('G') && (command == "G2" || command == "G3");
     }
+
+    bool isOverlay() const {
+        return overlayId > 0;
+    }
+};
+
+struct OverlayInfo {
+    int id;
+    QString name;
+    int insertedAt;     // index in m_data where first overlay item was inserted
+    int count;          // number of commands in this overlay
 };
 
 class GCode : public QObject
@@ -83,7 +96,7 @@ class GCode : public QObject
         GCodeItem& current() { return m_data[m_commandIndex]; }
         int count() { return m_data.count(); }
         bool empty() { return m_data.isEmpty(); }
-        void clear() { m_data.clear(); }
+        void clear() { m_data.clear(); m_mainCount = 0; }
         void insertLines(int, QString text);
         void deleteLines(int from, int to);
         QString linesAsText(int from, int to);
@@ -93,12 +106,17 @@ class GCode : public QObject
         GCode& operator << (const GCode& source);
         void reserve(int size) { m_data.reserve(size); }
         void insert(int index, const GCodeItem& item) {
+            if (item.overlayId == 0) m_mainCount++;
             m_data.insert(index, item);
         }
         void removeAt(int index) {
+            if (m_data[index].overlayId == 0) m_mainCount--;
             m_data.removeAt(index);
         }
         void erase(int begin, int end) {
+            for (int i = begin; i < end; i++) {
+                if (m_data[i].overlayId == 0) m_mainCount--;
+            }
             m_data.erase(m_data.begin() + begin, m_data.begin() + end);
         }
         QList<GCodeItem>::iterator begin() { return m_data.begin(); }
@@ -130,18 +148,30 @@ class GCode : public QObject
             return &m_data[index];
         }
 
+        // Overlay support
+        int insertOverlay(const QString& name, const QList<GCodeItem>& commands);
+        const OverlayInfo* overlayInfo(int overlayId) const;
+        void resetOverlays(int fromIndex = 0);
+        bool isOverlayItem(int index) const;
+        int mainCount() const;
+
     private:
         int m_commandIndex;
         int m_processedCommandIndex;
+        bool m_iterationStarted = false;
         QList<GCodeItem> m_data;
+        int m_mainCount = 0;
+        QMap<int, OverlayInfo> m_overlays;
+        int m_nextOverlayId = 0;
         int m_linesUpdatedFrom = INT_MAX;
         int m_linesUpdatedTo = INT_MIN;
         int m_lastSentCommand = INT_MAX;
         QTimer m_linesUpdatedTimer;
         QString m_contentHash;
 
-        void addUpdatedRange(int commandIndex);
+        void addUpdatedRange(int index1, int index2 = -1);
         // Calculates and updates the checksum/hash of the GCode data
+        // Main layer only, overlays are not included in the hash calculation
         void updateHash();
         QString calculateHash() const;
         bool isModified() const;
@@ -151,6 +181,8 @@ class GCode : public QObject
         void linesUpdated(int from, int to);
         void lastSentCommandChanged(int commandIndex);
         void loaded();
+        // Emitted when execution enters or leaves an overlay (overlayId 0 = main program)
+        void activeOverlayChanged(int overlayId);
 
     private slots:
         void onLinesUpdatedTimer();

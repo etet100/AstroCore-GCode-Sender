@@ -23,6 +23,8 @@ Raw parsed record of one G-code line. Stored in the `GCode` list.
 | `group` | GCodeItemGroup | Movement / ArcMovement / Dwell / Spindle / ... |
 | `isMovement` | bool | True if parser generated a PointSegment for this line |
 | `isArc()` | method | True if command == "G2" or "G3" |
+| `overlayId` | int | 0 = main program, >0 = overlay id |
+| `isOverlay()` | method | True if overlayId > 0 |
 
 ### PointSegment  (`gcode/parser/pointsegment.h`)
 One endpoint produced by GcodeParser. Carries the full machine state at that point.
@@ -54,6 +56,33 @@ GCodeLoaderData { gcode, viewParser }
 ```
 
 `GCodeLoader` runs all three steps and emits `finished(result)`.
+
+### Overlays
+
+Overlays allow injecting temporary command sequences (e.g. tool change macros,
+startup scripts) into the main `m_data` list during streaming. Overlay items
+are regular `GCodeItem` entries with `overlayId > 0`, so all existing iteration
+and indexing works unchanged.
+
+```cpp
+// Insert overlay after current command
+QList<GCodeItem> script = ...;
+int id = gcode->insertOverlay("tool change", script);
+
+// Query overlay metadata
+const OverlayInfo* info = gcode->overlayInfo(id);
+
+// Remove all overlay items and metadata (e.g. before editing)
+gcode->resetOverlays();
+```
+
+| Method | Description |
+|---|---|
+| `insertOverlay(name, commands)` | Insert commands after current position, returns overlay id |
+| `overlayInfo(overlayId)` | Returns metadata (name, position, count) or nullptr |
+| `resetOverlays()` | Remove all overlay items from m_data and clear registry |
+| `isOverlayItem(index)` | True if item at index belongs to an overlay |
+| `mainCount()` | Number of main program items (excludes overlays) |
 `GCodeLoader::update()` re-runs the view parse after an existing `GCode` is modified.
 
 ---
