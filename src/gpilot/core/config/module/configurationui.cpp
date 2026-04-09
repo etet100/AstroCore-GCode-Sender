@@ -4,7 +4,8 @@
 
 #include "configurationui.h"
 
-const QMap<QString,QVariant> DEFAULTS = {
+// clang-format off
+const QMap<QString, QVariant> DEFAULTS = {
     {"uiScale", 100},
     {"language", "en"},
     {"recentFiles", QStringList{}},
@@ -24,11 +25,53 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"grblConfigratorFormMaximized", false},
     {"spindleSpeedRange", QVariantMap({{"min", 0}, {"max", 100}})},
     {"darkMode", false},
-    {"centralWidget", "program"}
+    {"centralWidget", "program"},
+    {"shortcuts", QVariant::fromValue(ConfigurationUI::defaultShortcuts())},
 };
+// clang-format on
+
+QList<ShortcutEntry> ConfigurationUI::defaultShortcuts()
+{
+    return {
+        {.objectName = "actFileNew",            .keySequences = {"Ctrl+N"}},
+        {.objectName = "actFileOpen",           .keySequences = {"Ctrl+O"}},
+        {.objectName = "actFileSave",           .keySequences = {"Ctrl+S"}},
+        {.objectName = "actFileSaveAs",         .keySequences = {"Ctrl+Shift+S"}},
+        {.objectName = "actJogXPlus",           .keySequences = {"Num+6"}},
+        {.objectName = "actJogXMinus",          .keySequences = {"Num+4"}},
+        {.objectName = "actJogYPlus",           .keySequences = {"Num+8"}},
+        {.objectName = "actJogYMinus",          .keySequences = {"Num+2"}},
+        {.objectName = "actJogZPlus",           .keySequences = {"Num+9"}},
+        {.objectName = "actJogZMinus",          .keySequences = {"Num+3"}},
+        {.objectName = "actJogStop",            .keySequences = {"Num+5"}},
+        {.objectName = "actJogStepNext",        .keySequences = {"Num+1"}},
+        {.objectName = "actJogStepPrevious",    .keySequences = {"Num+7"}},
+        {.objectName = "actJogFeedNext",        .keySequences = {"Num++"}},
+        {.objectName = "actJogFeedPrevious",    .keySequences = {"Num+-"}},
+        {.objectName = "actJogKeyboardControl", .keySequences = {"ScrollLock"}},
+        {.objectName = "actSpindleOnOff",       .keySequences = {"Num+0"}},
+        {.objectName = "actSpindleSpeedPlus",   .keySequences = {"Num+*"}},
+        {.objectName = "actSpindleSpeedMinus",  .keySequences = {"Num+/"}},
+    };
+}
 
 ConfigurationUI::ConfigurationUI(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
 {
+    ConfigurationRegistry::registerStruct(
+        "ShortcutEntry",
+        [](const char *data) -> QVariantMap {
+            const ShortcutEntry *e = (const ShortcutEntry *)data;
+
+            return {{"objectName", e->objectName}, {"keySequences", e->keySequences}};
+        },
+        [](QVariantMap map) -> QVariant {
+            return QVariant::fromValue(ShortcutEntry{
+                .objectName = map["objectName"].toString(),
+                .keySequences = map["keySequences"].toStringList(),
+            });
+        }
+    );
+    ConfigurationRegistry::registerStructList<ShortcutEntry>("QList<ShortcutEntry>", "ShortcutEntry");
 }
 
 void ConfigurationUI::addRecentFile(const QString &fileName)

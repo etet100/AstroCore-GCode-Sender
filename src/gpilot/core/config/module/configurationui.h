@@ -11,6 +11,18 @@
 #include <QWidget>
 #include "configurationmodule.h"
 
+struct ShortcutEntry {
+    QString objectName;
+    QStringList keySequences; // stored as QKeySequence::toString() strings
+
+    bool operator==(const ShortcutEntry &o) const {
+        return objectName == o.objectName && keySequences == o.keySequences;
+    }
+};
+
+Q_DECLARE_METATYPE(ShortcutEntry)
+Q_DECLARE_METATYPE(QList<ShortcutEntry>)
+
 struct DockableState {
     bool visible;
     bool open;
@@ -47,7 +59,7 @@ class ConfigurationUI : public ConfigurationModule
     Q_PROPERTY(QByteArray mainFormState MEMBER m_mainFormState NOTIFY changed)
     Q_PROPERTY(QByteArray mainFormGeometryData MEMBER m_mainFormGeometryData NOTIFY changed)
     Q_PROPERTY(QByteArray programHeaderState MEMBER m_programHeaderState NOTIFY changed)
-    Q_PROPERTY(QByteArray shortcuts MEMBER m_shortcuts NOTIFY changed)
+    Q_PROPERTY(QList<ShortcutEntry> shortcuts MEMBER m_shortcuts NOTIFY changed)
 
     public:
         explicit ConfigurationUI(QObject *parent = nullptr);
@@ -103,8 +115,10 @@ class ConfigurationUI : public ConfigurationModule
         void setMainFormGeometryData(const QByteArray &data) { m_mainFormGeometryData = data; emit changed(); }
         QByteArray programHeaderState() const { return m_programHeaderState; }
         void setProgramHeaderState(const QByteArray &state) { m_programHeaderState = state; emit changed(); }
-        QByteArray shortcuts() const { return m_shortcuts; }
-        void setShortcuts(const QByteArray &shortcuts) { m_shortcuts = shortcuts; emit changed(); }
+        QList<ShortcutEntry> shortcuts() const { return m_shortcuts; }
+        void setShortcuts(const QList<ShortcutEntry> &shortcuts) { m_shortcuts = shortcuts; emit changed(); }
+
+        static QList<ShortcutEntry> defaultShortcuts();
 
     private:
         static const int MAX_RECENT_FILES = 10;
@@ -133,7 +147,7 @@ class ConfigurationUI : public ConfigurationModule
         QByteArray m_mainFormState;
         QByteArray m_mainFormGeometryData;
         QByteArray m_programHeaderState;
-        QByteArray m_shortcuts;
+        QList<ShortcutEntry> m_shortcuts;
 };
 
 #endif // CONFIGURATIONUI_H

@@ -344,6 +344,4 @@ private:
     void initializeGCodeLoaderConfiguration();
 };
 
-typedef QMap<QString, QList<QKeySequence>> ShortcutsMap;
-
 #endif // FRMMAIN_H

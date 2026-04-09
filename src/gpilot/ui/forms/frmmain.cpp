@@ -30,6 +30,7 @@
 #include "ui/forms/modals/dlgeditheightmappoint.h"
 #include "ui/forms/modals/dlgeditprogram.h"
 #include "ui/utils/thememanager.h"
+#include "ui/utils/shortcutsmanager.h"
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
 #include "ui_frmmain.h"
@@ -2256,16 +2257,7 @@ void FrmMain::loadSettings()
     applySettings();
 
     // Shortcuts
-    ShortcutsMap shortcutsMap;
-
-    QByteArray ba = m_configuration.uiModule().shortcuts();
-    QDataStream s(&ba, QIODevice::ReadOnly);
-    s >> shortcutsMap;
-
-    for (int i = 0; i < shortcutsMap.count(); i++) {
-        QAction *action = findChild<QAction*>(shortcutsMap.keys().at(i));
-        if (action) action->setShortcuts(shortcutsMap.values().at(i));
-    }
+    ShortcutsManager::instance().importList(m_configuration.uiModule().shortcuts());
 
     // Menu
     ConfigurationUI &uiConfiguration = m_configuration.uiModule();
@@ -2357,14 +2349,7 @@ void FrmMain::saveSettings()
     uiConfiguration.setMainFormGeometryData(saveGeometry());
 
     // Shortcuts
-    ShortcutsMap m;
-    QByteArray ba;
-    QDataStream s(&ba, QIODevice::WriteOnly);
-    QList<QAction*> acts = findChildren<QAction*>(QRegularExpression("act.*"));
-
-    foreach (QAction *a, acts) m[a->objectName()] = a->shortcuts();
-    s << m;
-    uiConfiguration.setShortcuts(ba);
+    uiConfiguration.setShortcuts(ShortcutsManager::instance().exportList());
 
     // Panels
     uiConfiguration.setPanelModificationState(ui->scrollContentsModification->saveState());

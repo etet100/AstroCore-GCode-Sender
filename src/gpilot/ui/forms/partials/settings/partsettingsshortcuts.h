@@ -11,18 +11,29 @@ namespace Ui {
 class frmSettingsShortcuts;
 }
 
+class ShortcutNode;
+
 class PartSettingsShortcuts : public QWidget
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        explicit PartSettingsShortcuts(QWidget *parent = nullptr);
-        ~PartSettingsShortcuts();
-        void setDefaults();
+public:
+    explicit PartSettingsShortcuts(QWidget *parent = nullptr);
+    ~PartSettingsShortcuts();
 
-    private:
-        Ui::frmSettingsShortcuts *ui;
-        void setShortcuts(QList<QAction *> acts);
+    // Fill the table from ShortcutsManager. Call this after actions are registered.
+    void populate();
+
+    // Write edited shortcuts from the table back to their QActions.
+    void applyChanges();
+
+    // Reset all shortcuts in the table to built-in defaults.
+    void setDefaults();
+
+private:
+    Ui::frmSettingsShortcuts *ui;
+
+    void addNodeRows(const ShortcutNode *node, int depth);
 };
 
 #endif // PARTSETTINGSSHORTCUTS_H
