@@ -425,7 +425,7 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
     QRegularExpressionMatch match = g.match(response);
     if (match.hasMatch()) {
-        m_posTracker->scriptVars().setCS(match.captured(0));
+        m_posTracker->coordinateCache().setCS(match.captured(0));
         // @TODO how to update drawer? signal? timer?
         // m_form->machineBoundsDrawer().setOffset(
         //     QPointF(
@@ -442,7 +442,7 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
     match = t.match(response);
     if (match.hasMatch()) {
-        m_posTracker->scriptVars().setTool(match.captured(1).toInt());
+        m_posTracker->coordinateCache().setTool(match.captured(1).toInt());
     }
 
     // TODO: Store firmware version, features, buffer size on $I command

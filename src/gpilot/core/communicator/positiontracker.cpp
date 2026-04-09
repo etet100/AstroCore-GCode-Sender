@@ -54,7 +54,6 @@ void PositionTracker::processMachinePosition(const QString& line)
         );
         if (newPos != m_machinePos) {
             m_machinePos = newPos;
-            m_storedVars.setCoords("M", newPos);
             emit machinePosChanged(newPos);
         }
     }
@@ -81,7 +80,6 @@ void PositionTracker::processWorkPosition(const QString& line)
 
         if (workOffset != m_workOffset) {
             m_workOffset = workOffset;
-            m_storedVars.setCoords("W", m_workOffset);
         }
     }
 }
@@ -102,7 +100,7 @@ void PositionTracker::processWorkOffset(const QString& line)
 
     if (workOffset != m_workOffset) {
         m_workOffset = workOffset;
-        m_storedVars.setCoords("W", m_workOffset);
+        m_coordCache.setCoords("W", m_workOffset);
     }
 }
 
@@ -113,7 +111,7 @@ void PositionTracker::processNewToolPosition(bool isCheckMode, bool isLastComman
     }
 }
 
-// Parses the $# response — updates work coordinate offsets in ScriptVars.
+// Parses the $# response — updates work coordinate offsets in MachineCoordinateCache.
 void PositionTracker::processOffsetsVars(const QStringList& response)
 {
     for (auto line : response) {
@@ -144,7 +142,7 @@ void PositionTracker::processOffsetsVars(const QStringList& response)
             m_workOffset = pos;
         }
 
-        m_storedVars.setCoords(parts[0], pos);
+        m_coordCache.setCoords(parts[0], pos);
     }
 
     qDebug() << "[PositionTracker] Offsets updated";

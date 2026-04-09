@@ -260,7 +260,7 @@ SOURCES += main.cpp\
     ui/widgets/glpalette.cpp \
     ui/widgets/glwidget.cpp \
     ui/drawers/selectiondrawer.cpp \
-    core/scripting/scriptvars.cpp \
+    core/communicator/machinecoordinatecache.cpp \
     ui/widgets/dropwidget.cpp \
     ui/widgets/glzminmax.cpp \
     ui/widgets/qpushbuttonwithmenu.cpp
@@ -449,7 +449,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/widgets/glpalette.h \
     ui/widgets/glwidget.h \
     ui/drawers/selectiondrawer.h \
-    core/scripting/scriptvars.h \
+    core/communicator/machinecoordinatecache.h \
     ui/widgets/dropwidget.h \
     ui/widgets/glzminmax.h \
     ui/widgets/qpushbuttonwithmenu.h

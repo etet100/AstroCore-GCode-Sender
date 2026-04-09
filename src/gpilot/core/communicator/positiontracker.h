@@ -2,14 +2,14 @@
 
 #include <QObject>
 #include <QVector3D>
-#include "core/scripting/scriptvars.h"
+#include "machinecoordinatecache.h"
 #include "core/globals.h"
 
 class Communicator;
 class PhysicalMachineConfiguration;
 
 // Tracks machine and work positions reported by GRBL status messages.
-// Owns the ScriptVars coordinate state (M, W, and offset vars from $#).
+// Owns a MachineCoordinateCache (M, W, and offset vars from $#).
 class PositionTracker : public QObject
 {
     Q_OBJECT
@@ -20,7 +20,7 @@ public:
     QVector3D machinePos() const { return m_machinePos; }
     QVector3D workOffset() const { return m_workOffset; }
     QVector3D workPos() const { return m_machinePos - m_workOffset; }
-    ScriptVars& scriptVars() { return m_storedVars; }
+    MachineCoordinateCache& coordinateCache() { return m_coordCache; }
 
     // Resets positions to zero (called on connection reset).
     void reset();
@@ -49,5 +49,5 @@ private:
     Communicator* m_communicator;
     QVector3D m_machinePos;
     QVector3D m_workOffset;
-    ScriptVars m_storedVars;
+    MachineCoordinateCache m_coordCache;
 };

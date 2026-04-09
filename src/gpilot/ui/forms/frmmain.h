@@ -42,7 +42,6 @@
 #include "styledtoolbutton.h"
 #include "ui/forms/frmsettings.h"
 #include "ui/forms/frmabout.h"
-#include "core/scripting/scriptvars.h"
 #include "ui/widgets/dropwidget.h"
 #include "ui/utils/windowstaskbar.h"
 #include "ui/widgets/filedropoverlay.h"
@@ -247,7 +246,6 @@ private:
     //bool m_storedKeyboardControl;
 
     Configuration &m_configuration;
-    ScriptVars m_scriptVars;
 
     // Central widget management
     QList<CentralWidgetConfig> m_centralWidgets;
