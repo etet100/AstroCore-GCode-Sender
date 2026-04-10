@@ -15,10 +15,10 @@ PartMainState::~PartMainState()
     delete ui;
 }
 
-void PartMainState::setStatusText(QString status, QString bgColor, QString fgColor)
+void PartMainState::setStatusText(QString status, QColor bgColor, QColor fgColor)
 {
     ui->txtStatus->setText(status);
-    ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor, fgColor));
+    ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor.name(), fgColor.name()));
 }
 
 void PartMainState::setState(MachineState state)

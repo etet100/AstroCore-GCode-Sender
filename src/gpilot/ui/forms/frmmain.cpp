@@ -31,6 +31,7 @@
 #include "ui/forms/modals/dlgeditprogram.h"
 #include "ui/utils/thememanager.h"
 #include "ui/utils/shortcutsmanager.h"
+#include "ui/utils/statecolors.h"
 #include "modules/pendant/pendant.h"
 #include "modules/camera/camera.h"
 #include "ui_frmmain.h"
@@ -1918,7 +1919,11 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
 
 void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
 {
-    ui->state->setStatusText(sb->description(), "black", "white");
+    ui->state->setStatusText(
+        sb->description(),
+        colorForGroup(colorGroupForState(sb->type()), ThemeManager::instance().dark()),
+        "white"
+    );
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
     updateControlsState();
 }

@@ -18,7 +18,7 @@ public:
     void setWorkCoordinates(QVector3D) override;
     void setMachineCoordinates(QVector3D) override;
     void setUnits(Units units) override;
-    void setStatusText(QString, QString bgColor, QString fgColor) override;
+    void setStatusText(QString, QColor bgColor, QColor fgColor) override;
 
 private:
     Ui::partMainState *ui;

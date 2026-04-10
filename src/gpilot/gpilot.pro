@@ -245,6 +245,7 @@ SOURCES += main.cpp\
     ui/tables/heightmaptablemodel.cpp \
     ui/utils/flowlayout.cpp \
     ui/utils/shortcutsmanager.cpp \
+    ui/utils/statecolors.cpp \
     ui/utils/syntaxhighlighter.cpp \
     ui/utils/thememanager.cpp \
     ui/utils/windowstaskbar.cpp \
@@ -431,6 +432,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/heightmaptablemodel.h \
     ui/utils/flowlayout.h \
     ui/utils/shortcutsmanager.h \
+    ui/utils/statecolors.h \
     ui/utils/uipermissions.h \
     ui/utils/syntaxhighlighter.h \
     ui/utils/thememanager.h \

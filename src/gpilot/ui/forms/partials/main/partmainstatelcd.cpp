@@ -45,10 +45,10 @@ PartMainStateLcd::~PartMainStateLcd()
     delete ui;
 }
 
-void PartMainStateLcd::setStatusText(QString status, QString bgColor, QString fgColor)
+void PartMainStateLcd::setStatusText(QString status, QColor bgColor, QColor fgColor)
 {
     ui->txtStatus->setText(status);
-    ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor, fgColor));
+    ui->txtStatus->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgColor.name(), fgColor.name()));
 }
 
 void PartMainStateLcd::setConnectionName(QString name)

@@ -20,7 +20,7 @@ public:
     virtual void setWorkCoordinates(QVector3D pos) = 0;
     virtual void setMachineCoordinates(QVector3D pos) = 0;
     virtual void setUnits(Units units) = 0;
-    virtual void setStatusText(QString status, QString bgColor, QString fgColor) = 0;
+    virtual void setStatusText(QString status, QColor bgColor, QColor fgColor) = 0;
     virtual void setBehaviorName(QString n) { m_behaviorName = n; up(); }
     virtual void setMachineState(QString n) { m_machineState = n; up(); }
     virtual void setMachineStateReport(QString report) = 0;

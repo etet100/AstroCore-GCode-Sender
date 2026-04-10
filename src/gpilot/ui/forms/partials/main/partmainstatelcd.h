@@ -18,7 +18,7 @@ public:
     void setWorkCoordinates(QVector3D) override;
     void setMachineCoordinates(QVector3D) override;
     void setUnits(Units units) override;
-    void setStatusText(QString, QString bgColor, QString fgColor) override;
+    void setStatusText(QString status, QColor bgColor, QColor fgColor) override;
     void setConnectionName(QString name);
     void setConnectionState(bool connected);
     void setMachineStateReport(QString report);
