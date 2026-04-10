@@ -7,6 +7,9 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
+#include <QMatrix4x4>
+#include <QVector3D>
+#include <QQuaternion>
 #include "utils/utils.h"
 #include "ui/widgets/glpalette.h"
 
@@ -92,6 +95,12 @@ public:
     bool depthTestEnabled() { return m_depthTestEnabled; }
     void setPointSize(double pointSize);
 
+    void setTranslation(const QVector3D &translation);
+    void setRotation(float angle, const QVector3D &axis);
+    void setRotation(float x, float y, float z);
+    void setOrigin(const QVector3D &origin);
+    const QMatrix4x4& modelMatrix() const;
+
     QList<VertexData>& lines() { return m_lines; }
     virtual bool updateData(GLPalette &palette);
     void bindData(QOpenGLShaderProgram *shaderProgram);
@@ -115,10 +124,18 @@ protected:
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vbo; // Protected for direct vbo access
 
+    QMatrix4x4 m_modelMatrix;
+    QVector3D m_translation;
+    QQuaternion m_rotation;
+    QVector3D m_origin;
+
     void init();
     // it has to be called if asynchronous update of geometry is used
     void updateVerticesBuffers();
     virtual void bindAttributes(QOpenGLShaderProgram *&shaderProgram);
+
+private:
+    void rebuildModelMatrix();
 };
 
 #endif // SHADERDRAWABLE_H

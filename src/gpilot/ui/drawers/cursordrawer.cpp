@@ -134,7 +134,7 @@ void CursorDrawer::createTriangles(const float z, const int arcs, VertexData &ve
 bool CursorDrawer::updateData(GLPalette &palette)
 {
     const int arcs = 5;
-    const float z = m_position.z() + m_animation;
+    const float z = m_position.z();
 
     // Clear data
     m_lines.clear();
@@ -202,10 +202,7 @@ void CursorDrawer::setPosition(QPointF position)
 
 void CursorDrawer::setAnimation(float value)
 {
-    m_animation = value;
-    if (m_visible) {
-        update();
-    }
+    setTranslation(QVector3D(0, 0, value));
 }
 
 void CursorDrawer::setVisible(bool visible) {

@@ -28,7 +28,6 @@ class CursorDrawer : public QObject, public ShaderDrawable
         QVector3D m_position;
         double m_tipAngle;
         QColor m_color;
-        float m_animation;
 
         QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, GLuint color);
 

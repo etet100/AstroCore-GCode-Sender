@@ -8,6 +8,7 @@ precision mediump float;
 
 uniform mat4 u_mvp_matrix;
 uniform mat4 u_mv_matrix;
+uniform mat4 u_model_matrix;
 uniform vec3 u_light_position;
 uniform vec3 u_eye;
 uniform sampler2D u_palette;
@@ -39,7 +40,7 @@ void main()
         v_light_direction = vec3(0.0, 0.0, 0.0);
     }
 
-    gl_Position = u_mvp_matrix * vertex_position;
+    gl_Position = u_mvp_matrix * u_model_matrix * vertex_position;
 
     v_color = texture2D(u_palette, vec2(float(a_color) * (1.0 / 100.0) + (1.0 / 200.0), 0.0));
     v_eye = (vec4(u_eye, 1.0) * u_mvp_matrix).xyz;

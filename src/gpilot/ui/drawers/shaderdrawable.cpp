@@ -164,11 +164,52 @@ bool ShaderDrawable::needsUpdateGeometry() const
     return m_needsUpdateGeometry;
 }
 
+void ShaderDrawable::setTranslation(const QVector3D &translation)
+{
+    m_translation = translation;
+    rebuildModelMatrix();
+}
+
+void ShaderDrawable::setRotation(float angle, const QVector3D &axis)
+{
+    m_rotation = QQuaternion::fromAxisAndAngle(axis, angle);
+    rebuildModelMatrix();
+}
+
+void ShaderDrawable::setRotation(float x, float y, float z)
+{
+    m_rotation = QQuaternion::fromEulerAngles(x, y, z);
+    rebuildModelMatrix();
+}
+
+void ShaderDrawable::setOrigin(const QVector3D &origin)
+{
+    m_origin = origin;
+    rebuildModelMatrix();
+}
+
+const QMatrix4x4& ShaderDrawable::modelMatrix() const
+{
+    return m_modelMatrix;
+}
+
+void ShaderDrawable::rebuildModelMatrix()
+{
+    m_modelMatrix.setToIdentity();
+    // T(translation + origin) * R * T(-origin)
+    // Result: rotates around origin, then translates
+    m_modelMatrix.translate(m_translation + m_origin);
+    m_modelMatrix.rotate(m_rotation);
+    m_modelMatrix.translate(-m_origin);
+}
+
 void ShaderDrawable::draw(QOpenGLShaderProgram *shaderProgram)
 {
     if (!m_visible) {
         return;
     }
+
+    shaderProgram->setUniformValue("u_model_matrix", m_modelMatrix);
     if (m_vao.isCreated()) {
         m_vao.bind();
     } else {
