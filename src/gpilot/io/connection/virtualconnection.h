@@ -10,6 +10,7 @@
 #include <QLocalServer>
 #include <QAtomicInt>
 #include <QThread>
+#include <QPointer>
 #include "connection.h"
 
 // Base class for virtual (emulated) machine connections.
@@ -67,11 +68,12 @@ protected:
     QProcess* m_process = nullptr;
 #endif
 
-    QLocalSocket* m_socket        = nullptr;
-    QLocalSocket* m_controlSocket = nullptr;
-    QLocalServer* m_server        = nullptr;
+    QPointer<QLocalSocket> m_socket;
+    QPointer<QLocalSocket> m_controlSocket;
+    QPointer<QLocalServer> m_server;
     QString       m_incoming;
     QString       m_deviceName;
+    bool          m_isCleaningUp = false;
 
     void sendControlCommand(QJsonObject cmd);
 

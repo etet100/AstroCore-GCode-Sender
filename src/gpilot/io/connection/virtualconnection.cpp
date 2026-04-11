@@ -36,6 +36,8 @@ void VirtualConnection::startLocalServer()
 
 bool VirtualConnection::open()
 {
+    m_isCleaningUp = false;
+
     if (m_state == ConnectionState::Connecting) {
         return false;
     }
@@ -66,6 +68,12 @@ void VirtualConnection::close()
 
 void VirtualConnection::cleanup()
 {
+    if (m_isCleaningUp) {
+        return;
+    }
+
+    m_isCleaningUp = true;
+
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Closing connection";
 
     if (m_state == ConnectionState::Disconnected) {
@@ -75,24 +83,50 @@ void VirtualConnection::cleanup()
     setState(ConnectionState::Disconnected);
 
     if (m_socket != nullptr) {
-        if (m_socket->isOpen()) {
-            disconnect(m_socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
-            m_socket->abort();
-        }
-        delete m_socket;
+        QPointer<QLocalSocket> socket = m_socket;
         m_socket = nullptr;
+
+        disconnect(socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
+        disconnect(socket, &QLocalSocket::readyRead, this, &VirtualConnection::onReadyRead);
+        if (socket != nullptr) {
+            socket->blockSignals(true);
+        }
+        if (socket != nullptr && socket->isOpen()) {
+            socket->abort();
+            if (!socket->waitForDisconnected(5000)) {
+                qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Failed to disconnect socket cleanly!";
+            } else {
+                qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Socket disconnected cleanly.";
+            }
+        }
+        if (socket != nullptr) {
+            socket->deleteLater();
+        }
     }
     if (m_controlSocket != nullptr) {
-        if (m_controlSocket->isOpen()) {
-            disconnect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
-            m_controlSocket->abort();
-        }
-        delete m_controlSocket;
+        QPointer<QLocalSocket> controlSocket = m_controlSocket;
         m_controlSocket = nullptr;
+
+        disconnect(controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
+        if (controlSocket != nullptr) {
+            controlSocket->blockSignals(true);
+        }
+        if (controlSocket != nullptr && controlSocket->isOpen()) {
+            controlSocket->abort();
+            if (!controlSocket->waitForDisconnected(5000)) {
+                qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Failed to disconnect control socket cleanly!";
+            } else {
+                qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control socket disconnected cleanly.";
+            }
+        }
+        if (controlSocket != nullptr) {
+            controlSocket->deleteLater();
+        }
     }
     if (m_server != nullptr && m_server->isListening()) {
+        disconnect(m_server, &QLocalServer::newConnection, this, &VirtualConnection::onNewConnection);
         m_server->close();
-        delete m_server;
+        m_server->deleteLater();
         m_server = nullptr;
     }
 
@@ -175,8 +209,11 @@ void VirtualConnection::killProcess()
 // Data transfer
 void VirtualConnection::flushOutgoingData()
 {
-    if (!m_socket) {
-        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "No socket connection!";
+    if (m_isCleaningUp || !m_socket) {
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                 << "[Barrier] flushOutgoingData skipped."
+                 << "cleanup:" << m_isCleaningUp
+                 << "socketNull:" << (m_socket == nullptr);
 
         return;
     }
@@ -187,7 +224,14 @@ void VirtualConnection::flushOutgoingData()
 
 void VirtualConnection::sendByteArray(QByteArray byteArray)
 {
-    assert(m_socket != nullptr);
+    if (m_isCleaningUp || m_socket == nullptr) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                   << "[Barrier] sendByteArray ignored."
+                   << "cleanup:" << m_isCleaningUp
+                   << "socketNull:" << (m_socket == nullptr);
+
+        return;
+    }
 
     flushOutgoingData();
 
@@ -197,6 +241,15 @@ void VirtualConnection::sendByteArray(QByteArray byteArray)
 
 void VirtualConnection::sendLine(QString line)
 {
+    if (m_isCleaningUp || m_socket == nullptr) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                   << "[Barrier] sendLine ignored."
+                   << "cleanup:" << m_isCleaningUp
+                   << "socketNull:" << (m_socket == nullptr);
+
+        return;
+    }
+
     flushOutgoingData();
 
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << ">>" << line;
@@ -283,11 +336,21 @@ QString VirtualConnection::deviceName() const
 // Socket slots
 void VirtualConnection::onNewConnection()
 {
+    if (m_isCleaningUp || m_server == nullptr) {
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                 << "[Barrier] onNewConnection ignored."
+                 << "cleanup:" << m_isCleaningUp
+                 << "serverNull:" << (m_server == nullptr);
+
+        return;
+    }
+
     if (m_socket == nullptr) {
         qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Main connection received.";
 
         m_socket = m_server->nextPendingConnection();
-        connect(m_socket, &QIODevice::readyRead, this, &VirtualConnection::onReadyRead);
+        m_socket->setParent(this);
+        connect(m_socket, &QLocalSocket::readyRead, this, &VirtualConnection::onReadyRead);
         connect(m_socket, &QLocalSocket::disconnected, this, &VirtualConnection::onDisconnected);
 
         setState(ConnectionState::Connected);
@@ -295,6 +358,7 @@ void VirtualConnection::onNewConnection()
         qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Control connection received.";
 
         m_controlSocket = m_server->nextPendingConnection();
+        m_controlSocket->setParent(this);
         connect(m_controlSocket, &QLocalSocket::disconnected, this, &VirtualConnection::onControlDisconnected);
     } else {
         qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Too many connections, rejecting.";
@@ -307,7 +371,7 @@ void VirtualConnection::onNewConnection()
 void VirtualConnection::onDisconnected()
 {
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Disconnected.";
-    close();
+    cleanup();
 }
 
 void VirtualConnection::onControlDisconnected()
@@ -321,8 +385,28 @@ void VirtualConnection::onControlDisconnected()
 
 void VirtualConnection::onReadyRead()
 {
-    while (m_socket->bytesAvailable() > 0) {
-        m_incoming += m_socket->readAll();
+    if (m_isCleaningUp) {
+        return;
+    }
+
+    if (m_socket == nullptr) {
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "readyRead received with null socket.";
+
+        return;
+    }
+
+    while (true) {
+        QPointer<QLocalSocket> socket = m_socket;
+        if (socket == nullptr || !socket->isOpen()) {
+            return;
+        }
+
+        QByteArray chunk = socket->readAll();
+        if (chunk.isEmpty()) {
+            return;
+        }
+
+        m_incoming += chunk;
         processIncomingData();
     }
 }
