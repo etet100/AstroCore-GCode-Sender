@@ -62,6 +62,9 @@ public:
     // Returns coordinates of the given system by name (e.g. "M", "G54").
     QVector3D coords(const QString &name) const;
 
+    // Returns whether the last PROBE/HOME command was succesful
+    bool succesful(const QString &name) const;
+
     // Returns x/y/z for a named coordinate system.
     double x(const QString &name) const;
     double y(const QString &name) const;
@@ -76,11 +79,13 @@ public:
     int tool() const;
 
     void setCoords(const QString &name, QVector3D coords);
+    void setSuccesful(const QString &name, bool succesful);
     void setCS(const QString &cs);
     void setTool(int tool);
 
 private:
     QMap<QString, QVector3D> m_coords;
+    QMap<QString, bool> m_succesful;
     QString m_cs;
     int m_tool;
 };

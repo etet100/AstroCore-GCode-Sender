@@ -17,6 +17,9 @@ MachineCoordinateCache::MachineCoordinateCache()
     m_coords["G92"] = QVector3D();
     m_coords["TLO"] = QVector3D();
     m_coords["PRB"] = QVector3D();
+
+    m_succesful["PRB"] = false;
+    m_succesful["HOME"] = false;
 }
 
 double MachineCoordinateCache::G54x() const { return m_coords["G54"].x(); }
@@ -68,6 +71,11 @@ QVector3D MachineCoordinateCache::coords(const QString &name) const
     return m_coords.value(name, QVector3D());
 }
 
+bool MachineCoordinateCache::succesful(const QString &name) const
+{
+    return m_succesful.value(name, false);
+}
+
 double MachineCoordinateCache::x(const QString &name) const { return coords(name).x(); }
 double MachineCoordinateCache::y(const QString &name) const { return coords(name).y(); }
 double MachineCoordinateCache::z(const QString &name) const { return coords(name).z(); }
@@ -82,6 +90,11 @@ int MachineCoordinateCache::tool() const { return m_tool; }
 void MachineCoordinateCache::setCoords(const QString &name, QVector3D coords)
 {
     m_coords[name] = coords;
+}
+
+void MachineCoordinateCache::setSuccesful(const QString &name, bool succesful)
+{
+    m_succesful[name] = succesful;
 }
 
 void MachineCoordinateCache::setCS(const QString &cs)

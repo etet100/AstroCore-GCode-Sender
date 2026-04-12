@@ -124,7 +124,7 @@ void PositionTracker::processOffsetsVars(const QStringList& response)
         }
 
         QStringList parts = line.split(":");
-        if (parts.size() != 2 && parts[0] != "PRB") {
+        if (parts.size() != 2 && parts[0] != "PRB" && parts[0] != "HOME") {
             qDebug() << "[PositionTracker] Bad offsets format:" << line;
             assert(false);
             return;
@@ -140,6 +140,12 @@ void PositionTracker::processOffsetsVars(const QStringList& response)
         if (parts[0] == "G92") {
             qDebug() << "[PositionTracker] G92 offset updated";
             m_workOffset = pos;
+        }
+
+        // PRB and HOME have third value which indicates if last probing/home was successful — store it
+        // in cache for later use.
+        if ((parts[0] == "PRB" || parts[0] == "HOME") && parts.size() == 3) {
+            m_coordCache.setSuccesful(parts[0], parts[2].toInt() == 1);
         }
 
         m_coordCache.setCoords(parts[0], pos);
