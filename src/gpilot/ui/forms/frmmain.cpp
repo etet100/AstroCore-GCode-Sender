@@ -46,9 +46,9 @@
 #include "core/utils/filesmanager.h"
 #include "modules/ai/openaimanager.h"
 #include "core/state_behavior/action.h"
-#include "core/state_behavior/joggingbehavior.h"
-#include "core/state_behavior/gotobehavior.h"
-#include "core/state_behavior/reconnectingbehavior.h"
+// #include "core/state_behavior/joggingbehavior.h"
+// #include "core/state_behavior/gotobehavior.h"
+// #include "core/state_behavior/reconnectingbehavior.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
@@ -308,10 +308,17 @@ void FrmMain::initializeStatePanel()
     connect(ui->state, &PartMainStateBase::disconnectClicked, this, [this]() {
         m_communicator->sb()->action(Action::Disconnect);
     });
-
     connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
         updateLayouts();
         ui->state->setVisible(checked);
+    });
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
+        StateBehavior* sb = m_communicator->stateBehavior();
+        ui->state->setStatusText(
+            sb->description(),
+            colorForGroup(colorGroupForState(sb->type()), dark),
+            dark ? "black" : "white"
+        );
     });
 }
 
@@ -1927,7 +1934,7 @@ void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
     ui->state->setStatusText(
         sb->description(),
         colorForGroup(colorGroupForState(sb->type()), ThemeManager::instance().dark()),
-        "white"
+        ThemeManager::instance().dark() ? "black" : "white"
     );
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
     updateControlsState();
