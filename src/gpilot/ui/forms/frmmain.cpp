@@ -1392,7 +1392,7 @@ void FrmMain::useHeightmapToggled(bool checked)
 //                     }
 //                 }
 
-//                 if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
+//                 if (progress.isVisible() && (i % PROGRESS_STEP == 0)) {
 //                     progress.setMaximum(list->count() - 1);
 //                     progress.setValue(i);
 //                     qApp->processEvents();
@@ -1416,7 +1416,7 @@ void FrmMain::useHeightmapToggled(bool checked)
 //                 z = list->at(i)->getEnd().z() + Interpolation::bicubicInterpolate(borderRect, &m_heightmapModel, x, y);
 //                 list->at(i)->setEnd(QVector3D(x, y, z));
 
-//                 if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
+//                 if (progress.isVisible() && (i % PROGRESS_STEP == 0)) {
 //                     progress.setValue(i);
 //                     qApp->processEvents();
 //                     if (progress.wasCanceled()) throw cancel;
@@ -1523,7 +1523,7 @@ void FrmMain::useHeightmapToggled(bool checked)
 //                 }
 //                 lastCommandIndex = lineNumber;
 
-//                 if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
+//                 if (progress.isVisible() && (i % PROGRESS_STEP == 0)) {
 //                     progress.setValue(i);
 //                     qApp->processEvents();
 //                     if (progress.wasCanceled()) throw cancel;
@@ -2536,7 +2536,7 @@ void FrmMain::updateParser()
     // progress.setWindowModality(Qt::WindowModal);
     // progress.setFixedSize(progress.sizeHint());
 
-    // if (ui->program->currentModelRowCount() > PROGRESSMINLINES) {
+    // if (ui->program->currentModelRowCount() > PROGRESS_MIN_LINES) {
     //     progress.show();
     //     progress.setStyleSheet("QProgressBar {text-align: center; qproperty-format: \"\"}");
     // }
@@ -2560,7 +2560,7 @@ void FrmMain::updateParser()
     //     (*m_currentProgram)[i].response = QString();
     //     (*m_currentProgram)[i].lineNumber = parser.getCommandNumber();
 
-    //     if (progress.isVisible() && (i % PROGRESSSTEP == 0)) {
+    //     if (progress.isVisible() && (i % PROGRESS_STEP == 0)) {
     //         progress.setValue(i);
     //         qApp->processEvents();
     //         if (progress.wasCanceled()) break;

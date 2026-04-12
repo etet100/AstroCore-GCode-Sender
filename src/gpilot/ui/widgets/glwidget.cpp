@@ -16,7 +16,7 @@
 
 //1 = old/classic, 2 = new
 #define NAV_MODE 2
-#define ZOOMSTEP 1.1
+#define ZOOM_STEP 1.1
 #define DEFAULT_ZOOM 200
 #if NAV_MODE == 1
     #define MIN_ZOOM  0.2
@@ -1364,9 +1364,9 @@ void GLWidget::wheelEvent(QWheelEvent *we)
     int delta = we->angleDelta().y();
 #if NAV_MODE == 1
     if (m_zoomDistance > MIN_ZOOM && delta < 0) {
-        m_zoomDistance /= ZOOMSTEP;
+        m_zoomDistance /= ZOOM_STEP;
     } else if (delta > 0) {
-        m_zoomDistance *= ZOOMSTEP;
+        m_zoomDistance *= ZOOM_STEP;
     }
 
     if (m_mode != ViewMode::Perspective) {
@@ -1376,7 +1376,7 @@ void GLWidget::wheelEvent(QWheelEvent *we)
     }
 #endif
 #if NAV_MODE == 2
-    double zoomStep = (delta > 0) ? ZOOMSTEP : 1.0 / ZOOMSTEP;
+    double zoomStep = (delta > 0) ? ZOOM_STEP : 1.0 / ZOOM_STEP;
     if (m_mode == ViewMode::Perspective) {
         // Move the camera and lookAt point along the view direction
         QVector3D viewDir = (m_lookAt - m_eye).normalized();

@@ -197,8 +197,8 @@ protected:
     QMenu *createPopupMenu() override;
 
 private:
-    static const int PROGRESSMINLINES = 10000;
-    static const int PROGRESSSTEP = 1000;
+    static const int PROGRESS_MIN_LINES = 10000;
+    static const int PROGRESS_STEP = 1000;
 
     // Ui
     Ui::frmMain *ui;
