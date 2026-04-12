@@ -210,11 +210,6 @@ void VirtualConnection::killProcess()
 void VirtualConnection::flushOutgoingData()
 {
     if (m_isCleaningUp || !m_socket) {
-        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
-                 << "[Barrier] flushOutgoingData skipped."
-                 << "cleanup:" << m_isCleaningUp
-                 << "socketNull:" << (m_socket == nullptr);
-
         return;
     }
     if (m_socket->bytesToWrite()) {
@@ -225,10 +220,7 @@ void VirtualConnection::flushOutgoingData()
 void VirtualConnection::sendByteArray(QByteArray byteArray)
 {
     if (m_isCleaningUp || m_socket == nullptr) {
-        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
-                   << "[Barrier] sendByteArray ignored."
-                   << "cleanup:" << m_isCleaningUp
-                   << "socketNull:" << (m_socket == nullptr);
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "sendByteArray ignored, socket not available.";
 
         return;
     }
@@ -242,10 +234,7 @@ void VirtualConnection::sendByteArray(QByteArray byteArray)
 void VirtualConnection::sendLine(QString line)
 {
     if (m_isCleaningUp || m_socket == nullptr) {
-        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
-                   << "[Barrier] sendLine ignored."
-                   << "cleanup:" << m_isCleaningUp
-                   << "socketNull:" << (m_socket == nullptr);
+        qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "sendLine ignored, socket not available.";
 
         return;
     }
@@ -337,11 +326,6 @@ QString VirtualConnection::deviceName() const
 void VirtualConnection::onNewConnection()
 {
     if (m_isCleaningUp || m_server == nullptr) {
-        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
-                 << "[Barrier] onNewConnection ignored."
-                 << "cleanup:" << m_isCleaningUp
-                 << "serverNull:" << (m_server == nullptr);
-
         return;
     }
 
