@@ -2791,7 +2791,7 @@ void FrmMain::updateControlsState()
     // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
     // TODO: add Action::Jog to ToolChangeBehavior::availableActions(), then simplify to sb->canExecute(Action::Jog)
-    ui->jog->setEnabled(portOpened && (idle || sb->is(StateBehavior::Type::ToolChange)));
+    ui->jog->setEnabled(sb->isOneOf(StateBehavior::Type::Idle, StateBehavior::Type::GoTo, StateBehavior::Type::Jogging));
 
     ui->console->setEnabled(portOpened && !m_configuration.joggingModule().keyboardControl());
     // ui->cmdCommandSend->setEnabled(portOpened);

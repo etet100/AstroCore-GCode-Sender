@@ -90,6 +90,11 @@ class StateBehavior : public QObject
             return type() == t;
         }
 
+        template<typename... Args>
+        bool isOneOf(Args... types) const {
+            return ((type() == types) || ...);
+        }
+
         virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
             Q_UNUSED(forced);
