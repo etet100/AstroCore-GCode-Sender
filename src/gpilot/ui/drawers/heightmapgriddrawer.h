@@ -52,12 +52,15 @@ class HeightMapGridDrawer : public ShaderDrawable
         bool updateData(GLPalette &palette) override;
 
     private:
+        static constexpr int SUBDIVISIONS_PER_CELL = 5;
+
         Heightmap* m_model;
         HeightMapGridBillboardDrawer m_billboardDrawable;
         Heightmap::InterpolationMode m_interpolationMode;
         void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
+        HeightmapInterpolator* createInterpolator();
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H
