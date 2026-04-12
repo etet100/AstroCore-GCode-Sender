@@ -508,6 +508,11 @@ void FrmMain::initializeVisualizerPanel()
         dialog->open();
     });
     connect(ui->visualizer, &PartMainVisualizer::goToCursor, this, [this](QPointF pos) {
+        QString text = QString("Are you sure you want to move machine to %1, %2?").arg(pos.x(), 2).arg(pos.y(), 2);
+        if (QMessageBox::question(this, "Go to...", text) == QMessageBox::No) {
+            return;
+        }
+
         m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
 }
