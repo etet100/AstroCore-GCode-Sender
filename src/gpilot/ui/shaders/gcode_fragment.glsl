@@ -11,21 +11,27 @@ in vec3 v_normal;
 in vec3 v_light_direction;
 in vec3 v_eye;
 in float v_log_depth;
-in float v_cumSegPosition;
-
-uniform sampler2D u_texture;
+noperspective in float v_cumSegPosition;
 
 out vec4 fragColor;
 
-float dashLength = 0.5;
-float gapLength = 0.3;
-float totalPatternLength = dashLength + gapLength;
+// Dash pattern in screen-space pixels
+float dashPixels = 10.0;
+float gapPixels = 6.0;
 
 void main()
 {
-    float patternPos = mod(v_cumSegPosition, totalPatternLength);
-    if (v_cumSegPosition >= 0 && patternPos > dashLength) {
-        discard;
+    if (v_cumSegPosition >= 0.0) {
+        float worldPerPixel = fwidth(v_cumSegPosition);
+        if (worldPerPixel > 0.0) {
+            float dashWorld = dashPixels * worldPerPixel;
+            float gapWorld = gapPixels * worldPerPixel;
+            float totalPattern = dashWorld + gapWorld;
+            float patternPos = mod(v_cumSegPosition, totalPattern);
+            if (patternPos > dashWorld) {
+                discard;
+            }
+        }
     }
 
     vec3 viewDir = normalize(-v_eye);

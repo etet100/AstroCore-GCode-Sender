@@ -24,7 +24,7 @@ out vec4 v_color;
 out vec3 v_normal;
 out vec3 v_light_direction;
 out vec3 v_eye;
-out float v_cumSegPosition;
+noperspective out float v_cumSegPosition;
 
 void main()
 {
