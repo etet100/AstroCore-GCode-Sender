@@ -23,7 +23,7 @@ public:
         return { Action::Disconnect };
     }
 
-    Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+    Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
     void onMachineStateChanged(MachineState state) override;
     void onAlarm(int code) override;
 

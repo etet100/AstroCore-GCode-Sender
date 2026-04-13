@@ -13,12 +13,12 @@ QString ErrorBehavior::description()
     return QString("Err: %1").arg(m_error);
 }
 
-StateBehavior::Result ErrorBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ErrorBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     return Result::Ok;
 }
 
-StateBehavior::Result ErrorBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ErrorBehavior::doOnExit(StateBehavior *next)
 {
     return Result::Ok;
 }

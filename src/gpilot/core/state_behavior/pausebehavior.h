@@ -30,8 +30,8 @@ class PauseBehavior : public StateBehavior
         QSet<Action::Type> availableActions() const override {
             return { Action::Resume };
         }
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-        Result onExit(StateBehavior *next = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        Result doOnExit(StateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         // Lets next behavior know whether to resume or stop

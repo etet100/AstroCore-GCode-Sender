@@ -11,10 +11,9 @@ ExternalProcessBehavior::ExternalProcessBehavior(QObject *parent)
 
 QString ExternalProcessBehavior::description() { return "External process"; }
 
-StateBehavior::Result ExternalProcessBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ExternalProcessBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][ExternalProcess] Entry — machine is running an external process.";
-    StateBehavior::onEntry(communicator, previous);
 
     log("[ExternalProcess] Machine is executing an external process. Monitoring state.");
     m_communicator->startQueryingMachineState();

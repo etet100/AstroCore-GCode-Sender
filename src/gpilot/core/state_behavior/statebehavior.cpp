@@ -52,12 +52,12 @@ StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
 
 void StateBehavior::reset()
 {
-    emit transition(this, new ResetBehavior(this));
+    emit transition(this, new ResetBehavior());
 }
 
 void StateBehavior::disconnectAction()
 {
-    emit transition(this, new DisconnectionBehavior(this));
+    emit transition(this, new DisconnectionBehavior());
 }
 
 void StateBehavior::onMachineState(MachineState state) {
@@ -79,6 +79,8 @@ void StateBehavior::onMachineState(MachineState state) {
         }
         entry.callback(state);
     }
+
+    doOnMachineState(state);
 }
 
 StateBehavior::Result StateBehavior::onRawResponse(QString response) {
@@ -98,14 +100,13 @@ StateBehavior::Result StateBehavior::onRawResponse(QString response) {
 
 StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
 {
-    Q_UNUSED(next);
     m_communicator->stopQueryingMachineState();
     stopTimer();
     clearAllTimeouts();
     m_stateResponseCallbacks.clear();
     emit asyncCompleted();
 
-    return Result::Ok;
+    return doOnExit(next);
 }
 
 void StateBehavior::stopTimer()
@@ -135,15 +136,13 @@ void StateBehavior::clearAllTimeouts()
     m_timers.clear();
 }
 
-StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-    if (previous) {
-        m_previous = previous;
-    }
-
     m_communicator = communicator;
+    m_exitData.clear();
+    m_previousType = ctx.previousType;
 
-    return Result::Ok;
+    return doOnEntry(communicator, ctx);
 }
 
 int StateBehavior::waitForStateResponse(StateResponseCallback callback, MachineState targetState, int milliseconds)
@@ -280,14 +279,6 @@ QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::sendAndA
     auto r = m_communicator->sendCommand(CommandSource::StateBehavior, command, TABLE_INDEX_UI);
 
     co_return co_await awaitResponse(r.commandIndex, timeout);
-}
-
-bool StateBehavior::transitionToPreviousState() {
-    if (m_previous) {
-        emit transition(this, m_previous);
-    }
-
-    return (bool) m_previous;
 }
 
 int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)

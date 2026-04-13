@@ -67,6 +67,23 @@ class StateBehavior : public QObject
             ToolChange,
         };
 
+        // Transition semantics for the `transition` signal.
+        // Replace: current behavior ends; the suspended stack is flushed.
+        // Suspend: current behavior is pushed onto the suspended stack and
+        //          can be brought back via `resumePrevious`.
+        enum class TransitionKind {
+            Replace,
+            Suspend,
+        };
+
+        // Context handed to a behavior's onEntry. previousType is nullopt on the
+        // very first state activation. data is the exit payload of the previous
+        // behavior (or the resuming one, for Resume transitions).
+        struct EntryContext {
+            std::optional<Type> previousType;
+            QVariantMap data;
+        };
+
         explicit StateBehavior(QObject *parent = nullptr);
         virtual QString description() = 0;
         virtual Type type() const = 0;
@@ -104,10 +121,15 @@ class StateBehavior : public QObject
         // async exit means that onExit will emit exitCompleted signal when done
         // virtual bool exitAsync() { return false; };
 
-        StateBehavior* previous() const { return m_previous; }
+        // NVI: these run base setup/cleanup and then call the protected doOn* hook.
+        // Derived classes override the hook, not these methods.
+        Result onEntry(CommunicatorApi *communicator, const EntryContext &ctx = {});
+        Result onExit(StateBehavior *next = nullptr);
 
-        virtual Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) = 0;
-        virtual Result onExit(StateBehavior *next = nullptr);
+        // Payload accumulated during the behavior's lifetime. The StateBehaviorManager
+        // reads it at transition/resume time and passes it to the successor as
+        // EntryContext::data.
+        const QVariantMap& exitData() const { return m_exitData; }
 
         // Default: logs the alarm, sets m_alarmOccurred/m_alarmCode, and wakes any
         // co_awaiting coroutine via commandResponseReceived.
@@ -118,8 +140,8 @@ class StateBehavior : public QObject
 
         using StateResponseCallback = std::function<void(MachineState)>;
 
-        // if overriden, do not forget to call StateBehavior::onMachineState(state)
-        virtual void onMachineState(MachineState state);
+        // NVI: dispatches m_stateResponseCallbacks then calls doOnMachineState hook.
+        void onMachineState(MachineState state);
 
         // returns true if the response was handled and should not be processed further, for example
         // passed to onCommandResponse.
@@ -143,7 +165,9 @@ class StateBehavior : public QObject
         void clearWaitForStateResponse(int id);
 
     signals:
-        void transition(StateBehavior *state, StateBehavior *newState);
+        void transition(StateBehavior *state, StateBehavior *newState,
+                        StateBehavior::TransitionKind kind = StateBehavior::TransitionKind::Replace);
+        void resumePrevious();
         void error(StateBehavior *state, QString message);
         void logSignal(QString message);
         void asyncCompleted();
@@ -163,9 +187,14 @@ class StateBehavior : public QObject
         void machineStateChangedSignal(MachineState state);
 
     protected:
-        StateBehavior *m_previous = nullptr;
         QPointer<CommunicatorApi> m_communicator = nullptr;
         QTimer *m_timer = nullptr;
+        QVariantMap m_exitData;
+        std::optional<Type> m_previousType;  // set by base onEntry from EntryContext
+
+        // Helpers to accumulate the exit payload during the behavior's work.
+        void setExitValue(const QString &key, const QVariant &value) { m_exitData.insert(key, value); }
+        void clearExitData() { m_exitData.clear(); }
 
         bool m_alarmOccurred = false;
         int m_alarmCode = 0;
@@ -197,7 +226,19 @@ class StateBehavior : public QObject
             return false;
         }
 
-        bool transitionToPreviousState();
+        // NVI hooks — override these instead of the public on*() methods.
+        // The base class runs setup before doOnEntry and cleanup before doOnExit;
+        // doOnMachineState fires after m_stateResponseCallbacks are dispatched.
+        virtual Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) {
+            Q_UNUSED(communicator);
+            Q_UNUSED(ctx);
+            return Result::Ok;
+        }
+        virtual Result doOnExit(StateBehavior *next) {
+            Q_UNUSED(next);
+            return Result::Ok;
+        }
+        virtual void doOnMachineState(MachineState state) { Q_UNUSED(state); }
 
         int setTimeout(int milliseconds, std::function<void()> callback = nullptr);
         void clearTimeout(int id);

@@ -36,8 +36,8 @@ class ProbingBehavior : public StateBehavior
         explicit ProbingBehavior(ProbeParameters params, QObject* parent = nullptr);
         QString description() override;
         Type type() const override { return Type::Probing; }
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-        Result onExit(StateBehavior *next = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        Result doOnExit(StateBehavior *next) override;
 
         QVector3D probedPosition() const { return m_probedPosition; }
         bool wasSuccessful() const { return m_success; }

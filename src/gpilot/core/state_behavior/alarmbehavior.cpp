@@ -35,10 +35,9 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result AlarmBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result AlarmBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Alarm] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     // Can send alarm state query if the controller supports it
     // m_communicator->sendCommand(CommandSource::System, "$?", TABLE_INDEX_UI);

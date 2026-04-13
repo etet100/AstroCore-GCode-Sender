@@ -29,9 +29,8 @@ QString HoldBehavior::description()
     }
 }
 
-StateBehavior::Result HoldBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result HoldBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-    StateBehavior::onEntry(communicator, previous);
 
     qDebug() << "[Behavior][Hold] Entering feed hold state.";
 
@@ -43,11 +42,11 @@ StateBehavior::Result HoldBehavior::onEntry(CommunicatorApi *communicator, State
     return Result::Ok;
 }
 
-StateBehavior::Result HoldBehavior::onExit(StateBehavior *next)
+StateBehavior::Result HoldBehavior::doOnExit(StateBehavior *next)
 {
     Q_UNUSED(next);
     qDebug() << "[Behavior][Hold] Exiting feed hold state.";
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void HoldBehavior::onMachineStateChanged(MachineState state)
@@ -56,9 +55,9 @@ void HoldBehavior::onMachineStateChanged(MachineState state)
         qDebug() << "[Behavior][Hold] Machine resumed. Checking previous state.";
 
         // Return to previous state if it was running
-        if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {
+        if (m_previousType == Type::Running) {
             // Don't create new behavior, just signal that hold is released
-            emit transition(this, m_previous);
+            emit resumePrevious();
         } else {
             // Otherwise go to idle
             emit transition(this, new IdleBehavior());

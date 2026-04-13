@@ -11,15 +11,14 @@ GoToBehavior::GoToBehavior(QPointF target, int feedRate, QObject *parent)
     , m_feedRate(feedRate)
 {}
 
-void GoToBehavior::onMachineState(MachineState state)
+void GoToBehavior::doOnMachineState(MachineState state)
 {
-    StateBehavior::onMachineState(state);
 
     if (m_stage == CommandSent && (state == MachineState::Jog || state == MachineState::Run)) {
         m_stage = WaitingForMovementEnd;
         // // Movement completed, return to previous state or idle
         // if (m_previous) {
-        //     emit transition(this, m_previous);
+        //     emit resumePrevious();
         // } else {
         //     emit transition(this, new IdleBehavior(this));
         // }
@@ -27,7 +26,7 @@ void GoToBehavior::onMachineState(MachineState state)
         m_stage = Completed;
         m_communicator->stopQueryingMachineState();
 
-        transitionToPreviousState();
+        emit resumePrevious();
     }
 }
 
@@ -76,7 +75,7 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
         qDebug() << "[Behavior][GoTo] Command Error:" << cmdStatus.errorCode;
         log("Go to command failed with error " + QString::number(cmdStatus.errorCode), {"Behavior", "GoTo"});
 
-        transitionToPreviousState();
+        emit resumePrevious();
 
         return Result::Ok;
     }
@@ -86,10 +85,9 @@ StateBehavior::Result GoToBehavior::onCommandResponse(QString command, CommandAt
     return Result::Ok;
 }
 
-StateBehavior::Result GoToBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result GoToBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][GoTo] Entry with target:" << m_target << "feed rate:" << m_feedRate;
-    StateBehavior::onEntry(communicator, previous);
 
     // QString cmd = QString("G1 X%1 Y%2 F%3")
     QString cmd = QString("$J=G90 X%1 Y%2 F%3")

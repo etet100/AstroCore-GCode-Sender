@@ -21,10 +21,10 @@ public:
     QString description() override;
     Type type() const override { return Type::Handshake; }
 
-    Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-    Result onExit(StateBehavior *next = nullptr) override;
+    Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+    Result doOnExit(StateBehavior *next) override;
     Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
-    void onMachineState(MachineState state) override;
+    void doOnMachineState(MachineState state) override;
 
 protected:
     QString name() const override { return "Handshake"; }

@@ -19,8 +19,8 @@ class CheckModeBehavior : public StateBehavior
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-        Result onExit(StateBehavior *next = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        Result doOnExit(StateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;

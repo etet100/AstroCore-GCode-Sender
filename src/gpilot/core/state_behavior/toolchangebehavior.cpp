@@ -35,9 +35,8 @@ QString ToolChangeBehavior::description()
     }
 }
 
-StateBehavior::Result ToolChangeBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ToolChangeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-    StateBehavior::onEntry(communicator, previous);
 
     qDebug() << "[Behavior][ToolChange] Tool change requested for tool:" << m_toolNumber;
 
@@ -55,11 +54,11 @@ StateBehavior::Result ToolChangeBehavior::onEntry(CommunicatorApi *communicator,
     return Result::Ok;
 }
 
-StateBehavior::Result ToolChangeBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ToolChangeBehavior::doOnExit(StateBehavior *next)
 {
     Q_UNUSED(next);
     qDebug() << "[Behavior][ToolChange] Exiting tool change state.";
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void ToolChangeBehavior::onMachineStateChanged(MachineState state)
@@ -158,8 +157,8 @@ void ToolChangeBehavior::complete()
     emit stateEvent("toolChangeCompleted", {{"toolNumber", m_toolNumber}});
 
     // Return to previous state (usually RunningBehavior) or IdleBehavior
-    if (m_previous && dynamic_cast<RunningBehavior*>(m_previous)) {
-        emit transition(this, m_previous);
+    if (m_previousType == Type::Running) {
+        emit resumePrevious();
     } else {
         emit transition(this, new IdleBehavior());
     }

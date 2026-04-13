@@ -20,11 +20,12 @@ QString ProbingBehavior::description()
     return QString("Probing - %1").arg(m_stageDescription);
 }
 
-StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ProbingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Probing] Entry - starting probing sequence"
              << (m_params.doubleProbe ? "(two-phase)" : "");
-    StateBehavior::onEntry(communicator, previous);
+
+    setExitValue("success", false);
 
     m_communicator->startQueryingMachineState();
     m_probingTask = runProbingSequence();
@@ -32,14 +33,14 @@ StateBehavior::Result ProbingBehavior::onEntry(CommunicatorApi *communicator, St
     return StateBehavior::Result::Ok;
 }
 
-StateBehavior::Result ProbingBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ProbingBehavior::doOnExit(StateBehavior *next)
 {
     qDebug() << "[Behavior][Probing] Exit";
 
     m_probingTask.reset();
     m_communicator->stopQueryingMachineState();
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,7 +58,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     if (!r) {
         log("Timeout during initial setup", {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", "Timeout during setup"}});
-        transitionToPreviousState();
+        emit resumePrevious();
         co_return;
     }
     if (m_alarmOccurred) {
@@ -69,7 +70,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     if (!r->status.ok) {
         log(QString("Setup error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", "Setup command failed"}});
-        transitionToPreviousState();
+        emit resumePrevious();
         co_return;
     }
 
@@ -88,7 +89,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
-        transitionToPreviousState();
+        emit resumePrevious();
         co_return;
     }
     if (m_alarmOccurred) {
@@ -108,7 +109,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
-        transitionToPreviousState();
+        emit resumePrevious();
         co_return;
     }
 
@@ -119,7 +120,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         if (m_params.useAbsolute) {
             co_await sendAndAwait("G90", m_params.setupTimeout);
         }
-        transitionToPreviousState();
+        emit resumePrevious();
         co_return;
     }
 
@@ -143,7 +144,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
-            transitionToPreviousState();
+            emit resumePrevious();
         }
         co_return;
     }
@@ -167,7 +168,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
-            transitionToPreviousState();
+            emit resumePrevious();
             co_return;
         }
         if (m_alarmOccurred) {
@@ -187,7 +188,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
-            transitionToPreviousState();
+            emit resumePrevious();
             co_return;
         }
 
@@ -198,7 +199,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
             }
-            transitionToPreviousState();
+            emit resumePrevious();
             co_return;
         }
 
@@ -208,6 +209,10 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     m_probedPosition = finalPosition;
     m_success = true;
+    setExitValue("success", true);
+    setExitValue("x", m_probedPosition.x());
+    setExitValue("y", m_probedPosition.y());
+    setExitValue("z", m_probedPosition.z());
     emit stateEvent("probeCompleted", {{"x", m_probedPosition.x()}, {"y", m_probedPosition.y()}, {"z", m_probedPosition.z()}});
 
     // ── Step 5: Set Z=0 at probe position (optional) ────────────────
@@ -238,5 +243,5 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     // ── Done ─────────────────────────────────────────────────────────
     m_stageDescription = "Completed";
     log("Probing completed successfully", {"Probing"});
-    transitionToPreviousState();
+    emit resumePrevious();
 }

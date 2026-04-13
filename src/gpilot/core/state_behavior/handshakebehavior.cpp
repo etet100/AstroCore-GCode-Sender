@@ -11,26 +11,24 @@ HandshakeBehavior::HandshakeBehavior(QObject *parent)
 
 QString HandshakeBehavior::description() { return "Handshake"; }
 
-StateBehavior::Result HandshakeBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result HandshakeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Handshake] Entry — querying machine state.";
-    StateBehavior::onEntry(communicator, previous);
 
     m_communicator->startQueryingMachineState();
 
     return Result::Ok;
 }
 
-StateBehavior::Result HandshakeBehavior::onExit(StateBehavior *next)
+StateBehavior::Result HandshakeBehavior::doOnExit(StateBehavior *next)
 {
     qDebug() << "[Behavior][Handshake] Exit.";
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
-void HandshakeBehavior::onMachineState(MachineState state)
+void HandshakeBehavior::doOnMachineState(MachineState state)
 {
-    StateBehavior::onMachineState(state);
 
     if (m_stage != QueryingState) {
         return;

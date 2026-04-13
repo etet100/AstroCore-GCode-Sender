@@ -235,12 +235,21 @@ void Communicator::queryMachineConfiguration()
 // Process new state requested by the current state behavior.
 void Communicator::processStateBehaviorTransition()
 {
+    if (m_sbManager.hasPendingResume()) {
+        assert(m_sbManager.current() != nullptr);
+        m_sbManager.clearPendingResume();
+        m_sbManager.resumePrevious(m_comApi);
+
+        return;
+    }
+
     if (m_sbManager.hasPendingTransition()) {
         assert(m_sbManager.current() != nullptr);
         // Clear to avoid re-entrance.
         StateBehavior *nsb = m_sbManager.next();
+        StateBehavior::TransitionKind kind = m_sbManager.pendingTransitionKind();
         m_sbManager.requestTransition(nullptr);
-        m_sbManager.execute(nsb, true, m_comApi);
+        m_sbManager.execute(nsb, true, m_comApi, kind);
     }
 }
 
@@ -375,11 +384,6 @@ bool Communicator::execute(StateBehavior *sb, bool force)
     return m_sbManager.execute(sb, force, m_comApi);
 }
 
-bool Communicator::finalizeExecute(StateBehavior *sb)
-{
-    return m_sbManager.finalizeExecute(sb, m_comApi);
-}
-
 double Communicator::toMetric(double value)
 {
     return m_machineConfiguration->units() == Units::Millimeters ? value : value * 25.4;
@@ -431,10 +435,19 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
     emit connectionStateChanged(state);
 }
 
-void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb)
+void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb,
+                                              StateBehavior::TransitionKind kind)
 {
-    qDebug() << "[Communicator] State transition requested from " << sb->description() << " to " << nsb->description();
-    m_sbManager.requestTransition(nsb);
+    qDebug() << "[Communicator] State transition requested from " << sb->description()
+             << " to " << nsb->description()
+             << (kind == StateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
+    m_sbManager.requestTransition(nsb, kind);
+}
+
+void Communicator::onStateRequestsResume()
+{
+    qDebug() << "[Communicator] State resume requested";
+    m_sbManager.requestResume();
 }
 
 void Communicator::onStateError(StateBehavior *sb, QString message)

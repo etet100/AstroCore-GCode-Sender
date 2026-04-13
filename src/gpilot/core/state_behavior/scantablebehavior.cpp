@@ -26,9 +26,8 @@ QString ScanTableBehavior::description()
     return "Scanning table";
 }
 
-StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-    StateBehavior::onEntry(communicator, previous);
 
     if (m_phase == Stage::Initial) {
         m_grid = m_heightmap->probePoints(m_startPos, m_scanMode);
@@ -67,12 +66,11 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
 
     } else if (m_phase == Stage::Probing) {
         // ── Returned from ProbingBehavior ───────────────────────────────────
-        auto *prob = qobject_cast<ProbingBehavior*>(previous);
         QPointF pt = m_grid[m_currentPoint];
         auto [ix, iy] = m_heightmap->gridIndices(pt);
 
-        if (prob && prob->wasSuccessful()) {
-            double z = prob->probedPosition().z();
+        if (ctx.data.value("success").toBool()) {
+            double z = ctx.data.value("z").toDouble();
             m_heightmap->setHeightAt(QPoint(ix, iy), z);
             log(QString("Point (%1,%2): Z=%3").arg(ix).arg(iy).arg(z, 0, 'f', 3), {"ScanTable"});
             emit stateEvent("pointScanned", {{"x", ix}, {"y", iy}, {"z", z}});
@@ -94,9 +92,9 @@ StateBehavior::Result ScanTableBehavior::onEntry(CommunicatorApi *communicator, 
     return Result::Ok;
 }
 
-StateBehavior::Result ScanTableBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ScanTableBehavior::doOnExit(StateBehavior *next)
 {
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void ScanTableBehavior::onAlarm(int code)
@@ -129,7 +127,7 @@ void ScanTableBehavior::processCurrentPoint()
             .arg(pos.y(), 0, 'f', 3), {"ScanTable"});
 
     m_phase = Stage::MovingToPoint;
-    emit transition(this, new GoToBehavior(pos, m_moveFeedRate));
+    emit transition(this, new GoToBehavior(pos, m_moveFeedRate), TransitionKind::Suspend);
 }
 
 void ScanTableBehavior::startProbeAtCurrentPoint()
@@ -151,7 +149,7 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
     params.useAbsolute = false;
 
     m_phase = Stage::Probing;
-    emit transition(this, new ProbingBehavior(params));
+    emit transition(this, new ProbingBehavior(params), TransitionKind::Suspend);
 }
 
 void ScanTableBehavior::finishScanning(bool success, const QString &reason)

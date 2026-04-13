@@ -32,8 +32,8 @@ public:
     QString description() override;
     Type type() const override { return Type::ScanTable; }
 
-    Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-    Result onExit(StateBehavior *next = nullptr) override;
+    Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+    Result doOnExit(StateBehavior *next) override;
     void onAlarm(int code) override;
     void onMachineStateChanged(MachineState state) override;
 

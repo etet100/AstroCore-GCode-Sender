@@ -63,11 +63,11 @@ class JoggingBehavior : public StateBehavior
                 Action::Jog
             };
         }
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         bool onAboutToChange(StateBehavior *newState, bool forced) override;
-        Result onExit(StateBehavior *next = nullptr) override;
+        Result doOnExit(StateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
-        void onMachineState(MachineState state) override;
+        void doOnMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 
         // Jogging-specific methods

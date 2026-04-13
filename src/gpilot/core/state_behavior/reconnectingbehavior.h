@@ -16,7 +16,7 @@ class ReconnectingBehavior : public StateBehavior
         explicit ReconnectingBehavior(Connection *newConnection);
         QString description() override { return "Reconnecting"; }
         Type type() const override { return Type::Reconnecting; }
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
 
     protected:
         QString name() const override { return "Reconnecting"; }

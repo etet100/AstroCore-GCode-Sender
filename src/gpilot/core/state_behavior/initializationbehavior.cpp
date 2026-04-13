@@ -39,10 +39,9 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-StateBehavior::Result InitializationBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Initialization] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
@@ -60,7 +59,7 @@ StateBehavior::Result InitializationBehavior::onEntry(CommunicatorApi *communica
     return Result::Ok;
 }
 
-StateBehavior::Result InitializationBehavior::onExit(StateBehavior *next)
+StateBehavior::Result InitializationBehavior::doOnExit(StateBehavior *next)
 {
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }

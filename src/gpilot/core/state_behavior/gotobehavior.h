@@ -17,9 +17,9 @@ class GoToBehavior : public StateBehavior
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }
-        void onMachineState(MachineState state) override;
+        void doOnMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         void onAlarm(int code) override;
 
     protected:

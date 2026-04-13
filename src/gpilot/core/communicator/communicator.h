@@ -149,7 +149,6 @@ class Communicator : public QObject
         void resetStateVariables();
         void processDeviceConfiguration(QStringList response);
         void processGCodeParserState(CommandAttributes commandAttributes, QString response);
-        bool finalizeExecute(StateBehavior *sb);
         void startQueryingMachineState();
         void stopQueryingMachineState();
         void onCommandBufferCompleted(CommandAttributes attributes, CmdStatus status, QStringList lines);
@@ -159,7 +158,9 @@ class Communicator : public QObject
         void onConnectionLineReceived(QString);
         void onConnectionError(QString);
         void onConnectionStateChanged(ConnectionState state);
-        void onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb);
+        void onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb,
+                                       StateBehavior::TransitionKind kind);
+        void onStateRequestsResume();
         void onStateError(StateBehavior *sb, QString message);
 
     signals:

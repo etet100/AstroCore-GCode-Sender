@@ -15,10 +15,9 @@ HomingBehavior::HomingBehavior(QObject *parent)
 {
 }
 
-StateBehavior::Result HomingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result HomingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Homing] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     // Send homing command
     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", TABLE_INDEX_UI);
@@ -40,7 +39,7 @@ void HomingBehavior::onMachineStateChanged(MachineState state)
 
     //     // Return to previous state or idle state
     //     if (m_previous) {
-    //         emit transition(this, m_previous);
+    //         emit resumePrevious();
     //     } else {
     //         emit transition(this, new IdleBehavior(this));
     //     }
@@ -61,8 +60,8 @@ StateBehavior::Result HomingBehavior::onCommandResponse(QString command, Command
             emit error(this, "Homing failed - " + response);
 
             // Return to previous state or idle state
-            if (m_previous) {
-                emit transition(this, m_previous);
+            if (m_previousType.has_value()) {
+                emit resumePrevious();
             } else {
                 emit transition(this, new IdleBehavior(this));
             }

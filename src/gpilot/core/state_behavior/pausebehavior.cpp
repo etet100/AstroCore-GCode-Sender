@@ -49,10 +49,9 @@ QString PauseBehavior::description()
     }
 }
 
-StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result PauseBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Pause] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     // Perform different actions based on pause source
     switch (m_source) {
@@ -72,9 +71,9 @@ StateBehavior::Result PauseBehavior::onEntry(CommunicatorApi *communicator, Stat
     return StateBehavior::Result::Ok;
 }
 
-StateBehavior::Result PauseBehavior::onExit(StateBehavior *next)
+StateBehavior::Result PauseBehavior::doOnExit(StateBehavior *next)
 {
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void PauseBehavior::onMachineStateChanged(MachineState state)
@@ -94,8 +93,8 @@ void PauseBehavior::onMachineStateChanged(MachineState state)
             case PauseSource::External:
             default:
                 // For other sources, return to previous state or Running
-                if (m_previous) {
-                    emit transition(this, m_previous);
+                if (m_previousType.has_value()) {
+                    emit resumePrevious();
                 } else {
                     // emit transition(this, new RunningBehavior(this));
                 }
@@ -119,8 +118,9 @@ void PauseBehavior::resume()
     qDebug() << "[Behavior][Pause] Resuming";
 
     m_action = PauseAction::Resume;
+    setExitValue("action", "resume");
 
-    emit transition(this, this->previous());
+    emit resumePrevious();
 }
 
 void PauseBehavior::abort()
@@ -128,6 +128,7 @@ void PauseBehavior::abort()
     qDebug() << "[Behavior][Pause] Aborting";
 
     m_action = PauseAction::Abort;
+    setExitValue("action", "abort");
 
-    emit transition(this, this->previous());
+    emit resumePrevious();
 }

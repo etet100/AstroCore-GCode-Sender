@@ -14,7 +14,7 @@ class ResetBehavior : public StateBehavior
         QString description() override { return "Reset"; }
         Type type() const override { return Type::Reset; }
         Result onRawResponse(QString response) override;
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         void onAlarm(int code) override;
 
     protected:

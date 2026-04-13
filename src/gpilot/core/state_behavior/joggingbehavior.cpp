@@ -33,10 +33,9 @@ bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
     return forced || (newState->inherits("ResetBehavior") && newState->description() == "Reset");
 }
 
-StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result JoggingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Jogging] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     communicator->startQueryingMachineState();
     startJogging();
@@ -44,12 +43,12 @@ StateBehavior::Result JoggingBehavior::onEntry(CommunicatorApi *communicator, St
     return Result::Ok;
 }
 
-StateBehavior::Result JoggingBehavior::onExit(StateBehavior *next)
+StateBehavior::Result JoggingBehavior::doOnExit(StateBehavior *next)
 {
     m_communicator->stopQueryingMachineState();
     stopJogging();
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void JoggingBehavior::onMachineStateChanged(MachineState state)
@@ -74,9 +73,8 @@ void JoggingBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-void JoggingBehavior::onMachineState(MachineState state)
+void JoggingBehavior::doOnMachineState(MachineState state)
 {
-    StateBehavior::onMachineState(state);
 
     if (m_stopping && state == MachineState::Idle) {
         qDebug() << "[Behavior][Jogging] Device is not jogging anymore";

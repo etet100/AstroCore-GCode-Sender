@@ -15,10 +15,9 @@ ConnectingBehavior::ConnectingBehavior(QObject *parent)
 
 QString ConnectingBehavior::description() { return "Connecting"; }
 
-StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ConnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Connecting] Entry, attempting to connect...";
-    StateBehavior::onEntry(communicator, previous);
 
     assert(communicator->connection() != nullptr);
 
@@ -46,7 +45,7 @@ StateBehavior::Result ConnectingBehavior::onEntry(CommunicatorApi *communicator,
     return Result::Ok;
 }
 
-StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
+StateBehavior::Result ConnectingBehavior::doOnExit(StateBehavior *next)
 {
     qDebug() << "[Behavior][Connecting] Exiting.";
 
@@ -59,7 +58,7 @@ StateBehavior::Result ConnectingBehavior::onExit(StateBehavior *next)
         // m_communicator->setConnection(nullptr, true);
     }
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)

@@ -35,7 +35,7 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
         PauseBehavior::PauseSource source = m_stage == Stage::Pausing
             ? PauseBehavior::PauseSource::UserRequest
             : PauseBehavior::PauseSource::External;
-        emit transition(this, new PauseBehavior(source));
+        emit transition(this, new PauseBehavior(source), TransitionKind::Suspend);
     } else if (state == MachineState::Alarm) {
         emit transition(this, new AlarmBehavior());
     }
@@ -61,7 +61,7 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
         static QRegularExpression toolNumber("T(\\d+)");
         QRegularExpressionMatch match = toolNumber.match(command);
         int tool = match.hasMatch() ? match.captured(1).toInt() : 0;
-        emit transition(this, new ToolChangeBehavior(tool));
+        emit transition(this, new ToolChangeBehavior(tool), TransitionKind::Suspend);
 
         return Result::Ok;
     }
@@ -96,18 +96,16 @@ bool RunningBehavior::doAction(const Action &action)
     return StateBehavior::doAction(action);
 }
 
-StateBehavior::Result RunningBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Running] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     communicator->startQueryingMachineState();
 
-    PauseBehavior* pauseBehavior = dynamic_cast<PauseBehavior*>(previous);
-    if (pauseBehavior) {
+    if (ctx.previousType == Type::Pause) {
         qDebug() << "[Behavior][Running] Resuming from Pause, sending Cycle Start and waiting for Run state";
 
-        if (pauseBehavior->pauseAction() == PauseBehavior::PauseAction::Abort) {
+        if (ctx.data.value("action").toString() == "abort") {
             qDebug() << "[Behavior][Running] Previous Pause behavior requested abort";
             this->abort();
 

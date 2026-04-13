@@ -34,10 +34,9 @@ StateBehavior::Result ResetBehavior::onRawResponse(QString response)
     return Result::Unhandled;
 }
 
-StateBehavior::Result ResetBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ResetBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Reset] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     qDebug() << "[Behavior][Reset] Clearing command queues.";
     communicator->clearCommandsAndQueue();

@@ -14,8 +14,8 @@ class InitializationBehavior : public StateBehavior
         void onMachineStateChanged(MachineState state) override;
         // bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
         void onConnectionStateChanged(ConnectionState state) override;
-        Result onEntry(CommunicatorApi *communicator, StateBehavior *previous = nullptr) override;
-        Result onExit(StateBehavior *next = nullptr) override;
+        Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        Result doOnExit(StateBehavior *next) override;
 
     protected:
         QString name() const override { return "Initialization"; }

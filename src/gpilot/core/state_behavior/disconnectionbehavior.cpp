@@ -9,10 +9,9 @@ DisconnectionBehavior::DisconnectionBehavior(QObject *parent)
     : StateBehavior{parent}
 {}
 
-StateBehavior::Result DisconnectionBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result DisconnectionBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Disconnection] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     if (communicator->connection()->isConnected()) {
         connect(communicator->connection(), &Connection::stateChanged, this, &DisconnectionBehavior::onConnectionStateChanged);
@@ -27,11 +26,11 @@ StateBehavior::Result DisconnectionBehavior::onEntry(CommunicatorApi *communicat
     return Result::Ok;
 }
 
-StateBehavior::Result DisconnectionBehavior::onExit(StateBehavior *next)
+StateBehavior::Result DisconnectionBehavior::doOnExit(StateBehavior *next)
 {
     qDebug() << "[Behavior][Disconnection] Exit";
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 bool DisconnectionBehavior::doAction(const Action &action)

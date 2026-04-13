@@ -10,10 +10,9 @@ ReconnectingBehavior::ReconnectingBehavior(Connection *newConnection)
     , m_newConnection(newConnection)
 {}
 
-StateBehavior::Result ReconnectingBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result ReconnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Reconnecting] Entry";
-    StateBehavior::onEntry(communicator, previous);
 
     if (communicator->connection() && communicator->connection()->isConnected()) {
         qDebug() << "[Behavior][Reconnecting] Closing existing connection...";

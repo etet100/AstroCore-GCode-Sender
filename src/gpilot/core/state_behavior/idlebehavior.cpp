@@ -22,11 +22,11 @@ void IdleBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result IdleBehavior::onExit(StateBehavior *next)
+StateBehavior::Result IdleBehavior::doOnExit(StateBehavior *next)
 {
     qDebug() << "[Behavior][Idle] Exit";
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
@@ -152,11 +152,11 @@ void IdleBehavior::zeroXY()
     m_communicator->sendCommand(CommandSource::System, "G10 L20 P0 X0 Y0", TABLE_INDEX_UI);
 }
 
-StateBehavior::Result IdleBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result IdleBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Idle] Entry";
 
     communicator->startQueryingMachineState();
 
-    return StateBehavior::onEntry(communicator, previous);
+    return Result::Ok;
 }

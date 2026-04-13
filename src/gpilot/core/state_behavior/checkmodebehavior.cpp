@@ -19,9 +19,8 @@ QString CheckModeBehavior::description()
     return "Check Mode (Dry Run)";
 }
 
-StateBehavior::Result CheckModeBehavior::onEntry(CommunicatorApi *communicator, StateBehavior *previous)
+StateBehavior::Result CheckModeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-    StateBehavior::onEntry(communicator, previous);
 
     qDebug() << "[Behavior][CheckMode] Entering check mode. Program will be verified without actual movement.";
 
@@ -34,7 +33,7 @@ StateBehavior::Result CheckModeBehavior::onEntry(CommunicatorApi *communicator, 
     return Result::Ok;
 }
 
-StateBehavior::Result CheckModeBehavior::onExit(StateBehavior *next)
+StateBehavior::Result CheckModeBehavior::doOnExit(StateBehavior *next)
 {
     Q_UNUSED(next);
 
@@ -43,7 +42,7 @@ StateBehavior::Result CheckModeBehavior::onExit(StateBehavior *next)
         m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
     }
 
-    return StateBehavior::onExit(next);
+    return Result::Ok;
 }
 
 void CheckModeBehavior::onMachineStateChanged(MachineState state)
