@@ -2,7 +2,8 @@ TEMPLATE = subdirs
 
 SUBDIRS =   src/gpilot \
             src/designerplugins \
-            src/vendor
+            src/vendor \
+            src/subapps
 
 OTHER_FILES += scripts/*.py
 
