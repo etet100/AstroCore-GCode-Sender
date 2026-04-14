@@ -7,9 +7,10 @@
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
 
-AlarmBehavior::AlarmBehavior(int alarmCode, QObject *parent)
+AlarmBehavior::AlarmBehavior(int alarmCode, bool resumeAfterUnlock, QObject *parent)
     : StateBehavior{parent}
     , m_alarmCode(alarmCode)
+    , m_resumeAfterUnlock(resumeAfterUnlock)
 {
     if (alarmCode) {
         setAlarmMessage();
@@ -29,7 +30,12 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
     qDebug() << "[Behavior][Alarm] Device State Changed:" << static_cast<int>(state);
     // Handle device state changes
     if (state == MachineState::Idle) {
-        emit transition(this, new IdleBehavior());
+        if (m_resumeAfterUnlock) {
+            qDebug() << "[Behavior][Alarm] Unlocked, resuming previous behavior";
+            emit resumePrevious();
+        } else {
+            emit transition(this, new IdleBehavior());
+        }
     } else {
         qWarning() << "[Behavior][Alarm] Unexpected machine state after unlock attempt:" << static_cast<int>(state);
     }

@@ -12,7 +12,7 @@ class AlarmBehavior : public StateBehavior
     Q_OBJECT
 
     public:
-        explicit AlarmBehavior(int alarmCode = 0, QObject *parent = nullptr);
+        explicit AlarmBehavior(int alarmCode = 0, bool resumeAfterUnlock = false, QObject *parent = nullptr);
         QString description() override;
         Type type() const override { return Type::Alarm; }
         QSet<Action::Type> availableActions() const override {
@@ -32,6 +32,7 @@ class AlarmBehavior : public StateBehavior
 
     private:
         int m_alarmCode;
+        bool m_resumeAfterUnlock;
         QString m_alarmMessage;
         void setAlarmMessage();
         void unlock();

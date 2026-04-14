@@ -29,7 +29,6 @@ StateBehavior::Result HandshakeBehavior::doOnExit(StateBehavior *next)
 
 void HandshakeBehavior::doOnMachineState(MachineState state)
 {
-
     if (m_stage != QueryingState) {
         return;
     }
@@ -38,7 +37,12 @@ void HandshakeBehavior::doOnMachineState(MachineState state)
     m_initialState = state;
 
     // Machine is actively running something we didn't start — skip settings query.
-    if (state == MachineState::Run || state == MachineState::Jog || state == MachineState::Check) {
+    if (
+        state != MachineState::Idle &&
+        state != MachineState::Alarm &&
+        state != MachineState::Check
+    ) {
+        qDebug() << "[Behavior][Handshake] Machine is busy with an external process. Skipping settings query.";
         log("[Handshake] Machine is busy with an external process. Skipping settings query.");
         emit transition(this, new ExternalProcessBehavior());
 
@@ -107,9 +111,13 @@ void HandshakeBehavior::transitionBasedOnInitialState()
             emit transition(this, new AlarmBehavior(m_communicator->lastAlarmCode()));
             break;
 
+        case MachineState::Check:
+            log("[Handshake] Machine is in check mode.");
+            emit transition(this, new CheckModeBehavior());
+            break;
+
         case MachineState::Run:
         case MachineState::Jog:
-        case MachineState::Check:
         case MachineState::Hold0:
         case MachineState::Hold1:
         case MachineState::Door0:

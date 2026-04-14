@@ -6,23 +6,20 @@
 #define CHECKMODEBEHAVIOR_H
 
 #include "statebehavior.h"
-#include "core/gcode/gcode.h"
 
 class CheckModeBehavior : public StateBehavior
 {
     Q_OBJECT
 
     public:
-        explicit CheckModeBehavior(GCode &program, QObject *parent = nullptr);
+        explicit CheckModeBehavior(QObject *parent = nullptr);
         QString description() override;
         Type type() const override { return Type::CheckMode; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
-        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onAlarm(int code) override;
 
     protected:
@@ -30,11 +27,13 @@ class CheckModeBehavior : public StateBehavior
         bool doAction(const Action &action) override;
 
     private:
-        GCode &m_program;
-        bool m_stopped;
+        enum class Stage {
+            Entering,   // $C sent, waiting for Check state
+            Active,     // in Check state
+            Exiting,    // $C sent to leave, waiting for Idle state
+        };
 
-        void sendStreamerCommandsUntilBufferIsFull();
-        void stop();
+        Stage m_stage = Stage::Entering;
 };
 
 #endif // CHECKMODEBEHAVIOR_H

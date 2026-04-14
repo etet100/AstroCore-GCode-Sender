@@ -10,6 +10,7 @@
 #include <QPointF>
 #include <QVector3D>
 #include "core/gcode/gcode.h"
+#include "core/heightmap/heightmap.h"
 
 class Action
 {
@@ -35,6 +36,8 @@ class Action
             ZeroXY,
             Connect,
             Disconnect,
+            CheckMode,
+            ScanTable,
         };
 
         Action(Type type);
@@ -51,6 +54,17 @@ class Action
         Type m_type;
 
         static const QMap<int, QString> NAMES;
+};
+
+class ScanTableAction : public Action
+{
+    public:
+        explicit ScanTableAction(Heightmap* heightmap)
+            : Action(Action::Type::ScanTable), m_heightmap(heightmap) {}
+        Heightmap* heightmap() const { return m_heightmap; }
+
+    private:
+        Heightmap* m_heightmap;
 };
 
 class RunAction : public Action

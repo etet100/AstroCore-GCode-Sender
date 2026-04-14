@@ -25,6 +25,10 @@ class ProbingBehavior : public StateBehavior
             bool doubleProbe = false;       // Whether to do a second slow probe for precision
             bool setZeroAtProbe = true;     // Set Z=0 at probed position
             bool useAbsolute = true;        // Return to absolute positioning
+            // When true, alarms are reported via resumePrevious() + exit data
+            // instead of transitioning directly to AlarmBehavior. The caller
+            // is then responsible for handling the alarm (e.g. ScanTableBehavior).
+            bool delegateAlarmToParent = false;
 
             // Timeouts
             std::chrono::milliseconds setupTimeout{5000};

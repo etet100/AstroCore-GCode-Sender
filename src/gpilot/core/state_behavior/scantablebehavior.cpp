@@ -28,13 +28,13 @@ QString ScanTableBehavior::description()
 
 StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
-
     if (m_phase == Stage::Initial) {
         m_grid = m_heightmap->probePoints(m_startPos, m_scanMode);
         m_currentPoint = 0;
         m_scannedPoints = 0;
 
         if (m_grid.isEmpty()) {
+            qWarning() << "[Behavior][ScanTable] Scan grid has no points";
             log("Scan grid has no points", {"ScanTable", "Error"});
             finishScanning(false, "Empty grid");
             return Result::Ok;
@@ -42,6 +42,9 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
 
         m_communicator->startQueryingMachineState();
 
+        qDebug() << "[Behavior][ScanTable] Starting scan:"
+                 << m_heightmap->gridWidth() << "x" << m_heightmap->gridHeight()
+                 << "=" << m_grid.size() << "points";
         log(QString("Starting table scan: %1 x %2 = %3 points")
                 .arg(m_heightmap->gridWidth())
                 .arg(m_heightmap->gridHeight())
@@ -55,6 +58,8 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
         // here means the move command failed (e.g. soft-limit error).
         if (m_communicator->machineState() != MachineState::Idle) {
             QPointF pt = m_grid[m_currentPoint];
+            qWarning() << "[Behavior][ScanTable] Move to point"
+                       << pt << "failed (machine not Idle), aborting scan";
             log(QString("Move to point (%1,%2) failed, aborting scan")
                     .arg(pt.x(), 0, 'f', 3).arg(pt.y(), 0, 'f', 3), {"ScanTable", "Error"});
             finishScanning(false, QString("Failed to move to (X%1 Y%2)")
@@ -66,15 +71,35 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
 
     } else if (m_phase == Stage::Probing) {
         // ── Returned from ProbingBehavior ───────────────────────────────────
+
+        // Probe delegated an alarm — suspend here so AlarmBehavior can resume us after unlock
+        if (ctx.data.value("alarmOccurred").toBool()) {
+            int code = ctx.data.value("alarmCode").toInt();
+            qWarning() << "[Behavior][ScanTable] Alarm" << code << "during probe at point" << m_currentPoint;
+            log(QString("Alarm %1 during probe, waiting for unlock").arg(code), {"ScanTable", "Error"});
+            emit transition(this, new AlarmBehavior(code, /*resumeAfterUnlock=*/true), TransitionKind::Suspend);
+            return Result::Ok;
+        }
+
+        // Resumed from AlarmBehavior after unlock — retry the current point
+        if (ctx.previousType == Type::Alarm) {
+            qDebug() << "[Behavior][ScanTable] Resuming after alarm, retrying point" << m_currentPoint;
+            log("Alarm cleared, retrying probe point", {"ScanTable"});
+            processCurrentPoint();
+            return Result::Ok;
+        }
+
         QPointF pt = m_grid[m_currentPoint];
         auto [ix, iy] = m_heightmap->gridIndices(pt);
 
         if (ctx.data.value("success").toBool()) {
             double z = ctx.data.value("z").toDouble();
             m_heightmap->setHeightAt(QPoint(ix, iy), z);
+            qDebug() << "[Behavior][ScanTable] Point" << ix << "," << iy << "Z=" << z;
             log(QString("Point (%1,%2): Z=%3").arg(ix).arg(iy).arg(z, 0, 'f', 3), {"ScanTable"});
             emit stateEvent("pointScanned", {{"x", ix}, {"y", iy}, {"z", z}});
         } else {
+            qDebug() << "[Behavior][ScanTable] Point" << ix << "," << iy << "probe missed, skipping";
             log(QString("Point (%1,%2): probe missed, skipping").arg(ix).arg(iy), {"ScanTable"});
         }
 
@@ -94,6 +119,8 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
 
 StateBehavior::Result ScanTableBehavior::doOnExit(StateBehavior *next)
 {
+    qDebug() << "[Behavior][ScanTable] Exit, scanned" << m_scannedPoints << "/" << m_grid.size() << "points";
+
     return Result::Ok;
 }
 
@@ -121,10 +148,9 @@ void ScanTableBehavior::onMachineStateChanged(MachineState state)
 void ScanTableBehavior::processCurrentPoint()
 {
     QPointF pos = m_grid[m_currentPoint];
-    log(QString("Moving to point %1/%2 at X=%3 Y=%4")
-            .arg(m_currentPoint + 1).arg(m_grid.size())
-            .arg(pos.x(), 0, 'f', 3)
-            .arg(pos.y(), 0, 'f', 3), {"ScanTable"});
+    qDebug() << "[Behavior][ScanTable] Moving to point"
+             << (m_currentPoint + 1) << "/" << m_grid.size()
+             << "at X=" << pos.x() << "Y=" << pos.y();
 
     m_phase = Stage::MovingToPoint;
     emit transition(this, new GoToBehavior(pos, m_moveFeedRate), TransitionKind::Suspend);
@@ -133,7 +159,7 @@ void ScanTableBehavior::processCurrentPoint()
 void ScanTableBehavior::startProbeAtCurrentPoint()
 {
     QPointF pos = m_grid[m_currentPoint];
-    log(QString("Probing at X=%1 Y=%2").arg(pos.x(), 0, 'f', 3).arg(pos.y(), 0, 'f', 3), {"ScanTable"});
+    qDebug() << "[Behavior][ScanTable] Probing at X=" << pos.x() << "Y=" << pos.y();
 
     ProbingBehavior::ProbeParameters params;
     auto bt = m_heightmap->zBottomTop();
@@ -147,6 +173,7 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
     params.safeDistance = 3.0;
     params.setZeroAtProbe = false;
     params.useAbsolute = false;
+    params.delegateAlarmToParent = true;
 
     m_phase = Stage::Probing;
     emit transition(this, new ProbingBehavior(params), TransitionKind::Suspend);
@@ -155,10 +182,12 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
 void ScanTableBehavior::finishScanning(bool success, const QString &reason)
 {
     if (success) {
+        qDebug() << "[Behavior][ScanTable] Scan completed:" << m_scannedPoints << "/" << m_grid.size() << "points";
         log(QString("Table scan completed: %1/%2 points measured")
                 .arg(m_scannedPoints).arg(m_grid.size()), {"ScanTable"});
         emit stateEvent("scanCompleted", {});
     } else {
+        qWarning() << "[Behavior][ScanTable] Scan aborted:" << reason;
         log(QString("Table scan aborted: %1").arg(reason), {"ScanTable", "Error"});
         emit stateEvent("scanFailed", {{"reason", reason}});
     }

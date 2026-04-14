@@ -152,6 +152,8 @@ enum GRBLCommand {
     Probe,
     ZeroZ,
     ZeroXY,
+    Check,
+    AbortCheck,
 };
 
 enum class ProbeMode {

@@ -13,7 +13,6 @@ GoToBehavior::GoToBehavior(QPointF target, int feedRate, QObject *parent)
 
 void GoToBehavior::doOnMachineState(MachineState state)
 {
-
     if (m_stage == CommandSent && (state == MachineState::Jog || state == MachineState::Run)) {
         m_stage = WaitingForMovementEnd;
         // // Movement completed, return to previous state or idle

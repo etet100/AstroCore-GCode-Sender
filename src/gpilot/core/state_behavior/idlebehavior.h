@@ -24,6 +24,8 @@ class IdleBehavior : public StateBehavior
                 Action::ZeroZ,
                 Action::ZeroXY,
                 Action::Disconnect,
+                Action::CheckMode,
+                Action::ScanTable,
             };
         }
         void onMachineStateChanged(MachineState state) override;

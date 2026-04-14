@@ -25,6 +25,10 @@ const QMap<int, QString> Action::NAMES = {
     {QueryMachineConfiguration, "QueryMachineConfiguration"},
     {SaveMachineConfigurationParam, "SaveMachineConfigurationParam"},
     {ToolChange, "Tool Change"},
+    {ZeroZ, "Zero Z"},
+    {ZeroXY, "Zero XY"},
     {Connect, "Connect"},
     {Disconnect, "Disconnect"},
+    {CheckMode, "Check Mode"},
+    {ScanTable, "Scan Table"},
 };

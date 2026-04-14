@@ -65,6 +65,7 @@ bool IdleBehavior::doAction(const Action &action)
 
     switch (action.type()) {
         case Action::Type::Home:
+            qDebug() << "[Behavior][Idle] Action: Home";
             emit transition(this, new HomingBehavior());
 
             return true;
@@ -72,6 +73,7 @@ bool IdleBehavior::doAction(const Action &action)
         case Action::Type::Run:
             {
                 RunAction runAction = static_cast<const RunAction&>(action);
+                qDebug() << "[Behavior][Idle] Action: Run";
                 emit transition(this, new RunningBehavior(runAction.program()));
             }
             return true;
@@ -79,6 +81,7 @@ bool IdleBehavior::doAction(const Action &action)
         case Action::Type::Jog:
             {
                 JoggingAction joggingAction = static_cast<const JoggingAction&>(action);
+                qDebug() << "[Behavior][Idle] Action: Jog" << joggingAction.vector() << "dist" << joggingAction.distance();
                 emit transition(
                     this,
                     new JoggingBehavior(
@@ -95,7 +98,8 @@ bool IdleBehavior::doAction(const Action &action)
         case Action::Type::GoTo:
             {
                 GoToAction goToAction = static_cast<const GoToAction&>(action);
-                emit transition(this, new GoToBehavior(goToAction.target(), goToAction.feedRate()));
+                qDebug() << "[Behavior][Idle] Action: GoTo" << goToAction.target() << "feed" << goToAction.feedRate();
+                emit transition(this, new GoToBehavior(goToAction.target(), goToAction.feedRate()), TransitionKind::Suspend);
             }
             return true;
 
@@ -119,22 +123,44 @@ bool IdleBehavior::doAction(const Action &action)
                     params.useAbsolute = actionParams.useAbsolute;
                 }
 
+                qDebug() << "[Behavior][Idle] Action: Probe double=" << params.doubleProbe;
                 emit transition(this, new ProbingBehavior(params));
             }
             return true;
 
+        case Action::Type::ScanTable:
+            {
+                const ScanTableAction* scanTableAction = dynamic_cast<const ScanTableAction*>(&action);
+                if (scanTableAction) {
+                    qDebug() << "[Behavior][Idle] Action: ScanTable";
+                    emit transition(this, new ScanTableBehavior(scanTableAction->heightmap()));
+                } else {
+                    qWarning() << "[Behavior][Idle] ScanTable action cast failed — ScanTableAction expected";
+                }
+            }
+            return true;
+
         case Action::Type::ZeroZ:
+            qDebug() << "[Behavior][Idle] Action: ZeroZ";
             zeroZ();
 
             return true;
 
         case Action::Type::ZeroXY:
+            qDebug() << "[Behavior][Idle] Action: ZeroXY";
             zeroXY();
 
             return true;
 
         case Action::Type::Disconnect:
+            qDebug() << "[Behavior][Idle] Action: Disconnect";
             emit transition(this, new DisconnectionBehavior());
+
+            return true;
+
+        case Action::Type::CheckMode:
+            qDebug() << "[Behavior][Idle] Action: CheckMode";
+            emit transition(this, new CheckModeBehavior());
 
             return true;
     }

@@ -64,7 +64,13 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     if (m_alarmOccurred) {
         log(QString("Alarm during setup: %1").arg(m_alarmCode), {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", QString("Alarm %1 during setup").arg(m_alarmCode)}});
-        emit transition(this, new AlarmBehavior(m_alarmCode));
+        if (m_params.delegateAlarmToParent) {
+            setExitValue("alarmOccurred", true);
+            setExitValue("alarmCode", m_alarmCode);
+            emit resumePrevious();
+        } else {
+            emit transition(this, new AlarmBehavior(m_alarmCode));
+        }
         co_return;
     }
     if (!r->status.ok) {
@@ -100,7 +106,13 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
             log(QString("Alarm during fast probe: %1").arg(m_alarmCode), {"Probing", "Error"});
             emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
         }
-        emit transition(this, new AlarmBehavior(m_alarmCode));
+        if (m_params.delegateAlarmToParent) {
+            setExitValue("alarmOccurred", true);
+            setExitValue("alarmCode", m_alarmCode);
+            emit resumePrevious();
+        } else {
+            emit transition(this, new AlarmBehavior(m_alarmCode));
+        }
         co_return;
     }
     if (!r->status.ok) {
@@ -139,7 +151,13 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         log("Error during retract", {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", "Retract failed"}});
         if (m_alarmOccurred) {
-            emit transition(this, new AlarmBehavior(m_alarmCode));
+            if (m_params.delegateAlarmToParent) {
+                setExitValue("alarmOccurred", true);
+                setExitValue("alarmCode", m_alarmCode);
+                emit resumePrevious();
+            } else {
+                emit transition(this, new AlarmBehavior(m_alarmCode));
+            }
         } else {
             if (m_params.useAbsolute) {
                 co_await sendAndAwait("G90", m_params.setupTimeout);
@@ -179,7 +197,13 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
                 log(QString("Alarm during slow probe: %1").arg(m_alarmCode), {"Probing", "Error"});
                 emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
             }
-            emit transition(this, new AlarmBehavior(m_alarmCode));
+            if (m_params.delegateAlarmToParent) {
+                setExitValue("alarmOccurred", true);
+                setExitValue("alarmCode", m_alarmCode);
+                emit resumePrevious();
+            } else {
+                emit transition(this, new AlarmBehavior(m_alarmCode));
+            }
             co_return;
         }
         if (!r->status.ok) {

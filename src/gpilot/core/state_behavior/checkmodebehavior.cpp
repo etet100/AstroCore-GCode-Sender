@@ -7,10 +7,8 @@
 #include "alarmbehavior.h"
 #include "core/communicator/communicator.h"
 
-CheckModeBehavior::CheckModeBehavior(GCode &program, QObject *parent)
+CheckModeBehavior::CheckModeBehavior(QObject *parent)
     : StateBehavior{parent}
-    , m_program(program)
-    , m_stopped(false)
 {
 }
 
@@ -21,56 +19,52 @@ QString CheckModeBehavior::description()
 
 StateBehavior::Result CheckModeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
+    Q_UNUSED(ctx);
 
-    qDebug() << "[Behavior][CheckMode] Entering check mode. Program will be verified without actual movement.";
+    qDebug() << "[Behavior][CheckMode] Entry — sending $C, waiting for Check state";
 
-    // Enter check mode by sending $C command
-    m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
-
-    // Start sending G-code commands for verification
-    sendStreamerCommandsUntilBufferIsFull();
-
-    return Result::Ok;
-}
-
-StateBehavior::Result CheckModeBehavior::doOnExit(StateBehavior *next)
-{
-    Q_UNUSED(next);
-
-    // Exit check mode by sending $C command again (toggle)
-    if (m_communicator && m_communicator->machineState() == MachineState::Check) {
-        m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
-    }
+    m_stage = Stage::Entering;
+    communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
+    communicator->startQueryingMachineState();
 
     return Result::Ok;
 }
 
 void CheckModeBehavior::onMachineStateChanged(MachineState state)
 {
-    if (state == MachineState::Idle) {
-        // Check mode finished or was stopped
-        qDebug() << "[Behavior][CheckMode] Check mode completed. Returning to Idle.";
-        emit transition(this, new IdleBehavior());
-    } else if (state == MachineState::Alarm) {
-        // Machine entered alarm state during check
+    if (state == MachineState::Alarm) {
         emit transition(this, new AlarmBehavior());
-    }
-}
 
-StateBehavior::Result CheckModeBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
-{
-    Q_UNUSED(fullResponse);
-
-    qDebug() << "[Behavior][CheckMode] Command:" << command << "Response:" << response;
-
-    m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
-
-    // Continue sending commands if not stopped
-    if (!m_stopped) {
-        sendStreamerCommandsUntilBufferIsFull();
+        return;
     }
 
-    return Result::Ok;
+    switch (m_stage) {
+        case Stage::Entering:
+            if (state == MachineState::Check) {
+                qDebug() << "[Behavior][CheckMode] Check state reached";
+                m_stage = Stage::Active;
+            } else if (state == MachineState::Idle) {
+                // $C did not toggle check mode — machine stayed Idle
+                qWarning() << "[Behavior][CheckMode] Machine returned to Idle before reaching Check";
+                emit transition(this, new IdleBehavior());
+            }
+            break;
+
+        case Stage::Active:
+            if (state == MachineState::Idle) {
+                // External exit from check mode
+                qDebug() << "[Behavior][CheckMode] Check mode exited externally";
+                emit transition(this, new IdleBehavior());
+            }
+            break;
+
+        case Stage::Exiting:
+            if (state == MachineState::Idle) {
+                qDebug() << "[Behavior][CheckMode] Check mode exited";
+                emit transition(this, new IdleBehavior());
+            }
+            break;
+    }
 }
 
 void CheckModeBehavior::onAlarm(int code)
@@ -81,54 +75,13 @@ void CheckModeBehavior::onAlarm(int code)
 
 bool CheckModeBehavior::doAction(const Action &action)
 {
-    if (action.type() == Action::Type::Abort) {
-        stop();
+    if (action.type() == Action::Type::Abort && m_stage == Stage::Active) {
+        qDebug() << "[Behavior][CheckMode] Abort — sending $C, waiting for Idle state";
+        m_stage = Stage::Exiting;
+        m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
+
         return true;
     }
 
     return StateBehavior::doAction(action);
-}
-
-void CheckModeBehavior::sendStreamerCommandsUntilBufferIsFull()
-{
-    if (!m_communicator || !m_communicator->isQueueEmpty()) {
-        return;
-    }
-
-    // Pass empty commands through loop too, we will skip them inside
-    QString command = m_program.command();
-    int sent = 0;
-
-    while (command.isEmpty() || (!m_communicator->willOverflowBuffer(command) && m_program.hasMoreCommands())) {
-        if (command.isEmpty()) {
-            m_program.setCommandSkipped();
-        } else {
-            m_program.setCommandSent();
-            m_communicator->sendCommand(CommandSource::Program, command, m_program.commandIndex());
-            sent++;
-        }
-
-        if (!m_program.isLastCommand()) {
-            m_program.advanceCommandIndex();
-            command = m_program.command();
-        } else {
-            break;
-        }
-    }
-
-    qDebug() << "[Behavior][CheckMode] Sent " << sent << " commands in check mode; buffer length:" << m_communicator->bufferLength();
-}
-
-void CheckModeBehavior::stop()
-{
-    m_stopped = true;
-    qDebug() << "[Behavior][CheckMode] Check mode stopped by user.";
-
-    // Clear remaining commands and exit check mode
-    if (m_communicator) {
-        m_communicator->clearQueue();
-        m_communicator->sendCommand(CommandSource::System, "$C", TABLE_INDEX_UI);
-    }
-
-    emit transition(this, new IdleBehavior());
 }

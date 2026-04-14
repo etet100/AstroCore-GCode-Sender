@@ -277,6 +277,15 @@ void FrmMain::initializeControlPanel()
         m_communicator->stateBehavior()->action(Action::Home);
         // m_communicator->home();
     });
+    connect(ui->control, &PartMainControl::check, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::CheckMode);
+    });
+    connect(ui->control, &PartMainControl::abortCheck, this, [this]() {
+        m_communicator->stateBehavior()->action(Action::Abort);
+    });
+    connect(ui->control, &PartMainControl::scanTable, this, [this]() {
+        m_communicator->stateBehavior()->action(ScanTableAction(&m_heightmap));
+    });
     connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
         ProbeAction::ProbeParameters params;
         params.doubleProbe = (mode == ProbeMode::Dual);
