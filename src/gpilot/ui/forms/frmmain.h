@@ -116,8 +116,8 @@ private slots:
     void viewDarkModeToggled(bool checked);
     void viewCentralProgramToggled(bool checked);
     void viewCentralVisualizerToggled(bool checked);
-    void on_actHeightmapOpen2_triggered();
-    void on_actHeightmapSave_triggered();
+    void openHeightmap();
+    void saveHeightmap();
     void clearRecentFiles();
     // UI Scale
     void decreaseUiScale();
@@ -130,15 +130,15 @@ private slots:
     void onFileAbort();
     void onFileReset();
     // void on_cmdSpindle_toggled(bool checked);
-    void on_cmdSpindle_clicked(bool checked);
-    void on_grpOverriding_toggled(bool checked);
-    void on_grpSpindle_toggled(bool checked);
-    void on_grpJog_toggled(bool checked);
-    void on_grpHeightmap_toggled(bool checked);
-    void on_chkKeyboardControl_toggled(bool checked);
-    void on_menuViewWindows_aboutToShow();
-    void on_menuViewPanels_aboutToShow();
-    void on_dockVisualizer_visibilityChanged(bool visible);
+    void toggleSpindle(bool checked);
+    void overridingGroupToggled(bool checked);
+    void spindleGroupToggled(bool checked);
+    void jogGroupToggled(bool checked);
+    void heightmapGroupToggled(bool checked);
+    void keyboardControlToggled(bool checked);
+    void populateViewWindowsMenu();
+    void populateViewPanelsMenu();
+    void visualizerVisibilityChanged(bool visible);
     void useHeightmapToggled(bool checked);
     void heightmapModeToggled(bool checked);
     void onLoadHeightmapRequested();

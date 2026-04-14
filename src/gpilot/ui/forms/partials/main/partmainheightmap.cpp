@@ -4,6 +4,7 @@
 
 #include "partmainheightmap.h"
 #include "ui_partmainheightmap.h"
+#include <QPushButton>
 
 PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     : QWidget(parent)
@@ -30,6 +31,21 @@ PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     connect(ui->cboInterpolationMode, &QComboBox::currentIndexChanged, this, [this](int index){
         emit interpolationModeChanged(static_cast<Heightmap::InterpolationMode>(index));
     });
+
+    connect(ui->chkShowArea, &QCheckBox::toggled, this, &PartMainHeightmap::emitShowVisualizationChanged);
+    connect(ui->chkShowProbeGrid, &QCheckBox::toggled, this, &PartMainHeightmap::emitShowVisualizationChanged);
+    connect(ui->chkShowInterpolation, &QCheckBox::toggled, this, &PartMainHeightmap::emitShowVisualizationChanged);
+    connect(ui->chkUseHeightmap, &QCheckBox::toggled, this, &PartMainHeightmap::useHeightmapToggled);
+    connect(ui->cmdHeightMapMode, &QPushButton::toggled, this, &PartMainHeightmap::heightmapModeToggled);
+    connect(ui->cmdAreaFromGCode, &QPushButton::clicked, this, &PartMainHeightmap::extremesRequired);
+    connect(ui->cmdNew, &QPushButton::clicked, this, &PartMainHeightmap::requestNewHeightmap);
+
+    connect(ui->txtGridX, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
+    connect(ui->txtGridY, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
+    connect(ui->txtGridZBottom, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
+    connect(ui->txtGridZTop, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
+    connect(ui->txtInterpolationStepX, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
+    connect(ui->txtInterpolationStepY, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
 }
 
 PartMainHeightmap::~PartMainHeightmap()
@@ -126,13 +142,6 @@ void PartMainHeightmap::setOpenFile(QString filePath)
     ui->txtHeightMapName->setText(filePath);
 }
 
-void PartMainHeightmap::on_cmdAreaFromGCode_clicked()
-{
-    // Request extremes from heightmap, setHeightmapBorderRect will be called
-    // in response
-    emit extremesRequired();
-}
-
 void PartMainHeightmap::setHeightmapAreaRect(QRectF rect)
 {
     if (qIsNaN(rect.width()) || qIsNaN(rect.height())) {
@@ -180,48 +189,6 @@ void PartMainHeightmap::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
 }
 
-void PartMainHeightmap::on_txtGridX_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
-void PartMainHeightmap::on_txtGridY_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
-void PartMainHeightmap::on_txtGridZBottom_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
-void PartMainHeightmap::on_txtGridZTop_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
-void PartMainHeightmap::on_txtInterpolationStepX_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
-void PartMainHeightmap::on_txtInterpolationStepY_valueChanged(double arg1)
-{
-    Q_UNUSED(arg1)
-
-    emitGridParametersChanged();
-}
-
 void PartMainHeightmap::emitShowVisualizationChanged()
 {
     emit showVisualizationChanged(
@@ -243,7 +210,7 @@ void PartMainHeightmap::emitGridParametersChanged()
     );
 }
 
-void PartMainHeightmap::on_cmdNew_clicked()
+void PartMainHeightmap::requestNewHeightmap()
 {
     ui->cmdHeightMapMode->setChecked(true);
 
@@ -281,33 +248,3 @@ void PartMainHeightmap::onGridParametersChanged()
     );
 }
 
-void PartMainHeightmap::on_chkShowProbeGrid_toggled(bool checked)
-{
-    Q_UNUSED(checked)
-
-    emitShowVisualizationChanged();
-}
-
-void PartMainHeightmap::on_chkUseHeightmap_toggled(bool checked)
-{
-    emit useHeightmapToggled(checked);
-}
-
-void PartMainHeightmap::on_chkShowArea_toggled(bool checked)
-{
-    Q_UNUSED(checked)
-
-    emitShowVisualizationChanged();
-}
-
-void PartMainHeightmap::on_chkShowInterpolation_toggled(bool checked)
-{
-    Q_UNUSED(checked)
-
-    emitShowVisualizationChanged();
-}
-
-void PartMainHeightmap::on_cmdHeightMapMode_toggled(bool checked)
-{
-    emit heightmapModeToggled(checked);
-}

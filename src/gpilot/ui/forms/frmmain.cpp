@@ -264,6 +264,8 @@ void FrmMain::initializeJogPanel()
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
         m_communicator->stateBehavior()->action(Action::Abort);
     });
+    connect(ui->grpJog, &QGroupBox::toggled, this, &FrmMain::jogGroupToggled);
+    // chkKeyboardControl was removed from the UI; keyboardControlToggled() is dead code
 }
 
 void FrmMain::initializeControlPanel()
@@ -339,6 +341,9 @@ void FrmMain::initializeSpindlePanel()
             ui->grpSpindle->setTitle(tr("Spindle"));
         }
     });
+    connect(ui->grpSpindle, &QGroupBox::toggled, this, &FrmMain::spindleGroupToggled);
+    // cmdSpindle lives inside PartMainSpindle sub-panel, not directly in Ui::frmMain
+    connect(ui->spindle->findChild<QAbstractButton*>("cmdSpindle"), &QAbstractButton::clicked, this, &FrmMain::toggleSpindle);
 }
 
 void FrmMain::initializeProgramPanel()
@@ -435,6 +440,7 @@ void FrmMain::initializeHeightmapPanel()
         ui->visualizer->setHeightmapInterpolationMode(mode);
         ui->visualizer->updateHeightmap();
     });
+    connect(ui->grpHeightmap, &QGroupBox::toggled, this, &FrmMain::heightmapGroupToggled);
 
     // ui->cmdHeightMapBorderAuto->setMinimumHeight(ui->chkHeightMapBorderShow->sizeHint().height());
     // ui->cmdHeightMapCreate->setMinimumHeight(ui->cmdFileOpen->sizeHint().height());
@@ -449,6 +455,7 @@ void FrmMain::initializeOverridesPanel()
         ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
         Utils::refreshStyle(ui->grpOverriding);
     });
+    connect(ui->grpOverriding, &QGroupBox::toggled, this, &FrmMain::overridingGroupToggled);
 }
 
 void FrmMain::initializeLogMenu()
@@ -522,6 +529,7 @@ void FrmMain::initializeVisualizerPanel()
 
         m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
+    connect(ui->dockVisualizer, &QDockWidget::visibilityChanged, this, &FrmMain::visualizerVisibilityChanged);
 }
 
 void FrmMain::initializeVirtualSettingsPanel()
@@ -618,6 +626,10 @@ void FrmMain::initializeMainMenu()
     connect(ui->actViewDarkMode, &QAction::toggled, this, &FrmMain::viewDarkModeToggled);
     connect(ui->actViewCentralProgram, &QAction::toggled, this, &FrmMain::viewCentralProgramToggled);
     connect(ui->actViewCentralVisualizer, &QAction::toggled, this, &FrmMain::viewCentralVisualizerToggled);
+    connect(ui->actHeightmapOpen2, &QAction::triggered, this, &FrmMain::openHeightmap);
+    connect(ui->actHeightmapSave, &QAction::triggered, this, &FrmMain::saveHeightmap);
+    connect(ui->menuViewWindows, &QMenu::aboutToShow, this, &FrmMain::populateViewWindowsMenu);
+    connect(ui->menuViewPanels, &QMenu::aboutToShow, this, &FrmMain::populateViewPanelsMenu);
 }
 
 bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -893,7 +905,7 @@ void FrmMain::fileSaveTransformedAs()
     }
 }
 
-void FrmMain::on_actHeightmapOpen2_triggered()
+void FrmMain::openHeightmap()
 {
     QString fileName = (QFileDialog::getOpenFileName(this, tr("Open heightmap"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
     if (fileName.isEmpty()) {
@@ -914,7 +926,7 @@ void FrmMain::on_actHeightmapOpen2_triggered()
     ui->visualizer->setHeightmap(m_heightmap);
 }
 
-void FrmMain::on_actHeightmapSave_triggered()
+void FrmMain::saveHeightmap()
 {
     QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
     if (fileName.isEmpty()) {
@@ -1286,7 +1298,7 @@ void FrmMain::onFileReset()
 //     }
 // }
 
-void FrmMain::on_cmdSpindle_clicked(bool checked)
+void FrmMain::toggleSpindle(bool checked)
 {
     if (ui->control->hold()) {
         m_connection->sendByteArray(QByteArray(1, char(0x9e)));
@@ -1295,7 +1307,7 @@ void FrmMain::on_cmdSpindle_clicked(bool checked)
     }
 }
 
-void FrmMain::on_grpOverriding_toggled(bool checked)
+void FrmMain::overridingGroupToggled(bool checked)
 {
     if (checked) {
         ui->grpOverriding->setTitle(tr("Overriding"));
@@ -1310,7 +1322,7 @@ void FrmMain::on_grpOverriding_toggled(bool checked)
     ui->overrides->setVisible(checked);
 }
 
-void FrmMain::on_grpSpindle_toggled(bool checked)
+void FrmMain::spindleGroupToggled(bool checked)
 {
 //     if (checked) {
 //         ui->grpSpindle->setTitle(tr("Spindle"));
@@ -1323,7 +1335,7 @@ void FrmMain::on_grpSpindle_toggled(bool checked)
     // ui->spindle->setVisible(checked);
 }
 
-void FrmMain::on_grpJog_toggled(bool checked)
+void FrmMain::jogGroupToggled(bool checked)
 {
     updateJogTitle();
     updateLayouts();
@@ -1331,12 +1343,12 @@ void FrmMain::on_grpJog_toggled(bool checked)
     ui->jog->setVisible(checked);
 }
 
-void FrmMain::on_grpHeightmap_toggled(bool checked)
+void FrmMain::heightmapGroupToggled(bool checked)
 {
     ui->heightmap->setVisible(checked);
 }
 
-void FrmMain::on_chkKeyboardControl_toggled(bool checked)
+void FrmMain::keyboardControlToggled(bool checked)
 {
     ui->grpJog->setProperty("overrided", checked);
     style()->unpolish(ui->grpJog);
@@ -1681,7 +1693,7 @@ void FrmMain::onLoadHeightmapRequested()
     }
 }
 
-void FrmMain::on_menuViewWindows_aboutToShow()
+void FrmMain::populateViewWindowsMenu()
 {
     QAction *action;
     QList<QAction*> al;
@@ -1704,7 +1716,7 @@ void FrmMain::on_menuViewWindows_aboutToShow()
     ui->menuViewWindows->addActions(al);
 }
 
-void FrmMain::on_menuViewPanels_aboutToShow()
+void FrmMain::populateViewPanelsMenu()
 {
     QAction *a;
 
@@ -1730,7 +1742,7 @@ void FrmMain::on_menuViewPanels_aboutToShow()
     }
 }
 
-void FrmMain::on_dockVisualizer_visibilityChanged(bool visible)
+void FrmMain::visualizerVisibilityChanged(bool visible)
 {
     // Change setUpdatesEnabled2 to something better later
     ui->visualizer->setUpdatesEnabled2(visible);

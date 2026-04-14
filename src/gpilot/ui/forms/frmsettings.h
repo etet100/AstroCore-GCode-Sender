@@ -46,8 +46,8 @@ private slots:
     void onCmdSerialPortsRefreshClicked();
     void onCmdOKClicked();
     void onCmdCancelClicked();
-    void on_cboToolType_currentIndexChanged(int index);
-    void on_listCategories_currentRowChanged(int currentRow);
+    void toolTypeChanged(int index);
+    void scrollToCategory(int row);
     void onCmdDefaultsClicked();
     void onArcApproximationModeChanged(bool checked);
     void onConnectionModeChanged(int);

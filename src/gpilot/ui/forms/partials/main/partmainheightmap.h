@@ -60,19 +60,7 @@ class PartMainHeightmap : public QWidget
         void gridParametersChanged(QPoint gridStart, PartMainHeightmap::MinMax zMinMax, int probeFeed, QPoint interpolationStep);
 
     private slots:
-        void on_chkShowArea_toggled(bool checked);
-        void on_chkShowProbeGrid_toggled(bool checked);
-        void on_chkUseHeightmap_toggled(bool checked);
-        void on_chkShowInterpolation_toggled(bool checked);
-        void on_cmdHeightMapMode_toggled(bool checked);
-        void on_txtInterpolationStepX_valueChanged(double arg1);
-        void on_txtGridZTop_valueChanged(double arg1);
-        void on_txtGridZBottom_valueChanged(double arg1);
-        void on_txtGridX_valueChanged(double arg1);
-        void on_txtGridY_valueChanged(double arg1);
-        void on_cmdAreaFromGCode_clicked();
-        void on_txtInterpolationStepY_valueChanged(double arg1);
-        void on_cmdNew_clicked();
+        void requestNewHeightmap();
         void onAreaChanged();
         void onGridParametersChanged();
 

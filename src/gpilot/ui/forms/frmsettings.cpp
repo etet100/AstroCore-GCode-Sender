@@ -50,6 +50,8 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
 
     ui->listCategories->item(0)->setSelected(true);
     connect(ui->scrollSettings->verticalScrollBar(), &QAbstractSlider::valueChanged, this, &FrmSettings::onScrollBarValueChanged);
+    connect(ui->cboToolType, &QComboBox::currentIndexChanged, this, &FrmSettings::toolTypeChanged);
+    connect(ui->listCategories, &QListWidget::currentRowChanged, this, &FrmSettings::scrollToCategory);
     // connect(this, SIGNAL(settingsSetToDefault()), parent, SIGNAL(settingsSetToDefault()));
 
     searchForSerialPorts();
@@ -425,7 +427,7 @@ void FrmSettings::addCustomSettings(QGroupBox *box)
     m_customSettings.append(box);
 }
 
-void FrmSettings::on_listCategories_currentRowChanged(int currentRow)
+void FrmSettings::scrollToCategory(int currentRow)
 {
     static QPropertyAnimation *animation;
 
@@ -510,7 +512,7 @@ void FrmSettings::onCmdCancelClicked()
     this->reject();
 }
 
-void FrmSettings::on_cboToolType_currentIndexChanged(int index)
+void FrmSettings::toolTypeChanged(int index)
 {
     // Enable angle only disabled for flat tool
     ui->lblToolAngle->setEnabled(index != 1);
