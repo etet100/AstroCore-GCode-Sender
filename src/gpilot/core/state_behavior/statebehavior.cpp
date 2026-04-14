@@ -273,6 +273,30 @@ QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::awaitRes
     }
 }
 
+QCoro::Task<std::optional<MachineState>> StateBehavior::awaitMachineState(
+    std::function<bool(MachineState)> predicate,
+    std::chrono::milliseconds timeout)
+{
+    using namespace std::chrono;
+    auto deadline = steady_clock::now() + timeout;
+
+    while (true) {
+        auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
+        if (remaining <= milliseconds::zero()) {
+            co_return std::nullopt;
+        }
+
+        auto result = co_await qCoro(this, &StateBehavior::machineStateChangedSignal, remaining);
+        if (!result) {
+            co_return std::nullopt;
+        }
+
+        if (predicate(*result)) {
+            co_return *result;
+        }
+    }
+}
+
 QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::sendAndAwait(
     const QString &command, std::chrono::milliseconds timeout)
 {

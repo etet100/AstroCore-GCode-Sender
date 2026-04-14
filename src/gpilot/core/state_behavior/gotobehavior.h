@@ -17,9 +17,8 @@ class GoToBehavior : public StateBehavior
         QSet<Action::Type> availableActions() const override {
             return { Action::Abort };
         }
-        void doOnMachineState(MachineState state) override;
-        Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        Result doOnExit(StateBehavior *next) override;
         void onAlarm(int code) override;
 
     protected:
@@ -27,16 +26,10 @@ class GoToBehavior : public StateBehavior
         bool doAction(const Action &action) override;
 
     private:
-        enum Stage {
-            None,
-            CommandSent,
-            WaitingForMovementEnd,
-            Completed
-        };
-
         QPointF m_target;
         int m_feedRate;
-        Stage m_stage = None;
+        std::optional<QCoro::Task<void>> m_goToTask;
+        QCoro::Task<void> runGoToSequence();
         void stopJogging();
 };
 

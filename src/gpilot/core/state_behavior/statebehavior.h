@@ -204,6 +204,11 @@ class StateBehavior : public QObject
                                                                 std::chrono::milliseconds timeout);
         QCoro::Task<std::optional<CommandResult>> awaitResponse(int commandIndex,
                                                                  std::chrono::milliseconds timeout);
+        // Waits until the machine reaches a state matching predicate, or until timeout.
+        // Returns the matching state, or nullopt on timeout.
+        QCoro::Task<std::optional<MachineState>> awaitMachineState(
+            std::function<bool(MachineState)> predicate,
+            std::chrono::milliseconds timeout);
 
         struct StateResponseEntry {
             int id;

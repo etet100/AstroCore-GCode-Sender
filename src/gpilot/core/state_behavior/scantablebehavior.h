@@ -23,7 +23,7 @@ class ScanTableBehavior : public StateBehavior
 public:
     explicit ScanTableBehavior(
         Heightmap *heightmap,
-        QPointF startPos,
+        QPointF startPos = QPointF(0, 0),
         Heightmap::ScanMode scanMode = Heightmap::ScanMode::Rows,
         int moveFeedRate = 1000,
         QObject *parent = nullptr
