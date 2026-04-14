@@ -14,10 +14,20 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">XSwitchButtonWithLabel {
-	padding: 4px;
+   <string notr="true">XSwitchButtonWithLabel, MacroWidget {
 	border-radius: 4px;
 	background: palette(button);
+}
+
+QToolButton {
+	background-color: palette(button); 
+	border-radius: 4px;
+	border: 0;
+	cursor: handr;
+}
+
+QToolButton:hover {
+	background-color: palette(window); 
 }</string>
   </property>
  </widget>

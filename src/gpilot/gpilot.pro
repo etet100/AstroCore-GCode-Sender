@@ -264,6 +264,7 @@ SOURCES += main.cpp\
     core/communicator/machinecoordinatecache.cpp \
     ui/widgets/dropwidget.cpp \
     ui/widgets/glzminmax.cpp \
+    ui/widgets/macrowidget.cpp \
     ui/widgets/qpushbuttonwithmenu.cpp
 
 HEADERS  += ui/forms/frmmain.h \
@@ -454,6 +455,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/machinecoordinatecache.h \
     ui/widgets/dropwidget.h \
     ui/widgets/glzminmax.h \
+    ui/widgets/macrowidget.h \
     ui/widgets/qpushbuttonwithmenu.h
 
 FORMS    += ui/forms/frmmain.ui \
