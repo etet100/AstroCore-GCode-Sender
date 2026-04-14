@@ -240,7 +240,7 @@
         </size>
        </property>
        <property name="checkable">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="adjustSize" stdset="0">
         <bool>true</bool>
@@ -381,19 +381,22 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QToolButtonWithMenu" name="toolButtonWithMenu">
+      <widget class="StyledToolButton" name="cmdScanTable">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="text">
-        <string/>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/probe_z.svg</normaloff>:/images/probe_z.svg</iconset>
+         <normaloff>:/images/visualizer/visualizer_markers.svg</normaloff>:/images/visualizer/visualizer_markers.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -412,11 +415,6 @@
    <class>StyledToolButton</class>
    <extends>QToolButton</extends>
    <header>styledtoolbutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QToolButtonWithMenu</class>
-   <extends>QToolButton</extends>
-   <header>qtoolbuttonwithmenu.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -43,6 +43,8 @@ void PartMainControl::setupProbeMenu()
     // connect(ui->cmdProbe, &QWidget::customContextMenuRequested, this, [this, menu](const QPoint &pos) {
     //     menu->exec(ui->cmdProbe->mapToGlobal(pos));
     // });
+
+    connect(ui->cmdScanTable, &QToolButton::clicked, this, &PartMainControl::onCmdScanTableClicked);
 }
 
 void PartMainControl::updateProbeIcon()
@@ -82,9 +84,12 @@ void PartMainControl::updateControlsState(bool portOpened, bool process)
 void PartMainControl::updateControlsState(StateBehavior *sb)
 {
     // TODO: replace with sb->canExecute(Action::CheckMode) once Action::CheckMode is added
-    ui->cmdCheck->setEnabled(sb->is(StateBehavior::Type::Idle));
+    ui->cmdCheck->setEnabled(sb->isOneOf(StateBehavior::Type::Idle, StateBehavior::Type::CheckMode));
     ui->cmdCheck->setChecked(sb->is(StateBehavior::Type::CheckMode));
-    ui->cmdHold->setChecked(sb->is(StateBehavior::Type::Hold));
+    {
+        QSignalBlocker blocker(ui->cmdHold);
+        ui->cmdHold->setChecked(sb->is(StateBehavior::Type::Hold));
+    }
     ui->cmdProbe->setEnabled(sb->canExecute(Action::Type::Probe));
     ui->cmdZeroZ->setEnabled(sb->canExecute(Action::Type::ZeroZ));
     ui->cmdZeroXY->setEnabled(sb->canExecute(Action::Type::ZeroXY));
@@ -108,7 +113,13 @@ void PartMainControl::onCmdHomeClicked()
 
 void PartMainControl::onCmdCheckClicked(bool checked)
 {
-
+    if (checked) {
+        emit this->check();
+        emit this->command(GRBLCommand::Check);
+    } else {
+        emit this->abortCheck();
+        emit this->command(GRBLCommand::AbortCheck);
+    }
 }
 
 void PartMainControl::onCmdResetClicked()
@@ -156,4 +167,9 @@ void PartMainControl::onCmdZeroXYClicked()
 {
     emit this->zeroXY();
     emit this->command(GRBLCommand::ZeroXY);
+}
+
+void PartMainControl::onCmdScanTableClicked()
+{
+    emit this->scanTable();
 }

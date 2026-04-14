@@ -39,6 +39,9 @@ signals:
     void probe(ProbeMode mode);
     void zeroZ();
     void zeroXY();
+    void check();
+    void abortCheck();
+    void scanTable();
     void command(GRBLCommand command);
 
 private:
@@ -61,6 +64,7 @@ private slots:
     void onCmdProbeClicked();
     void onCmdZeroZClicked();
     void onCmdZeroXYClicked();
+    void onCmdScanTableClicked();
 };
 
 #endif // PARTMAINCONTROL_H
