@@ -8,18 +8,6 @@
 #include <QObject>
 #include "virtualconnection.h"
 
-#ifndef VIRTUAL_SIMULATOR_PROCESS
-class VirtualUCNCWorkerThread : public QThread
-{
-    public:
-        VirtualUCNCWorkerThread(QString serverName, QAtomicInt* stopFlag);
-        void run() override;
-    private:
-        QString     m_serverName;
-        QAtomicInt* m_stopFlag;
-};
-#endif
-
 class VirtualUCNCConnection : public VirtualConnection
 {
     Q_OBJECT

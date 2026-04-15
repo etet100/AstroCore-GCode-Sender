@@ -148,6 +148,9 @@ SOURCES += main.cpp\
     io/connection/virtualfluidncconnection.cpp \
     io/connection/virtualgrblconnection.cpp \
     io/connection/virtualucncconnection.cpp \
+    io/connection/virtualgrblworkerthread.cpp \
+    io/connection/virtualfluidncworkerthread.cpp \
+    io/connection/virtualucncworkerthread.cpp \
     core/state_behavior/action.cpp \
     core/state_behavior/checkmodebehavior.cpp \
     core/state_behavior/connectingbehavior.cpp \
@@ -334,6 +337,10 @@ HEADERS  += ui/forms/frmmain.h \
     io/connection/virtualfluidncconnection.h \
     io/connection/virtualgrblconnection.h \
     io/connection/virtualucncconnection.h \
+    io/connection/simulatordefs.h \
+    io/connection/virtualgrblworkerthread.h \
+    io/connection/virtualfluidncworkerthread.h \
+    io/connection/virtualucncworkerthread.h \
     modules/pendant/circularbuffer.h \
     core/state_behavior/action.h \
     core/state_behavior/checkmodebehavior.h \

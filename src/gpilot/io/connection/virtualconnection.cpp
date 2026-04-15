@@ -18,7 +18,7 @@ VirtualConnection::VirtualConnection(QString deviceName, QObject *parent)
     , m_deviceName(deviceName)
 {
 #ifndef VIRTUAL_SIMULATOR_PROCESS
-    m_stopFlag = WorkerStopFlag::Running;
+    m_stopFlag = Simulator::Running;
 #endif
 }
 
@@ -45,7 +45,9 @@ bool VirtualConnection::open()
         return true;
     }
 
-    m_stopFlag = WorkerStopFlag::Running;
+#ifndef VIRTUAL_SIMULATOR_PROCESS
+    m_stopFlag = Simulator::Running;
+#endif
     m_incoming.clear();
 
     setState(ConnectionState::Connecting);
@@ -154,7 +156,7 @@ void VirtualConnection::cleanupThread()
 
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Stopping thread...";
 
-    m_stopFlag = WorkerStopFlag::StopRequested;
+    m_stopFlag = Simulator::StopRequested;
 
     if (!m_thread->wait(1500)) {
         m_thread->terminate();

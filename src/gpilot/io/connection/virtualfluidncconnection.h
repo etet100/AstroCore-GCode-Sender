@@ -3,19 +3,6 @@
 
 #include "virtualconnection.h"
 
-#ifndef VIRTUAL_SIMULATOR_PROCESS
-#include <QThread>
-class VirtualFluidNCWorkerThread : public QThread
-{
-    public:
-        VirtualFluidNCWorkerThread(QString serverName, QAtomicInt* stopFlag);
-        void run() override;
-    private:
-        QString     m_serverName;
-        QAtomicInt* m_stopFlag;
-};
-#endif
-
 class VirtualFluidNCConnection : public VirtualConnection
 {
     Q_OBJECT

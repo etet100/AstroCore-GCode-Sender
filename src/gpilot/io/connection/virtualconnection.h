@@ -12,6 +12,7 @@
 #include <QThread>
 #include <QPointer>
 #include "connection.h"
+#include "simulatordefs.h"
 
 // Base class for virtual (emulated) machine connections.
 //
@@ -33,12 +34,6 @@ class VirtualConnection : public Connection
     Q_OBJECT
 
 public:
-    enum WorkerStopFlag {
-        Running = 0,
-        StopRequested = 2,
-        Stopped = 3
-    };
-
     explicit VirtualConnection(QString deviceName, QObject* parent = nullptr);
     virtual ~VirtualConnection();
 

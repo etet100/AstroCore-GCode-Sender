@@ -8,18 +8,6 @@
 #include <QObject>
 #include "virtualconnection.h"
 
-#ifndef VIRTUAL_SIMULATOR_PROCESS
-class VirtualGRBLWorkerThread : public QThread
-{
-    public:
-        VirtualGRBLWorkerThread(QString serverName, QAtomicInt* stopFlag);
-        void run() override;
-    private:
-        QString     m_serverName;
-        QAtomicInt* m_stopFlag;
-};
-#endif
-
 class VirtualGRBLConnection : public VirtualConnection
 {
     Q_OBJECT
