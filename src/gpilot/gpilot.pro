@@ -167,6 +167,7 @@ SOURCES += main.cpp\
     core/state_behavior/toolchangebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
+    ui/drawers/compositedrawable.cpp \
     ui/drawers/cubedrawer.cpp \
     ui/drawers/cursordrawer.cpp \
     ui/drawers/heightmapareadrawer.cpp \
@@ -358,9 +359,11 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/toolchangebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
+    ui/drawers/compositedrawable.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \
+    ui/drawers/idrawable.h \
     ui/drawers/heightmapareadrawer.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/nogcodedefaultdrawer.h \

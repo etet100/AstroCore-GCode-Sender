@@ -12,6 +12,7 @@
 #include <QQuaternion>
 #include "utils/utils.h"
 #include "ui/widgets/glpalette.h"
+#include "idrawable.h"
 
 #define QUANTIZE_COLOR_STEPS 25
 #define QUANTIZE_COLOR(x) ((int) floor(x * QUANTIZE_COLOR_STEPS) / QUANTIZE_COLOR_STEPS)
@@ -64,35 +65,29 @@ struct _2DTexturedVertexData
     QVector2D texCoord;
 };
 
-class ShaderDrawable : protected QOpenGLFunctions
+class ShaderDrawable : public IDrawable, protected QOpenGLFunctions
 {
 public:
-    enum class ProgramType {
-        Default,
-        GCode,
-        Billboard,
-    };
-
     explicit ShaderDrawable();
     ~ShaderDrawable();
-    void update();
-    virtual void draw(QOpenGLShaderProgram *shaderProgram);
+    void update() override;
+    virtual void draw(QOpenGLShaderProgram *shaderProgram) override;
 
-    bool needsUpdateGeometry() const;
-    virtual void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette);
+    bool needsUpdateGeometry() const override;
+    virtual void updateGeometry(QOpenGLShaderProgram *shaderProgram, GLPalette &palette) override;
 
     virtual QVector3D sizes();
-    virtual QVector3D minimumExtremes();
-    virtual QVector3D maximumExtremes();
-    virtual int getVertexCount();
+    virtual QVector3D minimumExtremes() override;
+    virtual QVector3D maximumExtremes() override;
+    virtual int getVertexCount() override;
 
     double lineWidth() const;
     void setLineWidth(double lineWidth);
 
-    bool visible() const;
-    void setVisible(bool visible);
+    bool visible() const override;
+    void setVisible(bool visible) override;
     void toggleVisible();
-    bool depthTestEnabled() { return m_depthTestEnabled; }
+    bool depthTestEnabled() override { return m_depthTestEnabled; }
     void setPointSize(double pointSize);
 
     void setTranslation(const QVector3D &translation);
@@ -103,11 +98,11 @@ public:
 
     QList<VertexData>& lines() { return m_lines; }
     virtual bool updateData(GLPalette &palette);
-    void bindData(QOpenGLShaderProgram *shaderProgram);
+    void bindData(QOpenGLShaderProgram *shaderProgram) override;
 
-    virtual ProgramType programType() { return ProgramType::Default; };
+    virtual ProgramType programType() override { return ProgramType::Default; };
 
-    virtual bool sort(QMatrix4x4 viewMatrix);
+    virtual bool sort(QMatrix4x4 viewMatrix) override;
 
 protected:
     double m_lineWidth = 1.0;

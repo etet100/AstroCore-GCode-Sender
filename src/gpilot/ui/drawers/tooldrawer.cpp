@@ -8,8 +8,20 @@ ToolDrawer::ToolDrawer()
     m_toolDiameter = 3;
     m_toolLength = 15;
     m_toolAngle = 35;
-    m_toolPosition = QVector3D(0, 0, 0);
     m_rotationAngle = 0;
+    m_rotationSpeed = 0;
+
+    m_rotationTimer = new QTimer();
+    m_rotationTimer->setInterval(16); // ~60 fps
+    QObject::connect(m_rotationTimer, &QTimer::timeout, [this]() {
+        // 100% speed = 360 deg/s, interval = 16ms → 5.76 deg/tick
+        rotate(m_rotationSpeed / 100.0 * 5.76);
+    });
+}
+
+ToolDrawer::~ToolDrawer()
+{
+    delete m_rotationTimer;
 }
 
 bool ToolDrawer::updateData(GLPalette &palette)
@@ -86,29 +98,29 @@ bool ToolDrawer::sort(QMatrix4x4 viewMatrix)
 void ToolDrawer::createLines(const int arcs, VertexData &vertex)
 {
     for (int i = 0; i < arcs; i++) {
-        double x = m_toolPosition.x() + m_toolDiameter / 2 * cos(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
-        double y = m_toolPosition.y() + m_toolDiameter / 2 * sin(m_rotationAngle / 180 * M_PI + (2 * M_PI / arcs) * i);
+        double x = m_toolDiameter / 2 * cos((2 * M_PI / arcs) * i);
+        double y = m_toolDiameter / 2 * sin((2 * M_PI / arcs) * i);
 
         // Side lines
-        vertex.position = QVector3D(x, y, m_toolPosition.z() + m_endLength);
+        vertex.position = QVector3D(x, y, m_endLength);
         m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_toolPosition.z() + m_toolLength);
+        vertex.position = QVector3D(x, y, m_toolLength);
         m_lines.append(vertex);
 
         // Bottom lines
-        vertex.position = QVector3D(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z());
+        vertex.position = QVector3D(0, 0, 0);
         m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_toolPosition.z() + m_endLength);
+        vertex.position = QVector3D(x, y, m_endLength);
         m_lines.append(vertex);
 
         // Top lines
-        vertex.position = QVector3D(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_toolLength);
+        vertex.position = QVector3D(0, 0, m_toolLength);
         m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, m_toolPosition.z() + m_toolLength);
+        vertex.position = QVector3D(x, y, m_toolLength);
         m_lines.append(vertex);
 
         // Zero Z lines
-        vertex.position = QVector3D(m_toolPosition.x(), m_toolPosition.y(), 0);
+        vertex.position = QVector3D(0, 0, 0);
         m_lines.append(vertex);
         vertex.position = QVector3D(x, y, 0);
         m_lines.append(vertex);
@@ -116,17 +128,14 @@ void ToolDrawer::createLines(const int arcs, VertexData &vertex)
 
     // Draw circles
     // Bottom
-    m_lines += createCircle(QVector3D(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_endLength),
-                            m_toolDiameter / 2, 20, vertex.color);
+    m_lines += createCircle(QVector3D(0, 0, m_endLength), m_toolDiameter / 2, 20, vertex.color);
 
     // Top
-    m_lines += createCircle(QVector3D(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_toolLength),
-                            m_toolDiameter / 2, 20, vertex.color);
+    m_lines += createCircle(QVector3D(0, 0, m_toolLength), m_toolDiameter / 2, 20, vertex.color);
 
     // Zero Z circle
     if (m_endLength == 0) {
-        m_lines += createCircle(QVector3D(m_toolPosition.x(), m_toolPosition.y(), 0),
-                                m_toolDiameter / 2, 20, vertex.color);
+        m_lines += createCircle(QVector3D(0, 0, 0), m_toolDiameter / 2, 20, vertex.color);
     }
 }
 
@@ -138,11 +147,11 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
     double angleStep = 2 * M_PI / arcs;
 
     for (int i = 0; i < arcs; ++i) {
-        double angle = m_rotationAngle / 180 * M_PI + angleStep * i;
-        double x = m_toolPosition.x() + m_toolDiameter / 2 * cos(angle);
-        double y = m_toolPosition.y() + m_toolDiameter / 2 * sin(angle);
-        bottomCircle.append(QVector3D(x, y, m_toolPosition.z() + m_endLength));
-        topCircle.append(QVector3D(x, y, m_toolPosition.z() + m_toolLength + 0.1));
+        double angle = angleStep * i;
+        double x = m_toolDiameter / 2 * cos(angle);
+        double y = m_toolDiameter / 2 * sin(angle);
+        bottomCircle.append(QVector3D(x, y, m_endLength));
+        topCircle.append(QVector3D(x, y, m_toolLength + 0.1));
     }
 
     auto setTriangleNormal = [](VertexData &a, VertexData &b, VertexData &c) {
@@ -170,7 +179,7 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
     }
 
     // Top cap (fan from center)
-    QVector3D topCenter(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_toolLength);
+    QVector3D topCenter(0, 0, m_toolLength);
     for (int i = 0; i < arcs; ++i) {
         int next = (i + 1) % arcs;
         VertexData v1 = vertex; v1.position = topCenter;
@@ -182,7 +191,7 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
 
     // Sharp tip triangles (if m_endLength > 0)
     if (m_endLength > 0) {
-        QVector3D tip(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z());
+        QVector3D tip(0, 0, 0);
         for (int i = 0; i < arcs; ++i) {
             int next = (i + 1) % arcs;
             VertexData v1 = vertex; v1.position = tip;
@@ -196,7 +205,7 @@ void ToolDrawer::createTriangles(const int arcs, VertexData &vertex)
         }
     } else {
         // Bottom cap (fan from center)
-        QVector3D bottomCenter(m_toolPosition.x(), m_toolPosition.y(), m_toolPosition.z() + m_endLength);
+        QVector3D bottomCenter(0, 0, m_endLength);
         for (int i = 0; i < arcs; ++i) {
             int next = (i + 1) % arcs;
             VertexData v1 = vertex; v1.position = bottomCenter;
@@ -256,9 +265,16 @@ void ToolDrawer::setToolLength(double toolLength)
 
 void ToolDrawer::setToolPosition(const QVector3D &toolPosition)
 {
-    if (m_toolPosition != toolPosition) {
-        m_toolPosition = toolPosition;
-        update();
+    setTranslation(toolPosition);
+}
+
+void ToolDrawer::setRotationSpeed(double speed)
+{
+    m_rotationSpeed = speed;
+    if (speed > 0) {
+        m_rotationTimer->start();
+    } else {
+        m_rotationTimer->stop();
     }
 }
 
@@ -266,7 +282,7 @@ void ToolDrawer::setRotationAngle(double rotationAngle)
 {
     if (m_rotationAngle != rotationAngle) {
         m_rotationAngle = rotationAngle;
-        update();
+        setRotation(0.0f, 0.0f, (float)rotationAngle);
     }
 }
 

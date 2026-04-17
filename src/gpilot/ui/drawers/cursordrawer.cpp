@@ -6,8 +6,6 @@
 #include <cmath>
 #include <QTime>
 
-using namespace std::chrono;
-
 CursorDrawer::CursorDrawer() : ShaderDrawable()
 {
     m_toolDiameter = 3;
@@ -149,17 +147,6 @@ bool CursorDrawer::updateData(GLPalette &palette)
     // createLines(z, arcs, vertex);
     createTriangles(z, arcs, vertex);
 
-    for (int i = 0; i < arcs; i++) {
-        // Zero Z lines
-        double x = m_position.x() + m_toolDiameter / 2 * cos((2 * M_PI / arcs) * i);
-        double y = m_position.y() + m_toolDiameter / 2 * sin((2 * M_PI / arcs) * i);
-
-        vertex.position = QVector3D(m_position.x(), m_position.y(), 0);
-        m_lines.append(vertex);
-        vertex.position = QVector3D(x, y, 0);
-        m_lines.append(vertex);
-    }
-
     return true;
 }
 
@@ -227,4 +214,127 @@ void CursorDrawer::startAnimator()
     m_animator->start();
 }
 
+// --- CursorShadowDrawer ---
 
+CursorShadowDrawer::CursorShadowDrawer() : ShaderDrawable()
+{
+    m_toolDiameter = 3;
+    m_position = QVector3D(0, 0, 0);
+    m_color = QColor(0, 0, 0);
+}
+
+void CursorShadowDrawer::setPosition(QPointF position)
+{
+    QVector3D pos3d(position.x(), position.y(), 0);
+    if (m_position != pos3d) {
+        m_position = pos3d;
+        update();
+    }
+}
+
+void CursorShadowDrawer::setColor(const QColor &color)
+{
+    m_color = color;
+}
+
+void CursorShadowDrawer::setToolDiameter(double diameter)
+{
+    m_toolDiameter = diameter;
+}
+
+bool CursorShadowDrawer::updateData(GLPalette &palette)
+{
+    const int arcs = 20;
+
+    m_lines.clear();
+    m_triangles.clear();
+    m_points.clear();
+
+    VertexData vertex;
+    QColor color = m_color;
+    color.setAlphaF(0.5);
+    vertex.color = palette.color(color);
+    vertex.start = QVector3D(sNan, sNan, sNan);
+
+    // Zero Z circle
+    m_lines += createCircle(QVector3D(m_position.x(), m_position.y(), 0),
+                            m_toolDiameter / 2, arcs, vertex.color);
+
+    // Spokes from center to circle edge
+    for (int i = 0; i < arcs; i++) {
+        double x = m_position.x() + m_toolDiameter / 2 * cos((2 * M_PI / arcs) * i);
+        double y = m_position.y() + m_toolDiameter / 2 * sin((2 * M_PI / arcs) * i);
+
+        vertex.position = QVector3D(m_position.x(), m_position.y(), 0);
+        m_lines.append(vertex);
+        vertex.position = QVector3D(x, y, 0);
+        m_lines.append(vertex);
+    }
+
+    return true;
+}
+
+QVector<VertexData> CursorShadowDrawer::createCircle(QVector3D center, double radius, int arcs, GLuint color)
+{
+    QVector<VertexData> circle;
+
+    VertexData vertex;
+    vertex.color = color;
+    vertex.start = QVector3D(sNan, sNan, sNan);
+
+    for (int i = 0; i <= arcs; i++) {
+        double angle = 2 * M_PI * i / arcs;
+        double x = center.x() + radius * cos(angle);
+        double y = center.y() + radius * sin(angle);
+
+        if (i > 1) {
+            circle.append(circle.last());
+        } else if (i == arcs) {
+            circle.append(circle.first());
+        }
+
+        vertex.position = QVector3D(x, y, center.z());
+        circle.append(vertex);
+    }
+
+    return circle;
+}
+
+// --- CursorCompositeDrawer ---
+
+CursorCompositeDrawer::CursorCompositeDrawer()
+{
+    auto cursor = std::make_unique<CursorDrawer>();
+    auto shadow = std::make_unique<CursorShadowDrawer>();
+
+    m_cursor = cursor.get();
+    m_shadow = shadow.get();
+
+    addPart(std::move(cursor));
+    addPart(std::move(shadow));
+}
+
+void CursorCompositeDrawer::setPosition(QPointF position)
+{
+    m_cursor->setPosition(position);
+    m_shadow->setPosition(position);
+}
+
+void CursorCompositeDrawer::setColor(const QColor &color)
+{
+    m_cursor->setColor(color);
+    m_shadow->setColor(color);
+}
+
+void CursorCompositeDrawer::setVisible(bool visible)
+{
+    CompositeDrawable::setVisible(visible);
+    m_cursor->update();
+    m_shadow->update();
+}
+
+void CursorCompositeDrawer::update()
+{
+    m_cursor->update();
+    m_shadow->update();
+}

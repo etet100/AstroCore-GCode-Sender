@@ -155,7 +155,7 @@ class PartMainVisualizer : public QWidget
         GcodeDrawer *m_currentDrawer = nullptr;
         BoundingBoxDrawer m_boundingBoxDrawer;
         ToolDrawer m_toolDrawer;
-        CursorDrawer m_cursorDrawer;
+        CursorCompositeDrawer m_cursorDrawer;
         HeightMapAreaDrawer m_heightmapBorderDrawer;
         HeightMapGridDrawer m_heightmapGridDrawer;
         HeightMapGridBillboardContentData* m_lastHMGBContentData = nullptr;

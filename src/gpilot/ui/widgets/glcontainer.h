@@ -7,6 +7,7 @@
 #endif
 #include "glwidget.h"
 #include "ui/drawers/shaderdrawable.h"
+#include "ui/drawers/idrawable.h"
 
 #ifdef USE_GLWINDOW
 class GLContainer : public QWidget
@@ -15,11 +16,11 @@ class GLContainer : public QWidget
 
     public:
         GLContainer(QWidget *parent);
-        void addDrawable(ShaderDrawable *drawable);
-        GLContainer &operator<<(ShaderDrawable *drawable);
+        void addDrawable(IDrawable *drawable);
+        GLContainer &operator<<(IDrawable *drawable);
 
-        void updateExtremes(ShaderDrawable *drawable);
-        void fitDrawable(ShaderDrawable *drawable = NULL);
+        void updateExtremes(IDrawable *drawable);
+        void fitDrawable(IDrawable *drawable = nullptr);
         bool antialiasing() const;
         void setAntialiasing(bool antialiasing);
 
@@ -86,7 +87,7 @@ class GLContainer : public QWidget
 
         QString pinState() const;
         void setPinState(const QString &pinState);
-        
+
         void updateDrawer(ShaderDrawable *);
     protected:
         void showEvent(QShowEvent *event) override;

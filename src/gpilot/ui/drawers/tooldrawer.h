@@ -15,17 +15,17 @@ class ToolDrawer : public ShaderDrawable
 {
 public:
     explicit ToolDrawer();
+    ~ToolDrawer();
 
     void setToolDiameter(double toolDiameter);
     void setToolLength(double toolLength);
     void setToolPosition(const QVector3D &toolPosition);
-    void setRotationAngle(double rotationAngle);
-    void rotate(double angle);
+    void setRotationSpeed(double speed);
     void setToolAngle(double toolAngle);
     void setColor(const QColor &color);
     void setMode(ConfigurationVisualizer::ToolType);
     bool sort(QMatrix4x4 viewMatrix) override;
-    
+
 protected:
     bool updateData(GLPalette &palette) override;
 
@@ -33,12 +33,15 @@ private:
     double m_toolDiameter;
     double m_toolLength;
     double m_endLength;
-    QVector3D m_toolPosition;
     double m_rotationAngle;
+    double m_rotationSpeed;
     double m_toolAngle;
     QColor m_color;
     ConfigurationVisualizer::ToolType m_mode;
+    QTimer *m_rotationTimer;
 
+    void setRotationAngle(double rotationAngle);
+    void rotate(double angle);
     double normalizeAngle(double angle);
     QVector<VertexData> createCircle(QVector3D center, double radius, int arcs, uint color);
     void createLines(const int arcs, VertexData &vertex);

@@ -17,24 +17,24 @@ GLContainer::GLContainer(QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
 }
 
-void GLContainer::addDrawable(ShaderDrawable *drawable)
+void GLContainer::addDrawable(IDrawable *drawable)
 {
     m_glWidget->addDrawable(drawable);
 }
 
-GLContainer &GLContainer::operator<<(ShaderDrawable *drawable)
+GLContainer &GLContainer::operator<<(IDrawable *drawable)
 {
     m_glWidget->addDrawable(drawable);
 
     return *this;
 }
 
-void GLContainer::fitDrawable(ShaderDrawable *drawable)
+void GLContainer::fitDrawable(IDrawable *drawable)
 {
     m_glWidget->fitDrawable(drawable);
 }
 
-void GLContainer::updateExtremes(ShaderDrawable *drawable)
+void GLContainer::updateExtremes(IDrawable *drawable)
 {
     m_glWidget->updateExtremes(drawable);
 }
