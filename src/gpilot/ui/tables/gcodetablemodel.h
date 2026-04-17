@@ -6,6 +6,7 @@
 #define GCODETABLEMODEL_H
 
 #include "core/gcode/gcode.h"
+#include "core/gcode/gcodefilterview.h"
 #include <QAbstractTableModel>
 #include <QString>
 
@@ -46,21 +47,23 @@ public:
     void setFilter(const QString &text);
     void clearFilter();
 
+    // Access to the underlying filter for advanced options (overlay visibility).
+    GCodeFilterView* filter() { return &m_filter; }
+    const GCodeFilterView* filter() const { return &m_filter; }
+
+    // Maps a source row index to the visible view row (legacy name kept
+    // for compatibility with existing callers).
     int toFilteredIndex(int index) const;
 
 private slots:
-    void notifyLinesUpdated(int fromLine, int toLine);
+    void onFilterAboutToReset();
+    void onFilterReset();
+    void onFilterRangeChanged(int fromView, int toView);
 
 private:
     GCode* m_data = nullptr;
+    GCodeFilterView m_filter;
     QStringList m_headers;
-    bool m_filtered = false;
-    bool m_showComments = true;
-    QString m_filterText;
-    QList<int> m_filteredRows;       // original indices of rows that pass all filters
-    QList<int> m_allRowsToFiltered;  // mapping: original row → last valid filtered index
-
-    void applyFilters();
 };
 
 #endif // GCODETABLEMODEL_H

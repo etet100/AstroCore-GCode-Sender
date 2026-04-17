@@ -5,6 +5,7 @@
 #include <QAbstractItemDelegate>
 #include <QAbstractItemView>
 #include <QModelIndex>
+#include <QTimer>
 #include "ui/tables/gcodetablemodel.h"
 #include "ui/tables/heightmaptablemodel.h"
 #include "ui/tables/gcodeitemdelegate.h"
@@ -147,6 +148,7 @@ class PartMainProgram : public QWidget
         GCodeTableModel* m_currentModel;
         HeightmapTableModel* m_heightmapModel;
         GCodeItemDelegate m_programItemDelegate;
+        QTimer m_filterDebounceTimer;
 
         // High-level model operations
         // Program model operations

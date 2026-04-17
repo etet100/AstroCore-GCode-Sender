@@ -87,6 +87,49 @@ gcode->resetOverlays();
 
 ---
 
+## GCodeFilterView  (`gcode/gcodefilterview.h`)
+
+Bridges a `GCode` source with any view that wants to show only a subset of
+rows (table model, 3D viewer, statistics). Holds a two-way mapping between
+source rows and view rows and emits reset/change signals when the filter
+settings or the source change.
+
+`GCodeTableModel` owns one filter view internally and delegates its filter
+API (`setCommentsVisible`, `setFilter`) to it. Access the filter directly
+via `GCodeTableModel::filter()` for overlay-level controls.
+
+```cpp
+GCodeFilterView* filter = tableModel->filter();
+
+filter->setCommentsVisible(false);       // hide all comment rows
+filter->setAllOverlaysVisible(false);    // hide every overlay
+filter->setOverlayVisible(overlayId, true); // but keep one specific overlay
+filter->setTextFilter("G1");             // substring match on command/comment
+```
+
+| Method | Description |
+|---|---|
+| `setSource(GCode*)` | Bind the filter to a source; emits `aboutToReset`/`reset` |
+| `setCommentsVisible(bool)` | Include or exclude rows with `group == Comment` |
+| `setTextFilter(QString)` | Case-insensitive substring filter (command, and comment when visible) |
+| `setOverlayVisible(id, bool)` | Per-overlay visibility override |
+| `setAllOverlaysVisible(bool)` | Default policy for overlays without an override |
+| `isActive()` | True when any filter is actually removing rows |
+| `rowCount()` | Number of visible rows |
+| `toSourceRow(viewRow)` | View row → source row (or -1) |
+| `toViewRow(sourceRow)` | Source row → view row (nearest earlier visible if hidden) |
+
+Signals: `aboutToReset`, `reset`, `rangeChanged(fromView, toView)`.
+`rangeChanged` is a re-emission of `GCode::linesUpdated` remapped to view
+coordinates, so a table model can connect it to `dataChanged`.
+
+Structural changes to the source (rows added or removed) are **not**
+reflected automatically. The owning model is responsible for rebuilding
+the filter (via `setSource` or by toggling a filter setting) after such
+changes — this matches the pre-existing behavior of `GCodeTableModel`.
+
+---
+
 ## GcodeParser  (`gcode/parser/gcodeparser.h`)
 
 Stateful line-by-line interpreter. Tracks:

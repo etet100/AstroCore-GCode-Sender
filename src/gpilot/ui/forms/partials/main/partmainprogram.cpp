@@ -52,8 +52,15 @@ void PartMainProgram::setupUi()
         m_programModel.setCommentsVisible(state);
     });
 
-    connect(ui->txtFilter, &QLineEdit::textChanged, this, [this](const QString& text) {
-        m_programModel.setFilter(text);
+    // Debounce filter input so every keystroke does not trigger a full
+    // O(n) rebuild of the filter mapping on large programs.
+    m_filterDebounceTimer.setSingleShot(true);
+    m_filterDebounceTimer.setInterval(200);
+    connect(&m_filterDebounceTimer, &QTimer::timeout, this, [this]() {
+        m_programModel.setFilter(ui->txtFilter->text());
+    });
+    connect(ui->txtFilter, &QLineEdit::textChanged, this, [this]() {
+        m_filterDebounceTimer.start();
     });
 
     connect(&m_programModel, &GCodeTableModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight) {

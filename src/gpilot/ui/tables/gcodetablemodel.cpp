@@ -11,16 +11,26 @@ GCodeTableModel::GCodeTableModel(GCode* program, QObject *parent) :
 {
     m_headers << tr("#") << tr("Command") << tr("State") << tr("Response");
 
-    if (program) {
-        connect(program, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
-    }
+    connect(&m_filter, &GCodeFilterView::aboutToReset, this, &GCodeTableModel::onFilterAboutToReset);
+    connect(&m_filter, &GCodeFilterView::reset, this, &GCodeTableModel::onFilterReset);
+    connect(&m_filter, &GCodeFilterView::rangeChanged, this, &GCodeTableModel::onFilterRangeChanged);
+
+    m_filter.setSource(program);
 }
 
-void GCodeTableModel::notifyLinesUpdated(int fromLine, int toLine)
+void GCodeTableModel::onFilterAboutToReset()
 {
-    emit dataChanged(
-        index(toFilteredIndex(fromLine), 0),
-        index(toFilteredIndex(toLine), columnCount() - 1));
+    beginResetModel();
+}
+
+void GCodeTableModel::onFilterReset()
+{
+    endResetModel();
+}
+
+void GCodeTableModel::onFilterRangeChanged(int fromView, int toView)
+{
+    emit dataChanged(index(fromView, 0), index(toView, columnCount() - 1));
 }
 
 QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
@@ -29,23 +39,22 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 
-    int rowNumber = index.row();
-    if (m_filtered) {
-        rowNumber = m_filteredRows[index.row()];
-    }
+    const int sourceRow = m_filter.isActive()
+        ? m_filter.toSourceRow(index.row())
+        : index.row();
 
-    // Last, empty line for easier appending new lines
-    if (rowNumber == m_data->count()) {
+    // Last, empty line for easier appending new lines (only without filters).
+    if (sourceRow == m_data->count() || sourceRow < 0) {
         // Show <new command> as grayed comment in the Command column
         return role == Qt::UserRole + 1  && (GCodeTableColumn)index.column() == GCodeTableColumn::Command ? "<new command>" : QVariant();
     }
 
-    GCodeItem& item = m_data->at(rowNumber);
+    GCodeItem& item = m_data->at(sourceRow);
     if (role == Qt::DisplayRole) {
         switch ((GCodeTableColumn)index.column())
         {
             case GCodeTableColumn::Number: return item.lineNumber;
-            case GCodeTableColumn::Command: return item.command;
+            case GCodeTableColumn::Command: return item.command();
             case GCodeTableColumn::State:
                 switch (item.state) {
                     case GCodeItem::InQueue: return tr("In queue");
@@ -57,7 +66,7 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
                     case GCodeItem::Aborted: return tr("Aborted");
                 }
                 return tr("Unknown");
-            case GCodeTableColumn::Response: return item.response;
+            case GCodeTableColumn::Response: return m_data->response(sourceRow);
         }
     } else if (role == Qt::EditRole) {
         switch ((GCodeTableColumn)index.column())
@@ -75,7 +84,7 @@ QVariant GCodeTableModel::data(const QModelIndex &index, int role) const
     }
 
     if (role == Qt::UserRole + 3) {
-        return (m_data->commandIndex() == rowNumber); // is current command
+        return (m_data->commandIndex() == sourceRow); // is current command
     }
 
     if (role == Qt::TextAlignmentRole) {
@@ -97,32 +106,38 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
 {
     if (index.isValid() && role == Qt::EditRole) {
         int row = index.row();
-        // Inserting new line at the end
-        if (row == m_data->count()) {
+        // Inserting new line at the end (only available when filter is inactive).
+        if (!m_filter.isActive() && row == m_data->count()) {
             const GCodeItem newItem = GcodePreprocessorUtils::parseLine(value.toString());
             *m_data << newItem;
 
-            int rowCount = m_filtered ? m_filteredRows.size() : (m_data->count() + 1);
-            beginInsertRows(QModelIndex(), rowCount - 1, rowCount - 1);
+            const int newRowCount = rowCount();
+            beginInsertRows(QModelIndex(), newRowCount - 1, newRowCount - 1);
             endInsertRows();
 
-            qDebug() << "Appending new line:" << newItem.command << "with comment:" << newItem.comment;
+            qDebug() << "Appending new line:" << newItem.command() << "with comment:" << newItem.comment;
 
             return false;
         }
 
-        GCodeItem& item = m_data->at(row);
+        const int sourceRow = m_filter.isActive() ? m_filter.toSourceRow(row) : row;
+        if (sourceRow < 0) {
+            return false;
+        }
+
+        GCodeItem& item = m_data->at(sourceRow);
         switch ((GCodeTableColumn)index.column())
         {
             case GCodeTableColumn::Number: return false;
             case GCodeTableColumn::Command: {
                 const GCodeItem newItem = GcodePreprocessorUtils::parseLine(value.toString());
-                item.command = newItem.command;
+                item.line = newItem.line;
                 item.comment = newItem.comment;
+                item.args = newItem.args;
                 break;
             }
             // case 2: m_data[index.row()].state = value.toInt(); break;
-            case GCodeTableColumn::Response: item.response = value.toString(); break;
+            case GCodeTableColumn::Response: m_data->setResponse(sourceRow, value.toString()); break;
         }
         emit dataChanged(index, index);
 
@@ -134,11 +149,8 @@ bool GCodeTableModel::setData(const QModelIndex &index, const QVariant &value, i
 
 void GCodeTableModel::setProgram(GCode* program)
 {
-    beginResetModel();
     m_data = program;
-    applyFilters();
-    // connect(m_data, &GCode::linesUpdated, this, &GCodeTableModel::notifyLinesUpdated, Qt::UniqueConnection);
-    endResetModel();
+    m_filter.setSource(program);
 }
 
 bool GCodeTableModel::insertRow(int row, const QModelIndex &parent)
@@ -185,7 +197,7 @@ void GCodeTableModel::update()
 
 void GCodeTableModel::updateLines(int from, int to)
 {
-    notifyLinesUpdated(from, to);
+    onFilterRangeChanged(m_filter.toViewRow(from), m_filter.toViewRow(to));
 }
 
 int GCodeTableModel::rowCount(const QModelIndex &parent) const
@@ -193,11 +205,12 @@ int GCodeTableModel::rowCount(const QModelIndex &parent) const
     Q_UNUSED(parent)
 
     if (m_data == nullptr) {
-        return m_filtered ? 0 : 1;
+        return m_filter.isActive() ? 0 : 1;
     }
 
-    // +1 add empty row at the end for easier appending new lines
-    return m_filtered ? m_filteredRows.size() : (m_data->count() + 1);
+    // +1 adds the empty row at the end for appending new lines.
+    // The append row is hidden when any filter is active.
+    return m_filter.isActive() ? m_filter.rowCount() : (m_data->count() + 1);
 }
 
 int GCodeTableModel::columnCount(const QModelIndex &parent) const
@@ -223,10 +236,7 @@ Qt::ItemFlags GCodeTableModel::flags(const QModelIndex &index) const
 
 void GCodeTableModel::setCommentsVisible(bool visible)
 {
-    m_showComments = visible;
-    beginResetModel();
-    applyFilters();
-    endResetModel();
+    m_filter.setCommentsVisible(visible);
 }
 
 void GCodeTableModel::showComments()
@@ -241,10 +251,7 @@ void GCodeTableModel::hideComments()
 
 void GCodeTableModel::setFilter(const QString &text)
 {
-    m_filterText = text.trimmed();
-    beginResetModel();
-    applyFilters();
-    endResetModel();
+    m_filter.setTextFilter(text);
 }
 
 void GCodeTableModel::clearFilter()
@@ -254,42 +261,6 @@ void GCodeTableModel::clearFilter()
 
 int GCodeTableModel::toFilteredIndex(int index) const
 {
-    if (m_filtered) {
-        return m_allRowsToFiltered[index];
-    } else {
-        return index;
-    }
-}
-
-void GCodeTableModel::applyFilters()
-{
-    m_filtered = !m_showComments || !m_filterText.isEmpty();
-
-    m_filteredRows.clear();
-    m_allRowsToFiltered.clear();
-
-    if (!m_filtered) {
-        return;
-    }
-
-    int i = 0;
-    int k = 0;
-    for (auto& row : *m_data) {
-        bool visible = true;
-        if (!m_showComments && row.group == GCodeItemGroup::Comment) {
-            visible = false;
-        } else if (!m_filterText.isEmpty()) {
-            if (!row.command.contains(m_filterText, Qt::CaseInsensitive) && (!m_showComments || !row.comment.contains(m_filterText, Qt::CaseInsensitive))) {
-                visible = false;
-            }
-        }
-        if (visible) {
-            k = m_filteredRows.size();
-            m_filteredRows.append(i);
-        }
-        i++;
-        m_allRowsToFiltered.append(k);
-    }
-
-    assert(m_data->count() == m_allRowsToFiltered.count());
+    const int viewRow = m_filter.toViewRow(index);
+    return viewRow < 0 ? 0 : viewRow;
 }
