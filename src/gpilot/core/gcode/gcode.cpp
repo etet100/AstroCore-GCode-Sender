@@ -5,6 +5,36 @@
 #include "gcode.h"
 #include <QCryptographicHash>
 
+QString GCodeItem::command() const
+{
+    if (line.isEmpty()) {
+        return QString();
+    }
+
+    // Truncate at ';' (rest of line is a comment), then remove every '(...)'
+    // block. Per NIST RS-274 G-code allows inline parenthesised comments,
+    // e.g. "G1 (ostroznie) X10 (feed) Y20" => "G1 X10 Y20".
+    const int semiPos = line.indexOf(';');
+    QString cmd = (semiPos >= 0) ? line.left(semiPos) : line;
+
+    int open;
+    while ((open = cmd.indexOf('(')) >= 0) {
+        const int close = cmd.indexOf(')', open);
+        if (close < 0) {
+            cmd.truncate(open);
+            break;
+        }
+        cmd.remove(open, close - open + 1);
+    }
+    return cmd.trimmed().toUpper();
+}
+
+bool GCodeItem::isArc() const
+{
+    const QString c = command();
+    return c == "G2" || c == "G3";
+}
+
 GCode::GCode(QObject *parent) : QObject(parent) {
     reset();
 
@@ -26,10 +56,10 @@ void GCode::reset(int commandIndex)
 
     resetOverlays(commandIndex);
 
+    m_responses.clear();
     for (auto& item : m_data) {
         // Is it good idea to rely on group here?
         item.state = item.group == GCodeItemGroup::Comment ? GCodeItem::Comment : GCodeItem::InQueue;
-        item.response.clear();
     }
 
     // Notify that all lines have been updated
@@ -43,7 +73,7 @@ void GCode::resetProcessed(int commandIndex)
 
 QString GCode::command()
 {
-    return m_data[m_commandIndex].command;
+    return m_data[m_commandIndex].command();
 }
 
 void GCode::advanceCommandIndex()
@@ -136,9 +166,38 @@ void GCode::setCommandResponse(int commandIndex, bool success, QString response)
 {
     GCodeItem& item = m_data[commandIndex];
     item.state = success ? GCodeItem::Processed : GCodeItem::Error;
-    item.response = response;
+    setResponse(commandIndex, response);
     m_processedCommandIndex = commandIndex;
     addUpdatedRange(commandIndex);
+}
+
+QString GCode::response(int index) const
+{
+    const auto it = m_responses.constFind(index);
+    if (it != m_responses.constEnd()) {
+        return it.value();
+    }
+    // "ok" is implicit for processed lines; everything else has no response.
+    if (index >= 0 && index < m_data.count()
+        && m_data.at(index).state == GCodeItem::Processed) {
+        return QStringLiteral("ok");
+    }
+    return QString();
+}
+
+void GCode::setResponse(int index, const QString& response)
+{
+    // Skip storing common "ok" / empty responses — they are inferred from state.
+    if (response.isEmpty() || response == QStringLiteral("ok")) {
+        m_responses.remove(index);
+        return;
+    }
+    m_responses.insert(index, response);
+}
+
+void GCode::clearResponses()
+{
+    m_responses.clear();
 }
 
 void GCode::setCommandAborted(int commandIndex)

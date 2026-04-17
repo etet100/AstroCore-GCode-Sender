@@ -11,20 +11,38 @@ rendering, and conversion of G-code files.
 
 ### GCodeItem  (`gcode/gcode.h`)
 Raw parsed record of one G-code line. Stored in the `GCode` list.
+Field order is chosen for packing on 64-bit; structure size is ~88 B
+(down from ~144 B before the memory pass).
 
 | Field | Type | Description |
 |---|---|---|
-| `line` | QString | Full text of the line (modified by converters) |
-| `command` | QString | First G/M command, e.g. "G1", "M3" |
-| `args` | QStringList | Tokenised arguments, e.g. ["G1","X10.0","Y20.0","F300"] |
-| `comment` | QString | Text extracted from `(...)` or `;` comment |
+| `line` | QString | Full trimmed source line, comments included (modified by converters) |
+| `comment` | QString | All comments concatenated (parens bodies and `;` tail), space-separated |
+| `args` | std::vector<std::string> | Tokenised arguments, e.g. ["G1","X10.0","Y20.0","F300"] |
+| `lineNumber` | int | Source line number |
 | `commandNumber` | int | Sequential index assigned by GcodeParser |
-| `state` | States | InQueue / Sent / Processed / Error / Skipped / Comment |
-| `group` | GCodeItemGroup | Movement / ArcMovement / Dwell / Spindle / ... |
+| `overlayId` | int16_t | 0 = main program, >0 = overlay id |
+| `state` | States (uint8_t) | InQueue / Sent / Processed / Error / Skipped / Comment / Aborted |
+| `group` | GCodeItemGroup (uint8_t) | Movement / ArcMovement / Dwell / Spindle / ... |
 | `isMovement` | bool | True if parser generated a PointSegment for this line |
-| `isArc()` | method | True if command == "G2" or "G3" |
-| `overlayId` | int | 0 = main program, >0 = overlay id |
-| `isOverlay()` | method | True if overlayId > 0 |
+| `command()` | method | Computes the executable command text from `line` (comments stripped, uppercased) |
+| `isArc()` | method | True if `command() == "G2"` or `"G3"` |
+| `isOverlay()` | method | True if `overlayId > 0` |
+
+**Notes on removed fields (replaced with equivalents):**
+- `command` is no longer stored. Use `item.command()` — computed on demand from `line`.
+  The method matches the original parser semantics: truncate at `;`, remove every `(...)`
+  block, trim and uppercase. Supports inline comments, e.g.
+  `"G1 (comment) X10 (comment) Y20"` → `"G1 X10 Y20"`.
+- `response` is no longer stored on the item. It lives in a sparse `QHash<int, QString>`
+  on `GCode` — access via `gcode->response(index)` / `gcode->setResponse(index, text)`.
+  `"ok"` responses are not stored; they are inferred from `state == Processed`.
+
+**Comment handling:**
+The parser concatenates all comments on a line into a single `comment` string,
+separated by spaces. Parens are dropped from the bodies. For
+`"G1 (comment) X10 (comment) Y20 ; done"` the stored `comment` is
+`"comment comment done"` (and `line` keeps the original text).
 
 ### PointSegment  (`gcode/parser/pointsegment.h`)
 One endpoint produced by GcodeParser. Carries the full machine state at that point.

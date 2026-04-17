@@ -8,6 +8,8 @@
 #include <QObject>
 #include <QTimer>
 #include <QMap>
+#include <QHash>
+#include <cstdint>
 #include <vector>
 #include <string>
 
@@ -18,7 +20,7 @@ enum class StreamerStartResult
     UnacceptableConnectionState = 2,
 };
 
-enum class GCodeItemGroup
+enum class GCodeItemGroup : uint8_t
 {
     Movement = 0,
     RapidMovement = 1,
@@ -38,25 +40,27 @@ enum class GCodeItemGroup
     Unknown = 15
 };
 
+// Field order chosen for packing on 64-bit: wide members first, then
+// smaller ints, then single-byte enums/bool at the tail.
 struct GCodeItem
 {
-    enum States { InQueue = 0, EmptyLine, Sent, Processed, Error, Skipped, Aborted, Comment };
+    enum States : uint8_t { InQueue = 0, EmptyLine, Sent, Processed, Error, Skipped, Aborted, Comment };
 
-    int lineNumber;
-    QString line;
-    QString command;
-    QString comment;
-    QString response;
-    int commandNumber;
+    QString line;                                 // full trimmed source line (keeps original case and comments)
+    QString comment;                              // first extracted comment (for display only)
+    std::vector<std::string> args;                // parsed argument tokens
+    int lineNumber = 0;
+    int commandNumber = 0;
+    int16_t overlayId = 0;                        // 0 = main program, >0 = overlay id
     States state = InQueue;
-    std::vector<std::string> args;
     GCodeItemGroup group = GCodeItemGroup::Unknown;
     bool isMovement = false;
-    int overlayId = 0;          // 0 = main program, >0 = overlay id
 
-    bool isArc() const {
-        return command.startsWith('G') && (command == "G2" || command == "G3");
-    }
+    // Computes the executable command text from `line`: comments stripped and
+    // uppercased (matches the original parser semantics).
+    QString command() const;
+
+    bool isArc() const;
 
     bool isOverlay() const {
         return overlayId > 0;
@@ -96,7 +100,7 @@ class GCode : public QObject
         GCodeItem& current() { return m_data[m_commandIndex]; }
         int count() { return m_data.count(); }
         bool empty() { return m_data.isEmpty(); }
-        void clear() { m_data.clear(); m_mainCount = 0; }
+        void clear() { m_data.clear(); m_responses.clear(); m_mainCount = 0; }
         void insertLines(int, QString text);
         void deleteLines(int from, int to);
         QString linesAsText(int from, int to);
@@ -105,19 +109,24 @@ class GCode : public QObject
         GCode& operator << (GCodeItem&& item);
         GCode& operator << (const GCode& source);
         void reserve(int size) { m_data.reserve(size); }
+        // Structural edits invalidate index-based response keys, so we drop
+        // the response map on any such change.
         void insert(int index, const GCodeItem& item) {
             if (item.overlayId == 0) m_mainCount++;
             m_data.insert(index, item);
+            m_responses.clear();
         }
         void removeAt(int index) {
             if (m_data[index].overlayId == 0) m_mainCount--;
             m_data.removeAt(index);
+            m_responses.clear();
         }
         void erase(int begin, int end) {
             for (int i = begin; i < end; i++) {
                 if (m_data[i].overlayId == 0) m_mainCount--;
             }
             m_data.erase(m_data.begin() + begin, m_data.begin() + end);
+            m_responses.clear();
         }
         QList<GCodeItem>::iterator begin() { return m_data.begin(); }
         QList<GCodeItem>::iterator end() { return m_data.end(); }
@@ -155,11 +164,20 @@ class GCode : public QObject
         bool isOverlayItem(int index) const;
         int mainCount() const;
 
+        // Response storage. Kept in a sparse hash indexed by position to avoid
+        // paying a QString header per item. "ok" responses are not stored;
+        // they are inferred from the Processed state. Only error/custom
+        // responses occupy memory.
+        QString response(int index) const;
+        void setResponse(int index, const QString& response);
+        void clearResponses();
+
     private:
         int m_commandIndex;
         int m_processedCommandIndex;
         bool m_iterationStarted = false;
         QList<GCodeItem> m_data;
+        QHash<int, QString> m_responses;
         int m_mainCount = 0;
         QMap<int, OverlayInfo> m_overlays;
         int m_nextOverlayId = 0;

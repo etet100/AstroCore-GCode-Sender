@@ -57,7 +57,6 @@ bool ArcsToLines::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, G
         return false;
     }
 
-    item.command    = "G1";
     item.line       = buildG1Line(points[0], points[1], item, true);
     item.args       = GcodePreprocessorUtils::splitCommand(item.line);
     item.group      = GCodeItemGroup::Movement;
@@ -67,7 +66,6 @@ bool ArcsToLines::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, G
     // so inserting at currentIndex+1, +2, ... keeps the correct order.
     for (int i = 2; i < points.size(); ++i) {
         GCodeItem seg;
-        seg.command       = "G1";
         seg.line          = buildG1Line(points[i - 1], points[i], item, false);
         seg.args          = GcodePreprocessorUtils::splitCommand(seg.line);
         seg.isMovement    = true;

@@ -199,7 +199,6 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
             GCodeItem modifiedItem = item;
             modifiedItem.line = generateGCodeLine(startPoint, points[1], item, true, outputCmd);
             modifiedItem.args = GcodePreprocessorUtils::splitCommand(modifiedItem.line);
-            if (!outputCmd.isEmpty()) modifiedItem.command = outputCmd;
             result.append(modifiedItem);
 
             m_parser->addCommand(modifiedItem);
@@ -213,7 +212,6 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
     for (int i = 0; i < points.size() - 1; i++) {
         GCodeItem segmentItem;
         segmentItem.line = generateGCodeLine(points[i], points[i + 1], item, i == 0, outputCmd);
-        segmentItem.command = outputCmd.isEmpty() ? item.command : outputCmd;
         segmentItem.state = GCodeItem::InQueue;
         segmentItem.args = GcodePreprocessorUtils::splitCommand(segmentItem.line);
         segmentItem.isMovement = true;
@@ -295,7 +293,16 @@ QString ApplyHeightmap::generateGCodeLine(const QVector3D &start, const QVector3
                                           const GCodeItem &originalItem, bool isFirstSegment,
                                           const QString &commandOverride)
 {
-    QString command = commandOverride.isEmpty() ? originalItem.command : commandOverride;
+    QString command;
+    if (!commandOverride.isEmpty()) {
+        command = commandOverride;
+    } else {
+        // Take only the G/M code prefix (first token) because later we append
+        // fresh X/Y/Z/F values; the original args would duplicate coordinates.
+        const QString full = originalItem.command();
+        const int sp = full.indexOf(' ');
+        command = (sp < 0) ? full : full.left(sp);
+    }
     if (command.isEmpty() && !originalItem.args.empty()) {
         command = QString::fromStdString(originalItem.args.front());
     }

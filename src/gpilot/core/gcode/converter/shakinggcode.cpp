@@ -196,7 +196,6 @@ QList<GCodeItem> ShakingGCode::processLine(const GCodeItem &item)
     for (int i = 0; i < points.size() - 1; i++) {
         GCodeItem segmentItem;
         segmentItem.line = generateGCodeLine(points[i], points[i + 1], item, i == 0);
-        segmentItem.command = item.command;
         segmentItem.state = GCodeItem::InQueue;
         segmentItem.args = GcodePreprocessorUtils::splitCommand(segmentItem.line);
         segmentItem.isMovement = true;
@@ -277,8 +276,14 @@ QString ShakingGCode::generateGCodeLine(const QVector3D &start, const QVector3D 
 {
     QString line;
 
-    // Extract command (G0, G1, etc.)
-    QString command = originalItem.command;
+    // Extract only the G/M code prefix (first token). We append fresh
+    // coordinates below, so the original args would duplicate them.
+    QString command;
+    {
+        const QString full = originalItem.command();
+        const int sp = full.indexOf(' ');
+        command = (sp < 0) ? full : full.left(sp);
+    }
     if (command.isEmpty() && !originalItem.args.empty()) {
         command = QString::fromStdString(originalItem.args.front());
     }

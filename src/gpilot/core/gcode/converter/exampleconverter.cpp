@@ -134,7 +134,7 @@ bool SafeSpindleStopConverter::convertLine(GCodeItem &item, GCode *gcode, int cu
 {
     Q_UNUSED(parser);
 
-    if (!item.command.startsWith("M5")) {
+    if (!item.command().startsWith("M5")) {
         return false;
     }
 
@@ -143,7 +143,7 @@ bool SafeSpindleStopConverter::convertLine(GCodeItem &item, GCode *gcode, int cu
         return false;
     }
 
-    if (nextLine->command.startsWith("G0")) {
+    if (nextLine->command().startsWith("G0")) {
         item.line += " ; Warning: Rapid move after spindle stop";
         return true;
     }
@@ -160,14 +160,14 @@ bool MovementOptimizerConverter::convertLine(GCodeItem &item, GCode *gcode, int 
 {
     Q_UNUSED(parser);
 
-    if (!item.command.startsWith("G1") || !item.isMovement) {
+    if (!item.command().startsWith("G1") || !item.isMovement) {
         return false;
     }
 
     int consecutiveMoves = 0;
     for (int i = 1; i <= 5; ++i) {
         GCodeItem *ahead = gcode ? gcode->lookAhead(currentIndex, i) : nullptr;
-        if (!ahead || !ahead->command.startsWith("G1") || !ahead->isMovement) {
+        if (!ahead || !ahead->command().startsWith("G1") || !ahead->isMovement) {
             break;
         }
         consecutiveMoves++;

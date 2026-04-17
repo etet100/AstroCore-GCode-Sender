@@ -99,7 +99,6 @@ void compareOriginalAndShaken()
     GCode* original = new GCode();
     GCodeItem item;
     item.line = "G1 X100.0 Y100.0 Z-5.0 F1000";
-    item.command = "G1";
     item.isMovement = true;
     *original << item;
 

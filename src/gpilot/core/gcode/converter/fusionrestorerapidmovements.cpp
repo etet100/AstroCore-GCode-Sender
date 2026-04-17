@@ -169,8 +169,7 @@ bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int
     }
 
     item.line       = newLine;
-    item.command    = GcodePreprocessorUtils::removeComment(newLine);
-    item.args       = GcodePreprocessorUtils::splitCommand(item.command);
+    item.args       = GcodePreprocessorUtils::splitCommand(GcodePreprocessorUtils::removeComment(newLine));
     item.isMovement = true;
     item.group      = (m_lastMotionGcode == 0) ? GCodeItemGroup::RapidMovement
                                                : GCodeItemGroup::Movement;

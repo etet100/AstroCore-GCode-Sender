@@ -45,36 +45,46 @@ static inline std::string &trim(std::string &s)
     return ltrim(rtrim(s));
 }
 
-// Single-pass extraction: strips all comments to build the command, captures the first comment found.
-// Avoids scanning the string twice (once for removeComment, once for parseComment).
+// Single-pass extraction: strips every comment to build the command and
+// concatenates the bodies of all comments (space-separated) into `comment`.
+// Example:
+//   "G1 (ostroznie) X10 (feed) Y20 ; done"
+//      -> command = "G1 X10 Y20"
+//      -> comment = "ostroznie feed done"
 static void splitCommandAndComment(const QString &line, QString &command, QString &comment)
 {
-    comment.clear();
+    QStringList parts;
 
+    // A trailing ';' comment: everything after it is a comment.
     const int semiPos = line.indexOf(';');
-    const int parenPos = line.indexOf('(');
-
-    // Capture the first occurring comment (semicolon or parenthesized)
-    if (semiPos >= 0 && (parenPos < 0 || semiPos <= parenPos)) {
-        comment = line.mid(semiPos + 1).trimmed();
-    } else if (parenPos >= 0) {
-        const int closePos = line.indexOf(')', parenPos);
-        comment = (closePos >= 0)
-            ? line.mid(parenPos, closePos - parenPos + 1)
-            : line.mid(parenPos);
-    }
-
-    // Build command: truncate at semicolon, then remove all (...) pairs
-    QString cmd = line;
+    QString cmd = (semiPos >= 0) ? line.left(semiPos) : line;
+    QString semiComment;
     if (semiPos >= 0) {
-        cmd.truncate(semiPos);
+        semiComment = line.mid(semiPos + 1).trimmed();
     }
+
+    // All '(...)' blocks inside the command portion are comments too.
+    // We remove them from cmd and collect their bodies.
     int open;
     while ((open = cmd.indexOf('(')) >= 0) {
         const int close = cmd.indexOf(')', open);
-        if (close < 0) { cmd.truncate(open); break; }
+        if (close < 0) {
+            // Unclosed paren: treat the rest as a comment body.
+            const QString body = cmd.mid(open + 1).trimmed();
+            if (!body.isEmpty()) parts.append(body);
+            cmd.truncate(open);
+            break;
+        }
+        const QString body = cmd.mid(open + 1, close - open - 1).trimmed();
+        if (!body.isEmpty()) parts.append(body);
         cmd.remove(open, close - open + 1);
     }
+
+    if (!semiComment.isEmpty()) {
+        parts.append(semiComment);
+    }
+
+    comment = parts.join(QLatin1Char(' '));
     command = cmd.trimmed().toUpper();
 }
 
@@ -112,10 +122,9 @@ GCodeItem GcodePreprocessorUtils::parseLine(const QString &line)
 
     return {
         .line = trimmed,
-        .command = command,
         .comment = comment,
-        .state = state,
         .args = GcodePreprocessorUtils::splitCommand(command),
+        .state = state,
         .group = group
     };
 }

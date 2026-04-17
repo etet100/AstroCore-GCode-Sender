@@ -44,8 +44,8 @@ GCode* TestShakingGCode::createSimpleGCode(const QString &line)
     GCodeItem item;
     item.line = line;
     item.args = GcodePreprocessorUtils::splitCommand(line);
-    item.command = item.args.isEmpty() ? "" : item.args.first();
-    item.isMovement = (item.command == "G0" || item.command == "G1");
+    const QString cmd = item.command();
+    item.isMovement = cmd.startsWith("G0") || cmd.startsWith("G1");
     *gcode << item;
     return gcode;
 }
@@ -109,7 +109,6 @@ void TestShakingGCode::testNonMovementPassthrough()
 
     GCodeItem mCommand;
     mCommand.line = "M3 S1000";
-    mCommand.command = "M3";
     mCommand.isMovement = false;
     *original << mCommand;
 
@@ -270,7 +269,6 @@ void TestShakingGCode::testProgressSignals()
     for (int i = 0; i < 100; i++) {
         GCodeItem item;
         item.line = QString("G1 X%1 Y0 Z0").arg(i);
-        item.command = "G1";
         item.isMovement = true;
         item.args = GcodePreprocessorUtils::splitCommand(item.line);
         *original << item;

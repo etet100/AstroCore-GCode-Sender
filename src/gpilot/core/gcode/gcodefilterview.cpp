@@ -200,9 +200,9 @@ bool GCodeFilterView::passesFilter(const GCodeItem& item) const
     }
 
     if (!m_filterText.isEmpty()) {
-        // Match against raw line (includes command text and comment), which
-        // avoids computing the stripped command per row during rebuild.
-        if (!item.line.contains(m_filterText, Qt::CaseInsensitive)) {
+        const bool inCommand = item.command().contains(m_filterText, Qt::CaseInsensitive);
+        const bool inComment = m_showComments && item.comment.contains(m_filterText, Qt::CaseInsensitive);
+        if (!inCommand && !inComment) {
             return false;
         }
     }
