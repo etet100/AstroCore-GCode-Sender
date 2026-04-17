@@ -30,7 +30,7 @@ JoggingBehavior::JoggingBehavior(int feedRate, int feedRateZ, QObject *parent)
 
 bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
 {
-    return forced || (newState->inherits("ResetBehavior") && newState->description() == "Reset");
+    return forced || newState->is(StateBehavior::Type::Reset)
 }
 
 StateBehavior::Result JoggingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
@@ -91,7 +91,7 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
     }
 
     m_acked++;
-    if (response == "ok") {
+    if (cmdStatus.ok) {
         if (m_continuous && !m_stopping) {
             // In timer-based continuous mode, we don't refill buffer here based on ack.
             //The timer handles the periodic sending.
@@ -133,6 +133,10 @@ StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, Comman
         }
 
         m_stopping = true;
+    } else {
+        qDebug() << "[Behavior][Jogging] Unexpected response for jogging command:" << response;
+
+        stopJogging();
     }
 
     m_firstCommand = false;
@@ -327,4 +331,3 @@ bool JoggingBehavior::doAction(const Action &action)
 
     return false;
 }
-

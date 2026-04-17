@@ -54,7 +54,15 @@ StateBehavior::Result RunningBehavior::onCommandResponse(QString command, Comman
     }
 
     assert(commandAttributes.tableIndex >= 0);
-    m_program.setCommandResponse(commandAttributes.tableIndex, response == "ok", enrichErrorMessage(response));
+    m_program.setCommandResponse(commandAttributes.tableIndex, cmdStatus.ok, enrichErrorMessage(response));
+
+    if (!cmdStatus.ok && m_stage == Stage::Running) {
+        qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
+                   << "for" << command << "— pausing program";
+        pause();
+
+        return Result::Ok;
+    }
 
     static QRegularExpression m6("M0*6(?!\\d)");
     if (GcodePreprocessorUtils::removeComment(command).contains(m6)) {
@@ -234,11 +242,12 @@ void RunningBehavior::checkNextCommand()
         return;
     }
 
-    const CommandScanner::CommandType type = m_commandScanner.classify(next->command);
+    const QString nextCommand = next->command();
+    const CommandScanner::CommandType type = m_commandScanner.classify(nextCommand);
     if (type == CommandScanner::CommandType::Pause) {
-        qDebug() << "[Behavior][Running] Look-ahead: next command is Pause:" << next->command << "at index" << (currentIndex + 1);
+        qDebug() << "[Behavior][Running] Look-ahead: next command is Pause:" << nextCommand << "at index" << (currentIndex + 1);
     } else if (type == CommandScanner::CommandType::ToolChange) {
-        qDebug() << "[Behavior][Running] Look-ahead: next command is ToolChange:" << next->command << "at index" << (currentIndex + 1);
+        qDebug() << "[Behavior][Running] Look-ahead: next command is ToolChange:" << nextCommand << "at index" << (currentIndex + 1);
     }
 }
 
