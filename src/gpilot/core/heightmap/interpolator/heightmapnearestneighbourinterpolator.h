@@ -13,7 +13,7 @@ class HeightmapNearestNeighbourInterpolator : public AbstractHeightmapInterpolat
 {
     public:
         HeightmapNearestNeighbourInterpolator(const Heightmap* heightmap);
-        double interpolate(QPointF point) const override;
+        double interpolate(QPointF ptMm) const override;
 };
 
 #endif // HEIGHTMAPNEARESTNEIGHBOURINTERPOLATOR_H

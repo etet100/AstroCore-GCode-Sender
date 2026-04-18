@@ -10,9 +10,9 @@ HeightmapNearestNeighbourInterpolator::HeightmapNearestNeighbourInterpolator(con
 {
 }
 
-double HeightmapNearestNeighbourInterpolator::interpolate(QPointF point) const
+double HeightmapNearestNeighbourInterpolator::interpolate(QPointF ptMm) const
 {
-    auto [x, y] = point;
+    auto [x, y] = toGridCoord(ptMm);
 
     // Round to nearest integer and clamp to valid grid range
     int xi = std::clamp(

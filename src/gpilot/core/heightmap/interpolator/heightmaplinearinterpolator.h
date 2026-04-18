@@ -10,7 +10,7 @@ class HeightmapLinearInterpolator : public AbstractHeightmapInterpolator
 {
     public:
         HeightmapLinearInterpolator(const Heightmap* heightmap);
-        double interpolate(QPointF point) const override;
+        double interpolate(QPointF ptMm) const override;
 };
 
 #endif // HEIGHTMAPLINEARINTERPOLATOR_H

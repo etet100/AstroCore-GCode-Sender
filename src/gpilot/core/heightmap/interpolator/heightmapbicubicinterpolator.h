@@ -13,7 +13,7 @@ class HeightmapBicubicInterpolator : public AbstractHeightmapInterpolator
 {
     public:
         HeightmapBicubicInterpolator(const Heightmap* heightmap);
-        double interpolate(QPointF point) const override;
+        double interpolate(QPointF ptMm) const override;
 
     private:
         double cubicInterpolate(double p0, double p1, double p2, double p3, double t) const;

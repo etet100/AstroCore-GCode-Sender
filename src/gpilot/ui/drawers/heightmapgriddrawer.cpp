@@ -26,7 +26,10 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
     AbstractHeightmapInterpolator* interpolator = createInterpolator();
 
     auto sampleZ = [&](double gx, double gy) {
-        return qBound(minMax.min, interpolator->interpolate(QPointF(gx, gy)), minMax.max);
+        const QPointF ptMm(startPos.x() + stepSize.width() * gx,
+                           startPos.y() + stepSize.height() * gy);
+
+        return qBound(minMax.min, interpolator->interpolate(ptMm), minMax.max);
     };
 
     // Horizontal grid lines
@@ -114,10 +117,14 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
             const double substep = 1.0 / SUBDIVISIONS_PER_CELL;
             for (double x2 = x; x2 < x + 0.9; x2 += substep) {
                 for (double y2 = y; y2 < y + 0.9; y2 += substep) {
-                    double v00 = qBound(minMax.min, interpolator->interpolate(QPointF(x2, y2)), minMax.max);
-                    double v10 = qBound(minMax.min, interpolator->interpolate(QPointF(x2 + substep, y2)), minMax.max);
-                    double v01 = qBound(minMax.min, interpolator->interpolate(QPointF(x2, y2 + substep)), minMax.max);
-                    double v11 = qBound(minMax.min, interpolator->interpolate(QPointF(x2 + substep, y2 + substep)), minMax.max);
+                    auto mm = [&](double gx, double gy) {
+                        return QPointF(startPos.x() + stepSize.width() * gx,
+                                       startPos.y() + stepSize.height() * gy);
+                    };
+                    double v00 = qBound(minMax.min, interpolator->interpolate(mm(x2, y2)), minMax.max);
+                    double v10 = qBound(minMax.min, interpolator->interpolate(mm(x2 + substep, y2)), minMax.max);
+                    double v01 = qBound(minMax.min, interpolator->interpolate(mm(x2, y2 + substep)), minMax.max);
+                    double v11 = qBound(minMax.min, interpolator->interpolate(mm(x2 + substep, y2 + substep)), minMax.max);
 
                     if (qIsNaN(v00) || qIsNaN(v10) || qIsNaN(v01) || qIsNaN(v11)) {
                         continue;

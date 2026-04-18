@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(5, 5))
+Heightmap::Heightmap() : Heightmap(QSize(11, 11))
 {
 }
 

@@ -296,6 +296,7 @@ void PartMainVisualizer::setHeightmap(Heightmap& heightmap)
     m_heightmap = &heightmap;
     m_heightmapBorderDrawer.setModel(heightmap);
     m_heightmapGridDrawer.setModel(heightmap);
+    m_codeDrawer->setHeightmapView(&heightmap, 1);
 }
 
 void PartMainVisualizer::setSelectionEndPosition(QVector3D pos)
@@ -800,6 +801,7 @@ void PartMainVisualizer::updateHeightmap()
     m_heightmapBorderDrawer.update();
     m_heightmapGridDrawer.update();
     m_heightmapInterpolationDrawer.update();
+    m_codeDrawer->update();
 }
 
 PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int lineNumber)

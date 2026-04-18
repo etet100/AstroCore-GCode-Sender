@@ -11,7 +11,7 @@ HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* he
 
 double HeightmapBilinearInterpolator::interpolate(QPointF ptMm) const
 {
-    auto [x, y] = ptMm;
+    auto [x, y] = toGridCoord(ptMm);
 
     // Clamp coordinates to valid grid range
     int xi = static_cast<int>(x);

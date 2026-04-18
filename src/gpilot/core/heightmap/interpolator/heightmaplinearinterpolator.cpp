@@ -8,9 +8,9 @@ HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap* height
 {
 }
 
-double HeightmapLinearInterpolator::interpolate(QPointF point) const
+double HeightmapLinearInterpolator::interpolate(QPointF ptMm) const
 {
-    auto [x, y] = point;
+    auto [x, y] = toGridCoord(ptMm);
 
     // Clamp coordinates to valid grid range
     int xi = static_cast<int>(x);

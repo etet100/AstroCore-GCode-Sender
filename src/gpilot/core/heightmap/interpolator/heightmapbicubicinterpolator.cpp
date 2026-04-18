@@ -29,7 +29,7 @@ double HeightmapBicubicInterpolator::cubicInterpolate(double p0, double p1, doub
 
 double HeightmapBicubicInterpolator::interpolate(QPointF ptMm) const
 {
-    auto [x, y] = ptMm;
+    auto [x, y] = toGridCoord(ptMm);
 
     // Get integer grid coordinates
     int xi = static_cast<int>(x);

@@ -205,6 +205,7 @@ QList<LineSegment>& GCodeViewParser::getProcessedLines(const QList<AbstractViewT
     if (transforms.isEmpty() || m_lines.isEmpty()) {
         m_processedLines = m_lines;
         m_processedLinesReady = true;
+
         return m_processedLines;
     }
 

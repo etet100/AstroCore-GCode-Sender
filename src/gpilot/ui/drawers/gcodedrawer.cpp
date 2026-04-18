@@ -18,6 +18,9 @@ void GcodeDrawer::update()
 {
     m_indexes.clear();
     m_geometryUpdated = false;
+    if (m_viewParser) {
+        m_viewParser->invalidateProcessedCache();
+    }
     ShaderDrawable::update();
 }
 
