@@ -308,7 +308,7 @@ flowchart TB
     classDef blue fill:#cfe2ff,stroke:#0033cc,stroke-width:1px;
 ```
 
-How to build (Windows, Qt, MinGW/LLVM)
+How to build (Windows/Linux, Qt, MinGW/LLVM)
 -------------------
 
 1. Clone the repository with submodules:
@@ -318,11 +318,47 @@ How to build (Windows, Qt, MinGW/LLVM)
     git submodule update --init --recursive
     ```
 
-2. Build with Qt Creator (recommended):
-    - Open `gpilot.pro` in Qt Creator.
-    - Select Qt 6.x and LLVM/Clang compiler (recommended) or MinGW. MSVC is not supported.
-    - To enable multi-threaded compilation for faster builds:
-      - Go to Projects → Build → Build Steps → Make → Make arguments
+2. Build qCoro dependency:
+
+    qCoro is a C++ library that provides coroutine support for Qt. It must be built before building G-Pilot.
+
+    - **Automated build (recommended):**
+
+      Run the build script from the project root:
+
+      Windows:
+      ```
+      scripts\build_qcoro.bat
+      ```
+
+      Linux:
+      ```bash
+      chmod +x scripts/build_qcoro.sh
+      ./scripts/build_qcoro.sh
+      ```
+
+      This will configure, build, and install qCoro to `src/vendor/qcoro/install`.
+
+    - **Manual build:**
+
+      If you prefer to build manually or need custom options:
+
+      Windows:
+      ```
+      cd src\vendor\qcoro
+      cmake -B build -S . -G Ninja -DQCORO_WITH_QTWEBSOCKETS=OFF -DBUILD_TESTING=OFF -DQCORO_BUILD_EXAMPLES=OFF
+      cmake --build build
+      cmake --install build --prefix install
+      cd ..\..\..
+      ```
+
+      Linux:
+      ```bash
+      cd src/vendor/qcoro
+      cmake -B build -S . -DQCORO_WITH_QTWEBSOCKETS=OFF -DBUILD_TESTING=OFF -DQCORO_BUILD_EXAMPLES=OFF
+      cmake --build build -- -j$(nproc)
+      cmake --install build --prefix install
+      cd ../../..
       - Add `-j8` (adjust number based on your CPU cores)
     - Set auto-copy of DLL files after build:
       - Under Projects → Build Settings or Deploy Settings → Build Steps, add a Custom Process Step:
@@ -332,7 +368,7 @@ How to build (Windows, Qt, MinGW/LLVM)
     - Click Build (Ctrl+B).
     - The executable and DLL files will appear in the `bin` folder.
 
-3. Build with qmake from command line:
+4. Build with qmake from command line:
     - Add Qt bin directory to your PATH:
       ```
       set PATH=C:\Qt\6.8.1\llvm-mingw_64\bin;%PATH%
@@ -350,7 +386,7 @@ How to build (Windows, Qt, MinGW/LLVM)
 
     - The executable and DLL files will be generated in the `bin` folder.
 
-4. Packaging:
+5. Packaging:
     - Copy files from the `bin` folder (exe, dll, translations, LICENSE).
     - Make sure all required DLLs are present (Qt, vendor DLLs).
 

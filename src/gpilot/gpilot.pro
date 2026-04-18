@@ -7,14 +7,13 @@ equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8) {
     error("Use Qt 6.8 or newer")
 }
 
-# QMAKEFEATURES += $$PWD/../../src/vendor/qcoro/install/mkspecs/modules
-include($$PWD/../../src/vendor/qcoro/install/mkspecs/modules/qt_QCoroCore.pri)
-LIBS += -L$$PWD/../../src/vendor/qcoro/build/qcoro/core/ -lQCoro6Core
-INCLUDEPATH += $$PWD/../../src/vendor/qcoro/install/include/qcoro6/qcoro/
+include(../vendor/qcoro/install/mkspecs/modules/qt_QCoroCore.pri)
+LIBS += -L../vendor/qcoro/install/lib/ -lQCoro6Core
+INCLUDEPATH += ../vendor/qcoro/install/include/qcoro6/qcoro/
+INCLUDEPATH += ../vendor/qcoro/install/include/qcoro6/QCoro/
 
 QT = core gui opengl serialport uitools network qml xml svg
 QT += multimedia multimediawidgets
-# QT += QCoro6Core
 
 VERSION=1.0.0.0
 

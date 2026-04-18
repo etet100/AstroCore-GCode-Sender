@@ -176,6 +176,27 @@ jobs:
             make -j$(nproc)
           fi
 
+      - name: Build qCoro
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            cd src/vendor/qcoro/
+            cmake -B build -S . -G Ninja -DQCORO_WITH_QTWEBSOCKETS=OFF -DBUILD_TESTING=OFF -DQCORO_BUILD_EXAMPLES=OFF
+            cmake --build build
+            cmake --install build --prefix install
+            cd ../../..
+            mkdir -p build/vendor/qcoro
+            cp -r src/vendor/qcoro/install build/vendor/qcoro/
+          else
+            cd src/vendor/qcoro/
+            cmake -B build -S . -DQCORO_WITH_QTWEBSOCKETS=OFF -DBUILD_TESTING=OFF -DQCORO_BUILD_EXAMPLES=OFF
+            cmake --build build -- -j$(nproc)
+            cmake --install build --prefix install
+            cd ../../..
+            mkdir -p build/vendor/qcoro
+            cp -r src/vendor/qcoro/install build/vendor/qcoro/
+          fi
+
       - name: Build G-Pilot
         shell: bash
         env:
