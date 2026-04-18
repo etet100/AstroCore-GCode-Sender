@@ -12,6 +12,6 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"enabled", false}
 };
 
-ConfigurationPendant::ConfigurationPendant(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationPendant::ConfigurationPendant(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

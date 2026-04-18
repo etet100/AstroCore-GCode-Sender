@@ -5,16 +5,16 @@
 #ifndef CONNECTINGBEHAVIOR_H
 #define CONNECTINGBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class ConnectingBehavior : public StateBehavior
+class ConnectingBehavior : public AbstractStateBehavior
 {
     public:
         explicit ConnectingBehavior(QObject *parent = nullptr);
         QString description() override;
         Type type() const override { return Type::Connecting; }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
         void onConnectionStateChanged(ConnectionState state) override;
 
     protected:

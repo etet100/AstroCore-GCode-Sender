@@ -3,9 +3,9 @@
 
 #include <QSettings>
 #include <QObject>
-#include "core/config/persistence/provider.h"
+#include "core/config/persistence/abstractprovider.h"
 
-class IniProvider : public Provider
+class IniProvider : public AbstractProvider
 {
     public:
         IniProvider(QObject *parent, const QString &filePath);

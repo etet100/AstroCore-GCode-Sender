@@ -5,11 +5,11 @@
 #define HEIGHTMAPBICUBICINTERPOLATOR_H
 
 #include <QPointF>
-#include "heightmapinterpolator.h"
+#include "abstractheightmapinterpolator.h"
 
 // Class for bicubic interpolation of heightmap data points. Points are provided as a grid (Heightmap class).
 // For points near the edges of the grid (going outside the grid), edge points are duplicated.
-class HeightmapBicubicInterpolator : public HeightmapInterpolator
+class HeightmapBicubicInterpolator : public AbstractHeightmapInterpolator
 {
     public:
         HeightmapBicubicInterpolator(const Heightmap* heightmap);

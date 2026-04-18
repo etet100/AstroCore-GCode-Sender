@@ -3,9 +3,9 @@
 
 #include <QSettings>
 #include <QObject>
-#include "core/config/persistence/persister.h"
+#include "core/config/persistence/abstractpersister.h"
 
-class IniPersister : public Persister
+class IniPersister : public AbstractPersister
 {
     public:
         IniPersister(QObject *parent, const QString &filePath);

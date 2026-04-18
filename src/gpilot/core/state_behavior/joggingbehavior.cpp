@@ -11,7 +11,7 @@
 #include <algorithm>
 
 JoggingBehavior::JoggingBehavior(QVector3D vector, double distance, bool continuous, int feedRate, int feedRateZ, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_joggingVector(vector)
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
@@ -21,19 +21,19 @@ JoggingBehavior::JoggingBehavior(QVector3D vector, double distance, bool continu
 }
 
 JoggingBehavior::JoggingBehavior(int feedRate, int feedRateZ, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_joggingVector(QVector3D(0, 0, 0))
     , m_feedRate(feedRate)
     , m_feedRateZ(feedRateZ)
 {
 }
 
-bool JoggingBehavior::onAboutToChange(StateBehavior *newState, bool forced)
+bool JoggingBehavior::onAboutToChange(AbstractStateBehavior *newState, bool forced)
 {
-    return forced || newState->is(StateBehavior::Type::Reset)
+    return forced || newState->is(AbstractStateBehavior::Type::Reset);
 }
 
-StateBehavior::Result JoggingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result JoggingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Jogging] Entry";
 
@@ -43,7 +43,7 @@ StateBehavior::Result JoggingBehavior::doOnEntry(CommunicatorApi *communicator, 
     return Result::Ok;
 }
 
-StateBehavior::Result JoggingBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result JoggingBehavior::doOnExit(AbstractStateBehavior *next)
 {
     m_communicator->stopQueryingMachineState();
     stopJogging();
@@ -82,7 +82,7 @@ void JoggingBehavior::doOnMachineState(MachineState state)
     }
 }
 
-StateBehavior::Result JoggingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result JoggingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[Behavior][Jogging] Command Response:" << command << "->" << response;
 

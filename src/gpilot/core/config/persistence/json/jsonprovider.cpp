@@ -5,7 +5,7 @@
 #include <QVariant>
 #include <QDebug>
 
-JsonProvider::JsonProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
+JsonProvider::JsonProvider(QObject *parent, const QString &filePath) : AbstractProvider(parent), m_filePath(filePath)
 {
 }
 

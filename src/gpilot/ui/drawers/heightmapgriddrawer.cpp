@@ -23,7 +23,7 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
     const float zOffset = 0.0f;
     const double substep = 1.0 / SUBDIVISIONS_PER_CELL;
 
-    HeightmapInterpolator* interpolator = createInterpolator();
+    AbstractHeightmapInterpolator* interpolator = createInterpolator();
 
     auto sampleZ = [&](double gx, double gy) {
         return qBound(minMax.min, interpolator->interpolate(QPointF(gx, gy)), minMax.max);
@@ -78,7 +78,7 @@ void HeightMapGridDrawer::generateLines(QSize gridSize, Heightmap::MinMax minMax
     delete interpolator;
 }
 
-HeightmapInterpolator* HeightMapGridDrawer::createInterpolator()
+AbstractHeightmapInterpolator* HeightMapGridDrawer::createInterpolator()
 {
     switch (m_interpolationMode) {
         case Heightmap::InterpolationMode::NearestNeighbour:
@@ -97,7 +97,7 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
 {
     static constexpr float alpha = 1.0;
 
-    HeightmapInterpolator* interpolator = createInterpolator();
+    AbstractHeightmapInterpolator* interpolator = createInterpolator();
 
     auto setTriangleNormal = [](VertexData &a, VertexData &b, VertexData &c) {
         QVector3D normal = QVector3D::normal(a.position, b.position, c.position);

@@ -5,15 +5,15 @@
 #ifndef RECONNECTINGBEHAVIOR_H
 #define RECONNECTINGBEHAVIOR_H
 
-#include "statebehavior.h"
-#include "io/connection/connection.h"
+#include "abstractstatebehavior.h"
+#include "io/connection/abstractconnection.h"
 
-class ReconnectingBehavior : public StateBehavior
+class ReconnectingBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
     public:
-        explicit ReconnectingBehavior(Connection *newConnection);
+        explicit ReconnectingBehavior(AbstractConnection *newConnection);
         QString description() override { return "Reconnecting"; }
         Type type() const override { return Type::Reconnecting; }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
@@ -28,7 +28,7 @@ class ReconnectingBehavior : public StateBehavior
             Completed
         };
         Stage m_stage = None;
-        Connection *m_newConnection;
+        AbstractConnection *m_newConnection;
 };
 
 #endif // RECONNECTINGBEHAVIOR_H

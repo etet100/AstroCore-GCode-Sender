@@ -4,18 +4,18 @@
 #ifndef SINGLECONVERTER_H
 #define SINGLECONVERTER_H
 
-#include "converter.h"
-#include "converterinterface.h"
+#include "abstractconverter.h"
+#include "abstractbatchconverter.h"
 #include "core/gcode/parser/gcodeparser.h"
 
 /**
- * Wrapper for using a single Converter with the same interface as Pipeline.
+ * Wrapper for using a single AbstractConverter with the same interface as Pipeline.
  * Allows treating single converter and pipeline uniformly.
  */
-class SingleConverter : public ConverterInterface
+class SingleConverter : public AbstractBatchConverter
 {
 public:
-    explicit SingleConverter(Converter *converter);
+    explicit SingleConverter(AbstractConverter *converter);
     ~SingleConverter();
 
     void setGCode(GCode *gcode) override;
@@ -27,7 +27,7 @@ public:
     GCode* convertAll() override;
 
 private:
-    Converter *m_converter;
+    AbstractConverter *m_converter;
     GCode *m_gcode;
     GcodeParser *m_parser;
     int m_currentIndex;

@@ -5,13 +5,13 @@
 #ifndef PROBINGBEHAVIOR_H
 #define PROBINGBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 #include "core/communicator/proberesponseparser.h"
 #include <QVector3D>
 #include <optional>
 #include <chrono>
 
-class ProbingBehavior : public StateBehavior
+class ProbingBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -29,6 +29,10 @@ class ProbingBehavior : public StateBehavior
             // instead of transitioning directly to AlarmBehavior. The caller
             // is then responsible for handling the alarm (e.g. ScanTableBehavior).
             bool delegateAlarmToParent = false;
+            // When true, the sequence starts with a `G0 Z<safeDistance>` retract
+            // before the first probe. Used when resuming after a probe-time
+            // alarm so the tip is lifted off the workpiece before probing again.
+            bool retractFirst = false;
 
             // Timeouts
             std::chrono::milliseconds setupTimeout{5000};
@@ -41,7 +45,8 @@ class ProbingBehavior : public StateBehavior
         QString description() override;
         Type type() const override { return Type::Probing; }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
+        void onAlarm(int code) override;
 
         QVector3D probedPosition() const { return m_probedPosition; }
         bool wasSuccessful() const { return m_success; }
@@ -58,6 +63,24 @@ class ProbingBehavior : public StateBehavior
         std::optional<QCoro::Task<void>> m_probingTask;
 
         QCoro::Task<void> runProbingSequence();
+
+        // Waits for motion to start (up to 500ms for Run) and then for Idle.
+        // On alarm or timeout, emits the appropriate transition/resumePrevious
+        // and returns false — the caller should co_return.
+        QCoro::Task<bool> waitForMotionComplete(const QString &stage);
+
+        // Sends G38.2 probe command, waits for response, validates it and parses
+        // the contact position. On any error the method emits the appropriate
+        // transition/resumePrevious and returns nullopt — the caller should co_return.
+        QCoro::Task<std::optional<QVector3D>> executeProbe(
+            const QString &stage, double distance, double feedRate);
+
+        // Routes an active alarm either to the parent (when delegateAlarmToParent)
+        // or to a fresh AlarmBehavior. Caller is expected to log first.
+        void emitAlarmExit();
+
+        // Non-alarm failure exit: optionally restores absolute mode and resumes.
+        QCoro::Task<void> emitFailureExit();
 
 };
 

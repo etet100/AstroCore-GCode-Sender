@@ -3,7 +3,7 @@
 #include "ui_partmainstate.h"
 
 PartMainState::PartMainState(QWidget *parent)
-    : PartMainStateBase(parent)
+    : AbstractPartMainState(parent)
     , ui(new Ui::partMainState)
 {
     ui->setupUi(this);

@@ -8,6 +8,7 @@
 #include <QDebug>
 #include "gcodeviewparser.h"
 #include "core/gcode/gcode.h"
+#include "viewtransform/abstractviewtransform.h"
 
 GCodeViewParser::GCodeViewParser()
 {
@@ -72,9 +73,9 @@ void GCodeViewParser::reset()
     //foreach (LineSegment &ls, m_lines) delete ls;
     m_lines.clear();
     m_lineIndexes.clear();
-    m_simplifiedLines.clear();
-    m_simplifiedLinesReady = false;
-    m_lastSimplifyPrecision = 0.0;
+    m_processedLines.clear();
+    m_lastTransforms.clear();
+    m_processedLinesReady = false;
     // m_currentLine = 0;
     m_min = QVector3D(qQNaN(), qQNaN(), qQNaN());
     m_max = QVector3D(qQNaN(), qQNaN(), qQNaN());
@@ -187,69 +188,39 @@ QList<QList<int>>& GCodeViewParser::getLinesIndexes()
     return m_lineIndexes;
 }
 
-int GCodeViewParser::getSegmentType(const LineSegment& segment) const
+QList<LineSegment>& GCodeViewParser::getProcessedLines(const QList<AbstractViewTransform*>& transforms)
 {
-    return segment.isFastTraverse() + segment.isZMovement() * 2;
+    QList<const AbstractViewTransform*> key;
+    key.reserve(transforms.size());
+    for (AbstractViewTransform* t : transforms) {
+        key.append(t);
+    }
+
+    if (m_processedLinesReady && m_lastTransforms == key) {
+        return m_processedLines;
+    }
+
+    m_lastTransforms = key;
+
+    if (transforms.isEmpty() || m_lines.isEmpty()) {
+        m_processedLines = m_lines;
+        m_processedLinesReady = true;
+        return m_processedLines;
+    }
+
+    QList<LineSegment> current = m_lines;
+    for (const AbstractViewTransform* t : transforms) {
+        current = t->apply(current);
+    }
+
+    m_processedLines = std::move(current);
+    m_processedLinesReady = true;
+
+    return m_processedLines;
 }
 
-QList<LineSegment>& GCodeViewParser::getSimplifiedLines(double simplifyPrecision)
+void GCodeViewParser::invalidateProcessedCache()
 {
-    // Check if we need to rebuild simplified lines
-    if (m_simplifiedLinesReady && m_lastSimplifyPrecision == simplifyPrecision) {
-        return m_simplifiedLines;
-    }
-
-    m_simplifiedLines.clear();
-    m_lastSimplifyPrecision = simplifyPrecision;
-
-    if (m_lines.isEmpty()) {
-        m_simplifiedLinesReady = true;
-        return m_simplifiedLines;
-    }
-
-    // Simplify geometry
-    int vertexCount = 0;
-    for (int i = 0; i < m_lines.count(); i++) {
-        int j = i;
-
-        if (i < m_lines.count() - 1) {
-            QVector3D start = m_lines[i].getEnd() - m_lines[i].getStart();
-            QVector3D next;
-            double length = start.length();
-            bool straight = false;
-
-            do {
-                i++;
-                if (i < m_lines.count() - 1) {
-                    next = m_lines[i].getEnd() - m_lines[i].getStart();
-                    length += next.length();
-                }
-            } while ((length < simplifyPrecision || straight) && i < m_lines.count()
-                     && getSegmentType(m_lines[i]) == getSegmentType(m_lines[j]));
-            i--;
-        }
-
-        // Create simplified segment from j to i
-        float segmentLen = (m_lines[i].getEnd() - m_lines[j].getStart()).length();
-        if (segmentLen > 0.0001) {
-            LineSegment simplifiedSegment(m_lines[j].getStart(), m_lines[i].getEnd(), m_lines[j].getLineNumber());
-            simplifiedSegment.setIsArc(m_lines[j].isArc());
-            simplifiedSegment.setIsClockwise(m_lines[j].isClockwise());
-            simplifiedSegment.setPlane(m_lines[j].plane());
-            simplifiedSegment.setIsFastTraverse(m_lines[j].isFastTraverse());
-            simplifiedSegment.setIsZMovement(m_lines[j].isZMovement());
-            simplifiedSegment.setIsMetric(m_lines[j].isMetric());
-            simplifiedSegment.setIsAbsolute(m_lines[j].isAbsolute());
-            simplifiedSegment.setSpeed(m_lines[j].getSpeed());
-            simplifiedSegment.setSpindleSpeed(m_lines[j].getSpindleSpeed());
-            simplifiedSegment.setDwell(m_lines[j].getDwell());
-            simplifiedSegment.setVertexIndex(vertexCount);
-
-            m_simplifiedLines.append(simplifiedSegment);
-            vertexCount++;
-        }
-    }
-
-    m_simplifiedLinesReady = true;
-    return m_simplifiedLines;
+    m_processedLinesReady = false;
+    m_lastTransforms.clear();
 }

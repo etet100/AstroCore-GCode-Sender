@@ -8,7 +8,7 @@
 #include "core/state_behavior/behaviors.h"
 
 ResetBehavior::ResetBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 void ResetBehavior::onAlarm(int code)
@@ -16,7 +16,7 @@ void ResetBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
-StateBehavior::Result ResetBehavior::onRawResponse(QString response)
+AbstractStateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
     qDebug() << "[Behavior][Reset][Raw response]" << response;
 
@@ -34,7 +34,7 @@ StateBehavior::Result ResetBehavior::onRawResponse(QString response)
     return Result::Unhandled;
 }
 
-StateBehavior::Result ResetBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ResetBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Reset] Entry";
 

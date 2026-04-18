@@ -11,7 +11,7 @@ ConnectionManager::ConnectionManager(QObject *parent, const ConfigurationConnect
 {
 }
 
-Connection *ConnectionManager::createConnection(ConfigurationConnection::ConnectionMode mode)
+AbstractConnection *ConnectionManager::createConnection(ConfigurationConnection::ConnectionMode mode)
 {
     switch (mode) {
         case ConfigurationConnection::ConnectionMode::SERIAL:

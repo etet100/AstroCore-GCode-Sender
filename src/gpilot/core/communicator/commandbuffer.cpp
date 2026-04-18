@@ -1,5 +1,5 @@
 #include "commandbuffer.h"
-#include "io/connection/connection.h"
+#include "io/connection/abstractconnection.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QDebug>
 #include <QRegularExpression>
@@ -27,13 +27,13 @@ static bool dataIsReset(const QString& data)
 
 // -----------------------------------------------------------
 
-CommandBuffer::CommandBuffer(Connection *connection)
+CommandBuffer::CommandBuffer(AbstractConnection *connection)
     : QObject(nullptr)
     , m_connection(connection)
 {
 }
 
-void CommandBuffer::setConnection(Connection *connection)
+void CommandBuffer::setConnection(AbstractConnection *connection)
 {
     m_connection = connection;
 }

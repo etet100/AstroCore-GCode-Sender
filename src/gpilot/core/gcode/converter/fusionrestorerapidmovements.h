@@ -4,7 +4,7 @@
 #ifndef FUSIONRESTORERAPIDMOVEMENTS_H
 #define FUSIONRESTORERAPIDMOVEMENTS_H
 
-#include "converter.h"
+#include "abstractconverter.h"
 #include <vector>
 #include <string>
 
@@ -76,7 +76,7 @@
  *     to G0 (tool crash risk). At least two Z-only moves above material are needed
  *     for Zfeed to be confirmed before the first plunge.
  */
-class FusionRestoreRapidMovements : public Converter
+class FusionRestoreRapidMovements : public AbstractConverter
 {
     public:
         FusionRestoreRapidMovements();

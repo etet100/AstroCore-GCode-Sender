@@ -16,6 +16,6 @@ const QVariantMap DEFAULTS = {
 };
 
 ConfigurationJogging::ConfigurationJogging(QObject *parent)
-    : ConfigurationModule{parent, DEFAULTS}
+    : AbstractConfigurationModule{parent, DEFAULTS}
 {
 }

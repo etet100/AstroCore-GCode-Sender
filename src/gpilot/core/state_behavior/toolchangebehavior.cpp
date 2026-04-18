@@ -9,7 +9,7 @@
 #include "core/communicator/communicator.h"
 
 ToolChangeBehavior::ToolChangeBehavior(int toolNumber, ToolChangeSource source, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_toolNumber(toolNumber)
     , m_source(source)
     , m_changeState(ToolChangeState::MovingToSafePosition)
@@ -35,7 +35,7 @@ QString ToolChangeBehavior::description()
     }
 }
 
-StateBehavior::Result ToolChangeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ToolChangeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
 
     qDebug() << "[Behavior][ToolChange] Tool change requested for tool:" << m_toolNumber;
@@ -54,7 +54,7 @@ StateBehavior::Result ToolChangeBehavior::doOnEntry(CommunicatorApi *communicato
     return Result::Ok;
 }
 
-StateBehavior::Result ToolChangeBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result ToolChangeBehavior::doOnExit(AbstractStateBehavior *next)
 {
     Q_UNUSED(next);
     qDebug() << "[Behavior][ToolChange] Exiting tool change state.";
@@ -82,7 +82,7 @@ void ToolChangeBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result ToolChangeBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result ToolChangeBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     Q_UNUSED(command);
     Q_UNUSED(commandAttributes);
@@ -104,7 +104,7 @@ bool ToolChangeBehavior::doAction(const Action &action)
         }
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }
 
 void ToolChangeBehavior::moveToSafePosition()

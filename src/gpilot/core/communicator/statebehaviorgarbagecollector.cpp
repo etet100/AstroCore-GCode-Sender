@@ -1,5 +1,5 @@
 #include "statebehaviorgarbagecollector.h"
-#include "core/state_behavior/statebehavior.h"
+#include "core/state_behavior/abstractstatebehavior.h"
 #include <QDebug>
 
 StateBehaviorGarbageCollector::StateBehaviorGarbageCollector(int maxRetainedObjects)
@@ -7,7 +7,7 @@ StateBehaviorGarbageCollector::StateBehaviorGarbageCollector(int maxRetainedObje
 {
 }
 
-void StateBehaviorGarbageCollector::track(StateBehavior *sb)
+void StateBehaviorGarbageCollector::track(AbstractStateBehavior *sb)
 {
     if (sb == nullptr) {
         return;
@@ -21,7 +21,7 @@ void StateBehaviorGarbageCollector::track(StateBehavior *sb)
         }
     }
 
-    m_trackedBehaviors.prepend(QPointer<StateBehavior>(sb));
+    m_trackedBehaviors.prepend(QPointer<AbstractStateBehavior>(sb));
     qDebug() << "[Behavior][GC] Tracking new behavior" << sb->description() << ", total tracked:" << m_trackedBehaviors.count();
 }
 
@@ -31,12 +31,12 @@ void StateBehaviorGarbageCollector::cleanup()
 
     m_trackedBehaviors.erase(
         std::remove_if(m_trackedBehaviors.begin(), m_trackedBehaviors.end(),
-            [](const QPointer<StateBehavior> &ptr) { return ptr.isNull(); }),
+            [](const QPointer<AbstractStateBehavior> &ptr) { return ptr.isNull(); }),
         m_trackedBehaviors.end()
     );
 
     while (m_trackedBehaviors.size() > m_maxRetainedObjects) {
-        QPointer<StateBehavior> sb = m_trackedBehaviors.takeLast();
+        QPointer<AbstractStateBehavior> sb = m_trackedBehaviors.takeLast();
         if (!sb.isNull()) {
             qDebug() << "[Behavior][GC] Deleting" << sb->description();
             delete sb.data();

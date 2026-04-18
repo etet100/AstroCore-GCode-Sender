@@ -13,7 +13,7 @@
 #include <QRegularExpression>
 
 RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_feedOverride(100)
     , m_spindleOverride(100)
     , m_program(program)
@@ -41,7 +41,7 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result RunningBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     Q_UNUSED(fullResponse);
 
@@ -101,10 +101,10 @@ bool RunningBehavior::doAction(const Action &action)
         return true;
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }
 
-StateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Running] Entry";
 

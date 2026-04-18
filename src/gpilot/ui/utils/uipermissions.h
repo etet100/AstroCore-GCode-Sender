@@ -5,7 +5,7 @@
 
 #include <QHash>
 #include <QSet>
-#include "core/state_behavior/statebehavior.h"
+#include "core/state_behavior/abstractstatebehavior.h"
 
 enum class UiPermission {
     EditGCode,
@@ -16,7 +16,7 @@ enum class UiPermission {
 
 namespace UiPermissions {
 
-using T = StateBehavior::Type;
+using T = AbstractStateBehavior::Type;
 using P = UiPermission;
 using PSet = QSet<UiPermission>;
 
@@ -32,7 +32,7 @@ static const QHash<T, PSet> forbidden {
     { T::Jogging,   { P::ChangeSettings } },
 };
 
-inline bool isAllowed(UiPermission p, StateBehavior::Type t)
+inline bool isAllowed(UiPermission p, AbstractStateBehavior::Type t)
 {
     return !forbidden.value(t).contains(p);
 }

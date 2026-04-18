@@ -10,7 +10,7 @@
 #include "idlebehavior.h"
 
 PauseBehavior::PauseBehavior(PauseSource source, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_source(source)
 {
 }
@@ -27,7 +27,7 @@ bool PauseBehavior::doAction(const Action &action)
             return true;
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }
 
 QString PauseBehavior::description()
@@ -49,7 +49,7 @@ QString PauseBehavior::description()
     }
 }
 
-StateBehavior::Result PauseBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result PauseBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Pause] Entry";
 
@@ -68,10 +68,10 @@ StateBehavior::Result PauseBehavior::doOnEntry(CommunicatorApi *communicator, co
 
     communicator->startQueryingMachineState();
 
-    return StateBehavior::Result::Ok;
+    return AbstractStateBehavior::Result::Ok;
 }
 
-StateBehavior::Result PauseBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result PauseBehavior::doOnExit(AbstractStateBehavior *next)
 {
     return Result::Ok;
 }
@@ -108,7 +108,7 @@ void PauseBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result PauseBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result PauseBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     return Result::Ok;
 }

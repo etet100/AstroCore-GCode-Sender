@@ -70,7 +70,7 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
         }
     }
 
-    // Connection mode
+    // AbstractConnection mode
     ui->frameConnectionRawSocket->hide();
     ui->frameConnectionSimulator->hide();
     connect(ui->cboConnectionMode, &QComboBox::currentIndexChanged, this, &FrmSettings::onConnectionModeChanged);

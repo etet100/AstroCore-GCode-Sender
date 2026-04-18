@@ -5,9 +5,9 @@
 #ifndef PAUSEBEHAVIOR_H
 #define PAUSEBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class PauseBehavior : public StateBehavior
+class PauseBehavior : public AbstractStateBehavior
 {
     public:
         // Pause type - different pause sources
@@ -31,7 +31,7 @@ class PauseBehavior : public StateBehavior
             return { Action::Resume };
         }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         // Lets next behavior know whether to resume or stop

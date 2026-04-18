@@ -8,7 +8,7 @@
 #include "core/communicator/communicator.h"
 
 HoldBehavior::HoldBehavior(HoldSource source, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_source(source)
 {
 }
@@ -29,7 +29,7 @@ QString HoldBehavior::description()
     }
 }
 
-StateBehavior::Result HoldBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result HoldBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
 
     qDebug() << "[Behavior][Hold] Entering feed hold state.";
@@ -42,7 +42,7 @@ StateBehavior::Result HoldBehavior::doOnEntry(CommunicatorApi *communicator, con
     return Result::Ok;
 }
 
-StateBehavior::Result HoldBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result HoldBehavior::doOnExit(AbstractStateBehavior *next)
 {
     Q_UNUSED(next);
     qDebug() << "[Behavior][Hold] Exiting feed hold state.";
@@ -68,7 +68,7 @@ void HoldBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result HoldBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result HoldBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     Q_UNUSED(command);
     Q_UNUSED(commandAttributes);
@@ -87,7 +87,7 @@ bool HoldBehavior::doAction(const Action &action)
         return true;
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }
 
 void HoldBehavior::resume()

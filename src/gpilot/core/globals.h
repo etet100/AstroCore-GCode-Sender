@@ -276,7 +276,7 @@ enum class CommandSource : uint8_t {
     ProgramAdditionalCommands,
     System,
     Communicator,
-    StateBehavior,
+    AbstractStateBehavior,
 };
 
 typedef std::function<void(void *)> CommandCallback;

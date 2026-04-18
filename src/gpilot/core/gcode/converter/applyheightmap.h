@@ -5,9 +5,9 @@
 #ifndef APPLYHEIGHTMAP_H
 #define APPLYHEIGHTMAP_H
 
-#include "converterinterface.h"
+#include "abstractbatchconverter.h"
 #include "core/heightmap/heightmap.h"
-#include "core/heightmap/interpolator/heightmapinterpolator.h"
+#include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QVector3D>
 #include <QObject>
@@ -15,14 +15,14 @@
 /**
  * ApplyHeightmap is a specialized converter that segments movement lines
  * and applies Z-offset from heightmap. Due to line insertion requirement,
- * it implements ConverterInterface directly rather than using Converter base.
+ * it implements AbstractBatchConverter directly rather than using AbstractConverter base.
  *
  * IMPORTANT: Do not use in Pipeline with other converters. Use standalone:
  *   ApplyHeightmap converter(heightmap, 1.0);
  *   converter.setGCode(originalGCode);
  *   GCode* result = converter.convertAll();
  */
-class ApplyHeightmap : public QObject, public ConverterInterface
+class ApplyHeightmap : public QObject, public AbstractBatchConverter
 {
     Q_OBJECT
 
@@ -30,7 +30,7 @@ class ApplyHeightmap : public QObject, public ConverterInterface
         explicit ApplyHeightmap(Heightmap* heightmap, double segmentLength = 1.0, QObject *parent = nullptr);
         ~ApplyHeightmap() override;
 
-        // ConverterInterface implementation
+        // AbstractBatchConverter implementation
         void setGCode(GCode *gcode) override;
         int convertNext(int count) override;
         void reset() override;
@@ -47,7 +47,7 @@ class ApplyHeightmap : public QObject, public ConverterInterface
 
     private:
         Heightmap* m_heightmap;
-        HeightmapInterpolator* m_interpolator;
+        AbstractHeightmapInterpolator* m_interpolator;
         GcodeParser* m_parser;
         GCode* m_gcode;
         double m_segmentLength; // max segment length in mm

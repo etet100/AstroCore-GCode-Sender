@@ -5,12 +5,12 @@
 #include "core/communicator/communicator.h"
 #include "core/state_behavior/behaviors.h"
 
-ReconnectingBehavior::ReconnectingBehavior(Connection *newConnection)
-    : StateBehavior{nullptr}
+ReconnectingBehavior::ReconnectingBehavior(AbstractConnection *newConnection)
+    : AbstractStateBehavior{nullptr}
     , m_newConnection(newConnection)
 {}
 
-StateBehavior::Result ReconnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ReconnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Reconnecting] Entry";
 
@@ -26,8 +26,8 @@ StateBehavior::Result ReconnectingBehavior::doOnEntry(CommunicatorApi *communica
             if (!communicator->connection()->isConnected()) {
                 stopTimer();
 
-                qDebug() << "[Behavior][Reconnecting] Connection closed.";
-                log("Connection closed.", {"Reconnect", communicator->connection()->name()});
+                qDebug() << "[Behavior][Reconnecting] AbstractConnection closed.";
+                log("AbstractConnection closed.", {"Reconnect", communicator->connection()->name()});
 
                 communicator->connection()->deleteLater();
                 communicator->setConnection(nullptr, true);

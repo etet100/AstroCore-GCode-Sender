@@ -9,7 +9,7 @@
 #include "core/communicator/communicator.h"
 #include <CPropertyHeader.h>
 #include <CBaseProperty.h>
-#include <qcorotask.h>
+#include <QCoroTask>
 #include <optional>
 
 namespace Ui {

@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include "module/configurationmodule.h"
+#include "module/abstractconfigurationmodule.h"
 #include "module/configurationconnection.h"
 #include "module/configurationvisualizer.h"
 #include "module/configurationsender.h"
@@ -14,8 +14,8 @@
 #include "module/configurationpendant.h"
 #include "module/configurationai.h"
 #include "module/configurationmacros.h"
-#include "persistence/persister.h"
-#include "persistence/provider.h"
+#include "persistence/abstractpersister.h"
+#include "persistence/abstractprovider.h"
 #include <QObject>
 
 class Configuration : public QObject
@@ -46,7 +46,7 @@ class Configuration : public QObject
 
     private:
         QString m_language;
-        QList<ConfigurationModule*> m_modules;
+        QList<AbstractConfigurationModule*> m_modules;
 
         // Modules
         ConfigurationSender m_sender;
@@ -63,12 +63,12 @@ class Configuration : public QObject
         ConfigurationMacros m_macros;
 
         // Read/Write
-        Persister* m_persister = nullptr;
-        Provider* m_provider = nullptr;
+        AbstractPersister* m_persister = nullptr;
+        AbstractProvider* m_provider = nullptr;
 
-        void saveModule(ConfigurationModule*);
-        void setModuleDefaults(ConfigurationModule*);
-        void loadModule(ConfigurationModule*);
+        void saveModule(AbstractConfigurationModule*);
+        void setModuleDefaults(AbstractConfigurationModule*);
+        void loadModule(AbstractConfigurationModule*);
         bool persistByType(QString module, QString name, QVariant value, QString type);
 
     signals:

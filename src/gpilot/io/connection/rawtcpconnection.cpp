@@ -1,7 +1,7 @@
 #include "rawtcpconnection.h"
 #include <QThread>
 
-RawTcpConnection::RawTcpConnection(QObject *parent) : Connection(parent)
+RawTcpConnection::RawTcpConnection(QObject *parent) : AbstractConnection(parent)
 {
 }
 

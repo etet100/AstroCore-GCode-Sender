@@ -7,7 +7,7 @@
 FrmSimulator::FrmSimulator(Simulator::Type type, QWidget* parent)
     : QMainWindow(parent)
 {
-    QString typeName = Simulator::typeToString(type).toUpper();
+    QString typeName = Simulator::typeToName(type);
 
     setWindowTitle(QString("G-Pilot Simulator - %1").arg(typeName));
     resize(400, 300);

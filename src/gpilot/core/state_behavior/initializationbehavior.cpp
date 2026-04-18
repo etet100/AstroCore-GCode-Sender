@@ -9,7 +9,7 @@
 #include "connectingbehavior.h"
 #include "core/communicator/communicator.h"
 
-InitializationBehavior::InitializationBehavior(QObject *parent) : StateBehavior{parent}
+InitializationBehavior::InitializationBehavior(QObject *parent) : AbstractStateBehavior{parent}
 {
 }
 
@@ -39,7 +39,7 @@ void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
     }
 }
 
-StateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Initialization] Entry";
 
@@ -48,7 +48,7 @@ StateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communi
     connect(m_timer, &QTimer::timeout, this, [this]() {
         if ((bool) m_communicator->connection()) {
             stopTimer();
-            qDebug() << "[Behavior][Initialization] Connection object exists, transitioning to ConnectingBehavior.";
+            qDebug() << "[Behavior][Initialization] AbstractConnection object exists, transitioning to ConnectingBehavior.";
             emit transition(this, new ConnectingBehavior());
 
             return;
@@ -59,7 +59,7 @@ StateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communi
     return Result::Ok;
 }
 
-StateBehavior::Result InitializationBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result InitializationBehavior::doOnExit(AbstractStateBehavior *next)
 {
     return Result::Ok;
 }

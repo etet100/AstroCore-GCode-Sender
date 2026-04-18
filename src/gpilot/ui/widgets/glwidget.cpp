@@ -94,12 +94,12 @@ GLWidget::~GLWidget()
     }
 }
 
-void GLWidget::addDrawable(IDrawable *drawable)
+void GLWidget::addDrawable(AbstractDrawable *drawable)
 {
     m_shaderDrawables.append(drawable);
 }
 
-GLWidget& GLWidget::operator<<(IDrawable *drawable)
+GLWidget& GLWidget::operator<<(AbstractDrawable *drawable)
 {
     addDrawable(drawable);
 
@@ -116,7 +116,7 @@ void GLWidget::emitZoomChanged()
     }
 }
 
-void GLWidget::fitDrawable(IDrawable *drawable)
+void GLWidget::fitDrawable(AbstractDrawable *drawable)
 {
     stopAnimation();
 
@@ -221,7 +221,7 @@ void GLWidget::fitDrawable(IDrawable *drawable)
     emit viewParametersChanged();
 }
 
-void GLWidget::updateExtremes(IDrawable *drawable)
+void GLWidget::updateExtremes(AbstractDrawable *drawable)
 {
     QVector3D minExtremes = drawable->minimumExtremes();
     QVector3D maxExtremes = drawable->maximumExtremes();
@@ -887,20 +887,20 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     }
 
     // First pass - depth test enabled
-    foreach (IDrawable *drawable, m_shaderDrawables) {
+    foreach (AbstractDrawable *drawable, m_shaderDrawables) {
         if (!drawable->visible() || !drawable->depthTestEnabled()) {
             continue;
         }
 
         QOpenGLShaderProgram *newProgram;
         switch (drawable->programType()) {
-            case IDrawable::ProgramType::GCode: {
+            case AbstractDrawable::ProgramType::GCode: {
                 GcodeDrawer *gcodeDrawable = static_cast<GcodeDrawer*>(drawable);
                 // gcodeDrawable->update();
                 newProgram = m_gcodeShaderProgram;
                 break;
             }
-            case IDrawable::ProgramType::Billboard:
+            case AbstractDrawable::ProgramType::Billboard:
                 newProgram = m_billboardShaderProgram;
                 break;
             default:
@@ -920,13 +920,13 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         }
 
         switch (drawable->programType()) {
-        case IDrawable::ProgramType::GCode: {
+        case AbstractDrawable::ProgramType::GCode: {
             m_palette.bind();
             drawable->draw(currentProgram);
             m_palette.release();
             break;
         }
-        case IDrawable::ProgramType::Billboard:
+        case AbstractDrawable::ProgramType::Billboard:
             // Set billboard-specific uniforms
             currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
             currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
@@ -936,7 +936,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
             drawable->draw(currentProgram);
             m_palette.release();
             break;
-        case IDrawable::ProgramType::Default:
+        case AbstractDrawable::ProgramType::Default:
             m_palette.bind();
             if (drawable->sort(m_viewMatrix)) {
                 drawable->bindData(currentProgram);
@@ -949,20 +949,20 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
     }
 
     // Seconds pass - no depth test
-    foreach (IDrawable *drawable, m_shaderDrawables) {
+    foreach (AbstractDrawable *drawable, m_shaderDrawables) {
         if (!drawable->visible() || drawable->depthTestEnabled()) {
             continue;
         }
 
         QOpenGLShaderProgram *newProgram;
         switch (drawable->programType()) {
-            case IDrawable::ProgramType::GCode: {
+            case AbstractDrawable::ProgramType::GCode: {
                 GcodeDrawer *gcodeDrawable = static_cast<GcodeDrawer*>(drawable);
                 // gcodeDrawable->update();
                 newProgram = m_gcodeShaderProgram;
                 break;
             }
-            case IDrawable::ProgramType::Billboard:
+            case AbstractDrawable::ProgramType::Billboard:
                 newProgram = m_billboardShaderProgram;
                 break;
             default:
@@ -982,13 +982,13 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
         }
 
         switch (drawable->programType()) {
-            case IDrawable::ProgramType::GCode: {
+            case AbstractDrawable::ProgramType::GCode: {
                 m_palette.bind();
                 drawable->draw(currentProgram);
                 m_palette.release();
                 break;
             }
-            case IDrawable::ProgramType::Billboard:
+            case AbstractDrawable::ProgramType::Billboard:
                 // Set billboard-specific uniforms
                 currentProgram->setUniformValue("u_mvp_matrix", m_projectionMatrix * m_viewMatrix);
                 currentProgram->setUniformValue("u_billboardTexture", 1); // Texture unit 1
@@ -998,7 +998,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
                 drawable->draw(currentProgram);
                 m_palette.release();
                 break;
-            case IDrawable::ProgramType::Default:
+            case AbstractDrawable::ProgramType::Default:
                 m_palette.bind();
                 if (drawable->sort(m_viewMatrix)) {
                     drawable->bindData(currentProgram);

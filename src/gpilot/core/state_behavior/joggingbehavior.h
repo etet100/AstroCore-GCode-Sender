@@ -5,11 +5,11 @@
 #ifndef JOGGINGBEHAVIOR_H
 #define JOGGINGBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 #include "core/globals.h"
 #include <QElapsedTimer>
 
-class JoggingBehavior : public StateBehavior
+class JoggingBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -64,8 +64,8 @@ class JoggingBehavior : public StateBehavior
             };
         }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        bool onAboutToChange(StateBehavior *newState, bool forced) override;
-        Result doOnExit(StateBehavior *next) override;
+        bool onAboutToChange(AbstractStateBehavior *newState, bool forced) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
         void doOnMachineState(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;

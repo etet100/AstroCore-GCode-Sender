@@ -1,5 +1,5 @@
 #include "statebehaviormanager.h"
-#include "core/state_behavior/statebehavior.h"
+#include "core/state_behavior/abstractstatebehavior.h"
 #include "communicator.h"
 #include <QDebug>
 
@@ -9,11 +9,11 @@ StateBehaviorManager::StateBehaviorManager(QObject *signalEmitter)
 {
 }
 
-void StateBehaviorManager::requestTransition(StateBehavior *nsb, StateBehavior::TransitionKind kind)
+void StateBehaviorManager::requestTransition(AbstractStateBehavior *nsb, AbstractStateBehavior::TransitionKind kind)
 {
     if (nsb != nullptr) {
         qDebug() << "[Behavior][Manager] Transition requested to" << nsb->description()
-                 << (kind == StateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
+                 << (kind == AbstractStateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
     }
     m_nsb = nsb;
     m_nsbKind = kind;
@@ -33,7 +33,7 @@ bool StateBehaviorManager::processTransition()
 
     assert(!m_sb.isNull());
 
-    StateBehavior *nsb = m_nsb;
+    AbstractStateBehavior *nsb = m_nsb;
     m_nsb = nullptr;
 
     qDebug() << "[Behavior][Manager] Processing transition to" << nsb->description();
@@ -41,9 +41,9 @@ bool StateBehaviorManager::processTransition()
     return true;
 }
 
-StateBehavior::EntryContext StateBehaviorManager::makeEntryContext(StateBehavior *from) const
+AbstractStateBehavior::EntryContext StateBehaviorManager::makeEntryContext(AbstractStateBehavior *from) const
 {
-    StateBehavior::EntryContext ctx;
+    AbstractStateBehavior::EntryContext ctx;
     if (from) {
         ctx.previousType = from->type();
         ctx.data = from->exitData();
@@ -63,10 +63,10 @@ void StateBehaviorManager::flushSuspendedToGC()
     m_suspended.clear();
 }
 
-bool StateBehaviorManager::execute(StateBehavior *sb, bool force, CommunicatorApi *comApi,
-                                    StateBehavior::TransitionKind kind)
+bool StateBehaviorManager::execute(AbstractStateBehavior *sb, bool force, CommunicatorApi *comApi,
+                                    AbstractStateBehavior::TransitionKind kind)
 {
-    StateBehavior::EntryContext ctx = makeEntryContext(m_sb.data());
+    AbstractStateBehavior::EntryContext ctx = makeEntryContext(m_sb.data());
 
     if (m_sb != nullptr) {
         if (!m_sb->onAboutToChange(sb, force)) {
@@ -75,12 +75,12 @@ bool StateBehaviorManager::execute(StateBehavior *sb, bool force, CommunicatorAp
             return false;
         }
 
-        if (m_sb->onExit(sb) == StateBehavior::Result::WaitForAsyncResult) {
-            QObject::connect(m_sb, &StateBehavior::asyncCompleted, m_signalEmitter, [this, sb, comApi, kind, ctx]() {
+        if (m_sb->onExit(sb) == AbstractStateBehavior::Result::WaitForAsyncResult) {
+            QObject::connect(m_sb, &AbstractStateBehavior::asyncCompleted, m_signalEmitter, [this, sb, comApi, kind, ctx]() {
                 qDebug() << "[Behavior][Manager] State behavior changed from"
                          << m_sb->description() << "to" << sb->description() << " (async exit)";
 
-                if (kind == StateBehavior::TransitionKind::Suspend) {
+                if (kind == AbstractStateBehavior::TransitionKind::Suspend) {
                     m_suspended.append(m_sb);
                 } else {
                     flushSuspendedToGC();
@@ -95,9 +95,9 @@ bool StateBehaviorManager::execute(StateBehavior *sb, bool force, CommunicatorAp
 
         qDebug() << "[Behavior][Manager] State behavior changed from"
                  << m_sb->description() << "to" << sb->description()
-                 << (kind == StateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
+                 << (kind == AbstractStateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
 
-        if (kind == StateBehavior::TransitionKind::Suspend) {
+        if (kind == AbstractStateBehavior::TransitionKind::Suspend) {
             m_suspended.append(m_sb);
         } else {
             flushSuspendedToGC();
@@ -126,12 +126,12 @@ bool StateBehaviorManager::resumePrevious(CommunicatorApi *comApi)
         return false;
     }
 
-    StateBehavior *resumed = m_suspended.takeLast().data();
-    StateBehavior::EntryContext ctx = makeEntryContext(m_sb.data());
+    AbstractStateBehavior *resumed = m_suspended.takeLast().data();
+    AbstractStateBehavior::EntryContext ctx = makeEntryContext(m_sb.data());
 
     if (m_sb != nullptr) {
-        if (m_sb->onExit(resumed) == StateBehavior::Result::WaitForAsyncResult) {
-            QObject::connect(m_sb, &StateBehavior::asyncCompleted, m_signalEmitter, [this, resumed, comApi, ctx]() {
+        if (m_sb->onExit(resumed) == AbstractStateBehavior::Result::WaitForAsyncResult) {
+            QObject::connect(m_sb, &AbstractStateBehavior::asyncCompleted, m_signalEmitter, [this, resumed, comApi, ctx]() {
                 qDebug() << "[Behavior][Manager] Resumed" << resumed->description()
                          << "from" << m_sb->description() << "(async exit)";
                 m_gc.track(m_sb.data());
@@ -149,19 +149,19 @@ bool StateBehaviorManager::resumePrevious(CommunicatorApi *comApi)
     return finalizeExecute(resumed, comApi, ctx);
 }
 
-bool StateBehaviorManager::finalizeExecute(StateBehavior *sb, CommunicatorApi *comApi,
-                                            StateBehavior::EntryContext ctx)
+bool StateBehaviorManager::finalizeExecute(AbstractStateBehavior *sb, CommunicatorApi *comApi,
+                                            AbstractStateBehavior::EntryContext ctx)
 {
     if (!sb->eventsAttached()) {
         Communicator *communicator = qobject_cast<Communicator*>(m_signalEmitter);
         if (communicator) {
-            QObject::connect(sb, &StateBehavior::transition, communicator,
+            QObject::connect(sb, &AbstractStateBehavior::transition, communicator,
                            &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
-            QObject::connect(sb, &StateBehavior::resumePrevious, communicator,
+            QObject::connect(sb, &AbstractStateBehavior::resumePrevious, communicator,
                            &Communicator::onStateRequestsResume, Qt::ConnectionType::UniqueConnection);
-            QObject::connect(sb, &StateBehavior::error, communicator,
+            QObject::connect(sb, &AbstractStateBehavior::error, communicator,
                            &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
-            QObject::connect(sb, &StateBehavior::logSignal, communicator,
+            QObject::connect(sb, &AbstractStateBehavior::logSignal, communicator,
                            &Communicator::log, Qt::ConnectionType::UniqueConnection);
             QObject::connect(sb, &QObject::destroyed, m_signalEmitter, []() {
                 qDebug() << "[Behavior][Manager] State behavior destroyed";
@@ -171,8 +171,8 @@ bool StateBehaviorManager::finalizeExecute(StateBehavior *sb, CommunicatorApi *c
         sb->markEventsAttached();
     }
 
-    if (sb->onEntry(comApi, ctx) == StateBehavior::Result::WaitForAsyncResult) {
-        QObject::connect(sb, &StateBehavior::asyncCompleted, m_signalEmitter, [this, sb]() {
+    if (sb->onEntry(comApi, ctx) == AbstractStateBehavior::Result::WaitForAsyncResult) {
+        QObject::connect(sb, &AbstractStateBehavior::asyncCompleted, m_signalEmitter, [this, sb]() {
             qDebug() << "[Behavior][Manager] State behavior entry completed"
                      << sb->description() << " (async enter)";
 

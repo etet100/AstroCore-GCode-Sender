@@ -4,19 +4,19 @@
 #include <QList>
 #include <QPointer>
 
-class StateBehavior;
+class AbstractStateBehavior;
 
 class StateBehaviorGarbageCollector
 {
 public:
     StateBehaviorGarbageCollector(int maxRetainedObjects = 3);
 
-    void track(StateBehavior *sb);
+    void track(AbstractStateBehavior *sb);
     void cleanup();
     int count() const { return m_trackedBehaviors.count(); }
 
 private:
-    QList<QPointer<StateBehavior>> m_trackedBehaviors;
+    QList<QPointer<AbstractStateBehavior>> m_trackedBehaviors;
     int m_maxRetainedObjects;
 };
 

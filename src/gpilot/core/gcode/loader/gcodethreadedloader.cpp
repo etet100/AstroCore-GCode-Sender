@@ -1,5 +1,5 @@
 #include "gcodethreadedloader.h"
-#include "gcodeloader.h"
+#include "abstractgcodeloader.h"
 #include <QThread>
 #include <QObject>
 

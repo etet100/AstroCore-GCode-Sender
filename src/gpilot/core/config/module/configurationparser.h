@@ -6,9 +6,9 @@
 #define CONFIGURATIONPARSER_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationParser : public ConfigurationModule
+class ConfigurationParser : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

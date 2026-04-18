@@ -1,17 +1,17 @@
 // This file is a part of "G-Pilot" application.
 // Copyright 2026 BTS
 
-#ifndef HEIGHTMAPINTERPOLATOR_H
-#define HEIGHTMAPINTERPOLATOR_H
+#ifndef ABSTRACTHEIGHTMAPINTERPOLATOR_H
+#define ABSTRACTHEIGHTMAPINTERPOLATOR_H
 
 #include <QPointF>
 #include "../heightmap.h"
 
-class HeightmapInterpolator
+class AbstractHeightmapInterpolator
 {
     public:
-        HeightmapInterpolator(const Heightmap* heightmap);
-        virtual ~HeightmapInterpolator() = default;
+        AbstractHeightmapInterpolator(const Heightmap* heightmap);
+        virtual ~AbstractHeightmapInterpolator() = default;
 
         // Get interpolated height at the given (x, y) coordinates.
         virtual double interpolate(QPointF point) const = 0;
@@ -20,4 +20,4 @@ class HeightmapInterpolator
         const Heightmap* m_heightmap;
 };
 
-#endif // HEIGHTMAPINTERPOLATOR_H
+#endif // ABSTRACTHEIGHTMAPINTERPOLATOR_H

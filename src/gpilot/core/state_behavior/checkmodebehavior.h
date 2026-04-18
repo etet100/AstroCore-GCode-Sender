@@ -5,9 +5,9 @@
 #ifndef CHECKMODEBEHAVIOR_H
 #define CHECKMODEBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class CheckModeBehavior : public StateBehavior
+class CheckModeBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 

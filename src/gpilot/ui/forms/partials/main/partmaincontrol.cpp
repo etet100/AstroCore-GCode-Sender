@@ -81,18 +81,27 @@ void PartMainControl::updateControlsState(bool portOpened, bool process)
     // ui->cmdSleep->setEnabled(!process);
 }
 
-void PartMainControl::updateControlsState(StateBehavior *sb)
+void PartMainControl::updateControlsState(AbstractStateBehavior *sb)
 {
     // TODO: replace with sb->canExecute(Action::CheckMode) once Action::CheckMode is added
-    ui->cmdCheck->setEnabled(sb->isOneOf(StateBehavior::Type::Idle, StateBehavior::Type::CheckMode));
-    ui->cmdCheck->setChecked(sb->is(StateBehavior::Type::CheckMode));
+    ui->cmdCheck->setEnabled(sb->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::CheckMode));
+    ui->cmdCheck->setChecked(sb->is(AbstractStateBehavior::Type::CheckMode));
     {
         QSignalBlocker blocker(ui->cmdHold);
-        ui->cmdHold->setChecked(sb->is(StateBehavior::Type::Hold));
+        ui->cmdHold->setChecked(sb->is(AbstractStateBehavior::Type::Hold));
     }
     ui->cmdProbe->setEnabled(sb->canExecute(Action::Type::Probe));
     ui->cmdZeroZ->setEnabled(sb->canExecute(Action::Type::ZeroZ));
     ui->cmdZeroXY->setEnabled(sb->canExecute(Action::Type::ZeroXY));
+    if (sb->isOneOf(AbstractStateBehavior::Type::ScanTableError)) {
+        ui->cmdScanTable->setIcon(QIcon(":/images/control/scan_table_resume.svg"));
+        ui->cmdScanTable->setEnabled(true);
+        ui->cmdScanTable->setProperty("action", "scan");
+    } else {
+        ui->cmdScanTable->setIcon(QIcon(":/images/control/scan_table.svg"));
+        ui->cmdScanTable->setEnabled(sb->canExecute(Action::Type::ScanTable));
+        ui->cmdScanTable->setProperty("action", "resume");
+    }
 }
 
 bool PartMainControl::hold()

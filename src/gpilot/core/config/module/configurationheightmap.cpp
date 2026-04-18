@@ -22,6 +22,6 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"heightmapInterpolationShow", false},
 };
 
-ConfigurationHeightmap::ConfigurationHeightmap(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationHeightmap::ConfigurationHeightmap(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

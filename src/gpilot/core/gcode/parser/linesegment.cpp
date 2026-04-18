@@ -60,7 +60,7 @@ LineSegment::~LineSegment()
 
 }
 
-int LineSegment::getLineNumber() {
+int LineSegment::getLineNumber() const {
     return m_lineNumber;
 }
 
@@ -88,12 +88,20 @@ QVector3D &LineSegment::getStart() {
     return m_first;
 }
 
+const QVector3D &LineSegment::getStart() const {
+    return m_first;
+}
+
 void LineSegment::setStart(QVector3D vector)
 {
     m_first = vector;
 }
 
 QVector3D &LineSegment::getEnd() {
+    return m_second;
+}
+
+const QVector3D &LineSegment::getEnd() const {
     return m_second;
 }
 
@@ -106,7 +114,7 @@ void LineSegment::setToolHead(int head) {
     m_toolhead = head;
 }
 
-int LineSegment::getToolhead()
+int LineSegment::getToolhead() const
 {
     return m_toolhead;
 }
@@ -115,7 +123,7 @@ void LineSegment::setSpeed(double s) {
     m_speed = s;
 }
 
-double LineSegment::getSpeed()
+double LineSegment::getSpeed() const
 {
     return m_speed;
 }
@@ -132,7 +140,7 @@ void LineSegment::setIsArc(bool isA) {
     m_isArc = isA;
 }
 
-bool LineSegment::isArc() {
+bool LineSegment::isArc() const {
     return m_isArc;
 }
 

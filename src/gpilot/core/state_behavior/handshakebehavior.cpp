@@ -6,12 +6,12 @@
 #include "core/state_behavior/behaviors.h"
 
 HandshakeBehavior::HandshakeBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 QString HandshakeBehavior::description() { return "Handshake"; }
 
-StateBehavior::Result HandshakeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result HandshakeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Handshake] Entry — querying machine state.";
 
@@ -20,7 +20,7 @@ StateBehavior::Result HandshakeBehavior::doOnEntry(CommunicatorApi *communicator
     return Result::Ok;
 }
 
-StateBehavior::Result HandshakeBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result HandshakeBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][Handshake] Exit.";
 
@@ -54,7 +54,7 @@ void HandshakeBehavior::doOnMachineState(MachineState state)
     m_stage = QueryingSettings;
 }
 
-StateBehavior::Result HandshakeBehavior::onCommandResponse(
+AbstractStateBehavior::Result HandshakeBehavior::onCommandResponse(
     QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus,
     QString response, QStringList fullResponse)
 {

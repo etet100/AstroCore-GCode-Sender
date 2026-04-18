@@ -6,7 +6,7 @@
 #include <algorithm>
 
 HeightmapNearestNeighbourInterpolator::HeightmapNearestNeighbourInterpolator(const Heightmap* heightmap)
-    : HeightmapInterpolator(heightmap)
+    : AbstractHeightmapInterpolator(heightmap)
 {
 }
 

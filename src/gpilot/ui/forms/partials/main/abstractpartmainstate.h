@@ -1,17 +1,17 @@
-#ifndef PARTMAINSTATEBASE_H
-#define PARTMAINSTATEBASE_H
+#ifndef ABSTRACTPARTMAINSTATE_H
+#define ABSTRACTPARTMAINSTATE_H
 
 #include "core/globals.h"
 #include "core/config/configuration.h"
 #include <QWidget>
 #include <QVector3D>
 
-class PartMainStateBase : public QWidget
+class AbstractPartMainState : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PartMainStateBase(QWidget *parent = nullptr) : QWidget(parent) {}
-    virtual ~PartMainStateBase() {}
+    explicit AbstractPartMainState(QWidget *parent = nullptr) : QWidget(parent) {}
+    virtual ~AbstractPartMainState() {}
 
     virtual void initialize(const Configuration &configuration) {
         Q_UNUSED(configuration);
@@ -43,4 +43,4 @@ signals:
     void grblCommand(GRBLCommand command);
 };
 
-#endif // PARTMAINSTATEBASE_H
+#endif // ABSTRACTPARTMAINSTATE_H

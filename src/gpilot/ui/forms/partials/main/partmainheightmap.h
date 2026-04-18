@@ -7,7 +7,7 @@
 
 #include <QWidget>
 #include "core/config/module/configurationheightmap.h"
-#include "core/heightmap/interpolator/heightmapinterpolator.h"
+#include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 
 namespace Ui {
 class partMainHeightmap;

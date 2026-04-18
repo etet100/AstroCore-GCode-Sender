@@ -2,8 +2,8 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#ifndef STATEBEHAVIOR_H
-#define STATEBEHAVIOR_H
+#ifndef ABSTRACTSTATEBEHAVIOR_H
+#define ABSTRACTSTATEBEHAVIOR_H
 
 #include <QObject>
 #include <QDebug>
@@ -18,11 +18,11 @@
 #include <QPointer>
 #include <optional>
 #include <chrono>
-#include <qcorotask.h>
+#include <QCoroTask>
 
 class CommunicatorApi;
 
-class StateBehavior : public QObject
+class AbstractStateBehavior : public QObject
 {
     Q_OBJECT
 
@@ -64,6 +64,7 @@ class StateBehavior : public QObject
             Reset,
             Running,
             ScanTable,
+            ScanTableError,
             ToolChange,
         };
 
@@ -84,7 +85,7 @@ class StateBehavior : public QObject
             QVariantMap data;
         };
 
-        explicit StateBehavior(QObject *parent = nullptr);
+        explicit AbstractStateBehavior(QObject *parent = nullptr);
         virtual QString description() = 0;
         virtual Type type() const = 0;
 
@@ -112,7 +113,7 @@ class StateBehavior : public QObject
             return ((type() == types) || ...);
         }
 
-        virtual bool onAboutToChange(StateBehavior *newState, bool forced) {
+        virtual bool onAboutToChange(AbstractStateBehavior *newState, bool forced) {
             Q_UNUSED(newState);
             Q_UNUSED(forced);
             return true;
@@ -124,7 +125,7 @@ class StateBehavior : public QObject
         // NVI: these run base setup/cleanup and then call the protected doOn* hook.
         // Derived classes override the hook, not these methods.
         Result onEntry(CommunicatorApi *communicator, const EntryContext &ctx = {});
-        Result onExit(StateBehavior *next = nullptr);
+        Result onExit(AbstractStateBehavior *next = nullptr);
 
         // Payload accumulated during the behavior's lifetime. The StateBehaviorManager
         // reads it at transition/resume time and passes it to the successor as
@@ -165,10 +166,10 @@ class StateBehavior : public QObject
         void clearWaitForStateResponse(int id);
 
     signals:
-        void transition(StateBehavior *state, StateBehavior *newState,
-                        StateBehavior::TransitionKind kind = StateBehavior::TransitionKind::Replace);
+        void transition(AbstractStateBehavior *state, AbstractStateBehavior *newState,
+                        AbstractStateBehavior::TransitionKind kind = AbstractStateBehavior::TransitionKind::Replace);
         void resumePrevious();
-        void error(StateBehavior *state, QString message);
+        void error(AbstractStateBehavior *state, QString message);
         void logSignal(QString message);
         void asyncCompleted();
 
@@ -183,7 +184,8 @@ class StateBehavior : public QObject
 
         // QCoro bridge signals — emitted from the default onCommandResponse / onMachineStateChanged
         // implementations so that coroutine-based behaviors can co_await them.
-        void commandResponseReceived(StateBehavior::CommandResult result);
+        void commandResponseReceived(AbstractStateBehavior::CommandResult result);
+        void machineStateSignal(MachineState state);
         void machineStateChangedSignal(MachineState state);
 
     protected:
@@ -194,6 +196,7 @@ class StateBehavior : public QObject
 
         // Helpers to accumulate the exit payload during the behavior's work.
         void setExitValue(const QString &key, const QVariant &value) { m_exitData.insert(key, value); }
+        void setExitValue(const QVariantMap &values) { m_exitData.insert(values); }
         void clearExitData() { m_exitData.clear(); }
 
         bool m_alarmOccurred = false;
@@ -239,7 +242,7 @@ class StateBehavior : public QObject
             Q_UNUSED(ctx);
             return Result::Ok;
         }
-        virtual Result doOnExit(StateBehavior *next) {
+        virtual Result doOnExit(AbstractStateBehavior *next) {
             Q_UNUSED(next);
             return Result::Ok;
         }
@@ -260,4 +263,4 @@ class StateBehavior : public QObject
         void disconnectAction();
 };
 
-#endif // STATEBEHAVIOR_H
+#endif // ABSTRACTSTATEBEHAVIOR_H

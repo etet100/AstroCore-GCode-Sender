@@ -11,7 +11,7 @@
 static const double MIN_ARC_SEGMENT_LENGTH = 0.1;
 
 ArcsToLines::ArcsToLines(double arcPrecision, bool arcDegreeMode)
-    : Converter()
+    : AbstractConverter()
     , m_arcPrecision(arcPrecision)
     , m_arcDegreeMode(arcDegreeMode)
 {

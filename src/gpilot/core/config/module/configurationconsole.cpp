@@ -12,7 +12,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"darkBackgroundMode", false},
 };
 
-ConfigurationConsole::ConfigurationConsole(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationConsole::ConfigurationConsole(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }
 

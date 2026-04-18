@@ -2,8 +2,8 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#ifndef GCODELOADER_H
-#define GCODELOADER_H
+#ifndef ABSTRACTGCODELOADER_H
+#define ABSTRACTGCODELOADER_H
 
 #include "core/gcode/gcode.h"
 #include "core/gcode/parser/gcodeviewparser.h"
@@ -69,4 +69,4 @@ class GCodeLoader : public AbstractGCodeLoader
         void loadFromIODevice(QIODevice& io, int size);
 };
 
-#endif // GCODELOADER_H
+#endif // ABSTRACTGCODELOADER_H

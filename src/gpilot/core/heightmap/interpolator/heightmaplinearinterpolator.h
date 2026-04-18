@@ -4,9 +4,9 @@
 #ifndef HEIGHTMAPLINEARINTERPOLATOR_H
 #define HEIGHTMAPLINEARINTERPOLATOR_H
 
-#include "heightmapinterpolator.h"
+#include "abstractheightmapinterpolator.h"
 
-class HeightmapLinearInterpolator : public HeightmapInterpolator
+class HeightmapLinearInterpolator : public AbstractHeightmapInterpolator
 {
     public:
         HeightmapLinearInterpolator(const Heightmap* heightmap);

@@ -5,9 +5,9 @@
 #ifndef CONFIGURATIONHEIGHTMAP_H
 #define CONFIGURATIONHEIGHTMAP_H
 
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationHeightmap : public ConfigurationModule
+class ConfigurationHeightmap : public AbstractConfigurationModule
 {
     Q_OBJECT
     Q_PROPERTY(double areaX1 MEMBER m_areaX1 NOTIFY changed)

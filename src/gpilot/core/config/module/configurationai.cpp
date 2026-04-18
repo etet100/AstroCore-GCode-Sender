@@ -4,6 +4,6 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"openAIKey", ""}
 };
 
-ConfigurationAI::ConfigurationAI(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationAI::ConfigurationAI(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

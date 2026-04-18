@@ -9,7 +9,7 @@
 #include <QRect>
 #include <QByteArray>
 #include <QWidget>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
 struct ShortcutEntry {
     QString objectName;
@@ -28,7 +28,7 @@ struct DockableState {
     bool open;
 };
 
-class ConfigurationUI : public ConfigurationModule
+class ConfigurationUI : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

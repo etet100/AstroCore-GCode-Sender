@@ -7,13 +7,42 @@
 
 using namespace std::chrono_literals;
 
-GoToBehavior::GoToBehavior(QPointF target, int feedRate, QObject *parent)
-    : StateBehavior{parent}
+GoToBehavior::GoToBehavior(QPointF target, int feedRate,
+                           bool delegateAlarmToParent, QObject *parent)
+    : AbstractStateBehavior{parent}
     , m_target(target)
     , m_feedRate(feedRate)
+    , m_delegateAlarmToParent(delegateAlarmToParent)
 {}
 
-StateBehavior::Result GoToBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+void GoToBehavior::emitAlarmExit()
+{
+    if (m_delegateAlarmToParent) {
+        setExitValue({
+            {"success", false},
+            {"alarmOccurred", true},
+            {"alarmCode", m_alarmCode},
+        });
+        emit resumePrevious();
+    } else {
+        emit transition(this, new AlarmBehavior(m_alarmCode));
+    }
+}
+
+void GoToBehavior::emitFailureExit(const QString &reason)
+{
+    if (m_delegateAlarmToParent) {
+        setExitValue({
+            {"success", false},
+            {"failureReason", reason},
+        });
+        emit resumePrevious();
+    } else {
+        emit transition(this, new ErrorBehavior("GoTo: " + reason));
+    }
+}
+
+AbstractStateBehavior::Result GoToBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][GoTo] Entry with target:" << m_target << "feed rate:" << m_feedRate;
 
@@ -22,7 +51,7 @@ StateBehavior::Result GoToBehavior::doOnEntry(CommunicatorApi *communicator, con
     return Result::Ok;
 }
 
-StateBehavior::Result GoToBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result GoToBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][GoTo] Exit";
 
@@ -45,18 +74,21 @@ QCoro::Task<void> GoToBehavior::runGoToSequence()
     auto r = co_await sendAndAwait(cmd, 5s);
 
     if (!r || !r->status.ok) {
+        QString reason;
         if (r) {
-            qDebug() << "[Behavior][GoTo] Command rejected, error" << r->status.errorCode;
+            reason = QString("command rejected, error %1").arg(r->status.errorCode);
+            qDebug() << "[Behavior][GoTo]" << reason;
             log("Go to command failed with error " + QString::number(r->status.errorCode), {"GoTo", "Error"});
         } else {
+            reason = "command timed out";
             qWarning() << "[Behavior][GoTo] Command timed out";
         }
-        emit resumePrevious();
+        emitFailureExit(reason);
         co_return;
     }
 
     if (m_alarmOccurred) {
-        emit transition(this, new AlarmBehavior(m_alarmCode));
+        emitAlarmExit();
         co_return;
     }
 
@@ -68,12 +100,13 @@ QCoro::Task<void> GoToBehavior::runGoToSequence()
     );
 
     if (m_alarmOccurred) {
-        emit transition(this, new AlarmBehavior(m_alarmCode));
+        emitAlarmExit();
         co_return;
     }
 
     if (!moving) {
         qDebug() << "[Behavior][GoTo] Short move: no Jog/Run observed within 500ms, resuming";
+        setExitValue("success", true);
         emit resumePrevious();
         co_return;
     }
@@ -85,17 +118,18 @@ QCoro::Task<void> GoToBehavior::runGoToSequence()
     );
 
     if (m_alarmOccurred) {
-        emit transition(this, new AlarmBehavior(m_alarmCode));
+        emitAlarmExit();
         co_return;
     }
 
     if (!idle) {
         qWarning() << "[Behavior][GoTo] Timeout waiting for movement to complete";
-        emit transition(this, new ErrorBehavior("GoTo movement timed out"));
+        emitFailureExit("movement timed out");
         co_return;
     }
 
     qDebug() << "[Behavior][GoTo] Movement completed";
+    setExitValue("success", true);
     emit resumePrevious();
 }
 
@@ -103,7 +137,17 @@ void GoToBehavior::onAlarm(int code)
 {
     qDebug() << "[Behavior][GoTo] Alarm during go to:" << code;
 
-    emit transition(this, new AlarmBehavior(code));
+    m_alarmOccurred = true;
+    m_alarmCode = code;
+
+    if (m_delegateAlarmToParent) {
+        // Wake any coroutine currently inside awaitMachineState so it can
+        // observe m_alarmOccurred and emit the proper delegation exit
+        // without waiting for the full await timeout.
+        emit machineStateSignal(MachineState::Alarm);
+    } else {
+        emit transition(this, new AlarmBehavior(code));
+    }
 }
 
 bool GoToBehavior::doAction(const Action &action)

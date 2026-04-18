@@ -19,15 +19,15 @@
 #ifdef WINDOWS
 #include <windows.h>
 #endif
-#include "io/connection/connection.h"
+#include "io/connection/abstractconnection.h"
 #include "core/communicator/communicator.h"
 #include "io/connection/connectionmanager.h"
 #include "ui/forms/partials/main/partmainvirtualsettings.h"
 #include "core/gcode/gcode.h"
 #include "core/globals.h"
-#include "core/gcode/loader/gcodeloader.h"
+#include "core/gcode/loader/abstractgcodeloader.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
-#include "io/connection/connection.h"
+#include "io/connection/abstractconnection.h"
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmainprogram.h"
 #include "ui/forms/partials/main/partmainstate.h"
@@ -164,7 +164,7 @@ private slots:
     void onTransferCompleted();
     void onConnectionError(QString error);
     void onConsoleNewCommand(QString command, bool isInternal);
-    void updateOnStateBehaviorChanged(StateBehavior *sb);
+    void updateOnStateBehaviorChanged(AbstractStateBehavior *sb);
 
     void programInsertLines(int current, bool before);
     void programDeleteLines(int from, int to);
@@ -221,7 +221,7 @@ private:
 
     // @TODO to be moved to separate core class
     ConnectionManager m_connectionManager;
-    Connection *m_connection = nullptr;
+    AbstractConnection *m_connection = nullptr;
     Communicator *m_communicator;
     GCode m_program;
     FileDropOverlay *m_fileDropOverlay = nullptr;

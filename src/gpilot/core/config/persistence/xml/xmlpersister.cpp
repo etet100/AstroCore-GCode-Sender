@@ -14,7 +14,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-XmlPersister::XmlPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
+XmlPersister::XmlPersister(QObject *parent, const QString &filePath) : AbstractPersister(parent), m_filePath(filePath)
 {
 }
 

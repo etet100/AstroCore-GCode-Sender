@@ -2,9 +2,9 @@
 #define CONFIGURATIONAI_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationAI : public ConfigurationModule
+class ConfigurationAI : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

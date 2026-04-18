@@ -1,12 +1,12 @@
-#ifndef IDRAWABLE_H
-#define IDRAWABLE_H
+#ifndef ABSTRACTDRAWABLE_H
+#define ABSTRACTDRAWABLE_H
 
 #include <QOpenGLShaderProgram>
 #include <QMatrix4x4>
 #include <QVector3D>
 #include "ui/widgets/glpalette.h"
 
-class IDrawable
+class AbstractDrawable
 {
 public:
     enum class ProgramType {
@@ -15,7 +15,7 @@ public:
         Billboard,
     };
 
-    virtual ~IDrawable() = default;
+    virtual ~AbstractDrawable() = default;
 
     virtual void update() = 0;
     virtual void draw(QOpenGLShaderProgram *shaderProgram) = 0;
@@ -36,4 +36,4 @@ public:
     virtual int getVertexCount() = 0;
 };
 
-#endif // IDRAWABLE_H
+#endif // ABSTRACTDRAWABLE_H

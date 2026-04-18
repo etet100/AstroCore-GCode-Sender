@@ -9,9 +9,9 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "../persister.h"
+#include "../abstractpersister.h"
 
-class XmlPersister : public Persister
+class XmlPersister : public AbstractPersister
 {
     public:
         XmlPersister(QObject *parent, const QString &filePath);

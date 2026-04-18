@@ -4,9 +4,9 @@
 #ifndef EXAMPLECONVERTER_H
 #define EXAMPLECONVERTER_H
 
-#include "converter.h"
+#include "abstractconverter.h"
 
-class FeedRateConverter : public Converter
+class FeedRateConverter : public AbstractConverter
 {
     public:
         explicit FeedRateConverter(double multiplier = 1.0);
@@ -21,7 +21,7 @@ class FeedRateConverter : public Converter
         double m_multiplier;
 };
 
-class CoordinateOffsetConverter : public Converter
+class CoordinateOffsetConverter : public AbstractConverter
 {
     public:
         explicit CoordinateOffsetConverter(double offsetX = 0.0,
@@ -43,7 +43,7 @@ class CoordinateOffsetConverter : public Converter
 };
 
 // Example: lookahead usage
-class SafeSpindleStopConverter : public Converter
+class SafeSpindleStopConverter : public AbstractConverter
 {
     public:
         SafeSpindleStopConverter();
@@ -53,7 +53,7 @@ class SafeSpindleStopConverter : public Converter
 };
 
 // Example: full G-Code access
-class MovementOptimizerConverter : public Converter
+class MovementOptimizerConverter : public AbstractConverter
 {
     public:
         MovementOptimizerConverter();

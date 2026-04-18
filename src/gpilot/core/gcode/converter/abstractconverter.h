@@ -2,8 +2,8 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
-#ifndef CONVERTER_H
-#define CONVERTER_H
+#ifndef ABSTRACTCONVERTER_H
+#define ABSTRACTCONVERTER_H
 
 #include "core/gcode/gcode.h"
 
@@ -13,11 +13,11 @@ class GcodeParser;
  * Converters modify G-Code line by line. Return true from convertLine()
  * if the line was changed and needs reparsing before next converter.
  */
-class Converter
+class AbstractConverter
 {
     public:
-        Converter();
-        virtual ~Converter();
+        AbstractConverter();
+        virtual ~AbstractConverter();
 
         virtual bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) = 0;
         virtual void reset();
@@ -27,4 +27,4 @@ class Converter
         virtual bool needsFullGCode() const { return false; }
 };
 
-#endif // CONVERTER_H
+#endif // ABSTRACTCONVERTER_H

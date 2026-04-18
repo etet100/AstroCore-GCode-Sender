@@ -7,9 +7,9 @@
 
 #include <QObject>
 #include <QVariant>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationConnection : public ConfigurationModule
+class ConfigurationConnection : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

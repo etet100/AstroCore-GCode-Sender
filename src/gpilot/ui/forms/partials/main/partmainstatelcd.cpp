@@ -7,7 +7,7 @@
 #include "ui/utils/thememanager.h"
 
 PartMainStateLcd::PartMainStateLcd(QWidget *parent)
-    : PartMainStateBase(parent)
+    : AbstractPartMainState(parent)
     , ui(new Ui::partMainStateLcd)
 {
     ui->setupUi(this);
@@ -102,7 +102,6 @@ void PartMainStateLcd::resizeEvent(QResizeEvent *event)
     QString styleSheet = QString("font: %1pt \"Patopian 1986\"; "
                                  "color: " + color.name() +"; background: " + bgColor.name() + "; "
                                  "border: 1px solid palette(window); border-radius: 4px;").arg(fontSize);
-    qDebug() << styleSheet;
 
     ui->txtWX->setStyleSheet(styleSheet);
     ui->txtWY->setStyleSheet(styleSheet);

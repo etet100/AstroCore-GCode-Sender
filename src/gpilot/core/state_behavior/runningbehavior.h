@@ -5,11 +5,11 @@
 #ifndef RUNNINGBEHAVIOR_H
 #define RUNNINGBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 #include "core/gcode/gcode.h"
 #include "core/communicator/commandscanner.h"
 
-class RunningBehavior : public StateBehavior
+class RunningBehavior : public AbstractStateBehavior
 {
     public:
         enum class Stage {

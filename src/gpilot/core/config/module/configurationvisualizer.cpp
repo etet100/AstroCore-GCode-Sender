@@ -54,6 +54,6 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"viewMode", ConfigurationVisualizer::ViewMode::Perspective},
 };
 
-ConfigurationVisualizer::ConfigurationVisualizer(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationVisualizer::ConfigurationVisualizer(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

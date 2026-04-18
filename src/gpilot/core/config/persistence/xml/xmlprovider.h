@@ -9,9 +9,9 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
-#include "core/config/persistence/provider.h"
+#include "core/config/persistence/abstractprovider.h"
 
-class XmlProvider : public Provider
+class XmlProvider : public AbstractProvider
 {
    public:
         XmlProvider(QObject *parent, const QString &filePath);

@@ -2,17 +2,17 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
-#include "converter.h"
+#include "abstractconverter.h"
 
-Converter::Converter()
+AbstractConverter::AbstractConverter()
 {
 }
 
-Converter::~Converter()
+AbstractConverter::~AbstractConverter()
 {
 }
 
-void Converter::reset()
+void AbstractConverter::reset()
 {
     // Default implementation does nothing
     // Override in derived classes if state needs to be reset

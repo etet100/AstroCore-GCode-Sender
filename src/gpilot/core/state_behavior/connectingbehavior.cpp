@@ -10,12 +10,12 @@
 #include "core/state_behavior/behaviors.h"
 
 ConnectingBehavior::ConnectingBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 QString ConnectingBehavior::description() { return "Connecting"; }
 
-StateBehavior::Result ConnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ConnectingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Connecting] Entry, attempting to connect...";
 
@@ -45,14 +45,14 @@ StateBehavior::Result ConnectingBehavior::doOnEntry(CommunicatorApi *communicato
     return Result::Ok;
 }
 
-StateBehavior::Result ConnectingBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result ConnectingBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][Connecting] Exiting.";
 
     stopTimer();
     if (!m_communicator->connection()->isConnected()) {
-        qDebug() << "[Behavior][Connecting] Connection not established. Giving up.";
-        log("Connection not established. Giving up.", {"Connecting", m_communicator->connection()->name()});
+        qDebug() << "[Behavior][Connecting] AbstractConnection not established. Giving up.";
+        log("AbstractConnection not established. Giving up.", {"Connecting", m_communicator->connection()->name()});
 
         // m_communicator->connection()->deleteLater();
         // m_communicator->setConnection(nullptr, true);

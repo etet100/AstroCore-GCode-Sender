@@ -5,9 +5,9 @@
 #define STATECOLORS_H
 
 #include <QColor>
-#include "core/state_behavior/statebehavior.h"
+#include "core/state_behavior/abstractstatebehavior.h"
 
-// Maps StateBehavior::Type to a color group and then to a QColor.
+// Maps AbstractStateBehavior::Type to a color group and then to a QColor.
 // Keeps all visual state decisions in one place, away from core logic.
 
 enum class StateColorGroup {
@@ -20,10 +20,10 @@ enum class StateColorGroup {
     Critical,   // red    — alarm or error
 };
 
-StateColorGroup colorGroupForState(StateBehavior::Type type);
+StateColorGroup colorGroupForState(AbstractStateBehavior::Type type);
 QColor colorForGroup(StateColorGroup group, bool dark = false);
 
-inline QColor colorForState(StateBehavior::Type type, bool dark = false) {
+inline QColor colorForState(AbstractStateBehavior::Type type, bool dark = false) {
     return colorForGroup(colorGroupForState(type), dark);
 }
 

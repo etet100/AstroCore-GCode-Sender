@@ -11,8 +11,10 @@
 #include <QAtomicInt>
 #include <QThread>
 #include <QPointer>
-#include "connection.h"
-#include "simulatordefs.h"
+#ifdef VIRTUAL_SIMULATOR_PROCESS
+    #include <QProcess>
+#endif
+#include "abstractconnection.h"
 
 // Base class for virtual (emulated) machine connections.
 //
@@ -29,7 +31,7 @@
 //       2. simulatorType — "grbl" | "fluidnc" | "ucnc"
 //     The exe connects back using two QLocalSocket connections
 //     (data + control), exactly like the DLL mode.
-class VirtualConnection : public Connection
+class VirtualConnection : public AbstractConnection
 {
     Q_OBJECT
 

@@ -58,6 +58,7 @@
         <file>../images/dockable_dock.png</file>
         <file>../images/power.svg</file>
         <file>../images/infinity.svg</file>
+        <file>../images/settings.svg</file>
         <file>../images/visualizer/visualizer_grid.svg</file>
         <file>../images/visualizer/visualizer_grid_markers.svg</file>
         <file>../images/visualizer/visualizer_boundaries.svg</file>
@@ -98,5 +99,7 @@
         <file>../images/conntype/ucnc.svg</file>
         <file>../images/conn/connected.svg</file>
         <file>../images/conn/disconnected.svg</file>
+        <file>../images/control/scan_table.svg</file>
+        <file>../images/control/scan_table_resume.svg</file>
     </qresource>
 </RCC>

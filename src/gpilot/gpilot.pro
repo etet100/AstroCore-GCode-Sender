@@ -7,8 +7,14 @@ equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8) {
     error("Use Qt 6.8 or newer")
 }
 
+# QMAKEFEATURES += $$PWD/../../src/vendor/qcoro/install/mkspecs/modules
+include($$PWD/../../src/vendor/qcoro/install/mkspecs/modules/qt_QCoroCore.pri)
+LIBS += -L$$PWD/../../src/vendor/qcoro/build/qcoro/core/ -lQCoro6Core
+INCLUDEPATH += $$PWD/../../src/vendor/qcoro/install/include/qcoro6/qcoro/
+
 QT = core gui opengl serialport uitools network qml xml svg
 QT += multimedia multimediawidgets
+# QT += QCoro6Core
 
 VERSION=1.0.0.0
 
@@ -18,6 +24,7 @@ VERSION=1.0.0.0
 # QT_DEBUG_PLUGINS=1
 # DEFINES += QT_DEBUG_PLUGINS=1
 # DEFINES += USE_GLWINDOW
+DEFINES += VIRTUAL_SIMULATOR_PROCESS
 
 # Threat missing return warnings as errors
 QMAKE_CXXFLAGS += -Werror=return-type
@@ -105,7 +112,7 @@ SOURCES += main.cpp\
     core/config/module/configurationjogging.cpp \
     core/config/module/configurationmachine.cpp \
     core/config/module/configurationmacros.cpp \
-    core/config/module/configurationmodule.cpp \
+    core/config/module/abstractconfigurationmodule.cpp \
     core/config/module/configurationparser.cpp \
     core/config/module/configurationpendant.cpp \
     core/config/module/configurationsender.cpp \
@@ -120,7 +127,7 @@ SOURCES += main.cpp\
     core/core.cpp \
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
-    core/gcode/converter/converter.cpp \
+    core/gcode/converter/abstractconverter.cpp \
     core/gcode/converter/exampleconverter.cpp \
     core/gcode/converter/fusionrestorerapidmovements.cpp \
     core/gcode/converter/pipeline.cpp \
@@ -129,7 +136,7 @@ SOURCES += main.cpp\
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/interpolator/heightmapbicubicinterpolator.cpp \
     core/heightmap/interpolator/heightmapbilinearinterpolator.cpp \
-    core/heightmap/interpolator/heightmapinterpolator.cpp \
+    core/heightmap/interpolator/abstractheightmapinterpolator.cpp \
     core/heightmap/interpolator/heightmaplinearinterpolator.cpp \
     core/heightmap/interpolator/heightmapnearestneighbourinterpolator.cpp \
     core/heightmap/loader/heightmaploader.cpp \
@@ -140,7 +147,7 @@ SOURCES += main.cpp\
     core/utils/filesmanager.cpp \
     core/utils/programtimeestimator.cpp \
     core/utils/timer.cpp \
-    io/connection/connection.cpp \
+    io/connection/abstractconnection.cpp \
     io/connection/connectionmanager.cpp \
     io/connection/rawtcpconnection.cpp \
     io/connection/serialconnection.cpp \
@@ -161,6 +168,7 @@ SOURCES += main.cpp\
     core/state_behavior/reconnectingbehavior.cpp \
     core/state_behavior/resetbehavior.cpp \
     core/state_behavior/scantablebehavior.cpp \
+    core/state_behavior/scantableerrorbehavior.cpp \
     core/state_behavior/handshakebehavior.cpp \
     core/state_behavior/externalprocessbehavior.cpp \
     core/state_behavior/disconnectionbehavior.cpp \
@@ -191,7 +199,7 @@ SOURCES += main.cpp\
     ui/forms/partials/main/partmainprogram.cpp \
     ui/forms/partials/main/partmainspindle.cpp \
     ui/forms/partials/main/partmainstate.cpp \
-    ui/forms/partials/main/partmainstatebase.cpp \
+    ui/forms/partials/main/abstractpartmainstate.cpp \
     ui/forms/partials/main/partmainstatelcd.cpp \
     ui/forms/partials/main/partmainvirtualsettings.cpp \
     ui/forms/partials/main/partmainvisualizer.cpp \
@@ -219,7 +227,7 @@ SOURCES += main.cpp\
     core/gcode/gcode.cpp \
     core/gcode/gcodefilterview.cpp \
     core/gcode/exporter/gcodeexporter.cpp \
-    core/gcode/loader/gcodeloader.cpp \
+    core/gcode/loader/abstractgcodeloader.cpp \
     core/gcode/loader/gcodethreadedloader.cpp \
     core/heightmap/heightmap.cpp \
     modules/camera/camera.cpp \
@@ -234,6 +242,8 @@ SOURCES += main.cpp\
     core/gcode/parser/gcodeviewparser.cpp \
     core/gcode/parser/linesegment.cpp \
     core/gcode/parser/pointsegment.cpp \
+    core/gcode/parser/viewtransform/simplifyviewtransform.cpp \
+    core/gcode/parser/viewtransform/heightmapviewtransform.cpp \
     core/state_behavior/alarmbehavior.cpp \
     # core/state_behavior/checkmodebehavior.cpp \
     core/state_behavior/homingbehavior.cpp \
@@ -243,7 +253,7 @@ SOURCES += main.cpp\
     core/state_behavior/pausebehavior.cpp \
     # core/state_behavior/probingbehavior.cpp \
     core/state_behavior/runningbehavior.cpp \
-    core/state_behavior/statebehavior.cpp \
+    core/state_behavior/abstractstatebehavior.cpp \
     # core/state_behavior/toolchangebehavior.cpp \
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
@@ -292,7 +302,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationjogging.h \
     core/config/module/configurationmachine.h \
     core/config/module/configurationmacros.h \
-    core/config/module/configurationmodule.h \
+    core/config/module/abstractconfigurationmodule.h \
     core/config/module/configurationparser.h \
     core/config/module/configurationpendant.h \
     core/config/module/configurationsender.h \
@@ -300,8 +310,8 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationvisualizer.h \
     core/config/persistence/json/jsonpersister.h \
     core/config/persistence/json/jsonprovider.h \
-    core/config/persistence/persister.h \
-    core/config/persistence/provider.h \
+    core/config/persistence/abstractpersister.h \
+    core/config/persistence/abstractprovider.h \
     core/config/persistence/ini/inipersister.h \
     core/config/persistence/ini/iniprovider.h \
     core/config/persistence/xml/xmlpersister.h \
@@ -310,8 +320,8 @@ HEADERS  += ui/forms/frmmain.h \
     core/core.h \
     core/gcode/converter/applyheightmap.h \
     core/gcode/converter/arcstolines.h \
-    core/gcode/converter/converter.h \
-    core/gcode/converter/converterinterface.h \
+    core/gcode/converter/abstractconverter.h \
+    core/gcode/converter/abstractbatchconverter.h \
     core/gcode/converter/exampleconverter.h \
     core/gcode/converter/fusionrestorerapidmovements.h \
     core/gcode/converter/pipeline.h \
@@ -320,7 +330,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/interpolator/heightmapbicubicinterpolator.h \
     core/heightmap/interpolator/heightmapbilinearinterpolator.h \
-    core/heightmap/interpolator/heightmapinterpolator.h \
+    core/heightmap/interpolator/abstractheightmapinterpolator.h \
     core/heightmap/interpolator/heightmaplinearinterpolator.h \
     core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h \
     core/heightmap/loader/heightmaploader.h \
@@ -331,7 +341,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/utils/filesmanager.h \
     core/utils/programtimeestimator.h \
     core/utils/timer.h \
-    io/connection/connection.h \
+    io/connection/abstractconnection.h \
     io/connection/connectionmanager.h \
     io/connection/rawtcpconnection.h \
     io/connection/serialconnection.h \
@@ -354,6 +364,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/reconnectingbehavior.h \
     core/state_behavior/resetbehavior.h \
     core/state_behavior/scantablebehavior.h \
+    core/state_behavior/scantableerrorbehavior.h \
     core/state_behavior/handshakebehavior.h \
     core/state_behavior/externalprocessbehavior.h \
     core/state_behavior/disconnectionbehavior.h \
@@ -364,7 +375,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/cube.h \
     ui/drawers/cubedrawer.h \
     ui/drawers/cursordrawer.h \
-    ui/drawers/idrawable.h \
+    ui/drawers/abstractdrawable.h \
     ui/drawers/heightmapareadrawer.h \
     ui/drawers/originbillboarddrawer.h \
     ui/drawers/nogcodedefaultdrawer.h \
@@ -381,13 +392,13 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/main/partmainjogparameters.h \
     ui/forms/partials/main/partmainjogparameters2.h \
     ui/forms/partials/main/partmainjogparameters3.h \
-    ui/forms/partials/main/partmainjogparametersinterface.h \
+    ui/forms/partials/main/abstractpartmainjogparameters.h \
     ui/forms/partials/main/partmainmacros.h \
     ui/forms/partials/main/partmainoverride.h \
     ui/forms/partials/main/partmainprogram.h \
     ui/forms/partials/main/partmainspindle.h \
     ui/forms/partials/main/partmainstate.h \
-    ui/forms/partials/main/partmainstatebase.h \
+    ui/forms/partials/main/abstractpartmainstate.h \
     ui/forms/partials/main/partmainstatelcd.h \
     ui/forms/partials/main/partmainvirtualsettings.h \
     ui/forms/partials/main/partmainvisualizer.h \
@@ -413,7 +424,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/gcode.h \
     core/gcode/gcodefilterview.h \
     core/gcode/exporter/gcodeexporter.h \
-    core/gcode/loader/gcodeloader.h \
+    core/gcode/loader/abstractgcodeloader.h \
     core/gcode/loader/gcodethreadedloader.h \
     core/globals.h \
     core/heightmap/heightmap.h \
@@ -429,6 +440,9 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/parser/gcodeviewparser.h \
     core/gcode/parser/linesegment.h \
     core/gcode/parser/pointsegment.h \
+    core/gcode/parser/viewtransform/abstractviewtransform.h \
+    core/gcode/parser/viewtransform/simplifyviewtransform.h \
+    core/gcode/parser/viewtransform/heightmapviewtransform.h \
     core/state_behavior/alarmbehavior.h \
     core/state_behavior/behaviors.h \
     # core/state_behavior/checkmodebehavior.h \
@@ -439,7 +453,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/pausebehavior.h \
     # core/state_behavior/probingbehavior.h \
     core/state_behavior/runningbehavior.h \
-    core/state_behavior/statebehavior.h \
+    core/state_behavior/abstractstatebehavior.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \

@@ -6,9 +6,9 @@
 #define CONFIGURATION_SENDER_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationSender : public ConfigurationModule
+class ConfigurationSender : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

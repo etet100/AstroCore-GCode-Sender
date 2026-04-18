@@ -4,7 +4,7 @@
 #include <functional>
 #include "core/globals.h"
 
-class Connection;
+class AbstractConnection;
 
 // Called when a command gets a final response (ok/error) from the machine.
 // Return true  = behavior processed it (Ok).
@@ -35,8 +35,8 @@ class CommandBuffer : public QObject
     Q_OBJECT
 
 public:
-    explicit CommandBuffer(Connection *connection);
-    void setConnection(Connection *connection);
+    explicit CommandBuffer(AbstractConnection *connection);
+    void setConnection(AbstractConnection *connection);
 
     void setResponseHandler(CommandResponseHandler handler);
     void setQueuedCommandSender(QueuedCommandSender sender);
@@ -76,7 +76,7 @@ signals:
 private:
     static const int BUFFER_SIZE = 127;
 
-    Connection *m_connection;
+    AbstractConnection *m_connection;
     QList<CommandAttributes> m_commands;
     QList<CommandQueue> m_queue;
     int m_commandIndex = 0;

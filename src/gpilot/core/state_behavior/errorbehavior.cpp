@@ -1,6 +1,6 @@
 #include "errorbehavior.h"
 
-ErrorBehavior::ErrorBehavior(QString error, QObject *parent) : StateBehavior(parent), m_error(error)
+ErrorBehavior::ErrorBehavior(QString error, QObject *parent) : AbstractStateBehavior(parent), m_error(error)
 {
 }
 
@@ -13,12 +13,12 @@ QString ErrorBehavior::description()
     return QString("Err: %1").arg(m_error);
 }
 
-StateBehavior::Result ErrorBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ErrorBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     return Result::Ok;
 }
 
-StateBehavior::Result ErrorBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result ErrorBehavior::doOnExit(AbstractStateBehavior *next)
 {
     return Result::Ok;
 }

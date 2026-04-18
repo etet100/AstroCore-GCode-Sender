@@ -6,17 +6,17 @@
 #define CONFIGURATIONMACHINE_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 #include <QVector3D>
 
-class ConfigurationMachine : public ConfigurationModule
+class ConfigurationMachine : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 
     Q_OBJECT
-    Q_PROPERTY(ConfigurationModule::MinMax spindleSpeedRange MEMBER m_spindleSpeedRange NOTIFY changed)
+    Q_PROPERTY(AbstractConfigurationModule::MinMax spindleSpeedRange MEMBER m_spindleSpeedRange NOTIFY changed)
     Q_PROPERTY(int spindleSpeed READ spindleSpeed NOTIFY changed)
-    Q_PROPERTY(ConfigurationModule::MinMax laserPowerRange MEMBER m_laserPowerRange NOTIFY changed)
+    Q_PROPERTY(AbstractConfigurationModule::MinMax laserPowerRange MEMBER m_laserPowerRange NOTIFY changed)
     Q_PROPERTY(ReferencePositionDir referencePositionDirX MEMBER m_referencePositionDirX NOTIFY changed)
     Q_PROPERTY(ReferencePositionDir referencePositionDirY MEMBER m_referencePositionDirY NOTIFY changed)
     Q_PROPERTY(ReferencePositionDir referencePositionDirZ MEMBER m_referencePositionDirZ NOTIFY changed)
@@ -39,11 +39,11 @@ class ConfigurationMachine : public ConfigurationModule
         };
         Q_ENUM(ReferencePositionDir);
 
-        ConfigurationModule::MinMax spindleSpeedRange() const { return m_spindleSpeedRange; }
+        AbstractConfigurationModule::MinMax spindleSpeedRange() const { return m_spindleSpeedRange; }
         double spindleSpeedRatio() const { return (m_spindleSpeedRange.max - m_spindleSpeedRange.min) / 100; }
         int spindleSpeed() const { return m_spindleSpeed; }
         void setSpindleSpeed(int spindleSpeed) { m_spindleSpeed = spindleSpeed; emit changed(); }
-        ConfigurationModule::MinMax laserPowerRange() const { return m_laserPowerRange; }
+        AbstractConfigurationModule::MinMax laserPowerRange() const { return m_laserPowerRange; }
         ReferencePositionDir referencePositionDirX() const { return m_referencePositionDirX; }
         ReferencePositionDir referencePositionDirY() const { return m_referencePositionDirY; }
         ReferencePositionDir referencePositionDirZ() const { return m_referencePositionDirZ; }

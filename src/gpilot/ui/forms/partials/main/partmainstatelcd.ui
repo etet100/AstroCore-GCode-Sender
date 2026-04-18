@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>244</width>
+    <width>263</width>
     <height>261</height>
    </rect>
   </property>
@@ -102,7 +102,7 @@
      <item>
       <widget class="StyledToolButton" name="btnConnection">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -118,6 +118,9 @@
          <width>16777214</width>
          <height>16777214</height>
         </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid white;</string>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">

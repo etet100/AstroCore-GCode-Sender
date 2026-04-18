@@ -8,7 +8,7 @@
 #include <CStringProperty.h>
 #include <CSwitchProperty.h>
 #include <CIntegerProperty.h>
-#include <qcorosignal.h>
+#include <QCoroSignal>
 #include <CColorProperty.h>
 #include <CPropertyHeader.h>
 #include <CSwitchProperty.h>

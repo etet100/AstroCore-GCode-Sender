@@ -11,7 +11,7 @@
 #include <QVariant>
 #include <QDebug>
 
-XmlProvider::XmlProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
+XmlProvider::XmlProvider(QObject *parent, const QString &filePath) : AbstractProvider(parent), m_filePath(filePath)
 {
 }
 

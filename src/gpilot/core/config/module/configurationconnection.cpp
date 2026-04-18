@@ -13,6 +13,6 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"rawTcpPort", 8080},
 };
 
-ConfigurationConnection::ConfigurationConnection(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationConnection::ConfigurationConnection(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

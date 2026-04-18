@@ -5,7 +5,7 @@
 #ifndef SHAKINGGCODE_H
 #define SHAKINGGCODE_H
 
-#include "converterinterface.h"
+#include "abstractbatchconverter.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QVector3D>
 #include <QObject>
@@ -26,7 +26,7 @@
  *   shaker.setGCode(originalGCode);
  *   GCode* result = shaker.convertAll();
  */
-class ShakingGCode : public QObject, public ConverterInterface
+class ShakingGCode : public QObject, public AbstractBatchConverter
 {
     Q_OBJECT
 
@@ -36,7 +36,7 @@ class ShakingGCode : public QObject, public ConverterInterface
                              QObject *parent = nullptr);
         ~ShakingGCode() override;
 
-        // ConverterInterface implementation
+        // AbstractBatchConverter implementation
         void setGCode(GCode *gcode) override;
         int convertNext(int count) override;
         void reset() override;

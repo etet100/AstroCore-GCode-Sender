@@ -76,8 +76,8 @@ void Communicator::onConnectionLineReceived(QString data)
     qDebug() << "[Communicator][Resp2] " << data;
 
     if (m_sbManager.hasCurrent()) {
-        StateBehavior* sb = m_sbManager.current();
-        if (sb->onRawResponse(data) == StateBehavior::Result::Ok) {
+        AbstractStateBehavior* sb = m_sbManager.current();
+        if (sb->onRawResponse(data) == AbstractStateBehavior::Result::Ok) {
             processStateBehaviorTransition();
 
             return;
@@ -285,7 +285,7 @@ void Communicator::processMachineState(QString stateStr)
 {
     static QString lastStateStr = "";
     if (stateStr != lastStateStr) {
-        qDebug() << "[Communicator] Machine state changed:" << stateStr;
+        qDebug() << "[Communicator][Status][Change] Machine state changed:" << stateStr;
         lastStateStr = stateStr;
     }
 
@@ -293,7 +293,7 @@ void Communicator::processMachineState(QString stateStr)
     qDebug() << "[Communicator][MachineState] Machine state:" << stateStr;
 
     // Update status
-    StateBehavior* sb = m_sbManager.current();
+    AbstractStateBehavior* sb = m_sbManager.current();
     if (state != m_machineState) {
         // emit deviceStateChanged(state);
         sb->onMachineStateChanged(state);
@@ -532,14 +532,14 @@ bool Communicator::processCommandResponse(QString data)
     QString command = GcodePreprocessorUtils::removeComment(commandAttributes.commandLine).toUpper();
 
     if (m_sbManager.hasCurrent()) {
-        StateBehavior* sb = m_sbManager.current();
-        StateBehavior::Result sbResult = sb->onCommandResponse(command, commandAttributes, cmdStatus, data, lines);
+        AbstractStateBehavior* sb = m_sbManager.current();
+        AbstractStateBehavior::Result sbResult = sb->onCommandResponse(command, commandAttributes, cmdStatus, data, lines);
         switch (sbResult) {
-            case StateBehavior::Result::Ok:
+            case AbstractStateBehavior::Result::Ok:
                 result = true;
                 break;
 
-            case StateBehavior::Result::ReturnCommandToQueue:
+            case AbstractStateBehavior::Result::ReturnCommandToQueue:
                 // return command to the queue
                 qDebug() << "[Communicator] Returning command to queue:" << commandAttributes.commandLine;
                 m_commands.prepend(commandAttributes);

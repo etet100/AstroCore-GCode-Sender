@@ -5,9 +5,9 @@
 #ifndef HOLDBEHAVIOR_H
 #define HOLDBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class HoldBehavior : public StateBehavior
+class HoldBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -25,7 +25,7 @@ class HoldBehavior : public StateBehavior
             return { Action::Resume, Action::CycleStart };
         }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
 

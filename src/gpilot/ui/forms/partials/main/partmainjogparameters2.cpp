@@ -7,7 +7,7 @@
 #include <QVariant>
 #include "utils/utils.h"
 
-PartMainJogParameters2::PartMainJogParameters2(QWidget *parent) : PartMainJogParametersInterface(parent), ui(new Ui::partMainJogParameters2)
+PartMainJogParameters2::PartMainJogParameters2(QWidget *parent) : AbstractPartMainJogParameters(parent), ui(new Ui::partMainJogParameters2)
 {
     ui->setupUi(this);
     ui->sectionFrame->deleteLater();
@@ -269,11 +269,11 @@ void PartMainJogParameters2::updateSectionUiState(Section& section)
 bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() != QEvent::Enter && event->type() != QEvent::Leave) {
-        return PartMainJogParametersInterface::eventFilter(watched, event);
+        return AbstractPartMainJogParameters::eventFilter(watched, event);
     }
     StyledToolButton *btn = qobject_cast<StyledToolButton*>(watched);
     if (!btn) {
-        return PartMainJogParametersInterface::eventFilter(watched, event);
+        return AbstractPartMainJogParameters::eventFilter(watched, event);
     }
 
     SectionType sectionType = static_cast<SectionType>(btn->property("section").toInt());
@@ -282,7 +282,7 @@ bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     else if (sectionType == SectionType::FeedXY) section = &m_feedXYSection;
     else if (sectionType == SectionType::FeedZ) section = &m_feedZSection;
     if (!section || !section->valueLabel) {
-        return PartMainJogParametersInterface::eventFilter(watched, event);
+        return AbstractPartMainJogParameters::eventFilter(watched, event);
     }
 
     m_updateTimer.stop();
@@ -302,6 +302,6 @@ bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     }
     m_updateTimer.start();
 
-    return PartMainJogParametersInterface::eventFilter(watched, event);
+    return AbstractPartMainJogParameters::eventFilter(watched, event);
 }
 

@@ -7,7 +7,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     })},
 };
 
-ConfigurationMacros::ConfigurationMacros(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationMacros::ConfigurationMacros(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
     ConfigurationRegistry::registerStruct(
         "MacroItem",

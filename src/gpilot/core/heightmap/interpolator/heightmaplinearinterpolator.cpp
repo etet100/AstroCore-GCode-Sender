@@ -4,7 +4,7 @@
 #include "heightmaplinearinterpolator.h"
 #include <algorithm>
 
-HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
+HeightmapLinearInterpolator::HeightmapLinearInterpolator(const Heightmap* heightmap) : AbstractHeightmapInterpolator(heightmap)
 {
 }
 

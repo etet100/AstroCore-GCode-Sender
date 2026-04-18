@@ -3,15 +3,15 @@
 
 #include <QFrame>
 
-class PartMainJogParametersInterface : public QFrame
+class AbstractPartMainJogParameters : public QFrame
 {
     Q_OBJECT
 
     public:
         static constexpr float CONTINUOUS = -1.0f;
 
-        explicit PartMainJogParametersInterface(QWidget *parent = nullptr) : QFrame(parent) {}
-        virtual ~PartMainJogParametersInterface() = default;
+        explicit AbstractPartMainJogParameters(QWidget *parent = nullptr) : QFrame(parent) {}
+        virtual ~AbstractPartMainJogParameters() = default;
 
         virtual void setStepSizeOptions(const QStringList& options) = 0;
         virtual void setFeedRateXYOptions(const QStringList& options) = 0;

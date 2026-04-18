@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {/* Probe Target / Crosshair */}
+  <ellipse cx="12" cy="18" rx="6" ry="3" stroke-opacity="0.5" />
+  <path d="M12 15V21" stroke-opacity="0.5" />
+  <path d="M6 18H18" stroke-opacity="0.5" />
+  {/* Vertical Probe Line */}
+  <path d="M12 18V6" stroke-width="1.5" />
+  {/* Top Point */}
+  <circle cx="12" cy="6" r="1.5" fill="currentColor" />
+  {/* Resume (play triangle) badge — top-right */}
+  <path d="M16 2 L16 8 L22 5 Z" fill="currentColor" stroke="none" />
+</svg>

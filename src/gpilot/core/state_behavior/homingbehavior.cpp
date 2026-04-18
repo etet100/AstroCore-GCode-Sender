@@ -9,13 +9,13 @@
 #include "alarmbehavior.h"
 
 HomingBehavior::HomingBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_homingStarted(false)
     , m_homingCompleted(false)
 {
 }
 
-StateBehavior::Result HomingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result HomingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Homing] Entry";
 
@@ -50,7 +50,7 @@ void HomingBehavior::onMachineStateChanged(MachineState state)
     // }
 }
 
-StateBehavior::Result HomingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result HomingBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[Behavior][Homing] Command Response:" << command << response;
     if (command == "$H") {

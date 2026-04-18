@@ -9,10 +9,15 @@
 #include <QVector3D>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+#include <memory>
 #include "core/gcode/parser/linesegment.h"
 #include "core/gcode/parser/gcodeviewparser.h"
+#include "core/gcode/parser/viewtransform/simplifyviewtransform.h"
+#include "core/gcode/parser/viewtransform/heightmapviewtransform.h"
 #include "shaderdrawable.h"
 #include "ui/widgets/glpalette.h"
+
+class Heightmap;
 
 struct GcodeVectorData {
     QVector<VertexData> lines;
@@ -42,6 +47,8 @@ public:
     GCodeViewParser* viewParser();
     void setSimplify(bool simplify);
     void setSimplifyPrecision(double simplifyPrecision);
+    void setHeightmapView(Heightmap* heightmap, double segmentLength);
+    void clearHeightmapView();
 
     bool geometryUpdated();
 
@@ -69,6 +76,10 @@ private:
     GCodeViewParser *m_viewParser = nullptr;
     bool m_simplify;
     double m_simplifyPrecision;
+    std::unique_ptr<SimplifyViewTransform> m_simplifyTransform;
+    std::unique_ptr<HeightmapViewTransform> m_heightmapTransform;
+
+    QList<AbstractViewTransform*> activeTransforms() const;
     bool m_ignoreZ = false;
     bool m_grayscaleSegments = false;
     GrayscaleCode m_grayscaleCode = GcodeDrawer::S;

@@ -4,13 +4,13 @@
 #ifndef EXTERNALPROCESSBEHAVIOR_H
 #define EXTERNALPROCESSBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
 // Represents a state where the CNC machine is executing a process
 // that was not started by GPilot (e.g., connected while machine was already running).
 // Monitors state changes and transitions to the appropriate behavior
 // once the external process finishes.
-class ExternalProcessBehavior : public StateBehavior
+class ExternalProcessBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 

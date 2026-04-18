@@ -5,7 +5,7 @@
 #ifndef ARCSTOLINES_H
 #define ARCSTOLINES_H
 
-#include "converter.h"
+#include "abstractconverter.h"
 
 /**
  * Converts G2/G3 arc movements into chains of G1 linear segments.
@@ -15,7 +15,7 @@
  *
  * Output is always in absolute (G90) coordinates.
  */
-class ArcsToLines : public Converter
+class ArcsToLines : public AbstractConverter
 {
 public:
     explicit ArcsToLines(double arcPrecision = 0.1, bool arcDegreeMode = false);

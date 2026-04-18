@@ -20,6 +20,6 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"setParserStateBeforeSendingFromSelectedLine", false},
 };
 
-ConfigurationSender::ConfigurationSender(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationSender::ConfigurationSender(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

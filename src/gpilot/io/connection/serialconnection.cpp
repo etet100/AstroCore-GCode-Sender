@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QTimer>
 
-SerialConnection::SerialConnection(QObject *parent) : Connection(parent)
+SerialConnection::SerialConnection(QObject *parent) : AbstractConnection(parent)
 {
     setupSerialPort();
 }

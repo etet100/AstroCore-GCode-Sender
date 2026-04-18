@@ -6,9 +6,9 @@
 #define SERIALCONNECTION_H
 
 #include <QtSerialPort/QSerialPort>
-#include "connection.h"
+#include "abstractconnection.h"
 
-class SerialConnection : public Connection
+class SerialConnection : public AbstractConnection
 {
     Q_PROPERTY(QString portName READ portName WRITE setPortName);
     Q_PROPERTY(int baudRate READ baudRate WRITE setBaudRate);

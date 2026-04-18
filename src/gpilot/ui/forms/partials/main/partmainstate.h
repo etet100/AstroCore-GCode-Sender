@@ -2,13 +2,13 @@
 #ifndef PARTMAINSTATE_H
 #define PARTMAINSTATE_H
 
-#include "partmainstatebase.h"
+#include "abstractpartmainstate.h"
 
 namespace Ui {
 class partMainState;
 }
 
-class PartMainState : public PartMainStateBase
+class PartMainState : public AbstractPartMainState
 {
     Q_OBJECT
 public:

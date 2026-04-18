@@ -1,6 +1,6 @@
-#include "partmainstatebase.h"
+#include "abstractpartmainstate.h"
 
-void PartMainStateBase::initializeColorsAndCaptions()
+void AbstractPartMainState::initializeColorsAndCaptions()
 {
     m_statusCaptions[MachineState::Unknown] = tr("Unknown");
     m_statusCaptions[MachineState::Idle] = tr("Idle");

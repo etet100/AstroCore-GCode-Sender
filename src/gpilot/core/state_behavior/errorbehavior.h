@@ -1,9 +1,9 @@
 #ifndef ERRORBEHAVIOR_H
 #define ERRORBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class ErrorBehavior : public StateBehavior
+class ErrorBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -14,7 +14,7 @@ class ErrorBehavior : public StateBehavior
         QString description() override;
         Type type() const override { return Type::Error; }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
 
     protected:
         QString name() const override { return "Error"; }

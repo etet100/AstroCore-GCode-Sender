@@ -1,7 +1,7 @@
 #ifndef SCANTABLEBEHAVIOR_H
 #define SCANTABLEBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 #include "core/heightmap/heightmap.h"
 
 // ScanTableBehavior orchestrates an automatic height-map scan.
@@ -16,7 +16,7 @@
 //
 // Scan order is determined by Heightmap::probePoints() — serpentine
 // starting from the grid vertex nearest to the machine's current position.
-class ScanTableBehavior : public StateBehavior
+class ScanTableBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -33,7 +33,7 @@ public:
     Type type() const override { return Type::ScanTable; }
 
     Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-    Result doOnExit(StateBehavior *next) override;
+    Result doOnExit(AbstractStateBehavior *next) override;
     void onAlarm(int code) override;
     void onMachineStateChanged(MachineState state) override;
 
@@ -57,6 +57,7 @@ private:
     int             m_scannedPoints = 0;
 
     Stage m_phase = Stage::Initial;
+    bool  m_retractBeforeNextProbe = false;
 
     void processCurrentPoint();
     void startProbeAtCurrentPoint();

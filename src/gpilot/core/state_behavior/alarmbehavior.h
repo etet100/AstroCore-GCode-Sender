@@ -5,9 +5,9 @@
 #ifndef ALARMBEHAVIOR_H
 #define ALARMBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class AlarmBehavior : public StateBehavior
+class AlarmBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 

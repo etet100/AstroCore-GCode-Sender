@@ -5,9 +5,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
-#include "../persister.h"
+#include "../abstractpersister.h"
 
-class JsonPersister : public Persister
+class JsonPersister : public AbstractPersister
 {
     public:
         JsonPersister(QObject *parent, const QString &filePath);

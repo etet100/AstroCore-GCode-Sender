@@ -5,10 +5,10 @@
 #define HEIGHTMAPBILINEARINTERPOLATOR_H
 
 #include <QPointF>
-#include "heightmapinterpolator.h"
+#include "abstractheightmapinterpolator.h"
 
 // Class for bilinear interpolation of heightmap data points. Points are provided as a grid (Heightmap class).
-class HeightmapBilinearInterpolator : public HeightmapInterpolator
+class HeightmapBilinearInterpolator : public AbstractHeightmapInterpolator
 {
     public:
         HeightmapBilinearInterpolator(const Heightmap* heightmap);

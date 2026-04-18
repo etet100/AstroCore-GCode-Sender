@@ -12,7 +12,7 @@
 #include <QQuaternion>
 #include "utils/utils.h"
 #include "ui/widgets/glpalette.h"
-#include "idrawable.h"
+#include "abstractdrawable.h"
 
 #define QUANTIZE_COLOR_STEPS 25
 #define QUANTIZE_COLOR(x) ((int) floor(x * QUANTIZE_COLOR_STEPS) / QUANTIZE_COLOR_STEPS)
@@ -65,7 +65,7 @@ struct _2DTexturedVertexData
     QVector2D texCoord;
 };
 
-class ShaderDrawable : public IDrawable, protected QOpenGLFunctions
+class ShaderDrawable : public AbstractDrawable, protected QOpenGLFunctions
 {
 public:
     explicit ShaderDrawable();

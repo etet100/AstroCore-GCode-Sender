@@ -3,41 +3,42 @@
 
 #include "statecolors.h"
 
-StateColorGroup colorGroupForState(StateBehavior::Type type)
+StateColorGroup colorGroupForState(AbstractStateBehavior::Type type)
 {
     switch (type) {
-        case StateBehavior::Type::Disconnection:
+        case AbstractStateBehavior::Type::Disconnection:
             return StateColorGroup::Offline;
 
-        case StateBehavior::Type::Connecting:
-        case StateBehavior::Type::Reconnecting:
-        case StateBehavior::Type::Handshake:
-        case StateBehavior::Type::Initialization:
-        case StateBehavior::Type::Reset:
+        case AbstractStateBehavior::Type::Connecting:
+        case AbstractStateBehavior::Type::Reconnecting:
+        case AbstractStateBehavior::Type::Handshake:
+        case AbstractStateBehavior::Type::Initialization:
+        case AbstractStateBehavior::Type::Reset:
             return StateColorGroup::Connecting;
 
-        case StateBehavior::Type::Idle:
+        case AbstractStateBehavior::Type::Idle:
             return StateColorGroup::Ready;
 
-        case StateBehavior::Type::Running:
-        case StateBehavior::Type::CheckMode:
-        case StateBehavior::Type::Jogging:
-        case StateBehavior::Type::GoTo:
+        case AbstractStateBehavior::Type::Running:
+        case AbstractStateBehavior::Type::CheckMode:
+        case AbstractStateBehavior::Type::Jogging:
+        case AbstractStateBehavior::Type::GoTo:
             return StateColorGroup::Active;
 
-        case StateBehavior::Type::Homing:
-        case StateBehavior::Type::Probing:
-        case StateBehavior::Type::ScanTable:
+        case AbstractStateBehavior::Type::Homing:
+        case AbstractStateBehavior::Type::Probing:
+        case AbstractStateBehavior::Type::ScanTable:
             return StateColorGroup::Special;
 
-        case StateBehavior::Type::Hold:
-        case StateBehavior::Type::Pause:
-        case StateBehavior::Type::ToolChange:
-        case StateBehavior::Type::ExternalProcess:
+        case AbstractStateBehavior::Type::Hold:
+        case AbstractStateBehavior::Type::Pause:
+        case AbstractStateBehavior::Type::ToolChange:
+        case AbstractStateBehavior::Type::ExternalProcess:
             return StateColorGroup::Attention;
 
-        case StateBehavior::Type::Alarm:
-        case StateBehavior::Type::Error:
+        case AbstractStateBehavior::Type::Alarm:
+        case AbstractStateBehavior::Type::Error:
+        case AbstractStateBehavior::Type::ScanTableError:
             return StateColorGroup::Critical;
     }
 

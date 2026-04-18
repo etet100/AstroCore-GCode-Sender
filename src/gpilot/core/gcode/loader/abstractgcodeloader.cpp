@@ -2,7 +2,7 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "gcodeloader.h"
+#include "abstractgcodeloader.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include <QDebug>

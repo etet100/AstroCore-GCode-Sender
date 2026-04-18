@@ -4,7 +4,7 @@
 #include "heightmapbicubicinterpolator.h"
 #include <algorithm>
 
-HeightmapBicubicInterpolator::HeightmapBicubicInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
+HeightmapBicubicInterpolator::HeightmapBicubicInterpolator(const Heightmap* heightmap) : AbstractHeightmapInterpolator(heightmap)
 {
 }
 

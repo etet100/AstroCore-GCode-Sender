@@ -5,11 +5,11 @@
 #ifndef CONFIGURATIONJOGGING_H
 #define CONFIGURATIONJOGGING_H
 
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 #include <QObject>
 #include "core/globals.h"
 
-class ConfigurationJogging : public ConfigurationModule
+class ConfigurationJogging : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

@@ -2,19 +2,19 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef ABSTRACTCONNECTION_H
+#define ABSTRACTCONNECTION_H
 
 #include "core/globals.h"
 #include "core/config/module/configurationconnection.h"
 
-class Connection : public QObject
+class AbstractConnection : public QObject
 {
     Q_OBJECT
 
     public:
-        Connection(QObject *parent);
-        virtual ~Connection() {}
+        AbstractConnection(QObject *parent);
+        virtual ~AbstractConnection() {}
 
         // true = waiting for connection, false = already connected or failed to connect
         virtual bool open() = 0;

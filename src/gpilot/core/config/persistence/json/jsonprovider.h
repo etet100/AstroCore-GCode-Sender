@@ -5,9 +5,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
-#include "core/config/persistence/provider.h"
+#include "core/config/persistence/abstractprovider.h"
 
-class JsonProvider : public Provider
+class JsonProvider : public AbstractProvider
 {
     public:
         JsonProvider(QObject *parent, const QString &filePath);

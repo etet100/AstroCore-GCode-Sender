@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(20, 20))
+Heightmap::Heightmap() : Heightmap(QSize(5, 5))
 {
 }
 
@@ -36,10 +36,16 @@ Heightmap::Heightmap(
     updateMinMax();
 }
 
-Heightmap::Heightmap(QSize size) : m_size(size)
+Heightmap::Heightmap(
+    QSize size,
+    QPointF startPos,
+    QSizeF stepSize,
+    InterpolationMode interpolationMode
+) : m_size(size)
+    , m_startPos(startPos)
+    , m_stepSize(stepSize)
+    , m_interpolationMode(interpolationMode)
 {
-    m_startPos = QPointF(0.0, 0.0);
-    m_stepSize = QSizeF(10.0, 10.0); // 10 mm steps
     m_data.resize(m_size.width() * m_size.height());
     updateEndPos();
     generateRandom();

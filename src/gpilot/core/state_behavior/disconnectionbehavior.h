@@ -4,12 +4,12 @@
 #ifndef DISCONNECTIONBEHAVIOR_H
 #define DISCONNECTIONBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
 // Represents the disconnected state — the machine connection has been
 // intentionally closed. The only available action is Connect, which
 // transitions back to InitializationBehavior.
-class DisconnectionBehavior : public StateBehavior
+class DisconnectionBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -22,7 +22,7 @@ class DisconnectionBehavior : public StateBehavior
         }
 
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
 
     protected:
         QString name() const override { return "Disconnection"; }

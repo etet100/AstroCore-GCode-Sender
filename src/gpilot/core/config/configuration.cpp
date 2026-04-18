@@ -79,7 +79,7 @@ void Configuration::save()
     qDebug() << "[Configuration] Save configurations";
 
     m_persister->open();
-    for (ConfigurationModule* module : std::as_const(m_modules)) {
+    for (AbstractConfigurationModule* module : std::as_const(m_modules)) {
         saveModule(module);
     }
     m_persister->close();
@@ -110,7 +110,7 @@ bool Configuration::persistByType(QString module, QString name, QVariant value, 
     return true;
 }
 
-void Configuration::saveModule(ConfigurationModule *module)
+void Configuration::saveModule(AbstractConfigurationModule *module)
 {
     const QMetaObject *metaObj = module->metaObject();
 
@@ -165,7 +165,7 @@ void Configuration::saveModule(ConfigurationModule *module)
     }
 }
 
-void Configuration::setModuleDefaults(ConfigurationModule *module)
+void Configuration::setModuleDefaults(AbstractConfigurationModule *module)
 {
     QMap<QString, QVariant> defaults = module->getDefaults();
 
@@ -203,7 +203,7 @@ void Configuration::load()
     qInfo() << "Load configurations";
 
     m_provider->open();
-    for (ConfigurationModule* module : std::as_const(m_modules)) {
+    for (AbstractConfigurationModule* module : std::as_const(m_modules)) {
         loadModule(module);
     }
     m_provider->close();
@@ -213,14 +213,14 @@ void Configuration::load()
 
 void Configuration::setDefaults()
 {
-    for (ConfigurationModule* module : std::as_const(m_modules)) {
+    for (AbstractConfigurationModule* module : std::as_const(m_modules)) {
         setModuleDefaults(module);
     }
 
     emit defaultConfigurationLoaded();
 }
 
-void Configuration::loadModule(ConfigurationModule *module)
+void Configuration::loadModule(AbstractConfigurationModule *module)
 {
     QMap<QString, QVariant> defaults = module->getDefaults();
 

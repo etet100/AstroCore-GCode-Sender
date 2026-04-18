@@ -6,7 +6,7 @@
 
 Pipeline::Pipeline(QObject *parent)
     : QObject(parent)
-    , Converter()
+    , AbstractConverter()
     , m_gcode(nullptr)
     , m_parser(nullptr)
     , m_currentIndex(0)
@@ -24,7 +24,7 @@ Pipeline::~Pipeline()
     }
 }
 
-Pipeline &Pipeline::operator<<(Converter *converter)
+Pipeline &Pipeline::operator<<(AbstractConverter *converter)
 {
     if (converter) {
         m_converters << converter;
@@ -40,7 +40,7 @@ bool Pipeline::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, Gcod
 
     bool wasModified = false;
 
-    for (Converter *converter : m_converters) {
+    for (AbstractConverter *converter : m_converters) {
         GcodeParser *parserPtr = (parser && converter->needsParser()) ? parser : nullptr;
 
         if (parserPtr) parserPtr->pushState();
@@ -55,7 +55,7 @@ bool Pipeline::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, Gcod
 
 bool Pipeline::needsParser() const
 {
-    for (const Converter *converter : m_converters) {
+    for (const AbstractConverter *converter : m_converters) {
         if (converter->needsParser()) return true;
     }
     return false;
@@ -71,7 +71,7 @@ void Pipeline::reset()
 {
     m_currentIndex = 0;
 
-    for (Converter *converter : m_converters) {
+    for (AbstractConverter *converter : m_converters) {
         converter->reset();
     }
 
@@ -114,7 +114,7 @@ bool Pipeline::processLine(int index)
     GCodeItem item = (*m_gcode)[index];
     bool wasModified = false;
 
-    for (Converter *converter : m_converters) {
+    for (AbstractConverter *converter : m_converters) {
         GcodeParser *parserPtr = converter->needsParser() ? m_parser : nullptr;
 
         if (parserPtr) parserPtr->pushState();
@@ -160,7 +160,7 @@ GCode* Pipeline::convertAll()
         GCodeItem item = (*result)[i]; // local copy - see processLine()
         bool wasModified = false;
 
-        for (Converter *converter : m_converters) {
+        for (AbstractConverter *converter : m_converters) {
             GcodeParser *parserPtr = converter->needsParser() ? m_parser : nullptr;
 
             if (parserPtr) parserPtr->pushState();

@@ -3,14 +3,14 @@
 
 #include <QWidget>
 #include <functional>
-#include "partmainjogparametersinterface.h"
+#include "abstractpartmainjogparameters.h"
 #include <QToolButton>
 
 namespace Ui {
 class PartMainJogParameters3;
 }
 
-class PartMainJogParameters3 : public PartMainJogParametersInterface
+class PartMainJogParameters3 : public AbstractPartMainJogParameters
 {
         Q_OBJECT
 

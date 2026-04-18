@@ -2,7 +2,7 @@
 #include "ui_partmainjogparameters.h"
 
 PartMainJogParameters::PartMainJogParameters(QWidget* parent)
-    : PartMainJogParametersInterface(parent)
+    : AbstractPartMainJogParameters(parent)
     , ui(new Ui::partMainJogParameters)
 {
     ui->setupUi(this);

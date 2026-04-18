@@ -8,7 +8,7 @@
 #include "idlebehavior.h"
 
 AlarmBehavior::AlarmBehavior(int alarmCode, bool resumeAfterUnlock, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_alarmCode(alarmCode)
     , m_resumeAfterUnlock(resumeAfterUnlock)
 {
@@ -41,7 +41,7 @@ void AlarmBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result AlarmBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result AlarmBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Alarm] Entry";
 
@@ -56,7 +56,7 @@ void AlarmBehavior::setAlarmMessage()
     m_alarmMessage = ALARMS.value(m_alarmCode, QString("Unknown (%1)").arg(m_alarmCode));
 }
 
-StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     qDebug() << "[Behavior][Alarm] Command Response:" << command << response;
     // Handle command responses in alarm state
@@ -90,7 +90,7 @@ StateBehavior::Result AlarmBehavior::onCommandResponse(QString command, CommandA
 
 // void AlarmBehavior::onConnectionStateChanged(ConnectionState state)
 // {
-//     qDebug() << "[Behavior][Alarm] Connection State Changed:" << static_cast<int>(state);
+//     qDebug() << "[Behavior][Alarm] AbstractConnection State Changed:" << static_cast<int>(state);
 //     if (state != ConnectionState::Connected) {
 //         // If connection is lost, we might want to transition to a different state
 //         // For now, we don't do anything special
@@ -116,5 +116,5 @@ bool AlarmBehavior::doAction(const Action &action)
             return true;
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }

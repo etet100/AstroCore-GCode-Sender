@@ -4,11 +4,11 @@
 #include "core/globals.h"
 #include "core/gcode/gcode.h"
 #include "core/config/configuration.h"
-#include "io/connection/connection.h"
+#include "io/connection/abstractconnection.h"
 #include "core/machine/physicalmachineconfiguration.h"
 #include "positiontracker.h"
 #include "core/jogger/jogger.h"
-#include "core/state_behavior/statebehavior.h"
+#include "core/state_behavior/abstractstatebehavior.h"
 #include "statebehaviormanager.h"
 #include "machinestatus.h"
 #include "overrides.h"
@@ -28,7 +28,7 @@ class Communicator : public QObject
     public:
         Communicator(
             QObject *parent,
-            Connection *connection,
+            AbstractConnection *connection,
             Configuration *configuration
         );
         ~Communicator();
@@ -51,11 +51,11 @@ class Communicator : public QObject
         // may be used to set connection for the first time, if m_connection is no null,
         // ReconnectingBehavior should be used instead!!
 
-        bool setConnection(Connection *, bool force);
-        bool startReconnecting(Connection *connection);
-        StateBehavior *sb() const;
+        bool setConnection(AbstractConnection *, bool force);
+        bool startReconnecting(AbstractConnection *connection);
+        AbstractStateBehavior *sb() const;
         // bool openConnection();
-        Connection* connection();
+        AbstractConnection* connection();
         // void stopUpdatingState();
         // void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
@@ -79,10 +79,10 @@ class Communicator : public QObject
         void queryMachineConfiguration();
         void processStateBehaviorTransition();
 
-        StateBehavior* stateBehavior() const { return m_sbManager.current(); }
+        AbstractStateBehavior* stateBehavior() const { return m_sbManager.current(); }
         StateBehaviorManager* stateBehaviorManager() { return &m_sbManager; }
     private:
-        Connection *m_connection = nullptr;
+        AbstractConnection *m_connection = nullptr;
         Configuration *m_configuration;
 
         PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
@@ -125,7 +125,7 @@ class Communicator : public QObject
         //
         int m_lastAlarmCode = 0;
 
-        bool execute(StateBehavior *statebehavior, bool force = false);
+        bool execute(AbstractStateBehavior *statebehavior, bool force = false);
         void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
         void processOffsetsVars(QStringList response);
@@ -158,15 +158,15 @@ class Communicator : public QObject
         void onConnectionLineReceived(QString);
         void onConnectionError(QString);
         void onConnectionStateChanged(ConnectionState state);
-        void onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb,
-                                       StateBehavior::TransitionKind kind);
+        void onStateRequestsTransition(AbstractStateBehavior *sb, AbstractStateBehavior *nsb,
+                                       AbstractStateBehavior::TransitionKind kind);
         void onStateRequestsResume();
-        void onStateError(StateBehavior *sb, QString message);
+        void onStateError(AbstractStateBehavior *sb, QString message);
 
     signals:
         void responseReceived(QString command, int tableIndex, QString response);
         void statusReceived(QString status);
-        void connectionChanged(Connection *connection);
+        void connectionChanged(AbstractConnection *connection);
         void connectionStateChanged(ConnectionState state);
         void alarm(int code);
         void welcomeMessageReceived(QString message);
@@ -206,13 +206,13 @@ class CommunicatorApi : public QObject
     public:
         CommunicatorApi(Communicator *communicator) : QObject(), m_communicator(communicator) {}
 
-        Connection *connection() { return m_communicator->m_connection; }
+        AbstractConnection *connection() { return m_communicator->m_connection; }
         const MachineState& machineState() const { return m_communicator->machineState(); }
         void queryMachineState() { m_communicator->queryMachineState(); }
         void processDeviceConfiguration(QStringList response) { m_communicator->processDeviceConfiguration(response); }
         void processOffsetsVars(QStringList response) { m_communicator->processOffsetsVars(response); }
         void processGCodeParserState(CommandAttributes commandAttributes, QString response) { m_communicator->processGCodeParserState(commandAttributes, response); }
-        bool setConnection(Connection *connection, bool force) { return m_communicator->setConnection(connection, force); }
+        bool setConnection(AbstractConnection *connection, bool force) { return m_communicator->setConnection(connection, force); }
         int lastAlarmCode() const { return m_communicator->m_lastAlarmCode; }
         void startQueryingMachineState() { m_communicator->startQueryingMachineState(); }
         void stopQueryingMachineState() { m_communicator->stopQueryingMachineState(); }

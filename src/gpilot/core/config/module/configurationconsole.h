@@ -6,9 +6,9 @@
 #define CONFIGURATION_CONSOLE_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationConsole : public ConfigurationModule
+class ConfigurationConsole : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

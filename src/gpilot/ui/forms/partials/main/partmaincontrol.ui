@@ -396,7 +396,7 @@
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
-         <normaloff>:/images/visualizer/visualizer_markers.svg</normaloff>:/images/visualizer/visualizer_markers.svg</iconset>
+         <normaloff>:/images/control/scan_table.svg</normaloff>:/images/control/scan_table.svg</iconset>
        </property>
        <property name="iconSize">
         <size>

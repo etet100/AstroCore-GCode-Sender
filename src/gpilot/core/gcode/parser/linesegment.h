@@ -25,24 +25,26 @@ public:
                m_second == other.m_second;
     }
 
-    int getLineNumber();
+    int getLineNumber() const;
     QList<QVector3D> getPointArray();
     QList<double> getPoints();
 
     QVector3D &getStart();
+    const QVector3D &getStart() const;
     void setStart(QVector3D vector);
 
     QVector3D &getEnd();
+    const QVector3D &getEnd() const;
     void setEnd(QVector3D vector);
 
     void setToolHead(int head);
-    int getToolhead();
+    int getToolhead() const;
     void setSpeed(double s);
-    double getSpeed();
+    double getSpeed() const;
     void setIsZMovement(bool isZ);
     bool isZMovement() const;
     void setIsArc(bool isA);
-    bool isArc();
+    bool isArc() const;
     void setIsFastTraverse(bool isF);
     bool isFastTraverse() const;
 

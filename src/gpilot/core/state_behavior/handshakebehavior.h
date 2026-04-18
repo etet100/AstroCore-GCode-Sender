@@ -4,7 +4,7 @@
 #ifndef HANDSHAKEBEHAVIOR_H
 #define HANDSHAKEBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
 // Performs a non-destructive handshake after connecting:
 //   1. Queries current machine state (?).
@@ -12,7 +12,7 @@
 //      transitions immediately to ExternalProcessBehavior.
 //   3. Otherwise queries device settings ($$) and coordinate offsets ($#).
 //   4. Transitions to the appropriate behavior based on the initial machine state.
-class HandshakeBehavior : public StateBehavior
+class HandshakeBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -22,7 +22,7 @@ public:
     Type type() const override { return Type::Handshake; }
 
     Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-    Result doOnExit(StateBehavior *next) override;
+    Result doOnExit(AbstractStateBehavior *next) override;
     Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
     void doOnMachineState(MachineState state) override;
 

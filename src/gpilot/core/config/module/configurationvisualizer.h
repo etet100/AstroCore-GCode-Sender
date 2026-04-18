@@ -7,9 +7,9 @@
 
 #include <QObject>
 #include <QColor>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationVisualizer : public ConfigurationModule
+class ConfigurationVisualizer : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

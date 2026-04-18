@@ -3,9 +3,9 @@
 #ifndef RESETBEHAVIOR_H
 #define RESETBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class ResetBehavior : public StateBehavior
+class ResetBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 

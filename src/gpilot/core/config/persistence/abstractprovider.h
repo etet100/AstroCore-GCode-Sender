@@ -1,15 +1,15 @@
-#ifndef CONFIG_PROVIDER_H
-#define CONFIG_PROVIDER_H
+#ifndef ABSTRACT_CONFIG_PROVIDER_H
+#define ABSTRACT_CONFIG_PROVIDER_H
 
 #include <QSettings>
 #include <QObject>
 
-class Provider : public QObject
+class AbstractProvider : public QObject
 {
     Q_OBJECT
 
     public:
-        Provider(QObject *parent) : QObject(parent) {};
+        AbstractProvider(QObject *parent) : QObject(parent) {};
         virtual bool open() = 0;
         virtual void close() = 0;
         virtual int getInt(const QString group, const QString key, int defaultValue) = 0;
@@ -23,4 +23,4 @@ class Provider : public QObject
         virtual bool isReady() { return true; };
 };
 
-#endif // CONFIG_PROVIDER_H
+#endif // ABSTRACT_CONFIG_PROVIDER_H

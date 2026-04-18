@@ -2,18 +2,18 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 #include <QColor>
 #include <QRect>
 #include <QVector3D>
 #include <QByteArray>
 
-ConfigurationModule::ConfigurationModule(QObject *parent, QMap<QString, QVariant> defaults) : QObject(parent), m_defaults(defaults)
+AbstractConfigurationModule::AbstractConfigurationModule(QObject *parent, QMap<QString, QVariant> defaults) : QObject(parent), m_defaults(defaults)
 {
     ConfigurationRegistry::registerStruct(
-        "ConfigurationModule::MinMax",
+        "AbstractConfigurationModule::MinMax",
         [](const char* data) -> QVariantMap {
-            ConfigurationModule::MinMax *minMax = (ConfigurationModule::MinMax*)data;
+            AbstractConfigurationModule::MinMax *minMax = (AbstractConfigurationModule::MinMax*)data;
 
             return {
                 {"min", minMax->min},
@@ -21,16 +21,16 @@ ConfigurationModule::ConfigurationModule(QObject *parent, QMap<QString, QVariant
             };
         },
         [](QVariantMap map) -> QVariant {
-            return QVariant::fromValue(ConfigurationModule::MinMax{
+            return QVariant::fromValue(AbstractConfigurationModule::MinMax{
                 map["min"].toInt(),
                 map["max"].toInt(),
             });
         }
     );
     ConfigurationRegistry::registerStruct(
-        "ConfigurationModule::MinMaxDouble",
+        "AbstractConfigurationModule::MinMaxDouble",
         [](const char* data) -> QVariantMap {
-            ConfigurationModule::MinMaxDouble *minMax = (ConfigurationModule::MinMaxDouble*)data;
+            AbstractConfigurationModule::MinMaxDouble *minMax = (AbstractConfigurationModule::MinMaxDouble*)data;
 
             return {
                 {"min", minMax->min},
@@ -38,7 +38,7 @@ ConfigurationModule::ConfigurationModule(QObject *parent, QMap<QString, QVariant
             };
         },
         [](QVariantMap map) -> QVariant {
-            return QVariant::fromValue(ConfigurationModule::MinMaxDouble{
+            return QVariant::fromValue(AbstractConfigurationModule::MinMaxDouble{
                 map["min"].toDouble(),
                 map["max"].toDouble(),
             });

@@ -31,7 +31,12 @@ class Heightmap
         Heightmap& operator=(const Heightmap& other) = delete;
         Heightmap(Heightmap&& other) noexcept = default;
         Heightmap& operator=(Heightmap&& other) noexcept = default;
-        Heightmap(QSize size);
+        Heightmap(
+            QSize size,
+            QPointF startPos = QPointF(0.0, 0.0),
+            QSizeF stepSize = QSizeF(10.0, 10.0),
+            InterpolationMode interpolationMode = InterpolationMode::Bicubic
+        );
         Heightmap(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data);
 
         struct MinMax {

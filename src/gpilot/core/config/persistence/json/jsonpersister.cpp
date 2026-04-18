@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QDebug>
 
-JsonPersister::JsonPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
+JsonPersister::JsonPersister(QObject *parent, const QString &filePath) : AbstractPersister(parent), m_filePath(filePath)
 {
 }
 

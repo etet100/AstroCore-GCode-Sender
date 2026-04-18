@@ -3,19 +3,19 @@
 
 #include <QList>
 #include <memory>
-#include "idrawable.h"
+#include "abstractdrawable.h"
 #include "shaderdrawable.h"
 
 // Groups multiple ShaderDrawable parts into one logical drawable.
 // Each part has its own model matrix and transformation, but they are
 // managed together as a single object.
-class CompositeDrawable : public IDrawable
+class CompositeDrawable : public AbstractDrawable
 {
 public:
     CompositeDrawable() = default;
     ~CompositeDrawable() override = default;
 
-    void addPart(std::unique_ptr<ShaderDrawable> part);
+    void addPart(std::shared_ptr<ShaderDrawable> part);
     ShaderDrawable* part(int index);
     int partCount() const;
 
@@ -37,7 +37,7 @@ public:
     int getVertexCount() override;
 
 private:
-    QList<std::unique_ptr<ShaderDrawable>> m_parts;
+    QList<std::shared_ptr<ShaderDrawable>> m_parts;
     bool m_visible = true;
 };
 

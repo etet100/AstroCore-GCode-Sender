@@ -21,6 +21,6 @@ const QMap<QString,QVariant> DEFAULTS = {
     {"overrideSpindleSpeedValue", 100},
 };
 
-ConfigurationMachine::ConfigurationMachine(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationMachine::ConfigurationMachine(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
 }

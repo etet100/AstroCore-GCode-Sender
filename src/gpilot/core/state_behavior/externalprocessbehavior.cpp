@@ -6,12 +6,12 @@
 #include "core/state_behavior/behaviors.h"
 
 ExternalProcessBehavior::ExternalProcessBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 QString ExternalProcessBehavior::description() { return "External process"; }
 
-StateBehavior::Result ExternalProcessBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ExternalProcessBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][ExternalProcess] Entry — machine is running an external process.";
 

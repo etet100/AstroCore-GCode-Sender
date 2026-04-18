@@ -1,7 +1,7 @@
 #ifndef PARTMAINJOGPARAMETERS2_H
 #define PARTMAINJOGPARAMETERS2_H
 
-#include "partmainjogparametersinterface.h"
+#include "abstractpartmainjogparameters.h"
 #include "styledtoolbutton.h"
 #include <QFrame>
 #include <QPushButton>
@@ -13,7 +13,7 @@ namespace Ui {
 class partMainJogParameters2;
 }
 
-class PartMainJogParameters2 : public PartMainJogParametersInterface
+class PartMainJogParameters2 : public AbstractPartMainJogParameters
 {
     Q_OBJECT
 

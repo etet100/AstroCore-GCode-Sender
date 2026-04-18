@@ -5,13 +5,16 @@
 #include "probingbehavior.h"
 #include "alarmbehavior.h"
 #include "core/communicator/communicator.h"
+#include <QCoroTimer>
+
+using namespace std::chrono_literals;
 
 ProbingBehavior::ProbingBehavior(QObject* parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 ProbingBehavior::ProbingBehavior(ProbeParameters params, QObject* parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_params(params)
 {}
 
@@ -20,7 +23,7 @@ QString ProbingBehavior::description()
     return QString("Probing - %1").arg(m_stageDescription);
 }
 
-StateBehavior::Result ProbingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ProbingBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Probing] Entry - starting probing sequence"
              << (m_params.doubleProbe ? "(two-phase)" : "");
@@ -30,10 +33,10 @@ StateBehavior::Result ProbingBehavior::doOnEntry(CommunicatorApi *communicator, 
     m_communicator->startQueryingMachineState();
     m_probingTask = runProbingSequence();
 
-    return StateBehavior::Result::Ok;
+    return AbstractStateBehavior::Result::Ok;
 }
 
-StateBehavior::Result ProbingBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result ProbingBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][Probing] Exit";
 
@@ -41,6 +44,162 @@ StateBehavior::Result ProbingBehavior::doOnExit(StateBehavior *next)
     m_communicator->stopQueryingMachineState();
 
     return Result::Ok;
+}
+
+void ProbingBehavior::onAlarm(int code)
+{
+    qDebug() << "[Behavior][Probing] Alarm during probing:" << code;
+
+    m_alarmOccurred = true;
+    m_alarmCode = code;
+
+    if (m_params.delegateAlarmToParent) {
+        // Wake any coroutine currently inside awaitMachineState so it can
+        // observe m_alarmOccurred and emit the proper delegation exit
+        // without waiting for the full await timeout.
+        emit machineStateSignal(MachineState::Alarm);
+    } else {
+        emit transition(this, new AlarmBehavior(code));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+void ProbingBehavior::emitAlarmExit()
+{
+    if (m_params.delegateAlarmToParent) {
+        setExitValue({
+            {"alarmOccurred", true},
+            {"alarmCode", m_alarmCode},
+        });
+        emit resumePrevious();
+    } else {
+        emit transition(this, new AlarmBehavior(m_alarmCode));
+    }
+}
+
+QCoro::Task<void> ProbingBehavior::emitFailureExit()
+{
+    if (m_params.useAbsolute) {
+        co_await sendAndAwait("G90", m_params.setupTimeout);
+    }
+    emit resumePrevious();
+}
+
+QCoro::Task<bool> ProbingBehavior::waitForMotionComplete(const QString &stage)
+{
+    qDebug().noquote() << QString("[Behavior][Probing][%1] Waiting for Run").arg(stage);
+    auto moving = co_await awaitMachineState(
+        [](MachineState s) { return s == MachineState::Run; },
+        500ms
+    );
+
+    if (m_alarmOccurred) {
+        log(QString("Alarm while waiting for Run after %1: %2").arg(stage).arg(m_alarmCode), {"Probing", "Error"});
+        emit stateEvent("probeFailed", {{"reason", QString("Alarm %1 after %2").arg(m_alarmCode).arg(stage)}});
+        emitAlarmExit();
+        co_return false;
+    }
+
+    if (!moving) {
+        qDebug().noquote() << QString("[Behavior][Probing][%1] No Run observed within 500ms, assuming already idle").arg(stage);
+        co_return true;
+    }
+
+    qDebug().noquote() << QString("[Behavior][Probing][%1] Run observed, now waiting for Idle").arg(stage);
+    auto idle = co_await awaitMachineState(
+        [](MachineState s) { return s == MachineState::Idle; },
+        m_params.moveTimeout
+    );
+
+    if (m_alarmOccurred) {
+        log(QString("Alarm while waiting for Idle after %1: %2").arg(stage).arg(m_alarmCode), {"Probing", "Error"});
+        emit stateEvent("probeFailed", {{"reason", QString("Alarm %1 after %2").arg(m_alarmCode).arg(stage)}});
+        emitAlarmExit();
+        co_return false;
+    }
+
+    if (!idle) {
+        log(QString("Timeout waiting for Idle after %1").arg(stage), {"Probing", "Error"});
+        emit stateEvent("probeFailed", {{"reason", QString("Timeout waiting for Idle after %1").arg(stage)}});
+        co_await emitFailureExit();
+        co_return false;
+    }
+
+    qDebug().noquote() << QString("[Behavior][Probing][%1] Idle observed").arg(stage);
+    co_return true;
+}
+
+QCoro::Task<std::optional<QVector3D>> ProbingBehavior::executeProbe(
+    const QString &stage, double distance, double feedRate)
+{
+    QString cmd = QString("G38.2 Z-%1 F%2")
+        .arg(distance, 0, 'f', 3)
+        .arg(feedRate, 0, 'f', 1);
+    log(QString("%1: %2").arg(stage, cmd), {"Probing"});
+
+    // A probe can finish in four ways:
+    //   1. command rejected (!r->status.ok) — nothing started
+    //   2. alarm first, response follows with contacted=false
+    //   3. response first with contacted=false, alarm follows shortly after
+    //   4. response with contacted=true — success
+    // We must have BOTH the command response and the alarm flag settled before
+    // classifying the outcome, otherwise a late alarm leaks into the next stage
+    // (or ScanTable) and gets misreported.
+    auto r = co_await sendAndAwait(cmd, m_params.probeTimeout);
+
+    if (!r) {
+        log(QString("Timeout during %1").arg(stage), {"Probing", "Error"});
+        emit stateEvent("probeFailed", {{"reason", QString("Timeout during %1").arg(stage)}});
+        co_await emitFailureExit();
+        co_return std::nullopt;
+    }
+    if (!r->status.ok) {
+        log(QString("%1 error: %2").arg(stage, enrichErrorMessage(r->response)), {"Probing", "Error"});
+        emit stateEvent("probeFailed", {{"reason", QString("%1 command failed").arg(stage)}});
+        co_await emitFailureExit();
+        co_return std::nullopt;
+    }
+
+    auto probe = ProbeResponseParser::parse(r->fullResponse);
+    bool contacted = probe && probe->contacted;
+
+    // Grace period: if the response says "no contact" but no alarm has been
+    // observed yet, wait briefly for one to arrive — PROBE_FAIL often follows
+    // the response by a few ms. Bail out early on Alarm or Idle (steady states).
+    if (!contacted && !m_alarmOccurred) {
+        co_await awaitMachineState(
+            [](MachineState s) { return s == MachineState::Alarm || s == MachineState::Idle; },
+            500ms
+        );
+    }
+
+    if (m_alarmOccurred) {
+        if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
+            log(QString("%1 failed - no contact (alarm %2)").arg(stage).arg(m_alarmCode), {"Probing", "Error"});
+            emit stateEvent("probeFailed", {{"reason", QString("No contact during %1").arg(stage)}});
+        } else {
+            log(QString("Alarm during %1: %2").arg(stage).arg(m_alarmCode), {"Probing", "Error"});
+            emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
+        }
+        emitAlarmExit();
+        co_return std::nullopt;
+    }
+
+    if (!contacted) {
+        log(QString("%1 - no contact (no alarm)").arg(stage), {"Probing", "Error"});
+        qDebug() << "[Behavior][Probing] No contact";
+        emit stateEvent("probeFailed", {{"reason", QString("No contact during %1").arg(stage)}});
+        co_await emitFailureExit();
+        co_return std::nullopt;
+    }
+
+    qDebug() << "[Behavior][Probing][Contact]" << stage << "Z=" << probe->position.z();
+    log(QString("%1 contact at Z=%2").arg(stage).arg(probe->position.z(), 0, 'f', 3), {"Probing"});
+
+    co_return probe->position;
 }
 
 // ---------------------------------------------------------------------------
@@ -64,13 +223,7 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     if (m_alarmOccurred) {
         log(QString("Alarm during setup: %1").arg(m_alarmCode), {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", QString("Alarm %1 during setup").arg(m_alarmCode)}});
-        if (m_params.delegateAlarmToParent) {
-            setExitValue("alarmOccurred", true);
-            setExitValue("alarmCode", m_alarmCode);
-            emit resumePrevious();
-        } else {
-            emit transition(this, new AlarmBehavior(m_alarmCode));
-        }
+        emitAlarmExit();
         co_return;
     }
     if (!r->status.ok) {
@@ -80,69 +233,47 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         co_return;
     }
 
+    // ── Step 1.5: Optional pre-retract (alarm-recovery entry) ───────
+    if (m_params.retractFirst) {
+        m_stageDescription = "Pre-retract";
+        QString cmd = QString("G0 Z%1").arg(m_params.safeDistance, 0, 'f', 3);
+        log(QString("Pre-retract: %1mm").arg(m_params.safeDistance, 0, 'f', 3), {"Probing"});
+
+        r = co_await sendAndAwait(cmd, m_params.moveTimeout);
+
+        if (!r || m_alarmOccurred || !r->status.ok) {
+            log("Error during pre-retract", {"Probing", "Error"});
+            emit stateEvent("probeFailed", {{"reason", "Pre-retract failed"}});
+            if (m_alarmOccurred) {
+                emitAlarmExit();
+            } else {
+                co_await emitFailureExit();
+            }
+
+            co_return;
+        }
+
+        if (!co_await waitForMotionComplete("pre-retract")) {
+            co_return;
+        }
+    }
+
     // ── Step 2: Fast probe ───────────────────────────────────────────
     m_stageDescription = "Fast Probe";
-    QString fastProbeCmd = QString("G38.2 Z-%1 F%2")
-        .arg(m_params.maxDistance, 0, 'f', 3)
-        .arg(m_params.fastFeedRate, 0, 'f', 1);
-    log(QString("Fast probe: %1").arg(fastProbeCmd), {"Probing"});
-
-    r = co_await sendAndAwait(fastProbeCmd, m_params.probeTimeout);
-
-    if (!r) {
-        log("Timeout during fast probe", {"Probing", "Error"});
-        emit stateEvent("probeFailed", {{"reason", "Timeout during fast probe"}});
-        if (m_params.useAbsolute) {
-            co_await sendAndAwait("G90", m_params.setupTimeout);
-        }
-        emit resumePrevious();
+    auto fastPos = co_await executeProbe("fast probe", m_params.maxDistance, m_params.fastFeedRate);
+    if (!fastPos) {
         co_return;
     }
-    if (m_alarmOccurred) {
-        if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
-            log("Probe failed - no contact detected", {"Probing", "Error"});
-            emit stateEvent("probeFailed", {{"reason", "No contact detected during probing"}});
-        } else {
-            log(QString("Alarm during fast probe: %1").arg(m_alarmCode), {"Probing", "Error"});
-            emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
-        }
-        if (m_params.delegateAlarmToParent) {
-            setExitValue("alarmOccurred", true);
-            setExitValue("alarmCode", m_alarmCode);
-            emit resumePrevious();
-        } else {
-            emit transition(this, new AlarmBehavior(m_alarmCode));
-        }
+    QVector3D fastProbePosition = *fastPos;
+
+    if (!co_await waitForMotionComplete("fast probe")) {
         co_return;
     }
-    if (!r->status.ok) {
-        log(QString("Fast probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
-        emit stateEvent("probeFailed", {{"reason", "Fast probe command failed"}});
-        if (m_params.useAbsolute) {
-            co_await sendAndAwait("G90", m_params.setupTimeout);
-        }
-        emit resumePrevious();
-        co_return;
-    }
-
-    auto fastProbe = ProbeResponseParser::parse(r->fullResponse);
-    if (!fastProbe || !fastProbe->contacted) {
-        log("Fast probe - no contact or unparseable response", {"Probing", "Error"});
-        emit stateEvent("probeFailed", {{"reason", "No contact during fast probe"}});
-        if (m_params.useAbsolute) {
-            co_await sendAndAwait("G90", m_params.setupTimeout);
-        }
-        emit resumePrevious();
-        co_return;
-    }
-
-    log(QString("Fast probe contact at Z=%1").arg(fastProbe->position.z(), 0, 'f', 3), {"Probing"});
-
-    QVector3D fastProbePosition = fastProbe->position;
 
     // ── Step 3: Retract ──────────────────────────────────────────────
     m_stageDescription = "Retract";
     QString retractCmd = QString("G0 Z%1").arg(m_params.retractDistance, 0, 'f', 3);
+    qDebug() << "[Behavior][Probing] Retracting";
     log(QString("Retracting: %1mm").arg(m_params.retractDistance, 0, 'f', 3), {"Probing"});
 
     r = co_await sendAndAwait(retractCmd, m_params.moveTimeout);
@@ -151,19 +282,15 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
         log("Error during retract", {"Probing", "Error"});
         emit stateEvent("probeFailed", {{"reason", "Retract failed"}});
         if (m_alarmOccurred) {
-            if (m_params.delegateAlarmToParent) {
-                setExitValue("alarmOccurred", true);
-                setExitValue("alarmCode", m_alarmCode);
-                emit resumePrevious();
-            } else {
-                emit transition(this, new AlarmBehavior(m_alarmCode));
-            }
+            emitAlarmExit();
         } else {
-            if (m_params.useAbsolute) {
-                co_await sendAndAwait("G90", m_params.setupTimeout);
-            }
-            emit resumePrevious();
+            co_await emitFailureExit();
         }
+        co_return;
+    }
+
+    // ── Step 3.1: Wait for retract motion to start, then for Idle ────
+    if (!co_await waitForMotionComplete("retract")) {
         co_return;
     }
 
@@ -172,71 +299,28 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
 
     if (m_params.doubleProbe) {
         m_stageDescription = "Slow Probe";
-        double slowProbeDistance = m_params.retractDistance + 1.0;
-        QString slowProbeCmd = QString("G38.2 Z-%1 F%2")
-            .arg(slowProbeDistance, 0, 'f', 3)
-            .arg(m_params.slowFeedRate, 0, 'f', 1);
-        log(QString("Slow probe: %1").arg(slowProbeCmd), {"Probing"});
-
-        r = co_await sendAndAwait(slowProbeCmd, m_params.probeTimeout);
-
-        if (!r) {
-            log("Timeout during slow probe", {"Probing", "Error"});
-            emit stateEvent("probeFailed", {{"reason", "Timeout during slow probe"}});
-            if (m_params.useAbsolute) {
-                co_await sendAndAwait("G90", m_params.setupTimeout);
-            }
-            emit resumePrevious();
+        auto slowPos = co_await executeProbe(
+            "slow probe", m_params.retractDistance + 1.0, m_params.slowFeedRate);
+        if (!slowPos) {
             co_return;
         }
-        if (m_alarmOccurred) {
-            if (m_alarmCode == GRBL_ALARM_PROBE_FAIL_1 || m_alarmCode == GRBL_ALARM_PROBE_FAIL_2) {
-                log("Slow probe failed - no contact detected", {"Probing", "Error"});
-                emit stateEvent("probeFailed", {{"reason", "No contact during slow probe"}});
-            } else {
-                log(QString("Alarm during slow probe: %1").arg(m_alarmCode), {"Probing", "Error"});
-                emit stateEvent("probeFailed", {{"reason", QString("Alarm %1").arg(m_alarmCode)}});
-            }
-            if (m_params.delegateAlarmToParent) {
-                setExitValue("alarmOccurred", true);
-                setExitValue("alarmCode", m_alarmCode);
-                emit resumePrevious();
-            } else {
-                emit transition(this, new AlarmBehavior(m_alarmCode));
-            }
-            co_return;
-        }
-        if (!r->status.ok) {
-            log(QString("Slow probe error: %1").arg(enrichErrorMessage(r->response)), {"Probing", "Error"});
-            emit stateEvent("probeFailed", {{"reason", "Slow probe command failed"}});
-            if (m_params.useAbsolute) {
-                co_await sendAndAwait("G90", m_params.setupTimeout);
-            }
-            emit resumePrevious();
-            co_return;
-        }
+        finalPosition = *slowPos;
 
-        auto slowProbe = ProbeResponseParser::parse(r->fullResponse);
-        if (!slowProbe || !slowProbe->contacted) {
-            log("Slow probe - no contact or unparseable response", {"Probing", "Error"});
-            emit stateEvent("probeFailed", {{"reason", "No contact during slow probe"}});
-            if (m_params.useAbsolute) {
-                co_await sendAndAwait("G90", m_params.setupTimeout);
-            }
-            emit resumePrevious();
+        if (!co_await waitForMotionComplete("slow probe")) {
             co_return;
         }
-
-        finalPosition = slowProbe->position;
-        log(QString("Precise probe contact at Z=%1").arg(slowProbe->position.z(), 0, 'f', 3), {"Probing"});
     }
+
+    qDebug() << "[Behavior][Probing] Probing completed";
 
     m_probedPosition = finalPosition;
     m_success = true;
-    setExitValue("success", true);
-    setExitValue("x", m_probedPosition.x());
-    setExitValue("y", m_probedPosition.y());
-    setExitValue("z", m_probedPosition.z());
+    setExitValue({
+        {"success", true},
+        {"x", m_probedPosition.x()},
+        {"y", m_probedPosition.y()},
+        {"z", m_probedPosition.z()},
+    });
     emit stateEvent("probeCompleted", {{"x", m_probedPosition.x()}, {"y", m_probedPosition.y()}, {"z", m_probedPosition.z()}});
 
     // ── Step 5: Set Z=0 at probe position (optional) ────────────────
@@ -252,11 +336,17 @@ QCoro::Task<void> ProbingBehavior::runProbingSequence()
     }
 
     // ── Step 6: Move to safe height ─────────────────────────────────
+    qDebug() << "[Behavior][Probing] Moving to safe height";
     m_stageDescription = "Move to Safe";
     QString safeCmd = QString("G0 Z%1").arg(m_params.safeDistance, 0, 'f', 3);
     log(QString("Moving to safe position: +%1mm").arg(m_params.safeDistance, 0, 'f', 3), {"Probing"});
 
     co_await sendAndAwait(safeCmd, m_params.moveTimeout);
+
+    // ── Step 6.1: Wait for safe-move motion to start, then for Idle ──
+    if (!co_await waitForMotionComplete("safe move")) {
+        co_return;
+    }
 
     // ── Step 7: Restore absolute positioning ────────────────────────
     if (m_params.useAbsolute) {

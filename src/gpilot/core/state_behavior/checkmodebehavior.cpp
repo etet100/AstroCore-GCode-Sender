@@ -8,7 +8,7 @@
 #include "core/communicator/communicator.h"
 
 CheckModeBehavior::CheckModeBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {
 }
 
@@ -17,7 +17,7 @@ QString CheckModeBehavior::description()
     return "Check Mode (Dry Run)";
 }
 
-StateBehavior::Result CheckModeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result CheckModeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     Q_UNUSED(ctx);
 
@@ -83,5 +83,5 @@ bool CheckModeBehavior::doAction(const Action &action)
         return true;
     }
 
-    return StateBehavior::doAction(action);
+    return AbstractStateBehavior::doAction(action);
 }

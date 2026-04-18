@@ -1,14 +1,14 @@
-#ifndef CONFIG_PERSISTER_H
-#define CONFIG_PERSISTER_H
+#ifndef ABSTRACT_CONFIG_PERSISTER_H
+#define ABSTRACT_CONFIG_PERSISTER_H
 
 #include <QObject>
 
-class Persister : public QObject
+class AbstractPersister : public QObject
 {
     Q_OBJECT
 
     public:
-        Persister(QObject *parent) : QObject(parent) {};
+        AbstractPersister(QObject *parent) : QObject(parent) {};
         virtual bool open() = 0;
         virtual void close() = 0;
         virtual bool setInt(const QString group, const QString key, const int value) = 0;
@@ -21,4 +21,4 @@ class Persister : public QObject
         virtual bool setVariant(const QString group, const QString key, const QVariant value) = 0;
 };
 
-#endif // CONFIG_PERSISTER_H
+#endif // ABSTRACT_CONFIG_PERSISTER_H

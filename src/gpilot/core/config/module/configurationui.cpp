@@ -55,7 +55,7 @@ QList<ShortcutEntry> ConfigurationUI::defaultShortcuts()
     };
 }
 
-ConfigurationUI::ConfigurationUI(QObject *parent) : ConfigurationModule(parent, DEFAULTS)
+ConfigurationUI::ConfigurationUI(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
     ConfigurationRegistry::registerStruct(
         "ShortcutEntry",

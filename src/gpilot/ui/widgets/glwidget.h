@@ -15,7 +15,7 @@
 #include <QTimer>
 #include <QTime>
 #include "ui/drawers/shaderdrawable.h"
-#include "ui/drawers/idrawable.h"
+#include "ui/drawers/abstractdrawable.h"
 #include "ui/drawers/cubedrawer.h"
 #include "glpalette.h"
 #include "glzminmax.h"
@@ -42,13 +42,13 @@ public:
         View2D
     };
 
-    void addDrawable(IDrawable *drawable);
-    GLWidget &operator<<(IDrawable *drawable);
+    void addDrawable(AbstractDrawable *drawable);
+    GLWidget &operator<<(AbstractDrawable *drawable);
 
-    void updateExtremes(IDrawable *drawable);
+    void updateExtremes(AbstractDrawable *drawable);
     // Set default extremes (0,0,0) - (50,50,10) - to avoid problems with 0 size drawable
     void setDefaultExtemes();
-    void fitDrawable(IDrawable *drawable = nullptr);
+    void fitDrawable(AbstractDrawable *drawable = nullptr);
     void setAntialiasing(bool antialiasing);
     void setSpendTime(const QTime &spendTime);
     void setEstimatedTime(const QTime &estimatedTime);
@@ -162,7 +162,7 @@ private:
     void animate();
     void stopAnimation();
 
-    QList<IDrawable*> m_shaderDrawables;
+    QList<AbstractDrawable*> m_shaderDrawables;
     QOpenGLShaderProgram *m_defaultShaderProgram;
     QOpenGLShaderProgram *m_gcodeShaderProgram;
     QOpenGLShaderProgram *m_billboardShaderProgram;

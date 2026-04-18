@@ -6,11 +6,11 @@
 #define RAWTCPCONNECTION_H
 
 #include <QObject>
-#include "connection.h"
+#include "abstractconnection.h"
 #include <QTcpServer>
 #include <QTcpSocket>
 
-class RawTcpConnection : public Connection
+class RawTcpConnection : public AbstractConnection
 {
     Q_OBJECT
 

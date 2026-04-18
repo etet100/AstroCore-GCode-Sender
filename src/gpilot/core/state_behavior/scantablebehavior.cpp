@@ -6,11 +6,12 @@
 #include "probingbehavior.h"
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
+#include "scantableerrorbehavior.h"
 #include "core/communicator/communicator.h"
 #include <cmath>
 
 ScanTableBehavior::ScanTableBehavior(Heightmap *heightmap, QPointF startPos, Heightmap::ScanMode scanMode, int moveFeedRate, QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
     , m_heightmap(heightmap)
     , m_startPos(startPos)
     , m_scanMode(scanMode)
@@ -26,8 +27,28 @@ QString ScanTableBehavior::description()
     return "Scanning table";
 }
 
-StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
+    m_communicator->startQueryingMachineState();
+
+    // Resumed from ScanTableErrorBehavior — user chose "Resume".
+    //  - Probe stage: tip is at the failed Z; retry just the probe with a
+    //    pre-retract so we lift off before re-entering the material.
+    //  - Move stage:  tip is safely airborne; redo GoTo.
+    if (ctx.previousType == Type::ScanTableError) {
+        qDebug() << "[Behavior][ScanTable] Resumed from ScanTableError, retrying point" << m_currentPoint
+                 << "stage:" << (m_phase == Stage::Probing ? "Probing" : "MovingToPoint");
+        log("Resumed after error, retrying current point", {"ScanTable"});
+        if (m_phase == Stage::Probing) {
+            m_retractBeforeNextProbe = true;
+            startProbeAtCurrentPoint();
+        } else {
+            processCurrentPoint();
+        }
+
+        return Result::Ok;
+    }
+
     if (m_phase == Stage::Initial) {
         m_grid = m_heightmap->probePoints(m_startPos, m_scanMode);
         m_currentPoint = 0;
@@ -39,8 +60,6 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
             finishScanning(false, "Empty grid");
             return Result::Ok;
         }
-
-        m_communicator->startQueryingMachineState();
 
         qDebug() << "[Behavior][ScanTable] Starting scan:"
                  << m_heightmap->gridWidth() << "x" << m_heightmap->gridHeight()
@@ -54,16 +73,35 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
 
     } else if (m_phase == Stage::MovingToPoint) {
         // ── Returned from GoToBehavior ──────────────────────────────────────
-        // GoToBehavior waits for Idle before returning, so a non-Idle state
-        // here means the move command failed (e.g. soft-limit error).
-        if (m_communicator->machineState() != MachineState::Idle) {
+
+        // GoTo delegated an alarm — suspend into ScanTableError. User decides
+        // whether to Resume (which unlocks and retries) or Cancel.
+        if (ctx.data.value("alarmOccurred").toBool()) {
+            int code = ctx.data.value("alarmCode").toInt();
             QPointF pt = m_grid[m_currentPoint];
-            qWarning() << "[Behavior][ScanTable] Move to point"
-                       << pt << "failed (machine not Idle), aborting scan";
-            log(QString("Move to point (%1,%2) failed, aborting scan")
-                    .arg(pt.x(), 0, 'f', 3).arg(pt.y(), 0, 'f', 3), {"ScanTable", "Error"});
-            finishScanning(false, QString("Failed to move to (X%1 Y%2)")
-                               .arg(pt.x(), 0, 'f', 3).arg(pt.y(), 0, 'f', 3));
+            qWarning() << "[Behavior][ScanTable] Alarm" << code << "while moving to point" << pt;
+            log(QString("Alarm %1 during move").arg(code), {"ScanTable", "Error"});
+            emit transition(this,
+                            new ScanTableErrorBehavior(QString("Alarm %1 during move").arg(code),
+                                                       ScanTableErrorBehavior::FailedStage::Move, pt, code),
+                            TransitionKind::Suspend);
+
+            return Result::Ok;
+        }
+
+        if (!ctx.data.value("success").toBool()) {
+            QPointF pt = m_grid[m_currentPoint];
+            QString reason = ctx.data.value("failureReason").toString();
+            if (reason.isEmpty()) {
+                reason = "unknown failure";
+            }
+            qWarning() << "[Behavior][ScanTable] Move to point" << pt << "failed:" << reason;
+            log(QString("Move to point (%1,%2) failed: %3")
+                    .arg(pt.x(), 0, 'f', 3).arg(pt.y(), 0, 'f', 3).arg(reason), {"ScanTable", "Error"});
+            emit transition(this,
+                            new ScanTableErrorBehavior(reason, ScanTableErrorBehavior::FailedStage::Move, pt),
+                            TransitionKind::Suspend);
+
             return Result::Ok;
         }
 
@@ -72,20 +110,18 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
     } else if (m_phase == Stage::Probing) {
         // ── Returned from ProbingBehavior ───────────────────────────────────
 
-        // Probe delegated an alarm — suspend here so AlarmBehavior can resume us after unlock
+        // Probe delegated an alarm — suspend into ScanTableError so user can
+        // decide: Resume (unlock + retract + re-probe) or Cancel.
         if (ctx.data.value("alarmOccurred").toBool()) {
             int code = ctx.data.value("alarmCode").toInt();
+            QPointF pt = m_grid[m_currentPoint];
             qWarning() << "[Behavior][ScanTable] Alarm" << code << "during probe at point" << m_currentPoint;
-            log(QString("Alarm %1 during probe, waiting for unlock").arg(code), {"ScanTable", "Error"});
-            emit transition(this, new AlarmBehavior(code, /*resumeAfterUnlock=*/true), TransitionKind::Suspend);
-            return Result::Ok;
-        }
+            log(QString("Alarm %1 during probe").arg(code), {"ScanTable", "Error"});
+            emit transition(this,
+                            new ScanTableErrorBehavior(QString("Alarm %1 during probe").arg(code),
+                                                       ScanTableErrorBehavior::FailedStage::Probe, pt, code),
+                            TransitionKind::Suspend);
 
-        // Resumed from AlarmBehavior after unlock — retry the current point
-        if (ctx.previousType == Type::Alarm) {
-            qDebug() << "[Behavior][ScanTable] Resuming after alarm, retrying point" << m_currentPoint;
-            log("Alarm cleared, retrying probe point", {"ScanTable"});
-            processCurrentPoint();
             return Result::Ok;
         }
 
@@ -117,7 +153,7 @@ StateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *communicator
     return Result::Ok;
 }
 
-StateBehavior::Result ScanTableBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result ScanTableBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][ScanTable] Exit, scanned" << m_scannedPoints << "/" << m_grid.size() << "points";
 
@@ -153,7 +189,8 @@ void ScanTableBehavior::processCurrentPoint()
              << "at X=" << pos.x() << "Y=" << pos.y();
 
     m_phase = Stage::MovingToPoint;
-    emit transition(this, new GoToBehavior(pos, m_moveFeedRate), TransitionKind::Suspend);
+    emit transition(this, new GoToBehavior(pos, m_moveFeedRate, /*delegateAlarmToParent=*/true),
+                    TransitionKind::Suspend);
 }
 
 void ScanTableBehavior::startProbeAtCurrentPoint()
@@ -167,13 +204,16 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
     params.fastFeedRate = m_heightmap->probeFeed();
     params.slowFeedRate = std::max(10.0, m_heightmap->probeFeed() / 4.0);
     params.maxDistance = (std::isnan(bt.bottom) || std::isnan(bt.top))
-                                 ? 20.0
+                                 ? 10.0
                                  : std::abs(bt.top - bt.bottom) + 2.0;
     params.retractDistance = 2.0;
     params.safeDistance = 3.0;
     params.setZeroAtProbe = false;
     params.useAbsolute = false;
+    params.doubleProbe = true;
     params.delegateAlarmToParent = true;
+    params.retractFirst = m_retractBeforeNextProbe;
+    m_retractBeforeNextProbe = false;
 
     m_phase = Stage::Probing;
     emit transition(this, new ProbingBehavior(params), TransitionKind::Suspend);

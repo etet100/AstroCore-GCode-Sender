@@ -21,12 +21,21 @@ inline Type typeFromString(const QString& str)
     if (str == "grbl")    return GRBL;
     if (str == "fluidnc") return FluidNC;
     if (str == "ucnc")    return UCNC;
+
     return GRBL;
 }
 
 inline QString typeToString(Type type)
 {
     static const char* names[] = {"grbl", "fluidnc", "ucnc"};
+
+    return names[type];
+}
+
+inline QString typeToName(Type type)
+{
+    static const char* names[] = {"grblHal", "FluidNC", "uCNC"};
+
     return names[type];
 }
 

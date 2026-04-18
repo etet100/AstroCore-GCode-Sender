@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-IniProvider::IniProvider(QObject *parent, const QString &filePath) : Provider(parent), m_filePath(filePath)
+IniProvider::IniProvider(QObject *parent, const QString &filePath) : AbstractProvider(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }

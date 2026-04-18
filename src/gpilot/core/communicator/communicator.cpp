@@ -15,7 +15,7 @@
 
 Communicator::Communicator(
     QObject *parent,
-    Connection *connection,
+    AbstractConnection *connection,
     Configuration *configuration
 ) : QObject(parent),
     m_connection(connection),
@@ -86,11 +86,11 @@ Communicator::Communicator(
         if (!m_sbManager.hasCurrent()) {
             return false;
         }
-        StateBehavior::Result result = m_sbManager.current()->onCommandResponse(
+        AbstractStateBehavior::Result result = m_sbManager.current()->onCommandResponse(
             command, attrs, status, data, lines
         );
 
-        return result != StateBehavior::Result::ReturnCommandToQueue;
+        return result != AbstractStateBehavior::Result::ReturnCommandToQueue;
     });
 
     // Callback: drain queue through the normal sendCommand path
@@ -115,9 +115,9 @@ Communicator::Communicator(
 
     resetStateVariables();
 
-    // this->connect(m_connection, &Connection::error, this, &Communicator::onConnectionError(QString));
+    // this->connect(m_connection, &AbstractConnection::error, this, &Communicator::onConnectionError(QString));
     if (m_connection) {
-        connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived, Qt::QueuedConnection);
+        connect(m_connection, &AbstractConnection::lineReceived, this, &Communicator::onConnectionLineReceived, Qt::QueuedConnection);
     }
 
     connect(&m_stateBehaviorTransitionTimer, &QTimer::timeout, this, &Communicator::processStateBehaviorTransition);
@@ -246,8 +246,8 @@ void Communicator::processStateBehaviorTransition()
     if (m_sbManager.hasPendingTransition()) {
         assert(m_sbManager.current() != nullptr);
         // Clear to avoid re-entrance.
-        StateBehavior *nsb = m_sbManager.next();
-        StateBehavior::TransitionKind kind = m_sbManager.pendingTransitionKind();
+        AbstractStateBehavior *nsb = m_sbManager.next();
+        AbstractStateBehavior::TransitionKind kind = m_sbManager.pendingTransitionKind();
         m_sbManager.requestTransition(nullptr);
         m_sbManager.execute(nsb, true, m_comApi, kind);
     }
@@ -299,7 +299,7 @@ void Communicator::clearQueue()
 //     }
 // }
 
-bool Communicator::setConnection(Connection *newConnection, bool force)
+bool Communicator::setConnection(AbstractConnection *newConnection, bool force)
 {
     if (!force && m_connection != nullptr) {
         return false;
@@ -311,8 +311,8 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
         return true;
     }
 
-    connect(m_connection, &Connection::lineReceived, this, &Communicator::onConnectionLineReceived);
-    connect(m_connection, &Connection::stateChanged, this, &Communicator::onConnectionStateChanged);
+    connect(m_connection, &AbstractConnection::lineReceived, this, &Communicator::onConnectionLineReceived);
+    connect(m_connection, &AbstractConnection::stateChanged, this, &Communicator::onConnectionStateChanged);
 
     m_commandBuffer->setConnection(newConnection);
     emit connectionChanged(m_connection);
@@ -320,17 +320,17 @@ bool Communicator::setConnection(Connection *newConnection, bool force)
     return true;
 }
 
-bool Communicator::startReconnecting(Connection *connection)
+bool Communicator::startReconnecting(AbstractConnection *connection)
 {
     return execute(new ReconnectingBehavior(connection));
 }
 
-StateBehavior *Communicator::sb() const
+AbstractStateBehavior *Communicator::sb() const
 {
     return m_sbManager.current();
 }
 
-Connection *Communicator::connection()
+AbstractConnection *Communicator::connection()
 {
     return m_connection;
 }
@@ -379,7 +379,7 @@ void Communicator::resetGRBLConfiguration()
 //     m_sbManager.current()->action(Action::Home);
 // }
 
-bool Communicator::execute(StateBehavior *sb, bool force)
+bool Communicator::execute(AbstractStateBehavior *sb, bool force)
 {
     return m_sbManager.execute(sb, force, m_comApi);
 }
@@ -419,12 +419,12 @@ void Communicator::completeTransfer()
 
 void Communicator::onConnectionError(QString message)
 {
-    qDebug() << "[Communicator] Connection error: " << message;
+    qDebug() << "[Communicator] AbstractConnection error: " << message;
 }
 
 void Communicator::onConnectionStateChanged(ConnectionState state)
 {
-    qDebug() << "[Communicator] Connection state changed to " << static_cast<int>(state);
+    qDebug() << "[Communicator] AbstractConnection state changed to " << static_cast<int>(state);
 
     if (state == ConnectionState::Connected) {
         m_lastAlarmCode = 0;
@@ -435,12 +435,12 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
     emit connectionStateChanged(state);
 }
 
-void Communicator::onStateRequestsTransition(StateBehavior *sb, StateBehavior *nsb,
-                                              StateBehavior::TransitionKind kind)
+void Communicator::onStateRequestsTransition(AbstractStateBehavior *sb, AbstractStateBehavior *nsb,
+                                              AbstractStateBehavior::TransitionKind kind)
 {
     qDebug() << "[Communicator] State transition requested from " << sb->description()
              << " to " << nsb->description()
-             << (kind == StateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
+             << (kind == AbstractStateBehavior::TransitionKind::Suspend ? "(suspend)" : "(replace)");
     m_sbManager.requestTransition(nsb, kind);
 }
 
@@ -450,7 +450,7 @@ void Communicator::onStateRequestsResume()
     m_sbManager.requestResume();
 }
 
-void Communicator::onStateError(StateBehavior *sb, QString message)
+void Communicator::onStateError(AbstractStateBehavior *sb, QString message)
 {
     qDebug() << "[Communicator] State error: " << message;
 }

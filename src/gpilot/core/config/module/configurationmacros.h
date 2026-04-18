@@ -2,7 +2,7 @@
 #define CONFIGURATION_MACROS_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
 struct MacroItem {
     QString name;
@@ -19,7 +19,7 @@ struct MacroItem {
 Q_DECLARE_METATYPE(MacroItem)
 Q_DECLARE_METATYPE(QList<MacroItem>)
 
-class ConfigurationMacros : public ConfigurationModule
+class ConfigurationMacros : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

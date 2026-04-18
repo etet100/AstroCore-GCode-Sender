@@ -16,6 +16,7 @@
 #include "utils/utils.h"
 
 class GCode;
+class AbstractViewTransform;
 
 class GCodeViewParser
 {
@@ -34,7 +35,8 @@ class GCodeViewParser
 
         QList<LineSegment>& getLines();
         QList<QList<int>>& getLinesIndexes();
-        QList<LineSegment>& getSimplifiedLines(double simplifyPrecision);
+        QList<LineSegment>& getProcessedLines(const QList<AbstractViewTransform*>& transforms);
+        void invalidateProcessedCache();
 
         void reset();
 
@@ -47,9 +49,9 @@ class GCodeViewParser
         double m_minLength;
         QList<LineSegment> m_lines;
         QList<QList<int>> m_lineIndexes;
-        QList<LineSegment> m_simplifiedLines;
-        bool m_simplifiedLinesReady = false;
-        double m_lastSimplifyPrecision = 0.0;
+        QList<LineSegment> m_processedLines;
+        QList<const AbstractViewTransform*> m_lastTransforms;
+        bool m_processedLinesReady = false;
 
         // Parsing state.
         // QVector3D m_lastPoint;
@@ -60,7 +62,6 @@ class GCodeViewParser
         void testExtremes(QVector3D p3d);
         void testExtremes(double x, double y, double z);
         void testLength(const QVector3D& start, const QVector3D& end);
-        int getSegmentType(const LineSegment& segment) const;
 };
 
 #endif // GCODEVIEWPARSER_H

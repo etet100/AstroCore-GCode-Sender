@@ -1,7 +1,7 @@
 #ifndef GCODETHREADEDLOADER_H
 #define GCODETHREADEDLOADER_H
 
-#include "gcodeloader.h"
+#include "abstractgcodeloader.h"
 #include <QThread>
 
 class GCodeLoaderWorker : public QThread

@@ -97,9 +97,10 @@ bool GcodeDrawer::prepareVectors(GLPalette &palette)
 
     qDebug() << "[GcodeDrawer] Preparing vectors";
 
-    QList<LineSegment> &list = m_simplify
-        ? m_viewParser->getSimplifiedLines(m_simplifyPrecision)
-        : m_viewParser->getLines();
+    QList<AbstractViewTransform*> transforms = activeTransforms();
+    QList<LineSegment> &list = transforms.isEmpty()
+        ? m_viewParser->getLines()
+        : m_viewParser->getProcessedLines(transforms);
     VertexData vertex;
 
     qDebug() << "[GcodeDrawer] Lines count" << list.count();
@@ -194,9 +195,10 @@ GcodeVectorData GcodeDrawer::prepareVectorsAsync()
 
     qDebug() << "[GcodeDrawer] Preparing vectors asynchronously";
 
-    QList<LineSegment> &list = m_simplify
-        ? m_viewParser->getSimplifiedLines(m_simplifyPrecision)
-        : m_viewParser->getLines();
+    QList<AbstractViewTransform*> transforms = activeTransforms();
+    QList<LineSegment> &list = transforms.isEmpty()
+        ? m_viewParser->getLines()
+        : m_viewParser->getProcessedLines(transforms);
     VertexData vertex;
 
     qDebug() << "[GcodeDrawer] Lines count" << list.count();
@@ -459,11 +461,54 @@ GCodeViewParser *GcodeDrawer::viewParser()
 void GcodeDrawer::setSimplify(bool simplify)
 {
     m_simplify = simplify;
+    if (m_simplify && !m_simplifyTransform) {
+        m_simplifyTransform = std::make_unique<SimplifyViewTransform>(m_simplifyPrecision);
+    }
+    if (m_viewParser) {
+        m_viewParser->invalidateProcessedCache();
+    }
 }
 
 void GcodeDrawer::setSimplifyPrecision(double simplifyPrecision)
 {
     m_simplifyPrecision = simplifyPrecision;
+    if (m_simplifyTransform) {
+        m_simplifyTransform->setPrecision(simplifyPrecision);
+        if (m_viewParser) {
+            m_viewParser->invalidateProcessedCache();
+        }
+    }
+}
+
+void GcodeDrawer::setHeightmapView(Heightmap* heightmap, double segmentLength)
+{
+    m_heightmapTransform = heightmap
+        ? std::make_unique<HeightmapViewTransform>(heightmap, segmentLength)
+        : nullptr;
+    if (m_viewParser) {
+        m_viewParser->invalidateProcessedCache();
+    }
+}
+
+void GcodeDrawer::clearHeightmapView()
+{
+    m_heightmapTransform.reset();
+    if (m_viewParser) {
+        m_viewParser->invalidateProcessedCache();
+    }
+}
+
+QList<AbstractViewTransform*> GcodeDrawer::activeTransforms() const
+{
+    QList<AbstractViewTransform*> list;
+    if (m_heightmapTransform) {
+        list.append(m_heightmapTransform.get());
+    }
+    if (m_simplify && m_simplifyTransform) {
+        list.append(m_simplifyTransform.get());
+    }
+
+    return list;
 }
 
 bool GcodeDrawer::geometryUpdated()

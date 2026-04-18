@@ -3,7 +3,7 @@
 
 #include "singleconverter.h"
 
-SingleConverter::SingleConverter(Converter *converter)
+SingleConverter::SingleConverter(AbstractConverter *converter)
     : m_converter(converter)
     , m_gcode(nullptr)
     , m_parser(nullptr)

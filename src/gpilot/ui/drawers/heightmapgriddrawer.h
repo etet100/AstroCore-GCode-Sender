@@ -8,7 +8,7 @@
 #include "shaderdrawable.h"
 #include "billboarddrawable.h"
 #include "core/heightmap/heightmap.h"
-#include "core/heightmap/interpolator/heightmapinterpolator.h"
+#include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 
 struct HeightMapGridBillboardContentData : public BillboardContentData
 {
@@ -60,7 +60,7 @@ class HeightMapGridDrawer : public ShaderDrawable
         void generateLines(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generatePlates(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
         void generateTriangles(QSize gridSize, Heightmap::MinMax minMax, QPointF startPos, QSizeF stepSize, VertexData vertex, GLPalette& palette);
-        HeightmapInterpolator* createInterpolator();
+        AbstractHeightmapInterpolator* createInterpolator();
 };
 
 #endif // HEIGHTMAPGRIDDRAWER_H

@@ -3,9 +3,9 @@
 #ifndef IDLEBEHAVIOR_H
 #define IDLEBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class IdleBehavior : public StateBehavior
+class IdleBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
@@ -31,7 +31,7 @@ class IdleBehavior : public StateBehavior
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
-        Result doOnExit(StateBehavior *next) override;
+        Result doOnExit(AbstractStateBehavior *next) override;
 
     protected:
         QString name() const override { return "Idle"; }

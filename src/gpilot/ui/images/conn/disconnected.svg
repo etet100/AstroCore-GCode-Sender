@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-unplug-icon lucide-unplug">
+    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-unplug-icon lucide-unplug">
     <path d="m19 5 3-3" />
     <path d="m2 22 3-3" />
     <path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z" />

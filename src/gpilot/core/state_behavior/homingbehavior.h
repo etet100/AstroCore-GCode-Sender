@@ -5,9 +5,9 @@
 #ifndef HOMINGBEHAVIOR_H
 #define HOMINGBEHAVIOR_H
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
-class HomingBehavior : public StateBehavior
+class HomingBehavior : public AbstractStateBehavior
 {
     public:
         explicit HomingBehavior(QObject *parent = nullptr);

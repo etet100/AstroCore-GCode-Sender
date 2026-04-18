@@ -6,9 +6,9 @@
 #define CONFIGURATIONPENDANT_H
 
 #include <QObject>
-#include "configurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
-class ConfigurationPendant : public ConfigurationModule
+class ConfigurationPendant : public AbstractConfigurationModule
 {
     friend class FrmSettings;
 

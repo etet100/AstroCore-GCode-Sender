@@ -7,7 +7,7 @@
 #include "core/state_behavior/behaviors.h"
 
 IdleBehavior::IdleBehavior(QObject *parent)
-    : StateBehavior{parent}
+    : AbstractStateBehavior{parent}
 {}
 
 void IdleBehavior::onMachineStateChanged(MachineState state)
@@ -22,14 +22,14 @@ void IdleBehavior::onMachineStateChanged(MachineState state)
     }
 }
 
-StateBehavior::Result IdleBehavior::doOnExit(StateBehavior *next)
+AbstractStateBehavior::Result IdleBehavior::doOnExit(AbstractStateBehavior *next)
 {
     qDebug() << "[Behavior][Idle] Exit";
 
     return Result::Ok;
 }
 
-StateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
+AbstractStateBehavior::Result IdleBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse)
 {
     assert(m_communicator != nullptr && !m_communicator.isNull());
 
@@ -124,7 +124,7 @@ bool IdleBehavior::doAction(const Action &action)
                 }
 
                 qDebug() << "[Behavior][Idle] Action: Probe double=" << params.doubleProbe;
-                emit transition(this, new ProbingBehavior(params));
+                emit transition(this, new ProbingBehavior(params), AbstractStateBehavior::TransitionKind::Suspend);
             }
             return true;
 
@@ -178,7 +178,7 @@ void IdleBehavior::zeroXY()
     m_communicator->sendCommand(CommandSource::System, "G10 L20 P0 X0 Y0", TABLE_INDEX_UI);
 }
 
-StateBehavior::Result IdleBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result IdleBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Idle] Entry";
 

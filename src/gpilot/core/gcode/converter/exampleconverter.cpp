@@ -6,7 +6,7 @@
 #include <QRegularExpression>
 
 FeedRateConverter::FeedRateConverter(double multiplier)
-    : Converter()
+    : AbstractConverter()
     , m_multiplier(multiplier)
 {
 }
@@ -39,11 +39,11 @@ bool FeedRateConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIn
 
 void FeedRateConverter::reset()
 {
-    Converter::reset();
+    AbstractConverter::reset();
 }
 
 CoordinateOffsetConverter::CoordinateOffsetConverter(double offsetX, double offsetY, double offsetZ)
-    : Converter()
+    : AbstractConverter()
     , m_offsetX(offsetX)
     , m_offsetY(offsetY)
     , m_offsetZ(offsetZ)
@@ -103,7 +103,7 @@ bool CoordinateOffsetConverter::convertLine(GCodeItem &item, GCode *gcode, int c
 
 void CoordinateOffsetConverter::reset()
 {
-    Converter::reset();
+    AbstractConverter::reset();
 }
 
 QString CoordinateOffsetConverter::modifyCoordinate(const QString &arg, char axis, double offset)
@@ -126,7 +126,7 @@ QString CoordinateOffsetConverter::modifyCoordinate(const QString &arg, char axi
 }
 
 SafeSpindleStopConverter::SafeSpindleStopConverter()
-    : Converter()
+    : AbstractConverter()
 {
 }
 
@@ -152,7 +152,7 @@ bool SafeSpindleStopConverter::convertLine(GCodeItem &item, GCode *gcode, int cu
 }
 
 MovementOptimizerConverter::MovementOptimizerConverter()
-    : Converter()
+    : AbstractConverter()
 {
 }
 

@@ -1,9 +1,9 @@
 #include "compositedrawable.h"
 #include <limits>
 
-void CompositeDrawable::addPart(std::unique_ptr<ShaderDrawable> part)
+void CompositeDrawable::addPart(std::shared_ptr<ShaderDrawable> part)
 {
-    m_parts.append(std::move(part));
+    m_parts.append(part);
 }
 
 ShaderDrawable* CompositeDrawable::part(int index)

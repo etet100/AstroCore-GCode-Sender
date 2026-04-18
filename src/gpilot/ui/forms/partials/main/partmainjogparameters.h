@@ -2,7 +2,7 @@
 #define PARTMAINJOGPARAMETERS_H
 
 #include <QWidget>
-#include "partmainjogparametersinterface.h"
+#include "abstractpartmainjogparameters.h"
 #include "core/globals.h"
 #include "core/config/module/configurationjogging.h"
 
@@ -10,7 +10,7 @@ namespace Ui {
 class partMainJogParameters;
 }
 
-class PartMainJogParameters : public PartMainJogParametersInterface
+class PartMainJogParameters : public AbstractPartMainJogParameters
 {
         Q_OBJECT
 
@@ -26,7 +26,7 @@ class PartMainJogParameters : public PartMainJogParametersInterface
 
         void initialize(ConfigurationJogging &configurationJogging);
 
-        // PartMainJogParametersInterface implementation
+        // AbstractPartMainJogParameters implementation
         void setStepSizeOptions(const QStringList& options) override;
         void setFeedRateXYOptions(const QStringList& options) override;
         void setFeedRateZOptions(const QStringList& options) override;

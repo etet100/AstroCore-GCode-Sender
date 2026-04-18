@@ -6,7 +6,7 @@
 #define BEHAVIORS_H
 
 // Include base class
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 
 // Behavior implementations
 #include "idlebehavior.h"
@@ -26,6 +26,7 @@
 #include "resetbehavior.h"
 #include "gotobehavior.h"
 #include "scantablebehavior.h"
+#include "scantableerrorbehavior.h"
 #include "handshakebehavior.h"
 #include "externalprocessbehavior.h"
 #include "disconnectionbehavior.h"

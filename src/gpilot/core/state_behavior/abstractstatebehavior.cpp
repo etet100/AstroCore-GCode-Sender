@@ -2,16 +2,16 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
-#include "statebehavior.h"
+#include "abstractstatebehavior.h"
 #include "core/communicator/communicator.h"
 #include <QRegularExpression>
 #include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
 #include "core/state_behavior/alarmbehavior.h"
 #include "core/state_behavior/disconnectionbehavior.h"
-#include <qcorosignal.h>
+#include <QCoroSignal>
 
-const QMap<int, QString> StateBehavior::ERRORS = {
+const QMap<int, QString> AbstractStateBehavior::ERRORS = {
     { GRBL_ERROR_EXPECTED_COMMAND_LETTER,     "Missing letter" },
     { GRBL_ERROR_BAD_NUMBER_FORMAT,           "Bad number" },
     { GRBL_ERROR_INVALID_STATEMENT,           "Invalid line" },
@@ -30,7 +30,7 @@ const QMap<int, QString> StateBehavior::ERRORS = {
     { GRBL_ERROR_UNDEFINED_FEED_RATE,         "No feed rate" }
 };
 
-const QMap<int, QString> StateBehavior::ALARMS = {
+const QMap<int, QString> AbstractStateBehavior::ALARMS = {
     { GRBL_ALARM_HARD_LIMITS,      "Hard limits" },
     { GRBL_ALARM_SOFT_LIMITS,      "Soft limits" },
     { GRBL_ALARM_RESET,            "Reset" },
@@ -46,21 +46,21 @@ const QMap<int, QString> StateBehavior::ALARMS = {
     { UCNC_ALARM_LIMITS_TRIPPED,   "Limits tripped (uCNC)" }
 };
 
-StateBehavior::StateBehavior(QObject *parent) : QObject(nullptr)
+AbstractStateBehavior::AbstractStateBehavior(QObject *parent) : QObject(nullptr)
 {
 }
 
-void StateBehavior::reset()
+void AbstractStateBehavior::reset()
 {
     emit transition(this, new ResetBehavior());
 }
 
-void StateBehavior::disconnectAction()
+void AbstractStateBehavior::disconnectAction()
 {
     emit transition(this, new DisconnectionBehavior());
 }
 
-void StateBehavior::onMachineState(MachineState state) {
+void AbstractStateBehavior::onMachineState(MachineState state) {
     QList<StateResponseEntry> toFire;
 
     m_stateResponseCallbacks.removeIf([&](const StateResponseEntry& entry) {
@@ -80,10 +80,11 @@ void StateBehavior::onMachineState(MachineState state) {
         entry.callback(state);
     }
 
+    emit machineStateSignal(state);
     doOnMachineState(state);
 }
 
-StateBehavior::Result StateBehavior::onRawResponse(QString response) {
+AbstractStateBehavior::Result AbstractStateBehavior::onRawResponse(QString response) {
     Q_UNUSED(response);
     // if (dataIsReset(response)) {
     //     qDebug() << "[Behavior] Unexpected reset?";
@@ -98,7 +99,7 @@ StateBehavior::Result StateBehavior::onRawResponse(QString response) {
     return Result::Unhandled;
 }
 
-StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
+AbstractStateBehavior::Result AbstractStateBehavior::onExit(AbstractStateBehavior *next)
 {
     m_communicator->stopQueryingMachineState();
     stopTimer();
@@ -109,7 +110,7 @@ StateBehavior::Result StateBehavior::onExit(StateBehavior *next)
     return doOnExit(next);
 }
 
-void StateBehavior::stopTimer()
+void AbstractStateBehavior::stopTimer()
 {
     if (m_timer) {
         m_timer->stop();
@@ -118,7 +119,7 @@ void StateBehavior::stopTimer()
     }
 }
 
-void StateBehavior::clearTimeout(int id)
+void AbstractStateBehavior::clearTimeout(int id)
 {
     QTimer* timer = m_timers.take(id);
     if (timer) {
@@ -127,7 +128,7 @@ void StateBehavior::clearTimeout(int id)
     }
 }
 
-void StateBehavior::clearAllTimeouts()
+void AbstractStateBehavior::clearAllTimeouts()
 {
     for (QTimer* timer : m_timers) {
         timer->stop();
@@ -136,7 +137,7 @@ void StateBehavior::clearAllTimeouts()
     m_timers.clear();
 }
 
-StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result AbstractStateBehavior::onEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     m_communicator = communicator;
     m_exitData.clear();
@@ -145,7 +146,7 @@ StateBehavior::Result StateBehavior::onEntry(CommunicatorApi *communicator, cons
     return doOnEntry(communicator, ctx);
 }
 
-int StateBehavior::waitForStateResponse(StateResponseCallback callback, MachineState targetState, int milliseconds)
+int AbstractStateBehavior::waitForStateResponse(StateResponseCallback callback, MachineState targetState, int milliseconds)
 {
     static int nextId = 0;
     int id = ++nextId;
@@ -168,7 +169,7 @@ int StateBehavior::waitForStateResponse(StateResponseCallback callback, MachineS
     return id;
 }
 
-void StateBehavior::clearWaitForStateResponse(int id)
+void AbstractStateBehavior::clearWaitForStateResponse(int id)
 {
     auto it = std::find_if(m_stateResponseCallbacks.begin(), m_stateResponseCallbacks.end(),
                            [id](const StateResponseEntry& e) { return e.id == id; });
@@ -180,7 +181,7 @@ void StateBehavior::clearWaitForStateResponse(int id)
     }
 }
 
-void StateBehavior::log(QString message, QStringList context)
+void AbstractStateBehavior::log(QString message, QStringList context)
 {
     if (!context.isEmpty()) {
         message = QString("[%1] %2").arg(context.join("]["), message);
@@ -189,7 +190,7 @@ void StateBehavior::log(QString message, QStringList context)
     emit logSignal(message);
 }
 
-void StateBehavior::log(QString message, std::initializer_list<QString> context)
+void AbstractStateBehavior::log(QString message, std::initializer_list<QString> context)
 {
     QStringList contextList;
 
@@ -200,7 +201,7 @@ void StateBehavior::log(QString message, std::initializer_list<QString> context)
     log(message, contextList);
 }
 
-// bool StateBehavior::dataIsReset(QString data)
+// bool AbstractStateBehavior::dataIsReset(QString data)
 // {
 //     // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
 //     // followed by a version number in the format x.y.
@@ -214,7 +215,7 @@ void StateBehavior::log(QString message, std::initializer_list<QString> context)
 //     return data.contains(re);
 // }
 
-void StateBehavior::onAlarm(int code)
+void AbstractStateBehavior::onAlarm(int code)
 {
     qDebug() << QString("[%1] Alarm: %2").arg(name()).arg(ALARMS.value(code, QString("Unknown (%1)").arg(code)));
 
@@ -229,12 +230,12 @@ void StateBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
-void StateBehavior::onMachineStateChanged(MachineState state)
+void AbstractStateBehavior::onMachineStateChanged(MachineState state)
 {
     emit machineStateChangedSignal(state);
 }
 
-StateBehavior::Result StateBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes,
+AbstractStateBehavior::Result AbstractStateBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes,
                                                         CmdStatus cmdStatus, QString response,
                                                         QStringList fullResponse)
 {
@@ -243,7 +244,7 @@ StateBehavior::Result StateBehavior::onCommandResponse(QString command, CommandA
     return Result::Ok;
 }
 
-QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::awaitResponse(
+QCoro::Task<std::optional<AbstractStateBehavior::CommandResult>> AbstractStateBehavior::awaitResponse(
     int commandIndex, std::chrono::milliseconds timeout)
 {
     using namespace std::chrono;
@@ -255,7 +256,7 @@ QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::awaitRes
             co_return std::nullopt;
         }
 
-        auto result = co_await qCoro(this, &StateBehavior::commandResponseReceived, remaining);
+        auto result = co_await qCoro(this, &AbstractStateBehavior::commandResponseReceived, remaining);
         if (!result) {
             co_return std::nullopt;
         }
@@ -273,7 +274,7 @@ QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::awaitRes
     }
 }
 
-QCoro::Task<std::optional<MachineState>> StateBehavior::awaitMachineState(
+QCoro::Task<std::optional<MachineState>> AbstractStateBehavior::awaitMachineState(
     std::function<bool(MachineState)> predicate,
     std::chrono::milliseconds timeout)
 {
@@ -281,13 +282,21 @@ QCoro::Task<std::optional<MachineState>> StateBehavior::awaitMachineState(
     auto deadline = steady_clock::now() + timeout;
 
     while (true) {
+        if (m_alarmOccurred) {
+            co_return std::nullopt;
+        }
+
         auto remaining = duration_cast<milliseconds>(deadline - steady_clock::now());
         if (remaining <= milliseconds::zero()) {
             co_return std::nullopt;
         }
 
-        auto result = co_await qCoro(this, &StateBehavior::machineStateChangedSignal, remaining);
+        auto result = co_await qCoro(this, &AbstractStateBehavior::machineStateSignal, remaining);
         if (!result) {
+            co_return std::nullopt;
+        }
+
+        if (m_alarmOccurred) {
             co_return std::nullopt;
         }
 
@@ -297,15 +306,15 @@ QCoro::Task<std::optional<MachineState>> StateBehavior::awaitMachineState(
     }
 }
 
-QCoro::Task<std::optional<StateBehavior::CommandResult>> StateBehavior::sendAndAwait(
+QCoro::Task<std::optional<AbstractStateBehavior::CommandResult>> AbstractStateBehavior::sendAndAwait(
     const QString &command, std::chrono::milliseconds timeout)
 {
-    auto r = m_communicator->sendCommand(CommandSource::StateBehavior, command, TABLE_INDEX_UI);
+    auto r = m_communicator->sendCommand(CommandSource::AbstractStateBehavior, command, TABLE_INDEX_UI);
 
     co_return co_await awaitResponse(r.commandIndex, timeout);
 }
 
-int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
+int AbstractStateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
 {
     static int nextId = 0;
     int id = ++nextId;
@@ -325,7 +334,7 @@ int StateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
     return id;
 }
 
-QString StateBehavior::enrichErrorMessage(QString message)
+QString AbstractStateBehavior::enrichErrorMessage(QString message)
 {
     if (message.startsWith("error:")) {
         int code = message.mid(6).toInt();
@@ -336,7 +345,7 @@ QString StateBehavior::enrichErrorMessage(QString message)
     return message;
 }
 
-bool StateBehavior::action(const Action &action)
+bool AbstractStateBehavior::action(const Action &action)
 {
     if (canExecute(action.type())) {
         switch (action.type()) {
@@ -362,7 +371,7 @@ bool StateBehavior::action(const Action &action)
     return false;
 }
 
-bool StateBehavior::handleMachineConfigurationActions(const Action &action)
+bool AbstractStateBehavior::handleMachineConfigurationActions(const Action &action)
 {
     switch (action.type()) {
         case Action::Type::QueryMachineConfiguration:
@@ -377,7 +386,7 @@ bool StateBehavior::handleMachineConfigurationActions(const Action &action)
     }
 }
 
-bool StateBehavior::handleSaveMachineConfigurationParamAction(const Action &action)
+bool AbstractStateBehavior::handleSaveMachineConfigurationParamAction(const Action &action)
 {
     SaveMachineConfigurationParamAction saveAction = static_cast<const SaveMachineConfigurationParamAction&>(action);
 

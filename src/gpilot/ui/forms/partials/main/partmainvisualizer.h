@@ -17,7 +17,7 @@
 #include "ui/drawers/boundingboxdrawer.h"
 #include "ui/drawers/nogcodedefaultdrawer.h"
 #include "core/gcode/parser/gcodeviewparser.h"
-#include "core/heightmap/interpolator/heightmapinterpolator.h"
+#include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 #include "ui/widgets/glwidget.h"
 
 class ConfigurationVisualizer;

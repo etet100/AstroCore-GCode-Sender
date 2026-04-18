@@ -6,7 +6,7 @@
 #include <QStringList>
 #include <QJsonObject>
 
-IniPersister::IniPersister(QObject *parent, const QString &filePath) : Persister(parent), m_filePath(filePath)
+IniPersister::IniPersister(QObject *parent, const QString &filePath) : AbstractPersister(parent), m_filePath(filePath)
 {
     m_settings = nullptr;
 }

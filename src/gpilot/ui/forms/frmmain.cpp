@@ -224,7 +224,7 @@ void FrmMain::initializeCommunicator()
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
     connect(m_communicator->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
-    connect(m_communicator, &Communicator::connectionChanged, this, [this](Connection *connection) {
+    connect(m_communicator, &Communicator::connectionChanged, this, [this](AbstractConnection *connection) {
         ui->state->setConnectionName(connection->name());
     });
     connect(m_communicator, &Communicator::connectionStateChanged, this, [this](ConnectionState state) {
@@ -284,7 +284,12 @@ void FrmMain::initializeControlPanel()
         m_communicator->stateBehavior()->action(Action::Abort);
     });
     connect(ui->control, &PartMainControl::scanTable, this, [this]() {
-        m_communicator->stateBehavior()->action(ScanTableAction(&m_heightmap));
+        AbstractStateBehavior* sb = m_communicator->stateBehavior();
+        if (sb->is(AbstractStateBehavior::Type::ScanTable)) {
+            m_communicator->stateBehavior()->action(Action::Resume);
+        } else {
+            m_communicator->stateBehavior()->action(ScanTableAction(&m_heightmap));
+        }
     });
     connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
         ProbeAction::ProbeParameters params;
@@ -313,10 +318,10 @@ void FrmMain::initializeControlPanel()
 
 void FrmMain::initializeStatePanel()
 {
-    connect(ui->state, &PartMainStateBase::connectClicked, this, [this]() {
+    connect(ui->state, &AbstractPartMainState::connectClicked, this, [this]() {
         m_communicator->sb()->action(Action::Connect);
     });
-    connect(ui->state, &PartMainStateBase::disconnectClicked, this, [this]() {
+    connect(ui->state, &AbstractPartMainState::disconnectClicked, this, [this]() {
         m_communicator->sb()->action(Action::Disconnect);
     });
     connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
@@ -324,7 +329,7 @@ void FrmMain::initializeStatePanel()
         ui->state->setVisible(checked);
     });
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
-        StateBehavior* sb = m_communicator->stateBehavior();
+        AbstractStateBehavior* sb = m_communicator->stateBehavior();
         ui->state->setStatusText(
             sb->description(),
             colorForGroup(colorGroupForState(sb->type()), dark),
@@ -409,7 +414,7 @@ void FrmMain::initializeProgramPanel()
     connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
     // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
     connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
-        if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+        if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
             ui->program->setAutoScroll(false);
         }
     });
@@ -690,7 +695,7 @@ void FrmMain::closeEvent(QCloseEvent *ce)
         return;
     }
 
-    if ((m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) &&
+    if ((m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) &&
         QMessageBox::warning(this, this->windowTitle(), tr("File sending in progress. Terminate and exit?"),
         QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
     {
@@ -728,7 +733,7 @@ void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
     // Accept all, we will validate in drop event
     dee->acceptProposedAction();
 
-    if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Idle) || dee->mimeData()->hasFormat("application/widget")) {
+    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Idle) || dee->mimeData()->hasFormat("application/widget")) {
         m_fileDropOverlay->showForbidden();
 
         return;
@@ -1161,7 +1166,7 @@ void FrmMain::onFilePause(bool checked)
     // }
 
     // if (checked) {
-    StateBehavior* sb = m_communicator->stateBehavior();
+    AbstractStateBehavior* sb = m_communicator->stateBehavior();
     if (sb->canExecute(Action::Pause)) {
         sb->action(Action::Pause);
     } else if (sb->canExecute(Action::Resume)) {
@@ -1370,7 +1375,7 @@ void FrmMain::keyboardControlToggled(bool checked)
         if (m_absoluteCoordinates) m_communicator->sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
     }
 
-    if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         ui->jog->setKeyboardControl(checked);
     }
 
@@ -1768,7 +1773,7 @@ void FrmMain::onConnectionError(QString error)
     //         updateControlsState();
     //     }
     // }
-    ui->console->append(tr("Connection error ") + error);
+    ui->console->append(tr("AbstractConnection error ") + error);
     updateControlsState();
 }
 
@@ -1802,7 +1807,7 @@ void FrmMain::onMachineStateReceived(MachineState state)
     //                                                     (m_communicator->senderState() != SenderStopping)));
 
     // Update elapsed time and remaining time with adaptive correction
-    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         ui->visualizer->setTimeEstimation(m_timeEstimator);
     }
 
@@ -1950,7 +1955,7 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
     m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
 }
 
-void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
+void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
 {
     ui->state->setStatusText(
         sb->description(),
@@ -1963,7 +1968,7 @@ void FrmMain::updateOnStateBehaviorChanged(StateBehavior *sb)
 
 void FrmMain::programEditLines(int from, int to)
 {
-    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
@@ -1981,7 +1986,7 @@ void FrmMain::programEditLines(int from, int to)
 
 void FrmMain::programInsertLines(int current, bool before)
 {
-    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
@@ -2002,7 +2007,7 @@ void FrmMain::programInsertLines(int current, bool before)
 
 void FrmMain::programDeleteLines(int from, int to)
 {
-    if (m_communicator->stateBehavior()->is(StateBehavior::Type::Running)) {
+    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
@@ -2422,7 +2427,7 @@ void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
 {
     m_connection = m_connectionManager.createConnection(mode);
 
-    connect(m_connection, &Connection::error, this, &FrmMain::onConnectionError);
+    connect(m_connection, &AbstractConnection::error, this, &FrmMain::onConnectionError);
 }
 
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
@@ -2815,16 +2820,16 @@ void FrmMain::newHeightmap()
 void FrmMain::updateControlsState()
 {
     bool portOpened = m_connection && m_connection->isConnected();
-    StateBehavior *sb = m_communicator->stateBehavior();
-    bool running = sb->is(StateBehavior::Type::Running);
-    bool paused = sb->is(StateBehavior::Type::Pause) || sb->is(StateBehavior::Type::ToolChange);
-    bool idle = sb->is(StateBehavior::Type::Idle);
+    AbstractStateBehavior *sb = m_communicator->stateBehavior();
+    bool running = sb->is(AbstractStateBehavior::Type::Running);
+    bool paused = sb->is(AbstractStateBehavior::Type::Pause) || sb->is(AbstractStateBehavior::Type::ToolChange);
+    bool idle = sb->is(AbstractStateBehavior::Type::Idle);
 
     // ui->grpState->setEnabled(portOpened);
     // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
     // TODO: add Action::Jog to ToolChangeBehavior::availableActions(), then simplify to sb->canExecute(Action::Jog)
-    ui->jog->setEnabled(sb->isOneOf(StateBehavior::Type::Idle, StateBehavior::Type::GoTo, StateBehavior::Type::Jogging));
+    ui->jog->setEnabled(sb->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::GoTo, AbstractStateBehavior::Type::Jogging));
 
     ui->console->setEnabled(portOpened && !m_configuration.joggingModule().keyboardControl());
     // ui->cmdCommandSend->setEnabled(portOpened);
@@ -3081,7 +3086,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
             }
         }
 
-        if (!m_communicator->stateBehavior()->is(StateBehavior::Type::Running)
+        if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)
             && m_configuration.joggingModule().keyboardControl() && !ev->isAutoRepeat())
         {
             static QList<QAction*> acts;
@@ -3181,10 +3186,10 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 // during active program execution (excluding check mode)
 void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
-    StateBehavior *sb = m_communicator->stateBehavior();
+    AbstractStateBehavior *sb = m_communicator->stateBehavior();
 
     // CheckMode has its own behavior type, so it's automatically excluded here
-    if (sb->is(StateBehavior::Type::Running) || sb->is(StateBehavior::Type::Pause)) {
+    if (sb->is(AbstractStateBehavior::Type::Running) || sb->is(AbstractStateBehavior::Type::Pause)) {
         int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(m_program.processedCommandIndex(), 4)).toInt();
         ui->visualizer->updateToolTracking(toolPosition, lineIndex);
     } else {

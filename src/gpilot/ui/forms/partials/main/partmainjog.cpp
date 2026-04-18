@@ -25,7 +25,7 @@ PartMainJog::PartMainJog(QWidget *parent)
     // ui->cmdYPlus->setBackColor(backgroundColor);
 
     connect(ui->jogParameters, &PartMainJogParameters3::stepSizeChanged, this, [this](double val) {
-        if (val == PartMainJogParametersInterface::CONTINUOUS) {
+        if (val == AbstractPartMainJogParameters::CONTINUOUS) {
             qDebug() << "[UI][PartMainJog] Continuous mode enabled";
             m_configurationJogging->setContinuous(true);
         } else {

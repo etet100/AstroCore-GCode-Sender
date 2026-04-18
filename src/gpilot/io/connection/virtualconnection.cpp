@@ -9,12 +9,11 @@
 #include <QJsonDocument>
 
 #ifdef VIRTUAL_SIMULATOR_PROCESS
-    #include <QProcess>
     #include <QCoreApplication>
 #endif
 
 VirtualConnection::VirtualConnection(QString deviceName, QObject *parent)
-    : Connection(parent)
+    : AbstractConnection(parent)
     , m_deviceName(deviceName)
 {
 #ifndef VIRTUAL_SIMULATOR_PROCESS

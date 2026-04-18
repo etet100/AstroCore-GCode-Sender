@@ -5,16 +5,16 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-#include "converter.h"
+#include "abstractconverter.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QObject>
 
 /**
  * Pipeline processes G-Code through a chain of converters.
- * Implements Converter interface - can be used anywhere a single Converter is expected.
+ * Implements AbstractConverter interface - can be used anywhere a single AbstractConverter is expected.
  * Also provides additional helper methods for batch processing.
  */
-class Pipeline : public QObject, public Converter
+class Pipeline : public QObject, public AbstractConverter
 {
     Q_OBJECT
 
@@ -22,7 +22,7 @@ class Pipeline : public QObject, public Converter
         explicit Pipeline(QObject *parent = nullptr);
         ~Pipeline();
 
-        Pipeline &operator<<(Converter *converter);
+        Pipeline &operator<<(AbstractConverter *converter);
 
         bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
         void reset() override;
@@ -39,7 +39,7 @@ class Pipeline : public QObject, public Converter
         void progressChanged(int current, int total);
 
     private:
-        QList<Converter*> m_converters;
+        QList<AbstractConverter*> m_converters;
         GCode *m_gcode;
         GcodeParser *m_parser;
         int m_currentIndex;

@@ -12,7 +12,7 @@
 #include "virtualucncconnection.h"
 #include "virtualgrblconnection.h"
 #include "virtualfluidncconnection.h"
-#include "connection.h"
+#include "abstractconnection.h"
 
 class ConnectionManager : public QObject
 {
@@ -20,7 +20,7 @@ class ConnectionManager : public QObject
 
     public:
         ConnectionManager(QObject *parent, const ConfigurationConnection &configurationConnection);
-        Connection* createConnection(ConfigurationConnection::ConnectionMode mode);
+        AbstractConnection* createConnection(ConfigurationConnection::ConnectionMode mode);
 
     private:
         SerialConnection* initializeSerialConnection();

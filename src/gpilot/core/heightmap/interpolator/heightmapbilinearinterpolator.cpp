@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
-HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* heightmap) : HeightmapInterpolator(heightmap)
+HeightmapBilinearInterpolator::HeightmapBilinearInterpolator(const Heightmap* heightmap) : AbstractHeightmapInterpolator(heightmap)
 {
 }
 

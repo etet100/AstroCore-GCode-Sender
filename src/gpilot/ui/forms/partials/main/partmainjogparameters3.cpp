@@ -6,7 +6,7 @@
 #include <functional>
 
 PartMainJogParameters3::PartMainJogParameters3(QWidget* parent)
-    : PartMainJogParametersInterface(parent)
+    : AbstractPartMainJogParameters(parent)
     , ui(new Ui::PartMainJogParameters3)
 {
     ui->setupUi(this);
