@@ -20,8 +20,6 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     ui->setupUi(this);
 
     m_codeDrawer = new GcodeDrawer();
-    m_probeDrawer = new GcodeDrawer();
-    m_probeDrawer->setVisible(false);
     m_boundingBoxDrawer.setVisible(false);
     m_lightSourceDrawer.setVisible(false);
 
@@ -107,7 +105,6 @@ PartMainVisualizer::~PartMainVisualizer()
     delete m_infoAnimation;
     delete m_infoOpacityEffect;
     delete m_codeDrawer;
-    delete m_probeDrawer;
     delete ui;
 }
 
@@ -143,11 +140,10 @@ void PartMainVisualizer::updateCursorDrawer(QPointF pos)
    m_cursorDrawer.setPosition(pos);
 }
 
-// Do not init drawables before the parsers are set
-// (setCodeParser, setProbeParser)
+// Do not init drawables before the parser is set (setProgram)
 void PartMainVisualizer::initDrawables()
 {
-    *ui->visualizer << m_codeDrawer << m_probeDrawer
+    *ui->visualizer << m_codeDrawer
                     << &m_boundingBoxDrawer
                     << m_boundingBoxDrawer.billboardDrawable()
                     << &m_cursorDrawer
@@ -215,7 +211,7 @@ void PartMainVisualizer::applyVisualizerConfiguration(
 
 void PartMainVisualizer::updateGCodeExtremes()
 {
-    ui->visualizer->updateExtremes(m_currentDrawer);
+    ui->visualizer->updateExtremes(m_codeDrawer);
 }
 
 void PartMainVisualizer::fitDrawable()
@@ -251,11 +247,6 @@ void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
     }
 }
 
-void PartMainVisualizer::setProbeParser(GCodeViewParser* parser)
-{
-    m_probeDrawer->setViewParser(parser);
-}
-
 void PartMainVisualizer::updateCodeDrawer(const QList<int>& indexes)
 {
     m_codeDrawer->update(indexes);
@@ -266,11 +257,6 @@ void PartMainVisualizer::updateCodeDrawer()
 {
     m_codeDrawer->update();
     ui->visualizer->update();
-}
-
-void PartMainVisualizer::updateCurrentDrawer(const QList<int>& indexes)
-{
-    m_currentDrawer->update(indexes);
 }
 
 void PartMainVisualizer::setToolPosition(QVector3D pos)
@@ -351,16 +337,6 @@ void PartMainVisualizer::setSelectionVisible(bool visible)
     m_selectionDrawer.setVisible(visible);
 }
 
-void PartMainVisualizer::useCodeDrawer()
-{
-    m_currentDrawer = m_codeDrawer;
-}
-
-void PartMainVisualizer::useProbeDrawer()
-{
-    m_currentDrawer = m_probeDrawer;
-}
-
 void PartMainVisualizer::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
@@ -435,8 +411,8 @@ void PartMainVisualizer::toggleOriginClicked()
 void PartMainVisualizer::fitClicked()
 {
     // If gcode is loaded, fit code drawer, otherwise fit default rectangle drawer
-    if (m_currentDrawer != nullptr) {
-        ui->visualizer->fitDrawable(m_currentDrawer);
+    if (m_codeDrawer != nullptr) {
+        ui->visualizer->fitDrawable(m_codeDrawer);
     } else {
         ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
     }
@@ -601,7 +577,6 @@ void PartMainVisualizer::loadNewProgram()
 {
     m_lastDrawnLineIndex = 0;
     m_codeDrawer->update();
-    m_currentDrawer = m_codeDrawer;
     ui->visualizer->fitDrawable(m_codeDrawer);
 
     m_selectionDrawer.resetEndPosition();
@@ -612,7 +587,6 @@ void PartMainVisualizer::resetVisualization()
 {
     m_lastDrawnLineIndex = 0;
     m_codeDrawer->update();
-    m_currentDrawer = m_codeDrawer;
     ui->visualizer->fitDrawable();
 
     m_selectionDrawer.resetEndPosition();
@@ -621,7 +595,7 @@ void PartMainVisualizer::resetVisualization()
 
 void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previousRow)
 {
-    if (!m_program || m_program->empty() || m_currentDrawer == nullptr) {
+    if (!m_program || m_program->empty() || m_codeDrawer == nullptr) {
         return;
     }
 
@@ -631,7 +605,7 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
     qDebug() << "[PartMainVisualizer] Updating toolpath highlighting from row"
              << rowPrevious << "to" << rowCurrent;
 
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = m_codeDrawer->viewParser();
     if (parser == nullptr) {
         return;
     }
@@ -644,7 +618,7 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
     qDebug() << "[PartMainVisualizer] Is movment:" << currentItem.isMovement;
 
     // Update linesegments on cell changed
-    if (!m_currentDrawer->geometryUpdated()) {
+    if (!m_codeDrawer->geometryUpdated()) {
         int lineCurrent = currentItem.commandNumber;
         for (int i = 0; i < list.count(); i++) {
             list[i].setIsHightlight(list[i].getLineNumber() <= lineCurrent);
@@ -675,7 +649,7 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
         m_selectionDrawer.update();
 
         if (!indexes.isEmpty()) {
-            m_currentDrawer->update(indexes);
+            m_codeDrawer->update(indexes);
         }
     }
 
@@ -694,7 +668,7 @@ void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processe
 {
     m_toolDrawer.setToolPosition(m_ignoreZ ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = m_codeDrawer->viewParser();
     bool toolOntoolpath = false;
 
     QList<int> drawnLines;
@@ -718,7 +692,7 @@ void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processe
             list[i].setDrawn(true);
         }
         if (!drawnLines.isEmpty()) {
-            m_currentDrawer->update(drawnLines);
+            m_codeDrawer->update(drawnLines);
             ui->visualizer->update();
         }
     }
@@ -742,32 +716,16 @@ void PartMainVisualizer::resetLastDrawnLine()
 void PartMainVisualizer::finalizeTransfer()
 {
     // Shadow last segment
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = m_codeDrawer->viewParser();
     QList<LineSegment>& list = parser->getLineSegmentList();
 
     if (m_lastDrawnLineIndex < list.count()) {
         list[m_lastDrawnLineIndex].setDrawn(true);
-        m_currentDrawer->update(QList<int>() << m_lastDrawnLineIndex);
+        m_codeDrawer->update(QList<int>() << m_lastDrawnLineIndex);
         ui->visualizer->update();
     }
 
     m_lastDrawnLineIndex = 0;
-}
-
-GCodeViewParser* PartMainVisualizer::getCurrentParser()
-{
-    return m_currentDrawer->viewParser();
-}
-
-bool PartMainVisualizer::isCurrentDrawerProbeMode() const
-{
-    return m_currentDrawer == m_probeDrawer;
-}
-
-void PartMainVisualizer::updateCurrentDrawerGeometry()
-{
-    m_currentDrawer->update();
-    ui->visualizer->update();
 }
 
 void PartMainVisualizer::exportCodeDrawerToFile(const QString& filename)
@@ -808,7 +766,7 @@ PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int li
 {
     SegmentInfo info = {nullptr, nullptr, nullptr, nullptr};
 
-    GCodeViewParser *parser = m_currentDrawer->viewParser();
+    GCodeViewParser *parser = m_codeDrawer->viewParser();
     QList<LineSegment>& list = parser->getLineSegmentList();
     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
 

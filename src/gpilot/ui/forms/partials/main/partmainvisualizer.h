@@ -45,11 +45,9 @@ class PartMainVisualizer : public QWidget
 
         void initDrawables();
         void setProgram(GCode* program, GCodeViewParser* parser);
-        void setProbeParser(GCodeViewParser* parser);
 
         void updateCodeDrawer(const QList<int>& indexes);
         void updateCodeDrawer();
-        void updateCurrentDrawer(const QList<int>& indexes);
 
         void setToolPosition(QVector3D pos);
 
@@ -65,9 +63,6 @@ class PartMainVisualizer : public QWidget
         // method has the same name as QWidget::setUpdatesEnabled!
         void setUpdatesEnabled2(bool updatesEnabled);
 
-        void useCodeDrawer();
-        void useProbeDrawer();
-
         // High-level API for program operations
         void loadNewProgram();
         void resetVisualization();
@@ -81,11 +76,6 @@ class PartMainVisualizer : public QWidget
 
         // Configuration
         bool isIgnoreZ() const;
-
-        // Parser operations
-        GCodeViewParser* getCurrentParser();
-        bool isCurrentDrawerProbeMode() const;
-        void updateCurrentDrawerGeometry();
 
         // Export/Debug
         void exportCodeDrawerToFile(const QString& filename);
@@ -151,8 +141,6 @@ class PartMainVisualizer : public QWidget
         TableSurfaceDrawer m_tableSurfaceDrawer;
         OriginDrawer m_originDrawer;
         GcodeDrawer *m_codeDrawer = nullptr;
-        GcodeDrawer *m_probeDrawer = nullptr;
-        GcodeDrawer *m_currentDrawer = nullptr;
         BoundingBoxDrawer m_boundingBoxDrawer;
         ToolDrawer m_toolDrawer;
         CursorCompositeDrawer m_cursorDrawer;

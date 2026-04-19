@@ -515,7 +515,6 @@ void FrmMain::initializeVisualizerPanel()
 {
     ui->visualizer->setHeightmap(m_heightmap);
     ui->visualizer->setProgram(&m_program, nullptr);
-    ui->visualizer->setProbeParser(&m_probeParser);
     ui->visualizer->initDrawables();
 
     connect(&m_program, &GCode::linesUpdated, this, [this]() {
@@ -1645,7 +1644,6 @@ void FrmMain::heightmapModeToggled(bool checked)
     if (checked) {
         ui->program->switchToProbeModel();
         //updateCurrentModel(&m_programModel);
-        ui->visualizer->useProbeDrawer();
         updateParser();  // Update probe program parser
     } else {
         m_probeParser.reset();
@@ -1655,7 +1653,6 @@ void FrmMain::heightmapModeToggled(bool checked)
             ui->program->selectFirstRow();
 
             // updateCurrentModel(&m_programModel);
-            ui->visualizer->useCodeDrawer();
 
             if (!ui->heightmap->useMap()) {
                 ui->visualizer->updateGCodeExtremes();
@@ -3053,7 +3050,7 @@ bool FrmMain::updateHeightmapGrid()
 
     m_programLoading = false;
 
-    if (ui->visualizer->isCurrentDrawerProbeMode()) {
+    if (m_heightmapMode) {
         updateParser();
     }
 
