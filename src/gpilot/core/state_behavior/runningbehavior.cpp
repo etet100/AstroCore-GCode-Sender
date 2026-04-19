@@ -108,6 +108,13 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
 {
     qDebug() << "[Behavior][Running] Entry";
 
+    if (!m_program.hasMoreCommands()) {
+        qDebug() << "[Behavior][Running] No commands to run on entry, transitioning to Idle";
+        emit transition(this, new IdleBehavior());
+
+        return Result::Ok;
+    }
+
     communicator->startQueryingMachineState();
 
     if (ctx.previousType == Type::Pause) {
@@ -142,6 +149,15 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
     }
 
     sendStreamerCommandsUntilBufferIsFull();
+
+    // Nothing got sent or queued — the machine will not move and the usual
+    // Run -> Idle transition in onMachineStateChanged will never fire.
+    if (m_stage != Stage::Resuming
+        && m_communicator->bufferLength() == 0
+        && m_communicator->isQueueEmpty()) {
+        qDebug() << "[Behavior][Running] Nothing queued on entry, transitioning to Idle";
+        emit transition(this, new IdleBehavior());
+    }
 
     return Result::Ok;
 }
@@ -215,13 +231,20 @@ void RunningBehavior::sendStreamerCommandsUntilBufferIsFull()
             // qDebug() << "[Behavior][Running] Sent command:" << command;
             sent++;
         }
-        if (!m_program.isLastCommand()) {
+        if (m_program.isLastCommand()) {
+            // Advance past the end so hasMoreCommands() flips to false — otherwise the
+            // next sendStreamer call (e.g. from onCommandResponse) would resend the
+            // last command in a loop.
             m_program.advanceCommandIndex();
-
-            command = m_program.command();
-        } else {
             break;
         }
+
+        m_program.advanceCommandIndex();
+        command = m_program.command();
+    }
+
+    if (!m_program.hasMoreCommands()) {
+        m_stage = Stage::NoMoreCommands;
     }
 
     qDebug() << "[Behavior][Running][Dbg] Sent " << sent << "; buffer length after commands sent" << m_communicator->bufferLength();
