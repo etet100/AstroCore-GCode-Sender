@@ -266,7 +266,7 @@ void HeightMapGridDrawer::generatePlates(QSize gridSize, Heightmap::MinMax minMa
             // m_lines.append(vertex);
 
             m_billboardDrawable.addBillboard(
-                QVector3D(x, y, 0.0f),
+                QVector3D(x, y, value + 5.0f),
                 new HeightMapGridBillboardContentData(
                     QPoint(x_, y_), value,
                     // x, y, height
