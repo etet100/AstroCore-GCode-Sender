@@ -5,8 +5,8 @@
 #define HEIGHTMAPVIEWTRANSFORM_H
 
 #include "abstractviewtransform.h"
+#include "core/heightmap/heightmap.h"
 
-class Heightmap;
 class AbstractHeightmapInterpolator;
 
 class HeightmapViewTransform : public AbstractViewTransform
@@ -23,9 +23,12 @@ class HeightmapViewTransform : public AbstractViewTransform
         double segmentLength() const { return m_segmentLength; }
         void setSegmentLength(double length) { m_segmentLength = length; }
 
+        void updateInterpolator();
+
     private:
         Heightmap* m_heightmap;
-        AbstractHeightmapInterpolator* m_interpolator;
+        Heightmap::InterpolationMode m_interpolatorMode;
+        AbstractHeightmapInterpolator* m_interpolator = nullptr;
         double m_segmentLength;
 
         double zOffsetAt(const QPointF& xy) const;

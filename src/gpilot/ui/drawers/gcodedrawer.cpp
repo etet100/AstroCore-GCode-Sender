@@ -21,6 +21,9 @@ void GcodeDrawer::update()
     if (m_viewParser) {
         m_viewParser->invalidateProcessedCache();
     }
+    if (m_heightmapTransform) {
+        m_heightmapTransform->updateInterpolator();
+    }
     ShaderDrawable::update();
 }
 

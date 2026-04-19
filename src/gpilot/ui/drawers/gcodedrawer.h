@@ -16,6 +16,7 @@
 #include "core/gcode/parser/viewtransform/heightmapviewtransform.h"
 #include "shaderdrawable.h"
 #include "ui/widgets/glpalette.h"
+#include "core/heightmap/heightmap.h"
 
 class Heightmap;
 
@@ -49,6 +50,7 @@ public:
     void setSimplifyPrecision(double simplifyPrecision);
     void setHeightmapView(Heightmap* heightmap, double segmentLength);
     void clearHeightmapView();
+    void setInterpolationMode(Heightmap::InterpolationMode mode);
 
     bool geometryUpdated();
 
@@ -76,10 +78,11 @@ private:
     GCodeViewParser *m_viewParser = nullptr;
     bool m_simplify;
     double m_simplifyPrecision;
+
     std::unique_ptr<SimplifyViewTransform> m_simplifyTransform;
     std::unique_ptr<HeightmapViewTransform> m_heightmapTransform;
-
     QList<AbstractViewTransform*> activeTransforms() const;
+
     bool m_ignoreZ = false;
     bool m_grayscaleSegments = false;
     GrayscaleCode m_grayscaleCode = GcodeDrawer::S;

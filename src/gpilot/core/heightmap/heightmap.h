@@ -61,6 +61,7 @@ class Heightmap
         double stepHeight() const { return m_stepSize.height(); }
         QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
         InterpolationMode interpolationMode() const { return m_interpolationMode; }
+        void setInterpolationMode(InterpolationMode mode) { m_interpolationMode = mode; }
         QRectF area() const { return QRectF(m_startPos, m_endPos); }
         void setArea(QRectF area);
         MinMax valuesMinMax() const { return m_valuesMinMax; }

@@ -452,6 +452,7 @@ void FrmMain::initializeHeightmapPanel()
     });
     connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
         ui->visualizer->setHeightmapInterpolationMode(mode);
+        m_heightmap.setInterpolationMode(mode);
         ui->visualizer->updateHeightmap();
     });
     connect(ui->grpHeightmap, &QGroupBox::toggled, this, &FrmMain::heightmapGroupToggled);
@@ -2265,6 +2266,11 @@ void FrmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
     updateRecentFilesMenus();
 }
 
+void FrmMain::applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfiguration)
+{
+    ui->heightmap->applyHeightmapConfiguration(heightmapConfiguration);
+}
+
 void FrmMain::loadSettings()
 {
     m_settingsLoading = true;
@@ -2514,6 +2520,7 @@ void FrmMain::applySettings()
     applyOverridesConfiguration(machineConfiguration);
     applyUIConfiguration(uiConfiguration);
     applyRecentFilesConfiguration(uiConfiguration);
+    applyHeightmapConfiguration(heightmapConfiguration);
 
     if (!m_connection || m_connection->supportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());

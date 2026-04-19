@@ -53,10 +53,6 @@ class GCodeViewParser
         QList<const AbstractViewTransform*> m_lastTransforms;
         bool m_processedLinesReady = false;
 
-        // Parsing state.
-        // QVector3D m_lastPoint;
-        // int m_currentLine; // for assigning line numbers to segments.
-
         // Debug
         bool m_debug;
         void testExtremes(QVector3D p3d);

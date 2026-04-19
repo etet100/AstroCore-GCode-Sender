@@ -2,19 +2,17 @@
 // Copyright 2026 BTS
 
 #include "heightmapviewtransform.h"
-#include "core/heightmap/heightmap.h"
 #include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
 #include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h"
 #include <QtMath>
 
-HeightmapViewTransform::HeightmapViewTransform(Heightmap* heightmap, double segmentLength)
-    : m_heightmap(heightmap)
-    , m_interpolator(nullptr)
-    , m_segmentLength(segmentLength)
+void HeightmapViewTransform::updateInterpolator()
 {
-    if (!m_heightmap) {
+    if (m_interpolator != nullptr) {
+        delete m_interpolator;
+    } else if (!m_heightmap) {
         return;
     }
 
@@ -35,6 +33,19 @@ HeightmapViewTransform::HeightmapViewTransform(Heightmap* heightmap, double segm
             m_interpolator = new HeightmapBicubicInterpolator(m_heightmap);
             break;
     }
+    m_interpolatorMode = m_heightmap->interpolationMode();
+}
+
+HeightmapViewTransform::HeightmapViewTransform(Heightmap* heightmap, double segmentLength)
+    : m_heightmap(heightmap)
+    , m_interpolator(nullptr)
+    , m_segmentLength(segmentLength)
+{
+    if (!m_heightmap) {
+        return;
+    }
+
+    updateInterpolator();
 }
 
 HeightmapViewTransform::~HeightmapViewTransform()
