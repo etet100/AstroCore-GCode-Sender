@@ -1,5 +1,7 @@
 #include "partmaincontrol.h"
 #include "ui_partmaincontrol.h"
+#include "ui/utils/thememanager.h"
+#include "utils/utils.h"
 #include <QDebug>
 #include <QActionGroup>
 
@@ -54,6 +56,9 @@ void PartMainControl::updateProbeIcon()
     } else {
         ui->cmdProbe->setIcon(QIcon(":/images/probe_z_dual.svg"));
     }
+    if (ThemeManager::instance().dark()) {
+        Utils::invertButtonIconColors(ui->cmdProbe);
+    }
 }
 
 PartMainControl::~PartMainControl()
@@ -101,6 +106,9 @@ void PartMainControl::updateControlsState(AbstractStateBehavior *sb)
         ui->cmdScanTable->setIcon(QIcon(":/images/control/scan_table.svg"));
         ui->cmdScanTable->setEnabled(sb->canExecute(Action::Type::ScanTable));
         ui->cmdScanTable->setProperty("action", "resume");
+    }
+    if (ThemeManager::instance().dark()) {
+        Utils::invertButtonIconColors(ui->cmdScanTable);
     }
 }
 

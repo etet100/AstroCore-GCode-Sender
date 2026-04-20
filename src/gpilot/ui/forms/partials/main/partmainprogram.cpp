@@ -10,7 +10,7 @@
 #include "utils/utils.h"
 #include "core/gcode/gcode.h"
 #include "core/heightmap/heightmap.h"
-#include "tables/heightmapitemdelegate.h"
+#include "ui/tables/heightmapitemdelegate.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
@@ -89,14 +89,14 @@ void PartMainProgram::setProgram(GCode* program)
 void PartMainProgram::setHeightmap(Heightmap* heightmap)
 {
     m_heightmapModel = new HeightmapTableModel(heightmap, this);
-    ui->tblHeightMap->setModel(m_heightmapModel);
-    ui->tblHeightMap->setItemDelegate(new HeightmapItemDelegate(-5.0, 5.0, this));
+    ui->tblHeightmap->setModel(m_heightmapModel);
+    ui->tblHeightmap->setItemDelegate(new HeightmapItemDelegate(-5.0, 5.0, this));
 
     // Logic from FrmMain for heightmap table header
-    if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize() * ui->tblHeightMap->horizontalHeader()->count() < width()) {
-         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    if (ui->tblHeightmap->horizontalHeader()->defaultSectionSize() * ui->tblHeightmap->horizontalHeader()->count() < width()) {
+         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
-         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     }
 }
 
@@ -112,7 +112,7 @@ bool PartMainProgram::isAutoScroll() const
 
 void PartMainProgram::setHeightMapVisible(bool visible)
 {
-    ui->tblHeightMap->setVisible(visible);
+    ui->tblHeightmap->setVisible(visible);
 }
 
 void PartMainProgram::selectFirstRow()
@@ -181,21 +181,21 @@ void PartMainProgram::setProgramVisible(bool visible)
 void PartMainProgram::showProgramTable()
 {
     ui->tblProgram->setVisible(true);
-    ui->tblHeightMap->setVisible(false);
+    ui->tblHeightmap->setVisible(false);
 }
 
 void PartMainProgram::showHeightmapTable()
 {
-    ui->tblHeightMap->setVisible(true);
+    ui->tblHeightmap->setVisible(true);
     ui->tblProgram->setVisible(false);
 }
 
 void PartMainProgram::resizeHeightMapSections()
 {
-    if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize() * ui->tblHeightMap->horizontalHeader()->count() < width()) {
-         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    if (ui->tblHeightmap->horizontalHeader()->defaultSectionSize() * ui->tblHeightmap->horizontalHeader()->count() < width()) {
+         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
-         ui->tblHeightMap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     }
 }
 
@@ -422,7 +422,7 @@ void PartMainProgram::close()
     delete m_probeModel; m_probeModel = nullptr;
     delete m_programHeightmapModel; m_programHeightmapModel = nullptr;
     delete m_heightmapModel; m_heightmapModel = nullptr;
-    ui->tblHeightMap->setModel(nullptr);
+    ui->tblHeightmap->setModel(nullptr);
 }
 
 void PartMainProgram::pauseClicked(bool checked) {
@@ -493,7 +493,7 @@ void PartMainProgram::initialize(GCode* program, Heightmap* heightmap)
     // Set models to UI
     ui->tblProgram->setModel(&m_programModel);
     ui->tblProgram->setItemDelegate(&m_programItemDelegate);
-    ui->tblHeightMap->setModel(m_heightmapModel);
+    ui->tblHeightmap->setModel(m_heightmapModel);
 
     // Setup table columns, expand last column
     ui->tblProgram->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -651,8 +651,8 @@ void PartMainProgram::scrollToHeightmapCell(int x, int y)
     int tableRow = m_heightmapModel->rowCount() - 1 - y;
     QModelIndex idx = m_heightmapModel->index(tableRow, x);
     if (!idx.isValid()) return;
-    ui->tblHeightMap->setCurrentIndex(idx);
-    ui->tblHeightMap->scrollTo(idx, QAbstractItemView::PositionAtCenter);
+    ui->tblHeightmap->setCurrentIndex(idx);
+    ui->tblHeightmap->scrollTo(idx, QAbstractItemView::PositionAtCenter);
 }
 
 // ProgramHeightmap model operations

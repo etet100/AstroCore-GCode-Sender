@@ -257,6 +257,7 @@ SOURCES += main.cpp\
     ui/tables/gcodeitemdelegate.cpp \
     ui/tables/gcodetablemodel.cpp \
     ui/tables/heightmaptablemodel.cpp \
+    ui/tables/heightmapitemdelegate.cpp \
     ui/utils/flowlayout.cpp \
     ui/utils/shortcutsmanager.cpp \
     ui/utils/statecolors.cpp \
@@ -456,6 +457,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/tables/gcodeitemdelegate.h \
     ui/tables/gcodetablemodel.h \
     ui/tables/heightmaptablemodel.h \
+    ui/tables/heightmapitemdelegate.h \
     ui/utils/flowlayout.h \
     ui/utils/shortcutsmanager.h \
     ui/utils/statecolors.h \
