@@ -154,7 +154,7 @@ bool IdleBehavior::doAction(const Action &action)
 
         case Action::Type::Disconnect:
             qDebug() << "[Behavior][Idle] Action: Disconnect";
-            emit transition(this, new DisconnectionBehavior());
+            emit transition(this, new DisconnectingBehavior());
 
             return true;
 

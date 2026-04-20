@@ -170,7 +170,7 @@ SOURCES += main.cpp\
     core/state_behavior/scantableerrorbehavior.cpp \
     core/state_behavior/handshakebehavior.cpp \
     core/state_behavior/externalprocessbehavior.cpp \
-    core/state_behavior/disconnectionbehavior.cpp \
+    core/state_behavior/disconnectingbehavior.cpp \
     core/state_behavior/toolchangebehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
@@ -367,7 +367,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/scantableerrorbehavior.h \
     core/state_behavior/handshakebehavior.h \
     core/state_behavior/externalprocessbehavior.h \
-    core/state_behavior/disconnectionbehavior.h \
+    core/state_behavior/disconnectingbehavior.h \
     core/state_behavior/toolchangebehavior.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \

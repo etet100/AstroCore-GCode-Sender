@@ -6,7 +6,7 @@
 StateColorGroup colorGroupForState(AbstractStateBehavior::Type type)
 {
     switch (type) {
-        case AbstractStateBehavior::Type::Disconnection:
+        case AbstractStateBehavior::Type::Disconnecting:
             return StateColorGroup::Offline;
 
         case AbstractStateBehavior::Type::Connecting:

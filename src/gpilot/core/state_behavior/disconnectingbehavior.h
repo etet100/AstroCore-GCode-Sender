@@ -1,22 +1,22 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2025 BTS
 
-#ifndef DISCONNECTIONBEHAVIOR_H
-#define DISCONNECTIONBEHAVIOR_H
+#ifndef DISCONNECTINGBEHAVIOR_H
+#define DISCONNECTINGBEHAVIOR_H
 
 #include "abstractstatebehavior.h"
 
-// Represents the disconnected state — the machine connection has been
+// Represents the disconnecting state — the machine connection is being
 // intentionally closed. The only available action is Connect, which
 // transitions back to InitializationBehavior.
-class DisconnectionBehavior : public AbstractStateBehavior
+class DisconnectingBehavior : public AbstractStateBehavior
 {
     Q_OBJECT
 
     public:
-        explicit DisconnectionBehavior(QObject *parent = nullptr);
+        explicit DisconnectingBehavior(QObject *parent = nullptr);
         QString description() override { return "Disconnected"; }
-        Type type() const override { return Type::Disconnection; }
+        Type type() const override { return Type::Disconnecting; }
         QSet<Action::Type> availableActions() const override {
             return { Action::Connect };
         }
@@ -25,7 +25,7 @@ class DisconnectionBehavior : public AbstractStateBehavior
         Result doOnExit(AbstractStateBehavior *next) override;
 
     protected:
-        QString name() const override { return "Disconnection"; }
+        QString name() const override { return "Disconnecting"; }
         bool doAction(const Action &action) override;
 
     private slots:
@@ -35,4 +35,4 @@ class DisconnectionBehavior : public AbstractStateBehavior
         int m_disconnectionTimeoutId = 0;
 };
 
-#endif // DISCONNECTIONBEHAVIOR_H
+#endif // DISCONNECTINGBEHAVIOR_H

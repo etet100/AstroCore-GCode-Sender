@@ -8,7 +8,7 @@
 #include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
 #include "core/state_behavior/alarmbehavior.h"
-#include "core/state_behavior/disconnectionbehavior.h"
+#include "core/state_behavior/disconnectingbehavior.h"
 #include <QCoroSignal>
 
 const QMap<int, QString> AbstractStateBehavior::ERRORS = {
@@ -57,7 +57,7 @@ void AbstractStateBehavior::reset()
 
 void AbstractStateBehavior::disconnectAction()
 {
-    emit transition(this, new DisconnectionBehavior());
+    emit transition(this, new DisconnectingBehavior());
 }
 
 void AbstractStateBehavior::onMachineState(MachineState state) {

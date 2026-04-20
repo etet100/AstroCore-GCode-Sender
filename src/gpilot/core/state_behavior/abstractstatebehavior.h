@@ -48,7 +48,7 @@ class AbstractStateBehavior : public QObject
             Alarm,
             CheckMode,
             Connecting,
-            Disconnection,
+            Disconnecting,
             Error,
             ExternalProcess,
             GoTo,

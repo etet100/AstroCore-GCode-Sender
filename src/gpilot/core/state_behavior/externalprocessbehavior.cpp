@@ -50,7 +50,7 @@ bool ExternalProcessBehavior::doAction(const Action &action)
 {
     switch (action.type()) {
         case Action::Type::Disconnect:
-            emit transition(this, new DisconnectionBehavior());
+            emit transition(this, new DisconnectingBehavior());
 
             return true;
     }
