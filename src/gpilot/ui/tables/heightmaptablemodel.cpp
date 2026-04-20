@@ -1,45 +1,81 @@
-// This file is a part of "Candle" application.
+// This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmaptablemodel.h"
+#include <QColor>
+#include <QtMath>
 
-HeightmapTableModel::HeightmapTableModel(Heightmap* data, QObject* parent)
+HeightmapTableModel::HeightmapTableModel(Heightmap* heightmap, QObject* parent)
     : QAbstractTableModel(parent)
+    , m_heightmap(heightmap)
 {
-    // m_data.append(QVector<double>());
 }
 
 void HeightmapTableModel::setHeightmap(Heightmap* heightmap)
 {
+    beginResetModel();
+    m_heightmap = heightmap;
+    endResetModel();
+}
+
+void HeightmapTableModel::clear()
+{
+    beginResetModel();
+    endResetModel();
 }
 
 void HeightmapTableModel::resize(int cols, int rows)
 {
-    foreach (QVector<double> row, m_data) row.clear();
+    Q_UNUSED(cols)
+    Q_UNUSED(rows)
+    beginResetModel();
+    endResetModel();
+}
 
-    m_data.clear();
+int HeightmapTableModel::rowCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent)
 
-    for (int i = 0; i < rows; i++) {
-        QVector<double> row;
-        for (int j = 0; j < cols; j++) {
-            row.append(qQNaN());
-        }
-        m_data.append(row);
-    }
+    return m_heightmap ? m_heightmap->gridHeight() : 0;
+}
+
+int HeightmapTableModel::columnCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent)
+
+    return m_heightmap ? m_heightmap->gridWidth() : 0;
 }
 
 QVariant HeightmapTableModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid()) return QVariant();
+    if (!index.isValid() || !m_heightmap) {
+        return QVariant();
+    }
 
-    if (index.row() >= m_data.count() || index.column() >= m_data[0].count()) return QVariant();
+    int rows = m_heightmap->gridHeight();
+    if (index.row() >= rows || index.column() >= m_heightmap->gridWidth()) {
+        return QVariant();
+    }
 
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
-        return QString::number(m_data[(m_data.count() - 1) - index.row()][index.column()], 'f', 3);
+        // Flip rows so row 0 shows the bottom of the heightmap (highest Y)
+        double val = m_heightmap->at(index.column(), (rows - 1) - index.row());
+
+        return qIsNaN(val) ? QString() : QString::number(val, 'f', 3);
     }
 
     if (role == Qt::UserRole) {
-        return m_data[index.row()][index.column()];
+        return m_heightmap->at(index.column(), index.row());
+    }
+
+    if (role == Qt::BackgroundRole) {
+        double val = m_heightmap->at(index.column(), (rows - 1) - index.row());
+        QColor c = cellColor(val);
+        if (c.isValid()) {
+            return QBrush(c);
+        }
+
+        return QVariant();
     }
 
     if (role == Qt::TextAlignmentRole) {
@@ -49,64 +85,65 @@ QVariant HeightmapTableModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+QColor HeightmapTableModel::cellColor(double value) const
+{
+    if (qIsNaN(value) || !m_heightmap) {
+        return QColor();
+    }
+
+    auto minMax = m_heightmap->valuesMinMax();
+    if (qIsNaN(minMax.min) || qIsNaN(minMax.max)) {
+        return QColor();
+    }
+
+    double range = minMax.max - minMax.min;
+    double hue = qFuzzyIsNull(range) ? 0.33 : 0.67 * (minMax.max - value) / range;
+
+    return QColor::fromHsvF(qBound(0.0, hue, 0.67), 0.55, 1.0);
+}
+
 bool HeightmapTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    m_data[role == Qt::EditRole ? (m_data.count() - 1) - index.row() : index.row()][index.column()] = value.toDouble();
+    if (!index.isValid() || !m_heightmap) {
+        return false;
+    }
 
-    if (role == Qt::EditRole) emit dataChangedByUserInput();
+    if (role == Qt::EditRole) {
+        bool ok = false;
+        double v = value.toDouble(&ok);
+        if (!ok || v < -5.0 || v > 5.0) {
+            return false;
+        }
+        int rows = m_heightmap->gridHeight();
+        m_heightmap->at(index.column(), (rows - 1) - index.row()) = v;
+        emit dataChangedByUserInput();
+    } else if (role == Qt::UserRole) {
+        m_heightmap->at(index.column(), index.row()) = value.toDouble();
+    } else {
+        return false;
+    }
+
+    emit dataChanged(index, index, {role});
 
     return true;
-}
-
-bool HeightmapTableModel::insertRow(int row, const QModelIndex &parent)
-{
-    Q_UNUSED(parent)
-
-    m_data.insert(row, QVector<double>());
-
-    return true;
-}
-
-bool HeightmapTableModel::removeRow(int row, const QModelIndex &parent)
-{
-    Q_UNUSED(parent)
-
-    m_data.remove(row);
-
-    return true;
-}
-
-void HeightmapTableModel::clear()
-{
-    m_data.clear();
-}
-
-int HeightmapTableModel::rowCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent)
-
-    return m_data.count();
-}
-
-int HeightmapTableModel::columnCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent)
-
-    return m_data.count() ? m_data[0].count() : 0;
 }
 
 QVariant HeightmapTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_UNUSED(orientation)
 
-    if (role != Qt::DisplayRole) return QVariant();
+    if (role != Qt::DisplayRole) {
+        return QVariant();
+    }
+
     return QString::number(section + 1);
 }
 
 Qt::ItemFlags HeightmapTableModel::flags(const QModelIndex &index) const
 {
-    if (!index.isValid()) return Qt::NoItemFlags;
+    if (!index.isValid()) {
+        return Qt::NoItemFlags;
+    }
 
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
-

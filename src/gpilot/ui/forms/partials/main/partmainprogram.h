@@ -46,6 +46,7 @@ class PartMainProgram : public QWidget
         void resizeHeightmapModel(int rows, int cols);
         bool hasHeightmapData() const;
         QVariant heightmapModelData(int row, int column, int role = Qt::DisplayRole) const;
+        void scrollToHeightmapCell(int x, int y);
 
         // ProgramHeightmap model operations
         void clearProgramHeightmapModel();
@@ -67,6 +68,8 @@ class PartMainProgram : public QWidget
 
         void setHeightMapVisible(bool visible);
         void setProgramVisible(bool visible);
+        void showProgramTable();
+        void showHeightmapTable();
         QByteArray saveHeaderState() const;
         void restoreHeaderState(const QByteArray& state);
 
