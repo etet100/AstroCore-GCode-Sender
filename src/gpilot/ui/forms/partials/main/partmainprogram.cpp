@@ -10,6 +10,7 @@
 #include "utils/utils.h"
 #include "core/gcode/gcode.h"
 #include "core/heightmap/heightmap.h"
+#include "tables/heightmapitemdelegate.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
@@ -89,6 +90,7 @@ void PartMainProgram::setHeightmap(Heightmap* heightmap)
 {
     m_heightmapModel = new HeightmapTableModel(heightmap, this);
     ui->tblHeightMap->setModel(m_heightmapModel);
+    ui->tblHeightMap->setItemDelegate(new HeightmapItemDelegate(-5.0, 5.0, this));
 
     // Logic from FrmMain for heightmap table header
     if (ui->tblHeightMap->horizontalHeader()->defaultSectionSize() * ui->tblHeightMap->horizontalHeader()->count() < width()) {
@@ -174,6 +176,18 @@ void PartMainProgram::resetClicked() { emit programResetRequested(); }
 void PartMainProgram::setProgramVisible(bool visible)
 {
     ui->tblProgram->setVisible(visible);
+}
+
+void PartMainProgram::showProgramTable()
+{
+    ui->tblProgram->setVisible(true);
+    ui->tblHeightMap->setVisible(false);
+}
+
+void PartMainProgram::showHeightmapTable()
+{
+    ui->tblHeightMap->setVisible(true);
+    ui->tblProgram->setVisible(false);
 }
 
 void PartMainProgram::resizeHeightMapSections()
@@ -629,6 +643,16 @@ QVariant PartMainProgram::heightmapModelData(int row, int column, int role) cons
         return m_heightmapModel->data(m_heightmapModel->index(row, column), role);
     }
     return QVariant();
+}
+
+void PartMainProgram::scrollToHeightmapCell(int x, int y)
+{
+    if (!m_heightmapModel) return;
+    int tableRow = m_heightmapModel->rowCount() - 1 - y;
+    QModelIndex idx = m_heightmapModel->index(tableRow, x);
+    if (!idx.isValid()) return;
+    ui->tblHeightMap->setCurrentIndex(idx);
+    ui->tblHeightMap->scrollTo(idx, QAbstractItemView::PositionAtCenter);
 }
 
 // ProgramHeightmap model operations
