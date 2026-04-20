@@ -1,6 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <QObject>
 #include "core/macro/macros.h"
 #include "core/utils/filesmanager.h"
 #include "core/config/configuration.h"
@@ -19,8 +20,10 @@ class AbstractConnection;
 // estimator and the communicator. Lifetime is tied to the Meyers singleton —
 // constructed on first access (after QApplication is created) and destroyed
 // at program exit.
-class Core
+class Core : public QObject
 {
+    Q_OBJECT
+
     public:
         static Core& instance() {
             static Core instance;
@@ -66,6 +69,16 @@ class Core
         // (emitted in translation units that include this header) can
         // destroy the static instance.
         ~Core();
+
+        // Routes a raw console line. `:` prefix → internal command (start/pause/
+        // resume/reset/abort/connect/disconnect/open/ai ...). Otherwise matches
+        // against Macros by name (case-insensitive first token); anything else
+        // is sent to the device via Communicator::sendCommand.
+        void handleConsoleCommand(QString command);
+
+    signals:
+        void log(QString message);
+        void openFileRequested();
 
     private:
         Core();

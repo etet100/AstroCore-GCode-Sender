@@ -163,7 +163,6 @@ private slots:
     void onToolPositionReceived(QVector3D pos);
     void onTransferCompleted();
     void onConnectionError(QString error);
-    void onConsoleNewCommand(QString command, bool isInternal);
     void updateOnStateBehaviorChanged(AbstractStateBehavior *sb);
 
     void programInsertLines(int current, bool before);
@@ -232,10 +231,6 @@ private:
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;
     FrmLog* m_logForm = nullptr;
-
-    // Flags
-    bool m_programLoading;
-    bool m_settingsLoading;
 
     // bool m_updateSpindleSpeed;
     // bool m_updateParserStatus;

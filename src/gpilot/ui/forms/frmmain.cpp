@@ -101,7 +101,6 @@ FrmMain::FrmMain(QWidget *parent) :
 
     m_heightmapMode = false;
     program().resetProcessed();
-    m_programLoading = false;
     //updateCurrentModel(&m_programModel);
 
     initializeDockCorners();
@@ -238,7 +237,13 @@ void FrmMain::setLogFormWindow(FrmLog *logForm)
 void FrmMain::initializeConsolePanel()
 {
     ui->console->initialize(m_configuration.consoleModule());
-    connect(ui->console, &PartMainConsole::newCommand, this, &FrmMain::onConsoleNewCommand);
+    connect(ui->console, &PartMainConsole::newCommand,
+            &Core::instance(), &Core::handleConsoleCommand);
+    connect(&Core::instance(), &Core::openFileRequested,
+            this, [this]() { onFileOpen(); });
+    connect(&Core::instance(), &Core::log, this, [this](QString message) {
+        ui->console->append(message);
+    });
     ui->console->append(QString("G-Pilot %1 started").arg(qApp->applicationVersion()));
     ui->console->append("---");
 }
@@ -1905,54 +1910,6 @@ void FrmMain::onToolPositionReceived(QVector3D pos)
     }
 }
 
-void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
-{
-    if (isInternal) {
-        if (command.startsWith("ai ")) {
-            QString prompt = command.mid(3);
-
-            OpenAIManager& o = OpenAIManager::instance();
-            o.setApiKey(m_configuration.aiModule().openAIKey());
-            // connect(&o, &OpenAIManager::responseReceived, this, [this](const QString &response) {
-            //     ui->console->append("[AI] " + response);
-            // });
-            // connect(&o, &OpenAIManager::errorOccurred, this, [this](const QString &error) {
-            //     ui->console->append("[AI][Error] " + error);
-            // });
-            // o->listModels();
-            o.sendRequest(prompt, [this](const QString &response) {
-                ui->console->append("[AI] " + response);
-            }, [this](const QString &error) {
-                ui->console->append("[AI][Error] " + error);
-            }, "gpt-4o");
-
-            return;
-        } else if (command == "start") {
-            communicator()->sb()->action(Action::Run);
-        } else if (command == "pause") {
-            communicator()->sb()->action(Action::Pause);
-        } else if (command == "resume") {
-            communicator()->sb()->action(Action::Resume);
-        } else if (command == "reset") {
-            communicator()->sb()->action(Action::Unlock);
-        } else if (command == "abort") {
-            communicator()->sb()->action(Action::Abort);
-        } else if (command == "open") {
-            onFileOpen();
-        } else if (command == "disconnect") {
-            communicator()->sb()->action(Action::Disconnect);
-        } else if (command == "connect") {
-            communicator()->sb()->action(Action::Connect);
-        } else {
-            qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
-        }
-
-        return;
-    }
-
-    communicator()->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
-}
-
 void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
 {
     ui->state->setStatusText(
@@ -2025,26 +1982,24 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
     if (i1.row() == (model->rowCount() - 1) && model->data(model->index(i1.row(), 1)).toString() != "") {
         model->setData(model->index(model->rowCount() - 1, 2), GCodeItem::InQueue);
         model->insertRow(model->rowCount());
-        if (!m_programLoading) ui->program->setCurrentIndex(model->index(i1.row() + 1, 1));
+        ui->program->setCurrentIndex(model->index(i1.row() + 1, 1));
     }
 
-    if (!m_programLoading) {
-        // Clear cached args
-        model->setData(model->index(i1.row(), 5), QVariant());
+    // Clear cached args
+    model->setData(model->index(i1.row(), 5), QVariant());
 
-        // Drop heightmap cache
-        if (ui->program->isCurrentModelProgramModel()) {
-            ui->program->clearProgramHeightmapModel();
-        }
+    // Drop heightmap cache
+    if (ui->program->isCurrentModelProgramModel()) {
+        ui->program->clearProgramHeightmapModel();
+    }
 
-        // Update visualizer
-        updateParser();
+    // Update visualizer
+    updateParser();
 
-        // Hightlight w/o current cell changed event (double hightlight on current cell changed)
-        QList<LineSegment>& list = viewParser().getLineSegmentList();
-        for (int i = 0; i < list.count() && list[i].getLineNumber() <= ui->program->currentModelData(ui->program->currentModelIndex(i1.row(), 4)).toInt(); i++) {
-            list[i].setIsHightlight(true);
-        }
+    // Hightlight w/o current cell changed event (double hightlight on current cell changed)
+    QList<LineSegment>& list = viewParser().getLineSegmentList();
+    for (int i = 0; i < list.count() && list[i].getLineNumber() <= ui->program->currentModelData(ui->program->currentModelIndex(i1.row(), 4)).toInt(); i++) {
+        list[i].setIsHightlight(true);
     }
 }
 
@@ -2273,8 +2228,6 @@ void FrmMain::applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfi
 
 void FrmMain::loadSettings()
 {
-    m_settingsLoading = true;
-
     emit settingsAboutToLoad();
 
 //    this->restoreGeometry(set.value("formGeometry", QByteArray()).toByteArray());
@@ -2312,8 +2265,6 @@ void FrmMain::loadSettings()
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
     // @TODO move to configuration form
     //m_settings->restoreGeometry(set.value("formSettingsGeometry", m_settings->saveGeometry()).toByteArray());
-
-    m_settingsLoading = false;
 
     emit settingsLoaded();
 }
@@ -3101,10 +3052,6 @@ void FrmMain::addRecentHeightmap(QString fileName)
 
 bool FrmMain::updateHeightmapGrid()
 {
-    if (m_settingsLoading) {
-        return true;
-    }
-
     if (!heightmap().anyHeightSet()) {
         if (QMessageBox::warning(this, this->windowTitle(), tr("Changing grid settings will reset probe data. Continue?"),
                                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return false;
@@ -3132,36 +3079,36 @@ bool FrmMain::updateHeightmapGrid()
     double gridStepX = gridPointsX > 1 ? borderRect.width() / (gridPointsX - 1) : 0;
     double gridStepY = gridPointsY > 1 ? borderRect.height() / (gridPointsY - 1) : 0;
 
-    m_programLoading = true;
-    ui->program->clearProbeModel();
-    ui->program->insertProbeModelRow(0);
+    {
+        QSignalBlocker blocker(ui->program);
+        ui->program->clearProbeModel();
+        ui->program->insertProbeModelRow(0);
 
-    int lastRow = ui->program->probeModelRowCount() - 1;
-    ui->program->setProbeModelData(lastRow, 1, QString("G21G90F%1G0Z%2").
-                    arg(heightmap().probeFeed()).arg(heightmap().zBottomTop().top));
-    ui->program->setProbeModelData(lastRow, 1, QString("G0X0Y0"));
-    ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
-                         .arg(heightmap().zBottomTop().bottom));
-    ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
-                         .arg(heightmap().zBottomTop().top));
+        int lastRow = ui->program->probeModelRowCount() - 1;
+        ui->program->setProbeModelData(lastRow, 1, QString("G21G90F%1G0Z%2").
+                        arg(heightmap().probeFeed()).arg(heightmap().zBottomTop().top));
+        ui->program->setProbeModelData(lastRow, 1, QString("G0X0Y0"));
+        ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
+                             .arg(heightmap().zBottomTop().bottom));
+        ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
+                             .arg(heightmap().zBottomTop().top));
 
-    double x, y;
+        double x, y;
 
-    for (int i = 0; i < gridPointsY; i++) {
-        y = borderRect.top() + gridStepY * i;
-        for (int j = 0; j < gridPointsX; j++) {
-            x = borderRect.left() + gridStepX * (i % 2 ? gridPointsX - 1 - j : j);
-            lastRow = ui->program->probeModelRowCount() - 1;
-            ui->program->setProbeModelData(lastRow, 1, QString("G0X%1Y%2")
-                                 .arg(x, 0, 'f', 3).arg(y, 0, 'f', 3));
-            ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
-                                 .arg(heightmap().zBottomTop().bottom));
-            ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
-                                 .arg(heightmap().zBottomTop().top));
+        for (int i = 0; i < gridPointsY; i++) {
+            y = borderRect.top() + gridStepY * i;
+            for (int j = 0; j < gridPointsX; j++) {
+                x = borderRect.left() + gridStepX * (i % 2 ? gridPointsX - 1 - j : j);
+                lastRow = ui->program->probeModelRowCount() - 1;
+                ui->program->setProbeModelData(lastRow, 1, QString("G0X%1Y%2")
+                                     .arg(x, 0, 'f', 3).arg(y, 0, 'f', 3));
+                ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
+                                     .arg(heightmap().zBottomTop().bottom));
+                ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
+                                     .arg(heightmap().zBottomTop().top));
+            }
         }
     }
-
-    m_programLoading = false;
 
     if (m_heightmapMode) {
         updateParser();

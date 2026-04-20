@@ -36,7 +36,7 @@ class PartMainConsole : public QWidget
         void setInternalCommands(const QStringList& commands);
 
     signals:
-        void newCommand(QString command, bool isInternal);
+        void newCommand(QString command);
         void consoleCleared();
 
     private:

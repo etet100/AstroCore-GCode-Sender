@@ -478,3 +478,4 @@ void Communicator::stopQueryingMachineState()
         m_queryMachineStateTimer = nullptr;
     }
 }
+
