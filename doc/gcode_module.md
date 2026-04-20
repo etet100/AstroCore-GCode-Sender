@@ -103,6 +103,61 @@ gcode->resetOverlays();
 | `mainCount()` | Number of main program items (excludes overlays) |
 `GCodeLoader::update()` re-runs the view parse after an existing `GCode` is modified.
 
+### Ownership of GCodeLoaderData
+
+`GCodeLoaderData` is a plain struct with two raw pointers:
+
+```cpp
+struct GCodeLoaderData {
+    GCode *gcode;
+    GCodeViewParser *viewParser;
+};
+```
+
+The loader allocates the struct and both inner objects with `new` and emits
+`finished(GCodeLoaderData*)`. **The receiver owns all three allocations**
+after the signal fires. Delete order after you have consumed the data:
+
+```cpp
+delete data->gcode;
+delete data->viewParser;
+delete data;
+```
+
+**Exception — update mode**: `GCodeLoader::update(GCode* gcode)` reuses the
+caller's `gcode` pointer in the struct (`result->gcode = gcode`). The
+receiver must **not** delete `data->gcode` in this case, only `data->viewParser`
+and the struct itself.
+
+### Replacing m_program safely  (`FrmMain::applyLoaderGCode`)
+
+The entry point for installing freshly loaded G-code is organised in three
+phases to avoid dangling pointers, stale signals and races with background
+work:
+
+**A) Detach** — cancel background work and drop references to old state:
+1. `m_visualizerUpdater->disconnect()`, `cancel()`, `delete` — prevents a
+   queued `finished` slot from running against a replaced `m_program`.
+2. Guard on `stateBehavior()->is(Idle)` — `RunningBehavior` holds a
+   `GCode&` to `m_program`, so replacing it mid-run would crash.
+3. `ui->program->close()` — table models drop their `GCode*` source.
+4. `ui->visualizer->close()` — code drawer drops its `GCodeViewParser*`.
+5. `m_timeEstimator.resetEstimation()` — drops cached `QList<LineSegment>*`.
+
+**B) Swap** — replace owned data under signal blocker:
+1. `QSignalBlocker` around `m_program.clear()` / `m_program.reset()`.
+2. `m_viewParser = *data->viewParser` — safe because `LineSegment` and all
+   other members of `GCodeViewParser` are value types (no owning pointers),
+   so default copy-assign produces an independent deep copy.
+3. `m_probeParser.reset()`.
+
+**C) Attach** — rebind consumers, then populate:
+1. Rebind models and drawers to the (still empty) new program.
+2. `m_program << *data->gcode` — `operator<<(const GCode&)` emits `loaded()`
+   synchronously; the connected `GCodeTableModel` resets itself in response,
+   which is why the rebind in step 1 must happen **before** the append.
+3. Recalculate time estimation, refresh visualizer, `updateControlsState`.
+
 ---
 
 ## GCodeFilterView  (`gcode/gcodefilterview.h`)

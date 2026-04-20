@@ -2559,6 +2559,10 @@ void FrmMain::updateParser()
     connect(m_visualizerUpdater, &GCodeThreadedLoader::finished, this, [this](GCodeLoaderData *data) {
         qDebug() << "[FrmMain] Finished updating visualizer data";
         this->applyUpdaterGCode(data);
+
+        // In update mode data->gcode == &m_program — do NOT delete it.
+        // Only the freshly built viewParser is orphaned and must be freed here.
+        delete data->viewParser;
         delete data;
         m_visualizerUpdater->deleteLater();
         m_visualizerUpdater = nullptr;
@@ -2658,6 +2662,12 @@ void FrmMain::loadFile(QString filePath)
         qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
         ui->console->appendSystem("Finished loading");
         this->applyLoaderGCode(data);
+
+        // GCodeLoaderData only holds raw pointers. The worker allocated both
+        // gcode and viewParser with `new`; after applyLoaderGCode has consumed
+        // them (deep copy / bulk append) we are the owner and must free them.
+        delete data->gcode;
+        delete data->viewParser;
         delete data;
         loader->deleteLater();
 
@@ -2683,33 +2693,77 @@ void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
     ui->visualizer->updateCodeDrawer();
 }
 
+// Replaces m_program and m_viewParser with freshly loaded data. Organised in
+// three phases:
+//   A) detach — cancel background work, drop consumer references to old state
+//   B) swap   — clear program under signal blocker, deep-copy new view parser
+//   C) attach — rebind models/drawers, populate program (triggers `loaded()`
+//               which the program table model uses to reset itself)
 void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
-    ui->program->close();
-    ui->visualizer->close();
+    // --- PHASE A: detach ---
 
-    m_viewParser.reset();
-    m_probeParser.reset();
+    // A background visualizer update may still hold &m_program. Disconnect
+    // first so its queued finished/cancelled slots cannot run after we null
+    // m_visualizerUpdater below.
+    if (m_visualizerUpdater) {
+        m_visualizerUpdater->disconnect();
+        m_visualizerUpdater->cancel();
+        delete m_visualizerUpdater;
+        m_visualizerUpdater = nullptr;
+    }
 
-    m_viewParser = *data->viewParser;
+    // Loader is async: the "open" button is disabled when state != Idle, but
+    // pendant or scripted actions could still push the machine into Running
+    // between load start and load finish. Replacing m_program while the
+    // RunningBehavior is iterating it crashes the sender.
+    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Idle)) {
+        qWarning() << "[FrmMain] applyLoaderGCode: machine is not idle, discarding loaded data";
+        ui->console->appendSystem(tr("Cannot replace program: machine is not idle"));
+        return;
+    }
 
-    // Update interface
-    ui->heightmap->resetUseHeighmap();
-    ui->grpHeightmap->setProperty("overrided", false);
-    Utils::refreshStyle(ui->grpHeightmap);
+    const QByteArray headerState = ui->program->saveProgramHeaderState();
 
-    // Reset tableview
-    QByteArray headerState = ui->program->saveProgramHeaderState();
-    // ui->program->setProgramTableModel(nullptr);
+    ui->program->close();              // table models drop their GCode* source
+    ui->visualizer->close();           // code drawer drops its GCodeViewParser*
+
+    m_timeEstimator.resetEstimation(); // drops cached pointer into m_viewParser.getLines()
+
+    // --- PHASE B: swap ---
 
     {
         QSignalBlocker blocker(m_program);
         m_program.clear();
         m_program.reset();
     }
+
+    // Deep copy. GCodeViewParser has no user-defined assignment but its
+    // members (QList<LineSegment>, QVector3D, ...) are all value types,
+    // and LineSegment has no owning pointers — so default assignment
+    // produces an independent copy.
+    m_viewParser = *data->viewParser;
+    m_probeParser.reset();
+
+    // --- PHASE C: attach ---
+
+    ui->heightmap->resetUseHeighmap();
+    ui->grpHeightmap->setProperty("overrided", false);
+    Utils::refreshStyle(ui->grpHeightmap);
+
+    // Rebind models/drawers to the (still empty) new program BEFORE the bulk
+    // append. `operator<<(const GCode&)` emits `loaded()` synchronously and
+    // the connected table model resets itself in response — only useful if
+    // the model is already pointing at m_program again.
+    ui->program->setProgram(&m_program);
+    ui->program->switchToProgramModel();
+    ui->program->restoreHeaderState(headerState);
+
+    ui->visualizer->setProgram(&m_program, &m_viewParser);
+
+    // Populate program. Triggers `loaded()` → table model reset → view refresh.
     m_program << *data->gcode;
 
-    // Calculate initial time estimation
     m_timeEstimator.calculateEstimatedTime(
         m_viewParser.getLines(),
         m_communicator->overrides()->targetFeed(),
@@ -2717,14 +2771,10 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     );
     ui->visualizer->setTimeEstimation(m_timeEstimator);
 
-    ui->program->setProgram(&m_program);
-    ui->program->switchToProgramModel();
-    ui->program->restoreHeaderState(headerState);
-    ui->program->selectFirstRow();
-
-    ui->visualizer->setProgram(&m_program, &m_viewParser);
     ui->visualizer->updateCodeDrawer();
     ui->visualizer->fitCodeDrawer();
+
+    ui->program->selectFirstRow();
 
     resetHeightmap();
     updateControlsState();
