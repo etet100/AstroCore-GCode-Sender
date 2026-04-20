@@ -273,6 +273,7 @@ private:
     void applyLoaderGCode(GCodeLoaderData *data);
     void applyUpdaterGCode(GCodeLoaderData *data);
     bool saveChanges(bool heightmapMode);
+    void testConverter(int converterIndex = 0);
     // void clearTable();
     void resetHeightmap();
     void newFile();

@@ -41,6 +41,12 @@
 #include "ui/drawers/vertexdataexporter.h"
 #include "core/gcode/loader/gcodethreadedloader.h"
 #include "core/gcode/exporter/gcodeexporter.h"
+#include "core/gcode/converter/arcstolines.h"
+#include "core/gcode/converter/singleconverter.h"
+#include "core/gcode/converter/exampleconverter.h"
+#include "core/gcode/converter/fusionrestorerapidmovements.h"
+#include "core/gcode/converter/shakinggcode.h"
+#include "core/gcode/converter/applyheightmap.h"
 #include "core/heightmap/loader/heightmaploader.h"
 #include "core/heightmap/exporter/heightmapexporter.h"
 #include "core/utils/filesmanager.h"
@@ -2722,6 +2728,61 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     resetHeightmap();
     updateControlsState();
+}
+
+// Converter index:
+//   0 - ArcsToLines (G2/G3 -> G1 segments, 0.1 mm chord)
+//   1 - FusionRestoreRapidMovements (G1 reposition moves -> G0)
+//   2 - FeedRateConverter (multiply feed rate x2)
+//   3 - CoordinateOffsetConverter (X+10 mm offset)
+//   4 - SafeSpindleStopConverter
+//   5 - MovementOptimizerConverter
+//   6 - ShakingGCode (random path distortion, for testing)
+//   7 - ApplyHeightmap (uses current m_heightmap, 1 mm segments)
+void FrmMain::testConverter(int converterIndex)
+{
+    if (m_program.count() == 0) {
+        qDebug() << "[FrmMain] testConverter: no program loaded";
+        return;
+    }
+
+    AbstractBatchConverter *converter = nullptr;
+
+    switch (converterIndex) {
+        case 0: converter = new SingleConverter(new ArcsToLines(0.1, false));            break;
+        case 1: converter = new SingleConverter(new FusionRestoreRapidMovements());      break;
+        case 2: converter = new SingleConverter(new FeedRateConverter(2.0));             break;
+        case 3: converter = new SingleConverter(new CoordinateOffsetConverter(10.0));    break;
+        case 4: converter = new SingleConverter(new SafeSpindleStopConverter());         break;
+        case 5: converter = new SingleConverter(new MovementOptimizerConverter());       break;
+        case 6: converter = new ShakingGCode(5.0, 1.0);                                 break;
+        case 7: converter = new ApplyHeightmap(&m_heightmap, 1.0);                      break;
+        default:
+            qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
+            return;
+    }
+
+    converter->setGCode(&m_program);
+    GCode *result = converter->convertAll();
+    delete converter;
+
+    if (!result) {
+        qDebug() << "[FrmMain] testConverter: converter returned null";
+        return;
+    }
+
+    qDebug() << "[FrmMain] testConverter[" << converterIndex << "]:"
+             << m_program.count() << "->" << result->count() << "lines";
+
+    {
+        QSignalBlocker blocker(m_program);
+        m_program.clear();
+        m_program.reset();
+    }
+    m_program << *result;
+    delete result;
+
+    updateParser();
 }
 
 bool FrmMain::saveChanges(bool heightMapMode)
