@@ -65,10 +65,6 @@ FrmMain::FrmMain(QWidget *parent) :
     m_taskbarButtonCreatedMessageId(RegisterWindowMessage(L"TaskbarButtonCreated")),
     m_taskBar(this),
 #endif
-    m_heightmap(),
-    m_connectionManager(this, Core::instance().configuration().connectionModule()),
-    m_program(),
-    m_timeEstimator(m_timer),
     m_configuration(Core::instance().configuration())
 {
     ui->setupUi(this);
@@ -104,7 +100,7 @@ FrmMain::FrmMain(QWidget *parent) :
     }
 
     m_heightmapMode = false;
-    m_program.resetProcessed();
+    program().resetProcessed();
     m_programLoading = false;
     //updateCurrentModel(&m_programModel);
 
@@ -147,7 +143,7 @@ FrmMain::FrmMain(QWidget *parent) :
     initializeEventFilter();
 
     // Pendant
-    Pendant *pendant = new Pendant(m_configuration, *m_communicator, this);
+    Pendant *pendant = new Pendant(m_configuration, *communicator(), this);
 
     initializeVirtualSettingsPanel();
 
@@ -173,8 +169,8 @@ FrmMain::FrmMain(QWidget *parent) :
 
 FrmMain::~FrmMain()
 {
-    delete m_communicator;
-    delete m_connection;
+    // Communicator and current connection are owned by Core and destroyed
+    // with the singleton at program exit.
     delete m_senderErrorBox;
     delete ui; ui = nullptr;
 }
@@ -186,54 +182,50 @@ void FrmMain::initializeGCodeLoaderConfiguration()
 
 void FrmMain::initializeCommunicator()
 {
-    m_communicator = new Communicator(
-        this,
-        nullptr,
-        &m_configuration
-    );
-    //m_program = new GCode();
+    Core::instance().createCommunicator(this);
+    //program() = new GCode();
     // @TODO temporary!
-    // m_communicator->streamCommands(m_program);
+    // communicator()->streamCommands(program());
 
-    connect(m_communicator, &Communicator::machinePosChanged, this, &FrmMain::onMachinePosChanged);
-    connect(m_communicator, &Communicator::workPosChanged, this, &FrmMain::onWorkPosChanged);
-    connect(m_communicator, &Communicator::machineStateReceived, this, &FrmMain::onMachineStateReceived);
-    connect(m_communicator, &Communicator::machineStatusReportReceived, this, [this](MachineStatusReport report) {
+    connect(communicator(), &Communicator::machinePosChanged, this, &FrmMain::onMachinePosChanged);
+    connect(communicator(), &Communicator::workPosChanged, this, &FrmMain::onWorkPosChanged);
+    connect(communicator(), &Communicator::machineStateReceived, this, &FrmMain::onMachineStateReceived);
+    connect(communicator(), &Communicator::machineStatusReportReceived, this, [this](MachineStatusReport report) {
         ui->state->setMachineStateReport(report.toMarkdown());
     });
-    connect(m_communicator, &Communicator::machineStateChanged, this, &FrmMain::onMachineStateChanged);
-    connect(m_communicator, &Communicator::senderStateReceived, this, &FrmMain::onSenderStateReceived);
-    connect(m_communicator, SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
-    connect(m_communicator, &Communicator::floodStateReceived, this, &FrmMain::onFloodStateReceived);
-    connect(m_communicator, &Communicator::commandSent, this, &FrmMain::onCommandSent);
-    connect(m_communicator, &Communicator::commandResponseReceived, this, &FrmMain::onCommandResponseReceived);
-    connect(m_communicator, &Communicator::parserStateReceived, this, &FrmMain::onParserStateReceived);
-    connect(m_communicator, &Communicator::welcomeMessageReceived, this, [this](QString message) {
+    connect(communicator(), &Communicator::machineStateChanged, this, &FrmMain::onMachineStateChanged);
+    connect(communicator(), &Communicator::senderStateReceived, this, &FrmMain::onSenderStateReceived);
+    connect(communicator(), SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
+    connect(communicator(), &Communicator::floodStateReceived, this, &FrmMain::onFloodStateReceived);
+    connect(communicator(), &Communicator::commandSent, this, &FrmMain::onCommandSent);
+    connect(communicator(), &Communicator::commandResponseReceived, this, &FrmMain::onCommandResponseReceived);
+    connect(communicator(), &Communicator::parserStateReceived, this, &FrmMain::onParserStateReceived);
+    connect(communicator(), &Communicator::welcomeMessageReceived, this, [this](QString message) {
         ui->console->appendSystem(message);
     });
-    connect(m_communicator, &Communicator::log, this, [this](QString message) {
+    connect(communicator(), &Communicator::log, this, [this](QString message) {
         ui->console->append(message);
     });
-    connect(m_communicator, &Communicator::pinStateReceived, this, &FrmMain::onPinStateReceived);
-    connect(m_communicator, &Communicator::spindleSpeedReceived, this, &FrmMain::onSpindleSpeedReceived);
-    // connect(m_communicator, &Communicator::commandProcessed, this, &FrmMain::onCommandProcessed);
-    connect(m_communicator, SIGNAL(feedSpindleSpeedReceived(int,int)), this, SLOT(onFeedSpindleSpeedReceived(int,int)));
-    connect(m_communicator->overrides(), &Overrides::currentValuesChanged, this, [this](int feed, int spindle, int rapid) {
+    connect(communicator(), &Communicator::pinStateReceived, this, &FrmMain::onPinStateReceived);
+    connect(communicator(), &Communicator::spindleSpeedReceived, this, &FrmMain::onSpindleSpeedReceived);
+    // connect(communicator(), &Communicator::commandProcessed, this, &FrmMain::onCommandProcessed);
+    connect(communicator(), SIGNAL(feedSpindleSpeedReceived(int,int)), this, SLOT(onFeedSpindleSpeedReceived(int,int)));
+    connect(communicator()->overrides(), &Overrides::currentValuesChanged, this, [this](int feed, int spindle, int rapid) {
         ui->overrides->setCurrentFeed(feed);
         ui->overrides->setCurrentSpindle(spindle);
         ui->overrides->setCurrentRapid(rapid);
     });
-    connect(m_communicator, &Communicator::toolPositionReceived, this, &FrmMain::onToolPositionReceived);
-    connect(m_communicator, &Communicator::transferCompleted, this, &FrmMain::onTransferCompleted);
-    connect(m_communicator, &Communicator::aborted, this, &FrmMain::onAborted);
-    connect(m_communicator, &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
+    connect(communicator(), &Communicator::toolPositionReceived, this, &FrmMain::onToolPositionReceived);
+    connect(communicator(), &Communicator::transferCompleted, this, &FrmMain::onTransferCompleted);
+    connect(communicator(), &Communicator::aborted, this, &FrmMain::onAborted);
+    connect(communicator(), &Communicator::machineConfigurationReceived, this, [this](PhysicalMachineConfiguration configuration) {
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
-    connect(m_communicator->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
-    connect(m_communicator, &Communicator::connectionChanged, this, [this](AbstractConnection *connection) {
+    connect(communicator()->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
+    connect(communicator(), &Communicator::connectionChanged, this, [this](AbstractConnection *connection) {
         ui->state->setConnectionName(connection->name());
     });
-    connect(m_communicator, &Communicator::connectionStateChanged, this, [this](ConnectionState state) {
+    connect(communicator(), &Communicator::connectionStateChanged, this, [this](ConnectionState state) {
         ui->state->setConnectionState(state == ConnectionState::Connected);
     });
 }
@@ -258,7 +250,7 @@ void FrmMain::initializeJogPanel()
     connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
         if (dir != JoggindDir::None) {
             ConfigurationJogging& jogging = m_configuration.joggingModule();
-            m_communicator->sb()->action(JoggingAction(
+            communicator()->sb()->action(JoggingAction(
                 vector,
                 jogging.step(),
                 jogging.continuous(),
@@ -268,7 +260,7 @@ void FrmMain::initializeJogPanel()
         }
     });
     connect(ui->jog, &PartMainJog::stop, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Abort);
+        communicator()->stateBehavior()->action(Action::Abort);
     });
     connect(ui->grpJog, &QGroupBox::toggled, this, &FrmMain::jogGroupToggled);
     // chkKeyboardControl was removed from the UI; keyboardControlToggled() is dead code
@@ -277,43 +269,43 @@ void FrmMain::initializeJogPanel()
 void FrmMain::initializeControlPanel()
 {
     connect(ui->control, &PartMainControl::unlock, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Unlock);
+        communicator()->stateBehavior()->action(Action::Unlock);
     });
     connect(ui->control, &PartMainControl::home, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Home);
-        // m_communicator->home();
+        communicator()->stateBehavior()->action(Action::Home);
+        // communicator()->home();
     });
     connect(ui->control, &PartMainControl::check, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::CheckMode);
+        communicator()->stateBehavior()->action(Action::CheckMode);
     });
     connect(ui->control, &PartMainControl::abortCheck, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::Abort);
+        communicator()->stateBehavior()->action(Action::Abort);
     });
     connect(ui->control, &PartMainControl::scanTable, this, [this]() {
-        AbstractStateBehavior* sb = m_communicator->stateBehavior();
+        AbstractStateBehavior* sb = communicator()->stateBehavior();
         if (sb->is(AbstractStateBehavior::Type::ScanTable)) {
-            m_communicator->stateBehavior()->action(Action::Resume);
+            communicator()->stateBehavior()->action(Action::Resume);
         } else {
-            m_communicator->stateBehavior()->action(ScanTableAction(&m_heightmap));
+            communicator()->stateBehavior()->action(ScanTableAction(&heightmap()));
         }
     });
     connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
         ProbeAction::ProbeParameters params;
         params.doubleProbe = (mode == ProbeMode::Dual);
-        m_communicator->stateBehavior()->action(ProbeAction(params));
+        communicator()->stateBehavior()->action(ProbeAction(params));
     });
     connect(ui->control, &PartMainControl::reset, this, [this]() {
-        // m_communicator->reset();
-        m_communicator->stateBehavior()->action(Action::Reset);
+        // communicator()->reset();
+        communicator()->stateBehavior()->action(Action::Reset);
     });
     // connect(ui->control, &partMainControl::command, this, [=](GRBLCommand command) {
     //     qDebug() << "Command: " << command;
     // });
     connect(ui->control, &PartMainControl::zeroZ, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::ZeroZ);
+        communicator()->stateBehavior()->action(Action::ZeroZ);
     });
     connect(ui->control, &PartMainControl::zeroXY, this, [this]() {
-        m_communicator->stateBehavior()->action(Action::ZeroXY);
+        communicator()->stateBehavior()->action(Action::ZeroXY);
     });
 
     connect(ui->grpControl, &QGroupBox::toggled, this, [this](bool checked) {
@@ -325,17 +317,17 @@ void FrmMain::initializeControlPanel()
 void FrmMain::initializeStatePanel()
 {
     connect(ui->state, &AbstractPartMainState::connectClicked, this, [this]() {
-        m_communicator->sb()->action(Action::Connect);
+        communicator()->sb()->action(Action::Connect);
     });
     connect(ui->state, &AbstractPartMainState::disconnectClicked, this, [this]() {
-        m_communicator->sb()->action(Action::Disconnect);
+        communicator()->sb()->action(Action::Disconnect);
     });
     connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
         updateLayouts();
         ui->state->setVisible(checked);
     });
     connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, [this](bool dark) {
-        AbstractStateBehavior* sb = m_communicator->stateBehavior();
+        AbstractStateBehavior* sb = communicator()->stateBehavior();
         ui->state->setStatusText(
             sb->description(),
             colorForGroup(colorGroupForState(sb->type()), dark),
@@ -368,10 +360,10 @@ void FrmMain::initializeSpindlePanel()
 
 void FrmMain::initializeProgramPanel()
 {
-    ui->program->initialize(&m_program, &m_heightmap);
+    ui->program->initialize(&program(), &heightmap());
     ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
 
-    connect(&m_program, &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+    connect(&program(), &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
         Q_UNUSED(fromLine);
         Q_UNUSED(toLine);
 
@@ -379,16 +371,16 @@ void FrmMain::initializeProgramPanel()
             return;
         }
 
-        // int tableIndex = ui->program->getCurrentModelFilteredIndex(m_program.commandIndex());
+        // int tableIndex = ui->program->getCurrentModelFilteredIndex(program().commandIndex());
         // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
 
-        GCodeViewParser *parser = &m_viewParser;
+        GCodeViewParser *parser = &viewParser();
         QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
         QList<LineSegment>& list = parser->getLineSegmentList();
         QList<int> indexes;
 
         for (int i = fromLine; i <= toLine; i++) {
-            GCodeItem &item = m_program[i];
+            GCodeItem &item = program()[i];
             // int j = item.commandNumber;
             // if (j != -1) {
             //     foreach (int l, lineIndexes.at(j)) {
@@ -409,7 +401,7 @@ void FrmMain::initializeProgramPanel()
             ui->visualizer->updateCodeDrawer(indexes);
         }
     });
-    connect(&m_program, &GCode::lastSentCommandChanged, this, [this](int index) {
+    connect(&program(), &GCode::lastSentCommandChanged, this, [this](int index) {
         ui->program->scrollToIndex(index);
     });
 
@@ -418,9 +410,9 @@ void FrmMain::initializeProgramPanel()
     });
     // connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
     connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
-    // connect(&m_program, &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
+    // connect(&program(), &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
     connect(ui->program, &PartMainProgram::manualScrollRequested, this, [this]() {
-        if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+        if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
             ui->program->setAutoScroll(false);
         }
     });
@@ -451,14 +443,14 @@ void FrmMain::initializeHeightmapPanel()
         ui->visualizer->showHeightmapInterpolationGrid(drawers.interpolation);
     });
     connect(ui->heightmap, &PartMainHeightmap::areaChanged, this, [this](QRectF area) {
-        if (area != m_heightmap.area()) {
-            m_heightmap.setArea(area);
+        if (area != heightmap().area()) {
+            heightmap().setArea(area);
             ui->visualizer->updateHeightmap();
         }
     });
     connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
         ui->visualizer->setHeightmapInterpolationMode(mode);
-        m_heightmap.setInterpolationMode(mode);
+        heightmap().setInterpolationMode(mode);
         ui->visualizer->updateHeightmap();
     });
     connect(ui->grpHeightmap, &QGroupBox::toggled, this, &FrmMain::heightmapGroupToggled);
@@ -472,7 +464,7 @@ void FrmMain::initializeHeightmapPanel()
 void FrmMain::initializeOverridesPanel()
 {
     connect(ui->overrides, &PartMainOverride::overrideChanged, this, [this](bool feedOverridden, double feed, bool rapidOverridden, double rapid, bool spindleOverridden, double spindle) {
-        m_communicator->overrides()->setTargets(feedOverridden, (int)feed, rapidOverridden, (int)rapid, spindleOverridden, (int)spindle);
+        communicator()->overrides()->setTargets(feedOverridden, (int)feed, rapidOverridden, (int)rapid, spindleOverridden, (int)spindle);
         ui->grpOverriding->setProperty("overrided", feedOverridden | rapidOverridden | spindleOverridden);
         Utils::refreshStyle(ui->grpOverriding);
     });
@@ -520,11 +512,11 @@ void FrmMain::initializeDockCorners()
 
 void FrmMain::initializeVisualizerPanel()
 {
-    ui->visualizer->setHeightmap(m_heightmap);
-    ui->visualizer->setProgram(&m_program, nullptr);
+    ui->visualizer->setHeightmap(heightmap());
+    ui->visualizer->setProgram(&program(), nullptr);
     ui->visualizer->initDrawables();
 
-    connect(&m_program, &GCode::linesUpdated, this, [this]() {
+    connect(&program(), &GCode::linesUpdated, this, [this]() {
         // updateParser();
     });
 
@@ -532,7 +524,7 @@ void FrmMain::initializeVisualizerPanel()
     initializeMainMenu();
 
     connect(ui->visualizer, &PartMainVisualizer::editHeightmapPoint, this, [this](QPoint point) {
-        DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, m_heightmap.at(point), this);
+        DlgEditHeightmapPoint* dialog = new DlgEditHeightmapPoint(point, heightmap().at(point), this);
         connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
             if (result == QDialog::Accepted) {
                 setHeightmapPoint(dialog->point(), dialog->height());
@@ -547,7 +539,7 @@ void FrmMain::initializeVisualizerPanel()
             return;
         }
 
-        m_communicator->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
+        communicator()->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
     connect(ui->dockVisualizer, &QDockWidget::visibilityChanged, this, &FrmMain::visualizerVisibilityChanged);
 }
@@ -562,34 +554,36 @@ void FrmMain::initializeVirtualSettingsPanel()
         "Virtual uCNC settings",
         m_partMainVirtualSettings
     );
+    // Local name `conn` avoids shadowing the FrmMain::connection() accessor
+    // used on the right-hand side of the dynamic_cast.
     connect(m_partMainVirtualSettings, &PartMainVirtualSettings::lockProbeAtCurrentPosition, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->lockProbeAtCurrentPosition();
+        VirtualConnection *conn = dynamic_cast<VirtualConnection*>(connection());
+        if (conn) {
+            conn->lockProbeAtCurrentPosition();
         }
     });
     connect(m_partMainVirtualSettings, &PartMainVirtualSettings::resetProbePosition, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->resetProbePosition();
+        VirtualConnection *conn = dynamic_cast<VirtualConnection*>(connection());
+        if (conn) {
+            conn->resetProbePosition();
         }
     });
     connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setHome, this, [this](bool abs, double x, double y, double z) {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->setHome(abs, x, y, z);
+        VirtualConnection *conn = dynamic_cast<VirtualConnection*>(connection());
+        if (conn) {
+            conn->setHome(abs, x, y, z);
         }
     });
     connect(m_partMainVirtualSettings, &PartMainVirtualSettings::setSingleLimit, this, [this](Axis axis, float pos) {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->setSingleLimit(axis, pos);
+        VirtualConnection *conn = dynamic_cast<VirtualConnection*>(connection());
+        if (conn) {
+            conn->setSingleLimit(axis, pos);
         }
     });
     connect(m_partMainVirtualSettings, &PartMainVirtualSettings::estop, this, [this]() {
-        VirtualConnection *connection = dynamic_cast<VirtualConnection*>(m_connection);
-        if (connection) {
-            connection->estop();
+        VirtualConnection *conn = dynamic_cast<VirtualConnection*>(connection());
+        if (conn) {
+            conn->estop();
         }
     });
 
@@ -701,7 +695,7 @@ void FrmMain::closeEvent(QCloseEvent *ce)
         return;
     }
 
-    if ((m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) &&
+    if ((communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) &&
         QMessageBox::warning(this, this->windowTitle(), tr("File sending in progress. Terminate and exit?"),
         QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
     {
@@ -715,8 +709,8 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     closingForm.show();
     qApp->processEvents();
 
-    m_communicator->deinit();
-    m_connection->close();
+    communicator()->deinit();
+    connection()->close();
 
     saveSettings();
 
@@ -739,7 +733,7 @@ void FrmMain::dragEnterEvent(QDragEnterEvent *dee)
     // Accept all, we will validate in drop event
     dee->acceptProposedAction();
 
-    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Idle) || dee->mimeData()->hasFormat("application/widget")) {
+    if (!communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Idle) || dee->mimeData()->hasFormat("application/widget")) {
         m_fileDropOverlay->showForbidden();
 
         return;
@@ -864,14 +858,14 @@ void FrmMain::fileSave()
         // G-code saving
         if (fm.gcodeOpened()) fileSaveAs(); else {
             GCodeExporter exporter;
-            exporter.exportToFile(m_program, fm.gcodeFilePath());
+            exporter.exportToFile(program(), fm.gcodeFilePath());
             fm.setGcodeModified(false);
         }
     } else {
         // Height map saving
         if (fm.heightmapOpened()) fileSaveAs(); else {
             HeightmapExporter exporter;
-            exporter.exportToFile(m_heightmap, fm.heightmapFilePath());
+            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
         }
     }
 }
@@ -885,7 +879,7 @@ void FrmMain::fileSaveAs()
 
         if (!fileName.isEmpty()) {
             GCodeExporter exporter;
-            exporter.exportToFile(m_program, fm.gcodeFilePath());
+            exporter.exportToFile(program(), fm.gcodeFilePath());
 
             fm.setGcodeFilePath(fileName);
             fm.setGcodeModified(false);
@@ -900,7 +894,7 @@ void FrmMain::fileSaveAs()
 
         if (!fileName.isEmpty()) {
             HeightmapExporter exporter;
-            exporter.exportToFile(m_heightmap, fm.heightmapFilePath());
+            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
 
             fm.setHeightmapFilePath(fileName);
             fm.setHeightmapModified(false);
@@ -921,7 +915,7 @@ void FrmMain::fileSaveTransformedAs()
 
     if (!fileName.isEmpty()) {
         GCodeExporter exporter;
-        exporter.exportToFile(m_program, fileName);
+        exporter.exportToFile(program(), fileName);
     }
 }
 
@@ -933,17 +927,17 @@ void FrmMain::openHeightmap()
     }
 
     try {
-        m_heightmap = std::move(HeightmapLoader::loadFromFile(fileName));
+        heightmap() = std::move(HeightmapLoader::loadFromFile(fileName));
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load heightmap: %1").arg(err.what()));
         return;
     }
 
-    ui->console->append(tr("Heightmap %1x%2loaded from %3").arg(m_heightmap.gridWidth()).arg(m_heightmap.gridHeight())
+    ui->console->append(tr("Heightmap %1x%2loaded from %3").arg(heightmap().gridWidth()).arg(heightmap().gridHeight())
                                   .arg(fileName));
 
-    ui->heightmap->setHeightmap(&m_heightmap);
-    ui->visualizer->setHeightmap(m_heightmap);
+    ui->heightmap->setHeightmap(&heightmap());
+    ui->visualizer->setHeightmap(heightmap());
 }
 
 void FrmMain::saveHeightmap()
@@ -954,7 +948,7 @@ void FrmMain::saveHeightmap()
     }
 
     try {
-        HeightmapExporter::exportToFile(m_heightmap, fileName);
+        HeightmapExporter::exportToFile(heightmap(), fileName);
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
         return;
@@ -1046,7 +1040,7 @@ void FrmMain::fileSettings()
 
 void FrmMain::serviceConfigureGRBL()
 {
-    FrmGrblConfigurator *form = new FrmGrblConfigurator(this, m_configuration.uiModule(), m_communicator);
+    FrmGrblConfigurator *form = new FrmGrblConfigurator(this, m_configuration.uiModule(), communicator());
     form->exec();
     form->deleteLater();
 }
@@ -1057,7 +1051,7 @@ void FrmMain::serviceResetGRBLConfiguration()
                                    QMessageBox::Yes | QMessageBox::No);
     if (res == QMessageBox::No) return;
 
-    m_communicator->resetGRBLConfiguration();
+    communicator()->resetGRBLConfiguration();
 }
 
 void FrmMain::aboutShow()
@@ -1132,17 +1126,17 @@ void FrmMain::onFileOpen(QString filePath)
         updateRecentFilesMenus();
 
         HeightmapLoader loader;
-        m_heightmap = loader.loadFromFile(filePath);
+        heightmap() = loader.loadFromFile(filePath);
     }
 }
 
 void FrmMain::onFileSend()
 {
-    m_timer.startExecution();
-    m_communicator->sb()->action(RunAction(m_program));
+    timer().startExecution();
+    communicator()->sb()->action(RunAction(program()));
 
 #ifdef WINDOWS
-    m_taskBar.setProgress(0, m_program.count() - 1);
+    m_taskBar.setProgress(0, program().count() - 1);
     m_taskBar.show();
 #endif
 }
@@ -1153,39 +1147,39 @@ void FrmMain::onFilePause(bool checked)
 
     // if (checked) {
     //     //PAUSE
-    //     s = m_communicator->senderState();
+    //     s = communicator()->senderState();
     //     // setSenderState(SenderPaused);
-    //     m_communicator->setSenderStateAndEmitSignal(SenderState::Pausing);
+    //     communicator()->setSenderStateAndEmitSignal(SenderState::Pausing);
     //     ui->cmdFilePause->setText(tr("Pausing..."));
     //     ui->cmdFilePause->setEnabled(false);
     // } else {
     //     //RESUME
-    //     if (m_communicator->senderState() == SenderState::ChangingTool) {
-    //         m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
+    //     if (communicator()->senderState() == SenderState::ChangingTool) {
+    //         communicator()->setSenderStateAndEmitSignal(SenderState::Transferring);
     //     } else {
     //         if (m_configuration.senderModule().usePauseCommands()) {
-    //             m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().afterPauseCommands());
+    //             communicator()->sendCommands(CommandSource::ProgramAdditionalCommands, m_configuration.senderModule().afterPauseCommands());
     //         }
-    //         m_communicator->setSenderStateAndEmitSignal(s);
+    //         communicator()->setSenderStateAndEmitSignal(s);
     //     }
     //     updateControlsState();
     // }
 
     // if (checked) {
-    AbstractStateBehavior* sb = m_communicator->stateBehavior();
+    AbstractStateBehavior* sb = communicator()->stateBehavior();
     if (sb->canExecute(Action::Pause)) {
         sb->action(Action::Pause);
     } else if (sb->canExecute(Action::Resume)) {
         sb->action(Action::Resume);
     }
-    // if (m_communicator->stateBehavior()->action(Action::PauseResume)) {
-    //     // m_timer.pauseExecution();
+    // if (communicator()->stateBehavior()->action(Action::PauseResume)) {
+    //     // timer().pauseExecution();
     //     // ui->program->setPauseButtonText(tr("Resume"));
     // }
     // } else {
     //     Action action(Action::Resume);
-    //     if (m_communicator->stateBehavior()->action(action)) {
-    //         m_timer.resumeExecution();
+    //     if (communicator()->stateBehavior()->action(action)) {
+    //         timer().resumeExecution();
     //         ui->program->setPauseButtonText(tr("Pause"));
     //     }
     // }
@@ -1194,19 +1188,19 @@ void FrmMain::onFilePause(bool checked)
 void FrmMain::onFileAbort()
 {
     // ui->program->setAbortButtonEnabled(false);
-    // m_timer.stopExecution();
-    // m_communicator->abort();
-    m_communicator->stateBehavior()->action(Action::Abort);
+    // timer().stopExecution();
+    // communicator()->abort();
+    communicator()->stateBehavior()->action(Action::Abort);
 }
 
 void FrmMain::onFileReset()
 {
-    m_program.reset();
+    program().reset();
     ui->visualizer->resetLastDrawnLine();
-    // m_communicator->m_probeIndex = -1;
+    // communicator()->m_probeIndex = -1;
 
     if (!m_heightmapMode) {
-        QList<LineSegment>& list = m_viewParser.getLineSegmentList();
+        QList<LineSegment>& list = viewParser().getLineSegmentList();
 
         QList<int> indexes;
         for (int i = 0; i < list.count(); i++) {
@@ -1217,7 +1211,7 @@ void FrmMain::onFileReset()
 
         ui->program->setTableUpdatesEnabled(false);
 
-        // It should be done in `m_program.reset()`
+        // It should be done in `program().reset()`
         // for (int i = 0; i < m_currentProgram->count() - 1; i++) {
         //     (*m_currentProgram)[i].state = GCodeItem::InQueue;
         //     (*m_currentProgram)[i].response = QString();
@@ -1226,9 +1220,9 @@ void FrmMain::onFileReset()
 
         ui->program->resetToFirstRow();
 
-        m_timer.reset();
-        m_timeEstimator.resetEstimation();
-        ui->visualizer->setTimeEstimation(m_timeEstimator);
+        timer().reset();
+        timeEstimator().resetEstimation();
+        ui->visualizer->setTimeEstimation(timeEstimator());
     } else {
         ui->heightmap->setGridUpdateEnabled();
 
@@ -1247,7 +1241,7 @@ void FrmMain::onFileReset()
 
 //     ui->cboCommand->storeText();
 //     ui->cboCommand->setCurrentText("");
-//     m_communicator->sendCommand(command, COMMAND_TI_UI);
+//     communicator()->sendCommand(command, COMMAND_TI_UI);
 // }
 
 // void FrmMain::on_cmdClearConsole_clicked()
@@ -1257,52 +1251,52 @@ void FrmMain::onFileReset()
 
 // void FrmMain::on_cmdHome_clicked()
 // {
-//     m_communicator->m_homing = true;
-//     m_communicator->m_updateSpindleSpeed = true;
-//     m_communicator->sendCommand(CommandSource::GeneralUI, "$H", COMMAND_TI_UI);
+//     communicator()->m_homing = true;
+//     communicator()->m_updateSpindleSpeed = true;
+//     communicator()->sendCommand(CommandSource::GeneralUI, "$H", COMMAND_TI_UI);
 // }
 
 // void FrmMain::on_cmdCheck_clicked(bool checked)
 // {
 //     if (checked) {
-//         m_communicator->storeParserState();
-//         m_communicator->sendCommand(CommandSource::GeneralUI, "$C", COMMAND_TI_UI);
+//         communicator()->storeParserState();
+//         communicator()->sendCommand(CommandSource::GeneralUI, "$C", COMMAND_TI_UI);
 //     } else {
-//         m_communicator->m_aborting = true;
-//         m_communicator->reset();
+//         communicator()->m_aborting = true;
+//         communicator()->reset();
 //     };
 // }
 
 // void FrmMain::on_cmdReset_clicked()
 // {
-//     m_communicator->reset();
+//     communicator()->reset();
 //     //grblReset();
 // }
 
 // void FrmMain::on_cmdUnlock_clicked()
 // {
-//     m_communicator->m_updateSpindleSpeed = true;
-//     m_communicator->sendCommand(CommandSource::GeneralUI, "$X", COMMAND_TI_UI);
+//     communicator()->m_updateSpindleSpeed = true;
+//     communicator()->sendCommand(CommandSource::GeneralUI, "$X", COMMAND_TI_UI);
 // }
 
 // void FrmMain::on_cmdHold_clicked(bool checked)
 // {
-//     m_connection->sendByteArray(QByteArray(1, checked ? (char)'!' : (char)'~'));
+//     connection()->sendByteArray(QByteArray(1, checked ? (char)'!' : (char)'~'));
 // }
 
 // void FrmMain::on_cmdSleep_clicked()
 // {
-//     m_communicator->sendCommand(CommandSource::GeneralUI, "$SLP", COMMAND_TI_UI);
+//     communicator()->sendCommand(CommandSource::GeneralUI, "$SLP", COMMAND_TI_UI);
 // }
 
 // void FrmMain::on_cmdDoor_clicked()
 // {
-//     m_connection->sendByteArray(QByteArray(1, (char)0x84));
+//     connection()->sendByteArray(QByteArray(1, (char)0x84));
 // }
 
 // void FrmMain::on_cmdFlood_clicked()
 // {
-//     m_connection->sendByteArray(QByteArray(1, (char)0xa0));
+//     connection()->sendByteArray(QByteArray(1, (char)0xa0));
 // }
 
 // void FrmMain::on_cmdSpindle_toggled(bool checked)
@@ -1321,9 +1315,9 @@ void FrmMain::onFileReset()
 void FrmMain::toggleSpindle(bool checked)
 {
     if (ui->control->hold()) {
-        m_connection->sendByteArray(QByteArray(1, char(0x9e)));
+        connection()->sendByteArray(QByteArray(1, char(0x9e)));
     } else {
-        // m_communicator->sendCommand(CommandSource::GeneralUI, checked ? QString("M3 S%1").arg(ui->slbSpindle->value()) : "M5", TABLE_INDEX_UI);
+        // communicator()->sendCommand(CommandSource::GeneralUI, checked ? QString("M3 S%1").arg(ui->slbSpindle->value()) : "M5", TABLE_INDEX_UI);
     }
 }
 
@@ -1331,11 +1325,11 @@ void FrmMain::overridingGroupToggled(bool checked)
 {
     if (checked) {
         ui->grpOverriding->setTitle(tr("Overriding"));
-    } else if (m_communicator->overrides()->isFeedOverridden() | m_communicator->overrides()->isRapidOverridden() | m_communicator->overrides()->isSpindleOverridden()) {
+    } else if (communicator()->overrides()->isFeedOverridden() | communicator()->overrides()->isRapidOverridden() | communicator()->overrides()->isSpindleOverridden()) {
         ui->grpOverriding->setTitle(tr("Overriding") + QString(tr(" (%1/%2/%3)"))
-               .arg(m_communicator->overrides()->isFeedOverridden() ? QString::number(m_communicator->overrides()->targetFeed()) : "-")
-               .arg(m_communicator->overrides()->isRapidOverridden() ? QString::number(m_communicator->overrides()->targetRapid()) : "-")
-               .arg(m_communicator->overrides()->isSpindleOverridden() ? QString::number(m_communicator->overrides()->targetSpindle()) : "-"));
+               .arg(communicator()->overrides()->isFeedOverridden() ? QString::number(communicator()->overrides()->targetFeed()) : "-")
+               .arg(communicator()->overrides()->isRapidOverridden() ? QString::number(communicator()->overrides()->targetRapid()) : "-")
+               .arg(communicator()->overrides()->isSpindleOverridden() ? QString::number(communicator()->overrides()->targetSpindle()) : "-"));
     }
     updateLayouts();
 
@@ -1376,12 +1370,12 @@ void FrmMain::keyboardControlToggled(bool checked)
 
     // Store/restore coordinate system
     if (checked) {
-        //m_communicator->sendCommand(CommandSource::System, "$G", COMMAND_TI_UTIL1);
+        //communicator()->sendCommand(CommandSource::System, "$G", COMMAND_TI_UTIL1);
     } else {
-        if (m_absoluteCoordinates) m_communicator->sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
+        if (m_absoluteCoordinates) communicator()->sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
     }
 
-    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+    if (!communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         ui->jog->setKeyboardControl(checked);
     }
 
@@ -1416,7 +1410,7 @@ void FrmMain::useHeightmapToggled(bool checked)
 //         if (m_programHeightmapModel.rowCount() == 0) {
 
 //             // Modifying linesegments
-//             QList<LineSegment*> *list = m_viewParser.getLines();
+//             QList<LineSegment*> *list = viewParser().getLines();
 //             QRectF borderRect = borderRectFromTextboxes();
 //             double x, y, z;
 //             QVector3D point;
@@ -1493,8 +1487,8 @@ void FrmMain::useHeightmapToggled(bool checked)
 
 //             m_programLoading = true;
 //             for (int i = 0; i < m_programModel.rowCount() - 1; i++) {
-//                 command = m_program[i].command;
-//                 lineNumber = m_program[i].lineNumber;
+//                 command = program()[i].command;
+//                 lineNumber = program()[i].lineNumber;
 //                 isLinearMove = false;
 //                 hasCommand = false;
 
@@ -1640,7 +1634,7 @@ void FrmMain::heightmapModeToggled(bool checked)
     m_heightmapMode = checked;
 
     // Reset file progress
-    m_program.reset();
+    program().reset();
     ui->visualizer->resetLastDrawnLine();
 
     // Reset/restore g-code program modification on edit mode enter/exit
@@ -1653,7 +1647,7 @@ void FrmMain::heightmapModeToggled(bool checked)
         //updateCurrentModel(&m_programModel);
         updateParser();  // Update probe program parser
     } else {
-        m_probeParser.reset();
+        probeParser().reset();
         if (!ui->heightmap->useMap()) {
             ui->program->switchToProgramModel();
             // connect(ui->tblProgram->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onTableCurrentChanged(QModelIndex,QModelIndex)));
@@ -1670,7 +1664,7 @@ void FrmMain::heightmapModeToggled(bool checked)
     }
 
     // Shadow toolpath
-    QList<LineSegment>& list = m_viewParser.getLineSegmentList();
+    QList<LineSegment>& list = viewParser().getLineSegmentList();
     QList<int> indexes;
     for (int i = 0; i < list.count(); i++) {
         list[i].setDrawn(checked);
@@ -1696,7 +1690,7 @@ void FrmMain::onLoadHeightmapRequested()
     if (filePath != "") {
         addRecentHeightmap(filePath);
         HeightmapLoader loader;
-        m_heightmap = loader.loadFromFile(filePath);
+        heightmap() = loader.loadFromFile(filePath);
 
         // If using heightmap
         if (ui->heightmap->useMap() && !m_heightmapMode) {
@@ -1795,24 +1789,24 @@ void FrmMain::onMachineStateChanged(MachineState state)
 {
     ui->state->setState(state);
 
-    ui->control->updateControlsState(m_communicator->stateBehavior());
+    ui->control->updateControlsState(communicator()->stateBehavior());
 
     // ui->spindle->...
-    // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&                                                        (m_communicator->senderState() != SenderStopping)));
+    // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((communicator()->senderState() != SenderTransferring) &&                                                        (communicator()->senderState() != SenderStopping)));
 }
 
 void FrmMain::onMachineStateReceived(MachineState state)
 {
     // Update controls state
-    // ui->control->updateControlsState(state == DeviceState::Idle, m_communicator->deviceState());
+    // ui->control->updateControlsState(state == DeviceState::Idle, communicator()->deviceState());
 
     // ui->spindle->...
-    // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((m_communicator->senderState() != SenderTransferring) &&
-    //                                                     (m_communicator->senderState() != SenderStopping)));
+    // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((communicator()->senderState() != SenderTransferring) &&
+    //                                                     (communicator()->senderState() != SenderStopping)));
 
     // Update elapsed time and remaining time with adaptive correction
-    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
-        ui->visualizer->setTimeEstimation(m_timeEstimator);
+    if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+        ui->visualizer->setTimeEstimation(timeEstimator());
     }
 
     updateControlsState();
@@ -1906,8 +1900,8 @@ void FrmMain::onToolPositionReceived(QVector3D pos)
     updateToolPositionAndToolpathShadowing(pos);
 
     // Update time estimator with current progress for adaptive correction
-    if (m_timeEstimator.isTracking()) {
-        m_timeEstimator.updateProgress(m_program);
+    if (timeEstimator().isTracking()) {
+        timeEstimator().updateProgress(program());
     }
 }
 
@@ -1934,21 +1928,21 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
 
             return;
         } else if (command == "start") {
-            m_communicator->sb()->action(Action::Run);
+            communicator()->sb()->action(Action::Run);
         } else if (command == "pause") {
-            m_communicator->sb()->action(Action::Pause);
+            communicator()->sb()->action(Action::Pause);
         } else if (command == "resume") {
-            m_communicator->sb()->action(Action::Resume);
+            communicator()->sb()->action(Action::Resume);
         } else if (command == "reset") {
-            m_communicator->sb()->action(Action::Unlock);
+            communicator()->sb()->action(Action::Unlock);
         } else if (command == "abort") {
-            m_communicator->sb()->action(Action::Abort);
+            communicator()->sb()->action(Action::Abort);
         } else if (command == "open") {
             onFileOpen();
         } else if (command == "disconnect") {
-            m_communicator->sb()->action(Action::Disconnect);
+            communicator()->sb()->action(Action::Disconnect);
         } else if (command == "connect") {
-            m_communicator->sb()->action(Action::Connect);
+            communicator()->sb()->action(Action::Connect);
         } else {
             qDebug() << "[FrmMain] Internal commands not handled yet:" << command;
         }
@@ -1956,7 +1950,7 @@ void FrmMain::onConsoleNewCommand(QString command, bool isInternal)
         return;
     }
 
-    m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
+    communicator()->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
 }
 
 void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
@@ -1972,17 +1966,17 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
 
 void FrmMain::programEditLines(int from, int to)
 {
-    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+    if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
     DlgEditProgram dlg(this);
-    dlg.setProgramText(m_program.linesAsText(from, to));
+    dlg.setProgramText(program().linesAsText(from, to));
     if (dlg.exec() == QDialog::Accepted) {
         GCode gcode;
         QStringList lines = dlg.programText().split("\n");
         GcodePreprocessorUtils::parseLines(lines, gcode);
-        m_program.replace(from, to, gcode);
+        program().replace(from, to, gcode);
 
         updateParser();
     }
@@ -1990,7 +1984,7 @@ void FrmMain::programEditLines(int from, int to)
 
 void FrmMain::programInsertLines(int current, bool before)
 {
-    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+    if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
@@ -1999,7 +1993,7 @@ void FrmMain::programInsertLines(int current, bool before)
         GCode gcode;
         QStringList lines = dlg.programText().split("\n");
         GcodePreprocessorUtils::parseLines(lines, gcode);
-        m_program.replace(
+        program().replace(
             before ? current : current + 1,
             before ? current : current + 1,
             gcode
@@ -2011,11 +2005,11 @@ void FrmMain::programInsertLines(int current, bool before)
 
 void FrmMain::programDeleteLines(int from, int to)
 {
-    if (m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
+    if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         return;
     }
 
-    m_program.deleteLines(from, to);
+    program().deleteLines(from, to);
 
     updateParser();
 }
@@ -2047,7 +2041,7 @@ void FrmMain::onTableCellChanged(QModelIndex i1, QModelIndex i2)
         updateParser();
 
         // Hightlight w/o current cell changed event (double hightlight on current cell changed)
-        QList<LineSegment>& list = m_viewParser.getLineSegmentList();
+        QList<LineSegment>& list = viewParser().getLineSegmentList();
         for (int i = 0; i < list.count() && list[i].getLineNumber() <= ui->program->currentModelData(ui->program->currentModelIndex(i1.row(), 4)).toInt(); i++) {
             list[i].setIsHightlight(true);
         }
@@ -2071,7 +2065,7 @@ void FrmMain::onActRecentFileTriggered()
             loadFile(filePath);
         } else {
             HeightmapLoader loader;
-            m_heightmap = loader.loadFromFile(filePath);
+            heightmap() = loader.loadFromFile(filePath);
         }
     }
 }
@@ -2102,15 +2096,15 @@ void FrmMain::onActRecentFileTriggered()
 //             // foreach (QString command, commands) {
 //             //     sendCommand(command, COMMAND_TI_UI);
 //             // }
-//             m_communicator->sendCommands(CommandSource::ProgramAdditionalCommands, commands, TABLE_INDEX_UI);
+//             communicator()->sendCommands(CommandSource::ProgramAdditionalCommands, commands, TABLE_INDEX_UI);
 //         }
 //     }
 
-//     m_program.reset(commandIndex);
+//     program().reset(commandIndex);
 //     m_lastDrawnLineIndex = 0;
-//     // m_communicator->m_probeIndex = -1;
+//     // communicator()->m_probeIndex = -1;
 
-//     QList<LineSegment>& list = m_viewParser.getLineSegmentList();
+//     QList<LineSegment>& list = viewParser().getLineSegmentList();
 
 //     QList<int> indexes;
 //     for (int i = 0; i < list.count(); i++) {
@@ -2130,13 +2124,13 @@ void FrmMain::onActRecentFileTriggered()
 
 //     m_startTime = QDateTime::currentSecsSinceEpoch();
 
-//     m_communicator->setSenderStateAndEmitSignal(SenderState::Transferring);
+//     communicator()->setSenderStateAndEmitSignal(SenderState::Transferring);
 
 //     ui->jog->storeAndResetKeyboardControl();
 //     // m_storedKeyboardControl = ui->chkKeyboardControl->isChecked();
 //     // ui->chkKeyboardControl->setChecked(false);
 
-//     m_communicator->storeParserState();
+//     communicator()->storeParserState();
 
 // #ifdef WINDOWS
 //     // if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
@@ -2151,13 +2145,13 @@ void FrmMain::onActRecentFileTriggered()
 //     updateControlsState();
 //     ui->cmdFilePause->setFocus();
 
-//     m_program.reset(commandIndex);
-//     // m_communicator->sendStreamerCommandsUntilBufferIsFull();
+//     program().reset(commandIndex);
+//     // communicator()->sendStreamerCommandsUntilBufferIsFull();
 // }
 
 void FrmMain::onSlbSpindleValueUserChanged()
 {
-    // m_communicator->m_updateSpindleSpeed = true;
+    // communicator()->m_updateSpindleSpeed = true;
 }
 
 void FrmMain::onSlbSpindleValueChanged()
@@ -2172,7 +2166,7 @@ void FrmMain::onSlbSpindleValueChanged()
 //     if (command.isEmpty()) return;
 
 //     ui->cboCommand->setCurrentText("");
-//     m_communicator->sendCommand(command, COMMAND_TI_UI);
+//     communicator()->sendCommand(command, COMMAND_TI_UI);
 // }
 
 void FrmMain::onDockTopLevelChanged(bool topLevel)
@@ -2195,8 +2189,8 @@ void FrmMain::onDockTopLevelChanged(bool topLevel)
 
 //     QVector<QVector<double>> *interpolationData = new QVector<QVector<double>>;
 
-//     int interpolationPointsX = m_heightmap.interpolationStepSize().width();// * (ui->txtHeightMapGridX->value() - 1) + 1;
-//     int interpolationPointsY = m_heightmap.interpolationStepSize().height();// * (ui->txtHeightMapGridY->value() - 1) + 1;
+//     int interpolationPointsX = heightmap().interpolationStepSize().width();// * (ui->txtHeightMapGridX->value() - 1) + 1;
+//     int interpolationPointsY = heightmap().interpolationStepSize().height();// * (ui->txtHeightMapGridY->value() - 1) + 1;
 
 //     double interpolationStepX = interpolationPointsX > 1 ? borderRect.width() / (interpolationPointsX - 1) : 0;
 //     double interpolationStepY = interpolationPointsY > 1 ? borderRect.height() / (interpolationPointsY - 1) : 0;
@@ -2434,9 +2428,10 @@ void FrmMain::saveSettings()
 
 void FrmMain::initializeConnection(ConfigurationConnection::ConnectionMode mode)
 {
-    m_connection = m_connectionManager.createConnection(mode);
+    // Core::setConnection deletes the previous connection before storing the new one.
+    Core::instance().setConnection(connectionManager().createConnection(mode));
 
-    connect(m_connection, &AbstractConnection::error, this, &FrmMain::onConnectionError);
+    connect(connection(), &AbstractConnection::error, this, &FrmMain::onConnectionError);
 }
 
 void FrmMain::applyUIConfiguration(ConfigurationUI &uiConfiguration)
@@ -2518,8 +2513,8 @@ void FrmMain::applySettings()
     ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration, machineConfiguration);
 
     // @TODO watch for changes is communicator?
-    // m_communicator->stopUpdatingState();
-    // m_communicator->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
+    // communicator()->stopUpdatingState();
+    // communicator()->startUpdatingState(m_configuration.connectionModule().queryStateInterval());
 
     applySpindleConfiguration(machineConfiguration);
     applyJoggingConfiguration(joggingConfiguration);
@@ -2528,15 +2523,15 @@ void FrmMain::applySettings()
     applyRecentFilesConfiguration(uiConfiguration);
     applyHeightmapConfiguration(heightmapConfiguration);
 
-    if (!m_connection || m_connection->supportedMode() != m_configuration.connectionModule().connectionMode()) {
+    if (!connection() || connection()->supportedMode() != m_configuration.connectionModule().connectionMode()) {
         initializeConnection(m_configuration.connectionModule().connectionMode());
 
-        if (m_communicator->connection()) {
-            if (!m_communicator->startReconnecting(m_connection)) {
+        if (communicator()->connection()) {
+            if (!communicator()->startReconnecting(connection())) {
                 ui->console->appendSystem("Couldn't update connection. Restart application.");
             }
         } else {
-            m_communicator->setConnection(m_connection, false);
+            communicator()->setConnection(connection(), false);
         }
     }
 }
@@ -2560,7 +2555,7 @@ void FrmMain::updateParser()
         qDebug() << "[FrmMain] Finished updating visualizer data";
         this->applyUpdaterGCode(data);
 
-        // In update mode data->gcode == &m_program — do NOT delete it.
+        // In update mode data->gcode == &program() — do NOT delete it.
         // Only the freshly built viewParser is orphaned and must be freed here.
         delete data->viewParser;
         delete data;
@@ -2568,13 +2563,13 @@ void FrmMain::updateParser()
         m_visualizerUpdater = nullptr;
     });
 
-    m_visualizerUpdater->update(&m_program);
+    m_visualizerUpdater->update(&program());
 
 
     // GCodeViewParser *viewParse = ui->visualizer->getCurrentParser();
 
     // GcodeParser parser;
-    // parser.setTraverseSpeed(m_communicator->machineConfiguration().maxRate().x()); // uses only x axis speed
+    // parser.setTraverseSpeed(communicator()->machineConfiguration().maxRate().x()); // uses only x axis speed
     // if (m_configuration.visualizerModule().ignoreZ()) {
     //     parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
     // }
@@ -2680,20 +2675,20 @@ void FrmMain::loadFile(QString filePath)
 
 void FrmMain::applyUpdaterGCode(GCodeLoaderData *data)
 {
-    m_viewParser = *data->viewParser;
+    viewParser() = *data->viewParser;
 
-    m_timeEstimator.calculateEstimatedTime(
-        m_viewParser.getLines(),
-        m_communicator->overrides()->targetFeed(),
-        m_communicator->overrides()->targetRapid()
+    timeEstimator().calculateEstimatedTime(
+        viewParser().getLines(),
+        communicator()->overrides()->targetFeed(),
+        communicator()->overrides()->targetRapid()
     );
-    ui->visualizer->setTimeEstimation(m_timeEstimator);
+    ui->visualizer->setTimeEstimation(timeEstimator());
 
-    ui->visualizer->setProgram(&m_program, &m_viewParser);
+    ui->visualizer->setProgram(&program(), &viewParser());
     ui->visualizer->updateCodeDrawer();
 }
 
-// Replaces m_program and m_viewParser with freshly loaded data. Organised in
+// Replaces program() and viewParser() with freshly loaded data. Organised in
 // three phases:
 //   A) detach — cancel background work, drop consumer references to old state
 //   B) swap   — clear program under signal blocker, deep-copy new view parser
@@ -2703,7 +2698,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 {
     // --- PHASE A: detach ---
 
-    // A background visualizer update may still hold &m_program. Disconnect
+    // A background visualizer update may still hold &program(). Disconnect
     // first so its queued finished/cancelled slots cannot run after we null
     // m_visualizerUpdater below.
     if (m_visualizerUpdater) {
@@ -2715,9 +2710,9 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     // Loader is async: the "open" button is disabled when state != Idle, but
     // pendant or scripted actions could still push the machine into Running
-    // between load start and load finish. Replacing m_program while the
+    // between load start and load finish. Replacing program() while the
     // RunningBehavior is iterating it crashes the sender.
-    if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Idle)) {
+    if (!communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Idle)) {
         qWarning() << "[FrmMain] applyLoaderGCode: machine is not idle, discarding loaded data";
         ui->console->appendSystem(tr("Cannot replace program: machine is not idle"));
         return;
@@ -2728,22 +2723,22 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     ui->program->close();              // table models drop their GCode* source
     ui->visualizer->close();           // code drawer drops its GCodeViewParser*
 
-    m_timeEstimator.resetEstimation(); // drops cached pointer into m_viewParser.getLines()
+    timeEstimator().resetEstimation(); // drops cached pointer into viewParser().getLines()
 
     // --- PHASE B: swap ---
 
     {
-        QSignalBlocker blocker(m_program);
-        m_program.clear();
-        m_program.reset();
+        QSignalBlocker blocker(program());
+        program().clear();
+        program().reset();
     }
 
     // Deep copy. GCodeViewParser has no user-defined assignment but its
     // members (QList<LineSegment>, QVector3D, ...) are all value types,
     // and LineSegment has no owning pointers — so default assignment
     // produces an independent copy.
-    m_viewParser = *data->viewParser;
-    m_probeParser.reset();
+    viewParser() = *data->viewParser;
+    probeParser().reset();
 
     // --- PHASE C: attach ---
 
@@ -2754,22 +2749,22 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // Rebind models/drawers to the (still empty) new program BEFORE the bulk
     // append. `operator<<(const GCode&)` emits `loaded()` synchronously and
     // the connected table model resets itself in response — only useful if
-    // the model is already pointing at m_program again.
-    ui->program->setProgram(&m_program);
+    // the model is already pointing at program() again.
+    ui->program->setProgram(&program());
     ui->program->switchToProgramModel();
     ui->program->restoreHeaderState(headerState);
 
-    ui->visualizer->setProgram(&m_program, &m_viewParser);
+    ui->visualizer->setProgram(&program(), &viewParser());
 
     // Populate program. Triggers `loaded()` → table model reset → view refresh.
-    m_program << *data->gcode;
+    program() << *data->gcode;
 
-    m_timeEstimator.calculateEstimatedTime(
-        m_viewParser.getLines(),
-        m_communicator->overrides()->targetFeed(),
-        m_communicator->overrides()->targetRapid()
+    timeEstimator().calculateEstimatedTime(
+        viewParser().getLines(),
+        communicator()->overrides()->targetFeed(),
+        communicator()->overrides()->targetRapid()
     );
-    ui->visualizer->setTimeEstimation(m_timeEstimator);
+    ui->visualizer->setTimeEstimation(timeEstimator());
 
     ui->visualizer->updateCodeDrawer();
     ui->visualizer->fitCodeDrawer();
@@ -2788,10 +2783,10 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 //   4 - SafeSpindleStopConverter
 //   5 - MovementOptimizerConverter
 //   6 - ShakingGCode (random path distortion, for testing)
-//   7 - ApplyHeightmap (uses current m_heightmap, 1 mm segments)
+//   7 - ApplyHeightmap (uses current heightmap(), 1 mm segments)
 void FrmMain::testConverter(int converterIndex)
 {
-    if (m_program.count() == 0) {
+    if (program().count() == 0) {
         qDebug() << "[FrmMain] testConverter: no program loaded";
         return;
     }
@@ -2806,13 +2801,13 @@ void FrmMain::testConverter(int converterIndex)
         case 4: converter = new SingleConverter(new SafeSpindleStopConverter());         break;
         case 5: converter = new SingleConverter(new MovementOptimizerConverter());       break;
         case 6: converter = new ShakingGCode(5.0, 1.0);                                 break;
-        case 7: converter = new ApplyHeightmap(&m_heightmap, 1.0);                      break;
+        case 7: converter = new ApplyHeightmap(&heightmap(), 1.0);                      break;
         default:
             qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
             return;
     }
 
-    converter->setGCode(&m_program);
+    converter->setGCode(&program());
     GCode *result = converter->convertAll();
     delete converter;
 
@@ -2822,14 +2817,14 @@ void FrmMain::testConverter(int converterIndex)
     }
 
     qDebug() << "[FrmMain] testConverter[" << converterIndex << "]:"
-             << m_program.count() << "->" << result->count() << "lines";
+             << program().count() << "->" << result->count() << "lines";
 
     {
-        QSignalBlocker blocker(m_program);
-        m_program.clear();
-        m_program.reset();
+        QSignalBlocker blocker(program());
+        program().clear();
+        program().reset();
     }
-    m_program << *result;
+    program() << *result;
     delete result;
 
     updateParser();
@@ -2891,12 +2886,12 @@ void FrmMain::newFile()
     ui->program->close();
     ui->visualizer->close();
 
-    m_viewParser.reset();
-    m_probeParser.reset();
-    m_program.clear();
+    viewParser().reset();
+    probeParser().reset();
+    program().clear();
 
-    m_timeEstimator.resetEstimation();
-    ui->visualizer->setTimeEstimation(m_timeEstimator);
+    timeEstimator().resetEstimation();
+    ui->visualizer->setTimeEstimation(timeEstimator());
 
     FilesManager::instance().resetGcodeFile();
     ui->heightmap->resetUseHeighmap();
@@ -2909,8 +2904,8 @@ void FrmMain::newFile()
 
     resetHeightmap();
 
-    ui->program->setProgram(&m_program);
-    ui->visualizer->setProgram(&m_program, nullptr);
+    ui->program->setProgram(&program());
+    ui->visualizer->setProgram(&program(), nullptr);
     ui->visualizer->updateCodeDrawer();
 
     updateControlsState();
@@ -2934,8 +2929,8 @@ void FrmMain::newHeightmap()
 
 void FrmMain::updateControlsState()
 {
-    bool portOpened = m_connection && m_connection->isConnected();
-    AbstractStateBehavior *sb = m_communicator->stateBehavior();
+    bool portOpened = connection() && connection()->isConnected();
+    AbstractStateBehavior *sb = communicator()->stateBehavior();
     bool running = sb->is(AbstractStateBehavior::Type::Running);
     bool paused = sb->is(AbstractStateBehavior::Type::Pause) || sb->is(AbstractStateBehavior::Type::ToolChange);
     bool idle = sb->is(AbstractStateBehavior::Type::Idle);
@@ -2957,8 +2952,8 @@ void FrmMain::updateControlsState()
     ui->actFileNew->setEnabled(idle);
     ui->actFileOpen->setEnabled(idle);
     ui->program->setOpenButtonEnabled(idle);
-    ui->program->setResetButtonEnabled(idle && !m_program.empty());
-    ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !m_program.empty());
+    ui->program->setResetButtonEnabled(idle && !program().empty());
+    ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !program().empty());
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -2979,8 +2974,8 @@ void FrmMain::updateControlsState()
         idle &&
         ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
     );
-    ui->actFileSave->setEnabled(!m_program.empty());
-    ui->actFileSaveAs->setEnabled(!m_program.empty());
+    ui->actFileSave->setEnabled(!program().empty());
+    ui->actFileSaveAs->setEnabled(!program().empty());
 
     ui->program->setProgramTableEditTriggers(!idle ? QAbstractItemView::NoEditTriggers :
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
@@ -3027,7 +3022,7 @@ void FrmMain::updateControlsState()
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
     ui->heightmap->updateControlsState(
-        !m_program.empty(),
+        !program().empty(),
         m_heightmapMode
     );
 
@@ -3110,7 +3105,7 @@ bool FrmMain::updateHeightmapGrid()
         return true;
     }
 
-    if (!m_heightmap.anyHeightSet()) {
+    if (!heightmap().anyHeightSet()) {
         if (QMessageBox::warning(this, this->windowTitle(), tr("Changing grid settings will reset probe data. Continue?"),
                                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return false;
     }
@@ -3123,12 +3118,12 @@ bool FrmMain::updateHeightmapGrid()
     // ui->visualizer->heightmapGridDrawer()->setZTop(ui->txtHeightMapGridZTop->value());
 
     // Reset model
-    int gridPointsX = m_heightmap.gridSize().width();
-    int gridPointsY = m_heightmap.gridSize().height();
+    int gridPointsX = heightmap().gridSize().width();
+    int gridPointsY = heightmap().gridSize().height();
 
     ui->program->resizeHeightmapModel(gridPointsX, gridPointsY);
     ui->program->setHeightmap(nullptr);
-    ui->program->setHeightmap(&m_heightmap);
+    ui->program->setHeightmap(&heightmap());
 
     // Update interpolation
     ui->visualizer->updateHeightmapInterpolation(true);
@@ -3143,12 +3138,12 @@ bool FrmMain::updateHeightmapGrid()
 
     int lastRow = ui->program->probeModelRowCount() - 1;
     ui->program->setProbeModelData(lastRow, 1, QString("G21G90F%1G0Z%2").
-                    arg(m_heightmap.probeFeed()).arg(m_heightmap.zBottomTop().top));
+                    arg(heightmap().probeFeed()).arg(heightmap().zBottomTop().top));
     ui->program->setProbeModelData(lastRow, 1, QString("G0X0Y0"));
     ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
-                         .arg(m_heightmap.zBottomTop().bottom));
+                         .arg(heightmap().zBottomTop().bottom));
     ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
-                         .arg(m_heightmap.zBottomTop().top));
+                         .arg(heightmap().zBottomTop().top));
 
     double x, y;
 
@@ -3160,9 +3155,9 @@ bool FrmMain::updateHeightmapGrid()
             ui->program->setProbeModelData(lastRow, 1, QString("G0X%1Y%2")
                                  .arg(x, 0, 'f', 3).arg(y, 0, 'f', 3));
             ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
-                                 .arg(m_heightmap.zBottomTop().bottom));
+                                 .arg(heightmap().zBottomTop().bottom));
             ui->program->setProbeModelData(lastRow, 1, QString("G0Z%1")
-                                 .arg(m_heightmap.zBottomTop().top));
+                                 .arg(heightmap().zBottomTop().top));
         }
     }
 
@@ -3201,7 +3196,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
             }
         }
 
-        if (!m_communicator->stateBehavior()->is(AbstractStateBehavior::Type::Running)
+        if (!communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)
             && m_configuration.joggingModule().keyboardControl() && !ev->isAutoRepeat())
         {
             static QList<QAction*> acts;
@@ -3294,18 +3289,18 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
 // void FrmMain::updateCurrentModel(GCodeTableModel *m_currentModel)
 // {
 //     this->m_currentModel = m_currentModel;
-//     m_program->setModel(m_currentModel);
+//     program()->setModel(m_currentModel);
 // }
 
 // Updates tool position in visualizer and marks toolpath segments as drawn when tool reaches them
 // during active program execution (excluding check mode)
 void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 {
-    AbstractStateBehavior *sb = m_communicator->stateBehavior();
+    AbstractStateBehavior *sb = communicator()->stateBehavior();
 
     // CheckMode has its own behavior type, so it's automatically excluded here
     if (sb->is(AbstractStateBehavior::Type::Running) || sb->is(AbstractStateBehavior::Type::Pause)) {
-        int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(m_program.processedCommandIndex(), 4)).toInt();
+        int lineIndex = ui->program->currentModelData(ui->program->currentModelIndex(program().processedCommandIndex(), 4)).toInt();
         ui->visualizer->updateToolTracking(toolPosition, lineIndex);
     } else {
         ui->visualizer->setToolPosition(toolPosition);
@@ -3319,13 +3314,13 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 //     GCodeViewParser *parser = m_currentDrawer->viewParser();
 //     QList<LineSegment> list = parser->getLineSegmentList();
 
-//     if ((m_communicator->m_senderState != SenderState::Stopping) && m_program.processedCommandIndex() < m_currentModel->rowCount() - 1) {
+//     if ((communicator()->m_senderState != SenderState::Stopping) && program().processedCommandIndex() < m_currentModel->rowCount() - 1) {
 //         int i;
 //         QList<int> drawnLines;
 
 //         for (i = m_lastDrawnLineIndex; i < list.count()
 //                                                && list[i].getLineNumber()
-//                                                 <= (m_currentModel->data(m_currentModel->index(m_program.processedCommandIndex(), 4)).toInt()); i++) {
+//                                                 <= (m_currentModel->data(m_currentModel->index(program().processedCommandIndex(), 4)).toInt()); i++) {
 //             drawnLines << i;
 //         }
 
@@ -3410,12 +3405,12 @@ void FrmMain::onTransferCompleted()
 
     // Show message box
     qApp->beep();
-    // m_communicator->stopUpdatingState();
+    // communicator()->stopUpdatingState();
 
     QMessageBox::information(this, qApp->applicationDisplayName(), tr("Job done.\nTime elapsed: %1")
-                                .arg(m_timeEstimator.elapsedTime().toString("hh:mm:ss")));
+                                .arg(timeEstimator().elapsedTime().toString("hh:mm:ss")));
 
-    // m_communicator->startUpdatingState();
+    // communicator()->startUpdatingState();
 }
 
 QString FrmMain::getLineInitCommands(int row)
@@ -3562,7 +3557,7 @@ void FrmMain::restoreCentralWidget()
 
 void FrmMain::setHeightmapPoint(QPoint point, double height)
 {
-    m_heightmap.setHeightAt(point, height);
+    heightmap().setHeightAt(point, height);
     ui->visualizer->updateHeightmap();
 
     ui->console->append(QString("[Heightmap] Point (%1, %2) set to %3").arg(point.x()).arg(point.y()).arg(height));

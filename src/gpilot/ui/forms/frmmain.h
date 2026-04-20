@@ -209,30 +209,29 @@ private:
     WindowsTaskbar m_taskBar;
 #endif
 
-    // Parsers
-    GCodeViewParser m_viewParser;
-    GCodeViewParser m_probeParser;
-
-    // Heightmap
+    // Heightmap mode flag is a UI concern — the heightmap itself lives in Core.
     bool m_heightmapMode;
-    Heightmap m_heightmap;
 
     bool m_firstShow = true;
 
-    // @TODO to be moved to separate core class
-    ConnectionManager m_connectionManager;
-    AbstractConnection *m_connection = nullptr;
-    Communicator *m_communicator;
-    GCode m_program;
     FileDropOverlay *m_fileDropOverlay = nullptr;
+
+    // Shortcuts to domain objects owned by Core. All return stable refs/
+    // pointers so `&program()`, `&heightmap()`, `&viewParser()` can be safely
+    // stored by drawers, models and state behaviors for the whole app life.
+    GCode& program() { return Core::instance().program(); }
+    Heightmap& heightmap() { return Core::instance().heightmap(); }
+    GCodeViewParser& viewParser() { return Core::instance().viewParser(); }
+    GCodeViewParser& probeParser() { return Core::instance().probeParser(); }
+    Timer& timer() { return Core::instance().timer(); }
+    ProgramTimeEstimator& timeEstimator() { return Core::instance().timeEstimator(); }
+    ConnectionManager& connectionManager() { return Core::instance().connectionManager(); }
+    Communicator* communicator() { return Core::instance().communicator(); }
+    AbstractConnection* connection() { return Core::instance().connection(); }
 
     // Partials/Panels
     PartMainVirtualSettings *m_partMainVirtualSettings;
     FrmLog* m_logForm = nullptr;
-
-    // Time estimation
-    Timer m_timer;
-    ProgramTimeEstimator m_timeEstimator;
 
     // Flags
     bool m_programLoading;
