@@ -31,6 +31,8 @@ class PhysicalMachineConfiguration
         QVector3D machineBounds() { return m_machineBounds; }
         HomingDirs homingDirs() { return m_homingDirs; }
         QMap<int, double> raw() { return m_raw; }
+        double toMetric(double value) const { return m_units == Units::Millimeters ? value : value * 25.4; }
+        double toInches(double value) const { return m_units == Units::Inches ? value : value / 25.4; }
 
     private:
         bool m_homingEnabled = false;

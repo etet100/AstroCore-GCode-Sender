@@ -4,6 +4,7 @@
 #define RESETBEHAVIOR_H
 
 #include "abstractstatebehavior.h"
+#include "core/machine/devicecontext.h"
 
 class ResetBehavior : public AbstractStateBehavior
 {
@@ -28,7 +29,7 @@ class ResetBehavior : public AbstractStateBehavior
         };
         Stage m_stage = None;
 
-        bool dataIsStartupMessage(QString data);
+        MachineType detectMachineType(const QString &data);
 };
 
 #endif // RESETBEHAVIOR_H

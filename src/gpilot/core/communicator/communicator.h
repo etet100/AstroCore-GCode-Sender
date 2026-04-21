@@ -6,8 +6,8 @@
 #include "core/config/configuration.h"
 #include "io/connection/abstractconnection.h"
 #include "core/machine/physicalmachineconfiguration.h"
+#include "core/machine/devicecontext.h"
 #include "positiontracker.h"
-#include "core/jogger/jogger.h"
 #include "core/state_behavior/abstractstatebehavior.h"
 #include "statebehaviormanager.h"
 #include "machinestatus.h"
@@ -19,7 +19,6 @@
 
 class Communicator : public QObject
 {
-    friend class Jogger;
     friend class CommunicatorApi;
     friend class StateBehaviorManager;
 
@@ -60,7 +59,9 @@ class Communicator : public QObject
         // void startUpdatingState(int interval = -1);
         const SenderState& senderState() const { return m_senderState; }
         const MachineState& machineState() const { return m_machineState; }
-        PhysicalMachineConfiguration& machineConfiguration() const { return *m_machineConfiguration; }
+        DeviceContext& deviceContext() { return m_deviceContext; }
+        const DeviceContext& deviceContext() const { return m_deviceContext; }
+        void setMachineType(MachineType type) { m_deviceContext.setMachineType(type); }
         QVector3D machinePos() const { return m_posTracker->machinePos(); }
         PositionTracker* positionTracker() { return m_posTracker; }
         // void sendStreamerCommandsUntilBufferIsFull();
@@ -71,8 +72,6 @@ class Communicator : public QObject
             return isSenderState(state) || isSenderState(args...);
         }
 
-        // @TODO to be removed!! another local timer? how it works??
-        Jogger& jogger() { return m_jogger; }
         Overrides* overrides() { return m_overrides; }
         CommandBuffer* commandBuffer() { return m_commandBuffer; }
         void queryMachineState();
@@ -85,8 +84,7 @@ class Communicator : public QObject
         AbstractConnection *m_connection = nullptr;
         Configuration *m_configuration;
 
-        PhysicalMachineConfiguration *m_machineConfiguration = nullptr;
-        Jogger m_jogger;
+        DeviceContext m_deviceContext;
         Overrides *m_overrides = nullptr;
         CommandBuffer *m_commandBuffer = nullptr;
         CommandScanner *m_commandScanner = nullptr;
@@ -130,8 +128,6 @@ class Communicator : public QObject
         void setMachineStateAndEmitSignal(MachineState);
         void processOffsetsVars(QStringList response);
         static bool dataIsFloating(QString data);
-        double toMetric(double value);
-        double toInches(double value);
         void processStatus(QString line);
         void processUnhandledResponse(QString data);
         void processMessage(QString data);
@@ -218,7 +214,9 @@ class CommunicatorApi : public QObject
         void stopQueryingMachineState() { m_communicator->stopQueryingMachineState(); }
         void queryMachineConfiguration() { m_communicator->queryMachineConfiguration(); }
 
-        PhysicalMachineConfiguration& machineConfiguration() { return m_communicator->machineConfiguration(); }
+        DeviceContext& deviceContext() { return m_communicator->m_deviceContext; }
+        const DeviceContext& deviceContext() const { return m_communicator->m_deviceContext; }
+        void setMachineType(MachineType type) { m_communicator->m_deviceContext.setMachineType(type); }
         QVector3D machinePos() { return m_communicator->machinePos(); }
 
         // Command

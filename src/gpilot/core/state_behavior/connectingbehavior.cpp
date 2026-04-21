@@ -67,6 +67,11 @@ void ConnectingBehavior::onConnectionStateChanged(ConnectionState state)
         stopTimer();
         qDebug() << "[Behavior][Connecting] Connected.";
 
-        emit transition(this, new HandshakeBehavior());
+        bool resetFirst = m_configuration->senderModule().resetAfterConnecting();
+        if (resetFirst) {
+            emit transition(this, new ResetBehavior());
+        } else {
+            emit transition(this, new HandshakeBehavior());
+        }
     }
 }

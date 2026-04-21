@@ -18,6 +18,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"toolChangePause", false},
     {"ignoreErrorResponses", false},
     {"setParserStateBeforeSendingFromSelectedLine", false},
+    {"resetAfterConnecting", false},
 };
 
 ConfigurationSender::ConfigurationSender(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)

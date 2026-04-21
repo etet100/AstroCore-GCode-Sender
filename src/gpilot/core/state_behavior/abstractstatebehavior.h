@@ -21,6 +21,7 @@
 #include <QCoroTask>
 
 class CommunicatorApi;
+class Configuration;
 
 class AbstractStateBehavior : public QObject
 {
@@ -124,7 +125,7 @@ class AbstractStateBehavior : public QObject
 
         // NVI: these run base setup/cleanup and then call the protected doOn* hook.
         // Derived classes override the hook, not these methods.
-        Result onEntry(CommunicatorApi *communicator, const EntryContext &ctx = {});
+        Result onEntry(CommunicatorApi *communicator, Configuration *configuration, const EntryContext &ctx = {});
         Result onExit(AbstractStateBehavior *next = nullptr);
 
         // Payload accumulated during the behavior's lifetime. The StateBehaviorManager
@@ -190,6 +191,7 @@ class AbstractStateBehavior : public QObject
 
     protected:
         QPointer<CommunicatorApi> m_communicator = nullptr;
+        Configuration *m_configuration = nullptr;
         QTimer *m_timer = nullptr;
         QVariantMap m_exitData;
         std::optional<Type> m_previousType;  // set by base onEntry from EntryContext

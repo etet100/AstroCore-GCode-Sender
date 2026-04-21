@@ -20,14 +20,13 @@
 }
 
 QToolButton {
-	background-color: palette(button); 
+	background-color: palette(button);
 	border-radius: 4px;
 	border: 0;
-	cursor: handr;
 }
 
 QToolButton:hover {
-	background-color: palette(window); 
+	background-color: palette(window);
 }</string>
   </property>
  </widget>

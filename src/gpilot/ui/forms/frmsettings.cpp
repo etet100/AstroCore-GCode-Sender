@@ -179,6 +179,7 @@ void FrmSettings::initializeWidgets()
     ui->sender->setAfterPauseCommands(sender.afterPauseCommands());
     ui->sender->setSetParseStateBeforeSendFromLine(sender.setParserStateBeforeSendingFromSelectedLine());
     ui->sender->setIgnoreResponseErrors(sender.ignoreErrorResponses());
+    ui->sender->setResetAfterConnecting(sender.resetAfterConnecting());
 
     const ConfigurationParser &parser = m_configuration.parserModule();
     ui->radArcDegreeMode->setChecked(parser.arcApproximationMode() == ConfigurationParser::ByAngle);
@@ -300,6 +301,7 @@ void FrmSettings::applySettings()
     sender.m_toolChangePause = ui->sender->pauseOnToolChange();
     sender.m_ignoreErrorResponses = ui->sender->ignoreResponseErrors();
     sender.m_setParserStateBeforeSendingFromSelectedLine = ui->sender->setParseStateBeforeSendFromLine();
+    sender.m_resetAfterConnecting = ui->sender->resetAfterConnecting();
     sender.emitChanged();
 
     ConfigurationParser &parser = m_configuration.parserModule();

@@ -4,6 +4,7 @@
 
 #include "abstractstatebehavior.h"
 #include "core/communicator/communicator.h"
+#include "core/config/configuration.h"
 #include <QRegularExpression>
 #include <algorithm>
 #include "core/state_behavior/resetbehavior.h"
@@ -137,9 +138,10 @@ void AbstractStateBehavior::clearAllTimeouts()
     m_timers.clear();
 }
 
-AbstractStateBehavior::Result AbstractStateBehavior::onEntry(CommunicatorApi *communicator, const EntryContext &ctx)
+AbstractStateBehavior::Result AbstractStateBehavior::onEntry(CommunicatorApi *communicator, Configuration *configuration, const EntryContext &ctx)
 {
     m_communicator = communicator;
+    m_configuration = configuration;
     m_exitData.clear();
     m_previousType = ctx.previousType;
 

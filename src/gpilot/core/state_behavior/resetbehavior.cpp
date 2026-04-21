@@ -20,7 +20,9 @@ AbstractStateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
     qDebug() << "[Behavior][Reset][Raw response]" << response;
 
-    if (dataIsStartupMessage(response)) {
+    auto machineType = detectMachineType(response);
+    if (machineType != MachineType::Unknown) {
+        m_communicator->setMachineType(machineType);
         if (m_stage == SentReset) {
             clearAllTimeouts();
             qDebug() << "[Behavior][Reset] Reset header received. Handing off to HandshakeBehavior.";
@@ -60,33 +62,36 @@ AbstractStateBehavior::Result ResetBehavior::doOnEntry(CommunicatorApi *communic
     return Result::Ok;
 }
 
-bool ResetBehavior::dataIsStartupMessage(QString data)
+MachineType ResetBehavior::detectMachineType(const QString &data)
 {
-    // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
-    // followed by a version number in the format x.y.
-    // This matches e.g.
+    // Matches startup messages from all supported GRBL variants, e.g.:
     // Grbl 1.1h ['$' for help]
     // GrblHAL 1.1f ['$' or '' for help]
     // Grbl 1.8 [uCNC v1.8.8 '$' for help]
     // Gcarvin ?? https://github.com/inventables/gCarvin
     static QRegularExpression re("^(GrblHAL|GRBL|Grbl|GCARVIN|uCNC)\\s\\d\\.\\d.", QRegularExpression::CaseInsensitiveOption);
     if (!data.contains(re)) {
-        return false;
+        return MachineType::Unknown;
     }
 
-    if (data.contains("GrblHAL")) {
-        logSignal("Detected GrblHAL device.");
-    } else if (data.contains("GCARVIN")) {
-        logSignal("Detected gCarvin device.");
-    } else if (data.contains("uCNC")) {
-        logSignal("Detected uCNC device.");
-    } else if (data.contains("FluidNC")) {
-        logSignal("Detected FluidNC device.");
-    } else if (data.contains("Grbl")) {
-        logSignal("Detected GRBL device.");
+    MachineType type;
+    QString typeName;
+
+    if (data.contains("GrblHAL", Qt::CaseInsensitive)) {
+        type = MachineType::GrblHAL;  typeName = "GrblHAL";
+    } else if (data.contains("GCARVIN", Qt::CaseInsensitive)) {
+        type = MachineType::GCarvin;  typeName = "gCarvin";
+    } else if (data.contains("uCNC", Qt::CaseInsensitive)) {
+        type = MachineType::uCNC;     typeName = "uCNC";
+    } else if (data.contains("FluidNC", Qt::CaseInsensitive)) {
+        type = MachineType::FluidNC;  typeName = "FluidNC";
     } else {
-        logSignal("Detected unknown device: " + data);
+        type = MachineType::Grbl;     typeName = "Grbl";
     }
 
-    return true;
+    qDebug() << "[Behavior][Reset] Detected startup message from device:" << data;
+    qDebug() << "[Behavior][Reset] Device type:" << typeName;
+    logSignal(QString("Detected %1 device.").arg(typeName));
+
+    return type;
 }

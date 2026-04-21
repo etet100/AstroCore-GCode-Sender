@@ -26,6 +26,7 @@ class ConfigurationSender : public AbstractConfigurationModule
     Q_PROPERTY(bool toolChangePause MEMBER m_toolChangePause NOTIFY changed)
     Q_PROPERTY(bool ignoreErrorResponses MEMBER m_ignoreErrorResponses NOTIFY changed)
     Q_PROPERTY(bool setParserStateBeforeSendingFromSelectedLine MEMBER m_setParserStateBeforeSendingFromSelectedLine NOTIFY changed)
+    Q_PROPERTY(bool resetAfterConnecting MEMBER m_resetAfterConnecting NOTIFY changed)
 
     public:
         explicit ConfigurationSender(QObject *parent = nullptr);
@@ -45,6 +46,7 @@ class ConfigurationSender : public AbstractConfigurationModule
         bool pauseSenderOnToolChange() const { return m_toolChangePause; }
         bool ignoreErrorResponses() const { return m_ignoreErrorResponses; }
         bool setParserStateBeforeSendingFromSelectedLine() const { return m_setParserStateBeforeSendingFromSelectedLine; }
+        bool resetAfterConnecting() const { return m_resetAfterConnecting; }
 
     private:
         bool m_useProgramStartCommands;
@@ -60,6 +62,7 @@ class ConfigurationSender : public AbstractConfigurationModule
         bool m_toolChangePause;
         bool m_ignoreErrorResponses;
         bool m_setParserStateBeforeSendingFromSelectedLine;
+        bool m_resetAfterConnecting;
 };
 
 #endif // CONFIGURATION_SENDER_H

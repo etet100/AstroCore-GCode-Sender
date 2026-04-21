@@ -57,6 +57,14 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
     m_program.setCommandResponse(commandAttributes.tableIndex, cmdStatus.ok, enrichErrorMessage(response));
 
     if (!cmdStatus.ok && m_stage == Stage::Running) {
+        if (m_configuration->senderModule().ignoreErrorResponses()) {
+            qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
+                       << "for" << command << "— ignoring (ignoreErrorResponses is set)";
+            sendStreamerCommandsUntilBufferIsFull();
+
+            return Result::Ok;
+        }
+
         qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
                    << "for" << command << "— pausing program";
         pause();

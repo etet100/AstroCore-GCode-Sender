@@ -146,3 +146,13 @@ bool PartSettingsSender::setParseStateBeforeSendFromLine() const
 {
     return ui->chkSetParseStateBeforeSendFromLine->isChecked();
 }
+
+bool PartSettingsSender::resetAfterConnecting() const
+{
+    return ui->chkResetAfterConnecting->isChecked();
+}
+
+void PartSettingsSender::setResetAfterConnecting(bool reset)
+{
+    ui->chkResetAfterConnecting->setChecked(reset);
+}

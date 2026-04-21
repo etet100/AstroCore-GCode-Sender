@@ -44,6 +44,8 @@ class PartSettingsSender : public QWidget
         bool pauseOnToolChange() const;
         bool ignoreResponseErrors() const;
         bool setParseStateBeforeSendFromLine() const;
+        bool resetAfterConnecting() const;
+        void setResetAfterConnecting(bool reset);
 
     private:
         Ui::partSettingsSender *ui;

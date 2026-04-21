@@ -139,6 +139,13 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QCheckBox" name="chkResetAfterConnecting">
+     <property name="text">
+      <string>Send reset (Ctrl+X) after connecting</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

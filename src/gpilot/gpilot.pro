@@ -139,7 +139,6 @@ SOURCES += main.cpp\
     core/heightmap/interpolator/heightmaplinearinterpolator.cpp \
     core/heightmap/interpolator/heightmapnearestneighbourinterpolator.cpp \
     core/heightmap/loader/heightmaploader.cpp \
-    core/jogger/jogger.cpp \
     core/machine/physicalmachineconfiguration.cpp \
     core/machine/physicalmachineconfigurationparser.cpp \
     core/machine/modalstateparser.cpp \
@@ -335,7 +334,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/interpolator/heightmaplinearinterpolator.h \
     core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h \
     core/heightmap/loader/heightmaploader.h \
-    core/jogger/jogger.h \
+    core/machine/devicecontext.h \
     core/machine/physicalmachineconfiguration.h \
     core/machine/physicalmachineconfigurationparser.h \
     core/machine/modalstateparser.h \

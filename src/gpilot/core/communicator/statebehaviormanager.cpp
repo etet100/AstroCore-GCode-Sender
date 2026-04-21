@@ -152,8 +152,8 @@ bool StateBehaviorManager::resumePrevious(CommunicatorApi *comApi)
 bool StateBehaviorManager::finalizeExecute(AbstractStateBehavior *sb, CommunicatorApi *comApi,
                                             AbstractStateBehavior::EntryContext ctx)
 {
+    Communicator *communicator = qobject_cast<Communicator*>(m_signalEmitter);
     if (!sb->eventsAttached()) {
-        Communicator *communicator = qobject_cast<Communicator*>(m_signalEmitter);
         if (communicator) {
             QObject::connect(sb, &AbstractStateBehavior::transition, communicator,
                            &Communicator::onStateRequestsTransition, Qt::ConnectionType::UniqueConnection);
@@ -171,7 +171,8 @@ bool StateBehaviorManager::finalizeExecute(AbstractStateBehavior *sb, Communicat
         sb->markEventsAttached();
     }
 
-    if (sb->onEntry(comApi, ctx) == AbstractStateBehavior::Result::WaitForAsyncResult) {
+    Configuration *configuration = communicator ? communicator->m_configuration : nullptr;
+    if (sb->onEntry(comApi, configuration, ctx) == AbstractStateBehavior::Result::WaitForAsyncResult) {
         QObject::connect(sb, &AbstractStateBehavior::asyncCompleted, m_signalEmitter, [this, sb]() {
             qDebug() << "[Behavior][Manager] State behavior entry completed"
                      << sb->description() << " (async enter)";

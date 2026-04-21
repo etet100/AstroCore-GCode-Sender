@@ -2,6 +2,7 @@
 #include <QRegularExpression>
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
+#include "core/machine/modalstateparser.h"
 
 static bool dataIsStartupMessage(const QString& data)
 {
@@ -377,10 +378,9 @@ void Communicator::processMachineState(QString stateStr)
 void Communicator::processDeviceConfiguration(QStringList response)
 {
     PhysicalMachineConfigurationParser configurationParser(m_configuration->machineModule());
-    auto configuration = configurationParser.parse(response);
-    m_machineConfiguration = &configuration;
+    m_deviceContext.setPhysicalConfig(configurationParser.parse(response));
 
-    emit machineConfigurationReceived(configuration);
+    emit machineConfigurationReceived(m_deviceContext.physicalConfig());
 
 
     // static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
@@ -461,6 +461,11 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
     if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {
         // @TODO what is this ; for? is it '; ok'?
         m_lastParserState = response.left(response.indexOf("; "));
+
+        auto modal = ModalStateParser::parse(m_lastParserState);
+        if (modal) {
+            m_deviceContext.setModalState(*modal);
+        }
 
         // Update status in visualizer window
         emit parserStateReceived(m_lastParserState);

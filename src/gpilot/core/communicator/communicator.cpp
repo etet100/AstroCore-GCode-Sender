@@ -20,7 +20,6 @@ Communicator::Communicator(
 ) : QObject(parent),
     m_connection(connection),
     m_configuration(configuration),
-    m_jogger(*this, configuration->joggingModule()),
     m_sbManager(this),
     m_queryMachineStateTimer(nullptr),
     m_machineStateDictionary({
@@ -143,7 +142,7 @@ void Communicator::resetStateVariables()
     m_machineState = MachineState::Unknown;
     m_senderState = SenderState::Unknown;
     if (m_posTracker) m_posTracker->reset();
-    m_machineConfiguration = nullptr;
+    m_deviceContext.reset();
 }
 
 // Called by CommandBuffer after a command response is fully processed.
@@ -356,7 +355,7 @@ void Communicator::setMachineStateAndEmitSignal(MachineState state)
 
 bool Communicator::isMachineConfigurationReady() const
 {
-    return m_machineConfiguration != nullptr;
+    return m_deviceContext.hasPhysicalConfig();
 }
 
 bool Communicator::isSenderState(SenderState state) const
@@ -382,16 +381,6 @@ void Communicator::resetGRBLConfiguration()
 bool Communicator::execute(AbstractStateBehavior *sb, bool force)
 {
     return m_sbManager.execute(sb, force, m_comApi);
-}
-
-double Communicator::toMetric(double value)
-{
-    return m_machineConfiguration->units() == Units::Millimeters ? value : value * 25.4;
-}
-
-double Communicator::toInches(double value)
-{
-    return m_machineConfiguration->units() == Units::Inches ? value : value / 25.4;
 }
 
 void Communicator::storeParserState()
