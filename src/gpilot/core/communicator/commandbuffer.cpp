@@ -15,7 +15,7 @@ static bool dataIsEnd(const QString& data)
         || data.startsWith(">:error");
 }
 
-static bool dataIsReset(const QString& data)
+static bool dataIsStartupMessage(const QString& data)
 {
     static QRegularExpression re(
         "^(GRBL|GCARVIN)\\s\\d\\.\\d.",
@@ -121,7 +121,7 @@ bool CommandBuffer::processResponse(const QString& data)
 
     // Accumulate lines of a multi-line response until the final ok/error arrives.
     const bool waitingForEnd   = !isCtrlX && !dataIsEnd(data);
-    const bool waitingForReset =  isCtrlX && !dataIsReset(data);
+    const bool waitingForReset =  isCtrlX && !dataIsStartupMessage(data);
 
     if (waitingForEnd || waitingForReset) {
         m_responseAccumulator.append(data + "; ");

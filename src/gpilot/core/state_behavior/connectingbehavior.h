@@ -21,7 +21,7 @@ class ConnectingBehavior : public AbstractStateBehavior
         QString name() const override { return "Connecting"; }
 
     private:
-        // bool dataIsReset(QString data);
+        // bool dataIsStartupMessage(QString data);
 };
 
 #endif // CONNECTINGBEHAVIOR_H

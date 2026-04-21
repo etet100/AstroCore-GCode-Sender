@@ -20,7 +20,7 @@ AbstractStateBehavior::Result ResetBehavior::onRawResponse(QString response)
 {
     qDebug() << "[Behavior][Reset][Raw response]" << response;
 
-    if (dataIsReset(response)) {
+    if (dataIsStartupMessage(response)) {
         if (m_stage == SentReset) {
             clearAllTimeouts();
             qDebug() << "[Behavior][Reset] Reset header received. Handing off to HandshakeBehavior.";
@@ -60,7 +60,7 @@ AbstractStateBehavior::Result ResetBehavior::doOnEntry(CommunicatorApi *communic
     return Result::Ok;
 }
 
-bool ResetBehavior::dataIsReset(QString data)
+bool ResetBehavior::dataIsStartupMessage(QString data)
 {
     // "GRBL" in either case, optionally followed by a number of non-whitespace characters,
     // followed by a version number in the format x.y.

@@ -3,7 +3,7 @@
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
 
-static bool dataIsReset(const QString& data)
+static bool dataIsStartupMessage(const QString& data)
 {
     static QRegularExpression re(
         "^(GRBL|GCARVIN)\\s\\d\\.\\d.",
@@ -47,7 +47,7 @@ void Communicator::onConnectionLineReceived(QString data)
     }
 
     // if (m_reseting) {
-    //     if (!dataIsReset(data)) return;
+    //     if (!dataIsStartupMessage(data)) return;
     //     m_reseting = false;
     //     stopUpdatingState();
     //     startUpdatingState(m_configuration->connectionModule().queryStateInterval());
@@ -69,7 +69,7 @@ void Communicator::onConnectionLineReceived(QString data)
 
     // qDebug() << "<" << data;
 
-    // if (dataIsReset(data)) {
+    // if (dataIsStartupMessage(data)) {
     //     qDebug() << "< RST <" << data;
     // }
 
@@ -85,7 +85,7 @@ void Communicator::onConnectionLineReceived(QString data)
     }
 
     if (!m_commandBuffer->isEmpty() && !dataIsFloating(data)
-        && !(m_commandBuffer->commands()[0].commandLine != "[CTRL+X]" && dataIsReset(data)))
+        && !(m_commandBuffer->commands()[0].commandLine != "[CTRL+X]" && dataIsStartupMessage(data)))
     {
         if (m_commandBuffer->processResponse(data)) {
             processStateBehaviorTransition();
@@ -499,9 +499,9 @@ bool Communicator::processCommandResponse(QString data)
     assert(m_commands.length() > 0);
 
     // This part is used to collect multi-line responses, e.g. $$
-    // Was opposite: if ((m_commands[0].commandLine != "[CTRL+X]" && dataIsEnd(data)) || (m_commands[0].commandLine == "[CTRL+X]" && dataIsReset(data))) {
+    // Was opposite: if ((m_commands[0].commandLine != "[CTRL+X]" && dataIsEnd(data)) || (m_commands[0].commandLine == "[CTRL+X]" && dataIsStartupMessage(data))) {
     QString firstCommand = m_commands[0].commandLine;
-    if ((firstCommand == "[CTRL+X]" || !dataIsEnd(data)) && (firstCommand != "[CTRL+X]" || !dataIsReset(data))) {
+    if ((firstCommand == "[CTRL+X]" || !dataIsEnd(data)) && (firstCommand != "[CTRL+X]" || !dataIsStartupMessage(data))) {
         response.append(data + "; ");
         lines.append(data);
 
@@ -817,7 +817,7 @@ bool Communicator::processCommandResponse(QString data)
 
 void Communicator::processUnhandledResponse(QString data)
 {
-    if (dataIsReset(data)) {
+    if (dataIsStartupMessage(data)) {
         // Welcome message, hardware reset occurred?
         this->processWelcomeMessageDetected(data);
     }

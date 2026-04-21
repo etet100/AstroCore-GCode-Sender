@@ -28,7 +28,7 @@ class ResetBehavior : public AbstractStateBehavior
         };
         Stage m_stage = None;
 
-        bool dataIsReset(QString data);
+        bool dataIsStartupMessage(QString data);
 };
 
 #endif // RESETBEHAVIOR_H
