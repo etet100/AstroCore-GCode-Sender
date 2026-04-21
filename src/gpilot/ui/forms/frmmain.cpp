@@ -641,6 +641,14 @@ void FrmMain::initializeMainMenu()
     connect(ui->actFileSettings, &QAction::triggered, this, &FrmMain::fileSettings);
     connect(ui->actServiceConfigureGRBL, &QAction::triggered, this, &FrmMain::serviceConfigureGRBL);
     connect(ui->actServiceResetGRBLConfiguration, &QAction::triggered, this, &FrmMain::serviceResetGRBLConfiguration);
+    connect(ui->actTestConverterArcsToLines, &QAction::triggered, this, [this] { testConverter(0); });
+    connect(ui->actTestConverterFusionRestoreRapidMovements, &QAction::triggered, this, [this] { testConverter(1); });
+    connect(ui->actTestConverterFeedRateConverter, &QAction::triggered, this, [this] { testConverter(2); });
+    connect(ui->actTestConverterCoordinateOffsetConverter, &QAction::triggered, this, [this] { testConverter(3); });
+    connect(ui->actTestConverterSafeSpindleStopConverter, &QAction::triggered, this, [this] { testConverter(4); });
+    connect(ui->actTestConverterMovementOptimizerConverter, &QAction::triggered, this, [this] { testConverter(5); });
+    connect(ui->actTestConverterShakingGCode, &QAction::triggered, this, [this] { testConverter(6); });
+    connect(ui->actTestConverterApplyHeightmap, &QAction::triggered, this, [this] { testConverter(7); });
     connect(ui->actAbout, &QAction::triggered, this, &FrmMain::aboutShow);
     connect(ui->actViewLockWindows, &QAction::toggled, this, &FrmMain::viewLockWindowsToggled);
     connect(ui->actViewDarkMode, &QAction::toggled, this, &FrmMain::viewDarkModeToggled);

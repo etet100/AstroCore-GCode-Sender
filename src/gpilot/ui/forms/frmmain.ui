@@ -842,6 +842,19 @@ QGroupBox::title {
     <addaction name="actServiceConfigureGRBL"/>
     <addaction name="actServiceResetGRBLConfiguration"/>
    </widget>
+   <widget class="QMenu" name="menuTestingConverters">
+    <property name="title">
+     <string>&amp;Testing converters</string>
+    </property>
+    <addaction name="actTestConverterArcsToLines"/>
+    <addaction name="actTestConverterFusionRestoreRapidMovements"/>
+    <addaction name="actTestConverterFeedRateConverter"/>
+    <addaction name="actTestConverterCoordinateOffsetConverter"/>
+    <addaction name="actTestConverterSafeSpindleStopConverter"/>
+    <addaction name="actTestConverterMovementOptimizerConverter"/>
+    <addaction name="actTestConverterShakingGCode"/>
+    <addaction name="actTestConverterApplyHeightmap"/>
+   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
@@ -901,6 +914,7 @@ QGroupBox::title {
    <addaction name="menuHeightmap"/>
    <addaction name="menuView"/>
    <addaction name="menuService"/>
+   <addaction name="menuTestingConverters"/>
    <addaction name="menuHelp"/>
    <addaction name="menuShowLog"/>
   </widget>
@@ -1183,6 +1197,46 @@ QGroupBox::title {
   <action name="actServiceResetGRBLConfiguration">
    <property name="text">
     <string>Reset configuration</string>
+   </property>
+  </action>
+  <action name="actTestConverterArcsToLines">
+   <property name="text">
+    <string>ArcsToLines (G2/G3 → G1, 0.1 mm chord)</string>
+   </property>
+  </action>
+  <action name="actTestConverterFusionRestoreRapidMovements">
+   <property name="text">
+    <string>FusionRestoreRapidMovements (G1 → G0)</string>
+   </property>
+  </action>
+  <action name="actTestConverterFeedRateConverter">
+   <property name="text">
+    <string>FeedRateConverter (feed rate ×2)</string>
+   </property>
+  </action>
+  <action name="actTestConverterCoordinateOffsetConverter">
+   <property name="text">
+    <string>CoordinateOffsetConverter (X+10 mm)</string>
+   </property>
+  </action>
+  <action name="actTestConverterSafeSpindleStopConverter">
+   <property name="text">
+    <string>SafeSpindleStopConverter</string>
+   </property>
+  </action>
+  <action name="actTestConverterMovementOptimizerConverter">
+   <property name="text">
+    <string>MovementOptimizerConverter</string>
+   </property>
+  </action>
+  <action name="actTestConverterShakingGCode">
+   <property name="text">
+    <string>ShakingGCode (random distortion, 5.0 / 1.0)</string>
+   </property>
+  </action>
+  <action name="actTestConverterApplyHeightmap">
+   <property name="text">
+    <string>ApplyHeightmap (current heightmap, 1 mm segments)</string>
    </property>
   </action>
  </widget>
