@@ -21,7 +21,7 @@ public:
 
     // Classify a command line. Returns the detected command type, or None.
     // Strips comments internally. Does NOT emit signals.
-    CommandType classify(const QString& commandLine) const;
+    static CommandType classify(const QString& commandLine);
 
     // Classify and emit a signal for the detected type.
     void scan(const QString& commandLine);

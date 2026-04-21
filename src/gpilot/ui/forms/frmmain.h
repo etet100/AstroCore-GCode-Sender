@@ -118,7 +118,6 @@ private slots:
     void viewCentralVisualizerToggled(bool checked);
     void openHeightmap();
     void saveHeightmap();
-    void clearRecentFiles();
     // UI Scale
     void decreaseUiScale();
     void increaseUiScale();
@@ -278,8 +277,6 @@ private:
     void updateLayouts();
     void updateRecentFilesMenus();
     void updateJogTitle();
-    void addRecentFile(QString fileName);
-    void addRecentHeightmap(QString fileName);
     // QRectF borderRectFromExtremes();
     void updateHeightmapBorderDrawer();
     bool updateHeightmapGrid();
@@ -322,7 +319,6 @@ private:
     void initializeEventFilter();
 
     void applySpindleConfiguration(ConfigurationMachine &machineConfiguration);
-    void applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration);
     void applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfiguration);
     void applyOverridesConfiguration(ConfigurationMachine &machineConfiguration);
     void applyUIConfiguration(ConfigurationUI &uiConfiguration);

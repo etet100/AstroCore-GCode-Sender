@@ -411,8 +411,9 @@ void FrmMain::initializeProgramPanel()
     });
 
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
-        clearRecentFiles();
+        Core::instance().clearRecentFiles(m_heightmapMode);
     });
+    connect(&Core::instance(), &Core::recentFilesChanged, this, &FrmMain::updateRecentFilesMenus);
     // connect(ui->program, &PartMainProgram::modelDataChanged, this, &FrmMain::onTableCellChanged);
     connect(ui->program, &PartMainProgram::heightmapDataChangedByUser, this, &FrmMain::onHeightmapDataChangedByUser);
     // connect(&program(), &GCode::linesUpdated, this, &FrmMain::onProgramLinesUpdated);
@@ -791,8 +792,7 @@ void FrmMain::dropEvent(QDropEvent *de)
 
         // Load dropped g-code file
         if (!fileName.isEmpty()) {
-            addRecentFile(fileName);
-            updateRecentFilesMenus();
+            Core::instance().addRecentFile(fileName);
             loadFile(fileName);
         // Load dropped text
         } else {
@@ -805,8 +805,7 @@ void FrmMain::dropEvent(QDropEvent *de)
         if (!saveChanges(true)) return;
 
         // Load dropped heightmap file
-        addRecentHeightmap(fileName);
-        updateRecentFilesMenus();
+        Core::instance().addRecentHeightmap(fileName);
         // loadHeightmap(fileName);
     }
 }
@@ -889,8 +888,7 @@ void FrmMain::fileSaveAs()
             fm.setGcodeFilePath(fileName);
             fm.setGcodeModified(false);
 
-            addRecentFile(fileName);
-            updateRecentFilesMenus();
+            Core::instance().addRecentFile(fileName);
 
             updateControlsState();
         }
@@ -906,8 +904,7 @@ void FrmMain::fileSaveAs()
 
             ui->heightmap->setOpenFile(fileName.mid(fileName.lastIndexOf("/") + 1));
 
-            addRecentHeightmap(fileName);
-            updateRecentFilesMenus();
+            Core::instance().addRecentHeightmap(fileName);
 
             updateControlsState();
         }
@@ -960,17 +957,6 @@ void FrmMain::saveHeightmap()
     }
 
     ui->console->append(tr("Heightmap saved to %1").arg(fileName));
-}
-
-void FrmMain::clearRecentFiles()
-{
-    if (!m_heightmapMode) {
-        m_configuration.uiModule().clearRecentFiles();
-    } else {
-        m_configuration.uiModule().clearRecentHeightmaps();
-    }
-    m_configuration.save();
-    updateRecentFilesMenus();
 }
 
 void FrmMain::fileExit()
@@ -1111,8 +1097,7 @@ void FrmMain::onFileOpen(QString filePath)
             m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
-        addRecentFile(filePath);
-        updateRecentFilesMenus();
+        Core::instance().addRecentFile(filePath);
 
         loadFile(filePath);
     } else {
@@ -1127,8 +1112,7 @@ void FrmMain::onFileOpen(QString filePath)
             m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
-        addRecentHeightmap(filePath);
-        updateRecentFilesMenus();
+        Core::instance().addRecentHeightmap(filePath);
 
         HeightmapLoader loader;
         heightmap() = loader.loadFromFile(filePath);
@@ -1693,7 +1677,7 @@ void FrmMain::onLoadHeightmapRequested()
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
 
     if (filePath != "") {
-        addRecentHeightmap(filePath);
+        Core::instance().addRecentHeightmap(filePath);
         HeightmapLoader loader;
         heightmap() = loader.loadFromFile(filePath);
 
@@ -1705,7 +1689,6 @@ void FrmMain::onLoadHeightmapRequested()
             useHeightmapToggled(true);
         }
 
-        updateRecentFilesMenus();
         updateControlsState(); // Enable 'cmdHeightMapMode' button
     }
 }
@@ -2216,11 +2199,6 @@ void FrmMain::applySpindleConfiguration(ConfigurationMachine &machineConfigurati
     // ui->slbSpindle->setValue(machineConfiguration.spindleSpeed());
 }
 
-void FrmMain::applyRecentFilesConfiguration(ConfigurationUI &uiConfiguration)
-{
-    updateRecentFilesMenus();
-}
-
 void FrmMain::applyHeightmapConfiguration(ConfigurationHeightmap &heightmapConfiguration)
 {
     ui->heightmap->applyHeightmapConfiguration(heightmapConfiguration);
@@ -2471,7 +2449,7 @@ void FrmMain::applySettings()
     applyJoggingConfiguration(joggingConfiguration);
     applyOverridesConfiguration(machineConfiguration);
     applyUIConfiguration(uiConfiguration);
-    applyRecentFilesConfiguration(uiConfiguration);
+    updateRecentFilesMenus();
     applyHeightmapConfiguration(heightmapConfiguration);
 
     if (!connection() || connection()->supportedMode() != m_configuration.connectionModule().connectionMode()) {
@@ -3009,7 +2987,9 @@ void FrmMain::updateRecentFilesMenus()
         ui->menuRecent->addSeparator();
 
         QAction *clearAction = new QAction(tr("&Clear"), this);
-        connect(clearAction, &QAction::triggered, this, &FrmMain::clearRecentFiles);
+        connect(clearAction, &QAction::triggered, this, [this]() {
+            Core::instance().clearRecentFiles(m_heightmapMode);
+        });
 
         ui->menuRecent->addAction(clearAction);
     }
@@ -3028,18 +3008,6 @@ void FrmMain::updateJogTitle()
                 .arg((!jogging.continuous()) ? QString::number(jogging.step()) : tr("C"))
                 .arg(jogging.feed()));
     }
-}
-
-void FrmMain::addRecentFile(QString fileName)
-{
-    m_configuration.uiModule().addRecentFile(fileName);
-    m_configuration.save();
-}
-
-void FrmMain::addRecentHeightmap(QString fileName)
-{
-    m_configuration.uiModule().addRecentHeightmap(fileName);
-    m_configuration.save();
 }
 
 //TODO heightmap
@@ -3407,99 +3375,6 @@ bool FrmMain::actionLessThan(const QAction *a1, const QAction *a2)
 bool FrmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
 {
     return a1->text() < a2->text();
-}
-
-void FrmMain::initializeCentralWidgets()
-{
-    m_centralWidgets = {
-        {ui->program, ui->dockProgram, ui->actViewCentralProgram, "program", "G-code program"},
-        {ui->visualizer, ui->dockVisualizer, ui->actViewCentralVisualizer, "visualizer", "Visualizer"}
-    };
-}
-
-void FrmMain::centralWidgetActionTriggered(bool checked)
-{
-    QAction* action = qobject_cast<QAction*>(sender());
-
-    // If action is being unchecked, re-check it and return
-    if (!checked) {
-        const QSignalBlocker blocker(action);
-        action->setChecked(true);
-        return;
-    }
-
-    for (auto& config : m_centralWidgets) {
-        if (config.action == action) {
-            switchCentralWidget(&config);
-            break;
-        }
-    }
-}
-
-void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
-{
-    CentralWidgetConfig* currentConfig = nullptr;
-    for (auto& config : m_centralWidgets) {
-        if (config.widget->parentWidget() == ui->centralWidget) {
-            currentConfig = &config;
-            break;
-        }
-    }
-
-    if (!currentConfig || currentConfig == requestedConfig) {
-        if (requestedConfig->dock->isVisible()) {
-            qWarning() << "[FrmMain] Central widget dock is visible";
-        }
-        requestedConfig->dock->setProperty("cw", true);
-        return;
-    }
-
-    // Uncheck all other actions
-    for (auto& config : m_centralWidgets) {
-        if (config.name != requestedConfig->name) {
-            const QSignalBlocker blocker(config.action);
-            config.action->setChecked(false);
-            config.dock->setProperty("cw", false);
-        }
-    }
-
-    bool dockWasVisible = requestedConfig->dock->isVisible();
-
-    // Undock requested widget
-    requestedConfig->widget->setParent(nullptr);
-    requestedConfig->dock->hide();
-
-    // Remove current widget from central
-    ui->centralWidget->layout()->removeWidget(currentConfig->widget);
-
-    // Dock current widget
-    currentConfig->dock->setWidget(currentConfig->widget);
-    currentConfig->dock->setVisible(dockWasVisible);
-
-    // Add requested widget to central
-    ui->centralWidget->layout()->addWidget(requestedConfig->widget);
-    ui->centralWidgetTitle->setTitle(requestedConfig->title);
-
-    m_configuration.uiModule().setCentralWidget(requestedConfig->name);
-    const QSignalBlocker blocker(requestedConfig->action);
-    requestedConfig->action->setChecked(true);
-    requestedConfig->dock->setProperty("cw", true);
-}
-
-void FrmMain::restoreCentralWidget()
-{
-    QString centralWidgetName = m_configuration.uiModule().centralWidget();
-    if (centralWidgetName.isEmpty()) {
-        // it should never be empty since it has a default value
-        return;
-    }
-
-    for (auto& config : m_centralWidgets) {
-        if (config.name == centralWidgetName) {
-            switchCentralWidget(&config);
-            break;
-        }
-    }
 }
 
 void FrmMain::setHeightmapPoint(QPoint point, double height)

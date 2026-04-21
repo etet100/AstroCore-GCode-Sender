@@ -1,6 +1,7 @@
 #include "core.h"
 #include "core/config/implementations.h"
 #include "core/communicator/communicator.h"
+#include "core/communicator/commandscanner.h"
 #include "core/state_behavior/action.h"
 #include "io/connection/connectionmanager.h"
 #include "io/connection/abstractconnection.h"
@@ -63,52 +64,19 @@ void Core::handleConsoleCommand(QString command)
         return;
     }
 
-    if (command.startsWith(':')) {
-        const QString body = command.mid(1).trimmed();
-        const int space = body.indexOf(' ');
-        const QString head = (space >= 0 ? body.left(space) : body).toLower();
-        const QString args = space >= 0 ? body.mid(space + 1).trimmed() : QString();
+    using Handler = ConsoleCommandResult (Core::*)(const QString&);
+    const Handler steps[] = {
+        &Core::tryHandleInternalCommand,
+        &Core::tryHandleMacro,
+        &Core::tryHandleScanned,
+    };
 
-        if (head == "ai") {
-            if (args.isEmpty()) {
-                emit log("[AI] missing prompt");
-                return;
-            }
-            OpenAIManager& ai = OpenAIManager::instance();
-            ai.setApiKey(m_configuration.aiModule().openAIKey());
-            ai.sendRequest(args,
-                [this](const QString& response) { emit log("[AI] " + response); },
-                [this](const QString& error) { emit log("[AI][Error] " + error); },
-                "gpt-4o");
-            return;
+    for (Handler step : steps) {
+        ConsoleCommandResult r = (this->*step)(command);
+        if (r.rewritten) {
+            command = *r.rewritten;
         }
-
-        if (!m_communicator) {
-            emit log(QString("Cannot execute :%1 — communicator not ready").arg(head));
-            return;
-        }
-
-        AbstractStateBehavior* sb = m_communicator->sb();
-        if (head == "start")      { sb->action(Action::Run);        return; }
-        if (head == "pause")      { sb->action(Action::Pause);      return; }
-        if (head == "resume")     { sb->action(Action::Resume);     return; }
-        if (head == "reset")      { sb->action(Action::Unlock);     return; }
-        if (head == "abort")      { sb->action(Action::Abort);      return; }
-        if (head == "connect")    { sb->action(Action::Connect);    return; }
-        if (head == "disconnect") { sb->action(Action::Disconnect); return; }
-        if (head == "open")       { emit openFileRequested();       return; }
-
-        emit log(QString("Unknown internal command: %1").arg(head));
-
-        return;
-    }
-
-    const int firstSpace = command.indexOf(' ');
-    const QString firstToken = firstSpace >= 0 ? command.left(firstSpace) : command;
-    for (const Macro& macro : m_macros) {
-        if (macro.enabled && macro.name.compare(firstToken, Qt::CaseInsensitive) == 0) {
-            emit log(QString("Macro match: %1 (execution not implemented yet)").arg(macro.name));
-
+        if (r.action == ConsoleCommandResult::Action::Stop) {
             return;
         }
     }
@@ -118,4 +86,105 @@ void Core::handleConsoleCommand(QString command)
         return;
     }
     m_communicator->sendCommand(CommandSource::Console, command, TABLE_INDEX_UI);
+}
+
+Core::ConsoleCommandResult Core::tryHandleInternalCommand(const QString& command)
+{
+    if (!command.startsWith(':')) {
+        return ConsoleCommandResult::forward();
+    }
+
+    const QString body = command.mid(1).trimmed();
+    const int space = body.indexOf(' ');
+    const QString head = (space >= 0 ? body.left(space) : body).toLower();
+    const QString args = space >= 0 ? body.mid(space + 1).trimmed() : QString();
+
+    if (head == "ai") {
+        if (args.isEmpty()) {
+            emit log("[AI] missing prompt");
+            return ConsoleCommandResult::stop();
+        }
+        OpenAIManager& ai = OpenAIManager::instance();
+        ai.setApiKey(m_configuration.aiModule().openAIKey());
+        ai.sendRequest(args,
+            [this](const QString& response) { emit log("[AI] " + response); },
+            [this](const QString& error) { emit log("[AI][Error] " + error); },
+            "gpt-4o");
+
+        return ConsoleCommandResult::stop();
+    }
+
+    if (!m_communicator) {
+        emit log(QString("Cannot execute :%1 — communicator not ready").arg(head));
+
+        return ConsoleCommandResult::stop();
+    }
+
+    AbstractStateBehavior* sb = m_communicator->sb();
+    if (head == "start")      { sb->action(Action::Run);        return ConsoleCommandResult::stop(); }
+    if (head == "pause")      { sb->action(Action::Pause);      return ConsoleCommandResult::stop(); }
+    if (head == "resume")     { sb->action(Action::Resume);     return ConsoleCommandResult::stop(); }
+    if (head == "reset")      { sb->action(Action::Unlock);     return ConsoleCommandResult::stop(); }
+    if (head == "abort")      { sb->action(Action::Abort);      return ConsoleCommandResult::stop(); }
+    if (head == "connect")    { sb->action(Action::Connect);    return ConsoleCommandResult::stop(); }
+    if (head == "disconnect") { sb->action(Action::Disconnect); return ConsoleCommandResult::stop(); }
+    if (head == "open")       { emit openFileRequested();       return ConsoleCommandResult::stop(); }
+
+    emit log(QString("Unknown internal command: %1").arg(head));
+
+    return ConsoleCommandResult::stop();
+}
+
+Core::ConsoleCommandResult Core::tryHandleMacro(const QString& command)
+{
+    const int firstSpace = command.indexOf(' ');
+    const QString firstToken = firstSpace >= 0 ? command.left(firstSpace) : command;
+    for (const Macro& macro : m_macros) {
+        if (macro.enabled && macro.name.compare(firstToken, Qt::CaseInsensitive) == 0) {
+            emit log(QString("Macro match: %1 (execution not implemented yet)").arg(macro.name));
+
+            return ConsoleCommandResult::stop();
+        }
+    }
+
+    return ConsoleCommandResult::forward();
+}
+
+Core::ConsoleCommandResult Core::tryHandleScanned(const QString& command)
+{
+    switch (CommandScanner::classify(command)) {
+        case CommandScanner::CommandType::WorkOffset:
+        case CommandScanner::CommandType::Homing:
+        case CommandScanner::CommandType::Pause:
+        case CommandScanner::CommandType::ToolChange:
+        case CommandScanner::CommandType::None:
+            break;
+    }
+
+    return ConsoleCommandResult::forward();
+}
+
+void Core::addRecentFile(QString fileName)
+{
+    m_configuration.uiModule().addRecentFile(fileName);
+    m_configuration.save();
+    emit recentFilesChanged();
+}
+
+void Core::addRecentHeightmap(QString fileName)
+{
+    m_configuration.uiModule().addRecentHeightmap(fileName);
+    m_configuration.save();
+    emit recentFilesChanged();
+}
+
+void Core::clearRecentFiles(bool heightmapMode)
+{
+    if (heightmapMode) {
+        m_configuration.uiModule().clearRecentHeightmaps();
+    } else {
+        m_configuration.uiModule().clearRecentFiles();
+    }
+    m_configuration.save();
+    emit recentFilesChanged();
 }

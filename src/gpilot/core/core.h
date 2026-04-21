@@ -2,6 +2,7 @@
 #define CORE_H
 
 #include <QObject>
+#include <optional>
 #include "core/macro/macros.h"
 #include "core/utils/filesmanager.h"
 #include "core/config/configuration.h"
@@ -70,18 +71,42 @@ class Core : public QObject
         // destroy the static instance.
         ~Core();
 
-        // Routes a raw console line. `:` prefix → internal command (start/pause/
-        // resume/reset/abort/connect/disconnect/open/ai ...). Otherwise matches
-        // against Macros by name (case-insensitive first token); anything else
-        // is sent to the device via Communicator::sendCommand.
+        // Routes a raw console line through a small chain of handlers:
+        // internal command (`:` prefix) → macro match → scanned g-code/grbl.
+        // Each step can stop processing or rewrite the command before the
+        // remaining steps and the final send via Communicator::sendCommand.
         void handleConsoleCommand(QString command);
+
+        // Recent files list mutation. Each call updates ConfigurationUI,
+        // persists the change and emits recentFilesChanged() so that
+        // interested UI parts (menus) can refresh themselves.
+        void addRecentFile(QString fileName);
+        void addRecentHeightmap(QString fileName);
+        void clearRecentFiles(bool heightmapMode);
 
     signals:
         void log(QString message);
         void openFileRequested();
+        void recentFilesChanged();
 
     private:
         Core();
+
+        // Outcome of a single console-command handler step.
+        // `rewritten` replaces the command for the next steps when present.
+        struct ConsoleCommandResult {
+            enum class Action { Stop, Forward };
+            Action action = Action::Forward;
+            std::optional<QString> rewritten;
+
+            static ConsoleCommandResult stop() { return {Action::Stop, std::nullopt}; }
+            static ConsoleCommandResult forward() { return {Action::Forward, std::nullopt}; }
+            static ConsoleCommandResult forwardAs(QString s) { return {Action::Forward, std::move(s)}; }
+        };
+
+        ConsoleCommandResult tryHandleInternalCommand(const QString& command);
+        ConsoleCommandResult tryHandleMacro(const QString& command);
+        ConsoleCommandResult tryHandleScanned(const QString& command);
 
         Configuration m_configuration;
         Macros m_macros;

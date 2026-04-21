@@ -6,7 +6,7 @@ CommandScanner::CommandScanner(QObject* parent)
     : QObject(parent)
 {}
 
-CommandScanner::CommandType CommandScanner::classify(const QString& commandLine) const
+CommandScanner::CommandType CommandScanner::classify(const QString& commandLine)
 {
     const QString cmd = GcodePreprocessorUtils::removeComment(commandLine)
                             .toUpper()
