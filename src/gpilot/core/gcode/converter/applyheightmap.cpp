@@ -13,7 +13,7 @@
 #include <QRegularExpression>
 #include <QtMath>
 
-ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, QObject *parent)
+ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, bool applyToRapids, QObject *parent)
     : QObject(parent)
     , m_heightmap(heightmap)
     , m_interpolator(nullptr)
@@ -22,6 +22,7 @@ ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, QObje
     , m_segmentLength(segmentLength)
     , m_arcPreserveTolerance(0.01)
     , m_currentIndex(0)
+    , m_applyToRapids(applyToRapids)
 {
     if (m_heightmap) {
         // Use interpolation mode from heightmap
@@ -163,6 +164,12 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
         return result;
     }
 
+    if (!m_applyToRapids && item.group == GCodeItemGroup::RapidMovement) {
+        result.append(item);
+        m_parser->addCommand(item);
+        return result;
+    }
+
     QVector3D startPoint = *m_parser->getCurrentPoint();
 
     m_parser->pushState();
@@ -221,6 +228,8 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
             GCodeItem modifiedItem = item;
             modifiedItem.line = generateGCodeLine(startPoint, points[1], item, true, outputCmd);
             modifiedItem.args = GcodePreprocessorUtils::splitCommand(modifiedItem.line);
+            // Arc linearised to G1 — update group to reflect the actual command.
+            if (isArc) modifiedItem.group = GCodeItemGroup::Movement;
             result.append(modifiedItem);
 
             m_parser->addCommand(modifiedItem);
@@ -237,7 +246,9 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
         segmentItem.state = GCodeItem::InQueue;
         segmentItem.args = GcodePreprocessorUtils::splitCommand(segmentItem.line);
         segmentItem.isMovement = true;
-        segmentItem.group = GCodeItemGroup::Movement;
+        // Arcs are linearised to G1 (Movement). Lines keep the original group
+        // so that G0 segments (when applyToRapids=true) stay RapidMovement.
+        segmentItem.group = isArc ? GCodeItemGroup::Movement : item.group;
         segmentItem.commandNumber = item.commandNumber;
 
         result.append(segmentItem);

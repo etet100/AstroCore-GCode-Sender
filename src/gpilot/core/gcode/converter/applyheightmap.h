@@ -27,7 +27,8 @@ class ApplyHeightmap : public QObject, public AbstractBatchConverter
     Q_OBJECT
 
     public:
-        explicit ApplyHeightmap(Heightmap* heightmap, double segmentLength = 1.0, QObject *parent = nullptr);
+        explicit ApplyHeightmap(Heightmap* heightmap, double segmentLength = 1.0,
+                                bool applyToRapids = false, QObject *parent = nullptr);
         ~ApplyHeightmap() override;
 
         // AbstractBatchConverter implementation
@@ -41,6 +42,9 @@ class ApplyHeightmap : public QObject, public AbstractBatchConverter
 
         void setSegmentLength(double length) { m_segmentLength = length; }
         double segmentLength() const { return m_segmentLength; }
+
+        void setApplyToRapids(bool apply) { m_applyToRapids = apply; }
+        bool applyToRapids() const { return m_applyToRapids; }
 
         // Max allowed Z-offset variation (mm) for arc preservation.
         // If all sample points along a G17 arc get a Z offset within this range,
@@ -58,6 +62,7 @@ class ApplyHeightmap : public QObject, public AbstractBatchConverter
         GCode* m_gcode;
         double m_segmentLength;
         double m_arcPreserveTolerance;
+        bool   m_applyToRapids;
         int m_currentIndex;
 
         // Helper methods for processing single line
