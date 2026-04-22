@@ -51,6 +51,7 @@ private:
     QAction *m_actDualProbe = nullptr;
     void setupProbeMenu();
     void updateProbeIcon();
+    void textsVisible(bool visible);
 
 private slots:
     void onCmdHomeClicked();

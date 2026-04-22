@@ -125,7 +125,7 @@
         <string>Home</string>
        </property>
        <property name="text">
-        <string>...</string>
+        <string>Home</string>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
@@ -317,7 +317,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>...</string>
+        <string>Probe</string>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
@@ -340,7 +340,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>...</string>
+        <string>Zero XY</string>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">
@@ -366,7 +366,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>...</string>
+        <string>Zero Z</string>
        </property>
        <property name="icon">
         <iconset resource="../../../resources/images.qrc">

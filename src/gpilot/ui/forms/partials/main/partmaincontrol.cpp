@@ -4,6 +4,7 @@
 #include "utils/utils.h"
 #include <QDebug>
 #include <QActionGroup>
+#include <QToolButton>
 
 PartMainControl::PartMainControl(QWidget *parent)
     : QWidget(parent)
@@ -189,4 +190,12 @@ void PartMainControl::onCmdZeroXYClicked()
 void PartMainControl::onCmdScanTableClicked()
 {
     emit this->scanTable();
+}
+
+void PartMainControl::textsVisible(bool visible)
+{
+    const auto style = visible ? Qt::ToolButtonTextUnderIcon : Qt::ToolButtonIconOnly;
+    for (auto *button : findChildren<QToolButton *>()) {
+        button->setToolButtonStyle(style);
+    }
 }
