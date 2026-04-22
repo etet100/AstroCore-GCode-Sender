@@ -129,7 +129,9 @@ SOURCES += main.cpp\
     core/gcode/converter/abstractconverter.cpp \
     core/gcode/converter/exampleconverter.cpp \
     core/gcode/converter/fusionrestorerapidmovements.cpp \
+    core/gcode/converter/movepath.cpp \
     core/gcode/converter/pipeline.cpp \
+    core/gcode/converter/stripcomments.cpp \
     core/gcode/converter/shakinggcode.cpp \
     core/gcode/converter/singleconverter.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
@@ -325,7 +327,9 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/abstractbatchconverter.h \
     core/gcode/converter/exampleconverter.h \
     core/gcode/converter/fusionrestorerapidmovements.h \
+    core/gcode/converter/movepath.h \
     core/gcode/converter/pipeline.h \
+    core/gcode/converter/stripcomments.h \
     core/gcode/converter/shakinggcode.h \
     core/gcode/converter/singleconverter.h \
     core/heightmap/exporter/heightmapexporter.h \
