@@ -129,6 +129,7 @@ SOURCES += main.cpp\
     core/gcode/converter/abstractconverter.cpp \
     core/gcode/converter/exampleconverter.cpp \
     core/gcode/converter/fusionrestorerapidmovements.cpp \
+    core/gcode/converter/modifyfeedrate.cpp \
     core/gcode/converter/movepath.cpp \
     core/gcode/converter/pipeline.cpp \
     core/gcode/converter/stripcomments.cpp \
@@ -327,6 +328,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/abstractbatchconverter.h \
     core/gcode/converter/exampleconverter.h \
     core/gcode/converter/fusionrestorerapidmovements.h \
+    core/gcode/converter/modifyfeedrate.h \
     core/gcode/converter/movepath.h \
     core/gcode/converter/pipeline.h \
     core/gcode/converter/stripcomments.h \

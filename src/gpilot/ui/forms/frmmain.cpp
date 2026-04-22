@@ -45,6 +45,7 @@
 #include "core/gcode/converter/singleconverter.h"
 #include "core/gcode/converter/exampleconverter.h"
 #include "core/gcode/converter/fusionrestorerapidmovements.h"
+#include "core/gcode/converter/modifyfeedrate.h"
 #include "core/gcode/converter/movepath.h"
 #include "core/gcode/converter/shakinggcode.h"
 #include "core/gcode/converter/applyheightmap.h"
@@ -2716,6 +2717,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 //   7 - ApplyHeightmap (uses current heightmap(), 1 mm segments)
 //   8 - StripComments (remove all inline and standalone comments)
 //   9 - MovePath (shift path by X+10, Y+5, Z+0)
+//  10 - ModifyFeedRate (150% of original feed rate)
 void FrmMain::testConverter(int converterIndex)
 {
     if (program().count() == 0) {
@@ -2736,6 +2738,7 @@ void FrmMain::testConverter(int converterIndex)
         case 7: converter = new ApplyHeightmap(&heightmap(), 1.0);                      break;
         case 8: converter = new SingleConverter(new StripComments());                  break;
         case 9: converter = new SingleConverter(new MovePath(10.0, 5.0, 0.0));         break;
+        case 10: converter = new SingleConverter(new ModifyFeedRate(150.0));            break;
         default:
             qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
             return;
