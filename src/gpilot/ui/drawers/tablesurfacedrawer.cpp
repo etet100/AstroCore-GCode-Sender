@@ -11,7 +11,7 @@ bool TableSurfaceDrawer::updateData(GLPalette &palette)
 {
     const float SIZE = 50;
 
-    int color = palette.color(m_gridColor.redF(), m_gridColor.greenF(), m_gridColor.blueF());
+    int color = palette.color(m_gridColor.redF(), m_gridColor.greenF(), m_gridColor.blueF(), 0.2f);
 
     m_lines.clear();
 

@@ -143,7 +143,8 @@ void PartMainVisualizer::updateCursorDrawer(QPointF pos)
 // Do not init drawables before the parser is set (setProgram)
 void PartMainVisualizer::initDrawables()
 {
-    *ui->visualizer << m_codeDrawer
+    *ui->visualizer << &m_tableSurfaceDrawer
+                    << m_codeDrawer
                     << &m_boundingBoxDrawer
                     << m_boundingBoxDrawer.billboardDrawable()
                     << &m_cursorDrawer
