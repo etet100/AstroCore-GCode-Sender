@@ -3,6 +3,7 @@
 // Copyright 2024 BTS
 
 #include "core/globals.h"
+#include "core/core.h"
 #include "runningbehavior.h"
 #include "idlebehavior.h"
 #include "pausebehavior.h"
@@ -30,6 +31,7 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
             qDebug() << "[Behavior][Running] Program finished, transitioning to Idle";
         }
 
+        Core::instance().timer().stopExecution();
         emit transition(this, new IdleBehavior());
     } else if (m_stage == Stage::Pausing && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
         PauseBehavior::PauseSource source = m_stage == Stage::Pausing
@@ -37,6 +39,7 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
             : PauseBehavior::PauseSource::External;
         emit transition(this, new PauseBehavior(source), TransitionKind::Suspend);
     } else if (state == MachineState::Alarm) {
+        Core::instance().timer().stopExecution();
         emit transition(this, new AlarmBehavior());
     }
 }
@@ -93,7 +96,7 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
 
 void RunningBehavior::onAlarm(int code)
 {
-    // Handle alarm during running state
+    Core::instance().timer().stopExecution();
     emit transition(this, new AlarmBehavior(code));
 }
 
@@ -134,6 +137,8 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
 
             return Result::Ok;
         } else {
+            Core::instance().timer().resumeExecution();
+
             // Machine is in Hold — send Cycle Start and wait for Run state before filling buffer
             m_stage = Stage::Resuming;
             m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
@@ -153,6 +158,7 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
             }, MachineState::Run, 500);
         }
     } else {
+        Core::instance().timer().startExecution();
         m_stage = Stage::Running;
     }
 
