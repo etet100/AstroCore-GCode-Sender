@@ -27,6 +27,10 @@ class ApplyHeightmap : public QObject, public AbstractBatchConverter
     Q_OBJECT
 
     public:
+        // Schema covers only the values the user chooses in UI.
+        // The Heightmap pointer is supplied by the caller, not by the dialog.
+        static QString parameterSchema();
+
         explicit ApplyHeightmap(Heightmap* heightmap, double segmentLength = 1.0,
                                 bool applyToRapids = false, QObject *parent = nullptr);
         ~ApplyHeightmap() override;

@@ -31,6 +31,8 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
     Q_OBJECT
 
     public:
+        static QString parameterSchema();
+
         explicit ShakingGCode(double segmentLength = 5.0,
                              double maxOffset = 1.0,
                              QObject *parent = nullptr);

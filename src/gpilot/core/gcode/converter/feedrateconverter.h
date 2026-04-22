@@ -9,6 +9,8 @@
 class FeedRateConverter : public AbstractConverter
 {
     public:
+        static QString parameterSchema();
+
         explicit FeedRateConverter(double multiplier = 1.0);
 
         bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
@@ -24,6 +26,8 @@ class FeedRateConverter : public AbstractConverter
 class CoordinateOffsetConverter : public AbstractConverter
 {
     public:
+        static QString parameterSchema();
+
         explicit CoordinateOffsetConverter(double offsetX = 0.0,
                                           double offsetY = 0.0,
                                           double offsetZ = 0.0);
@@ -46,6 +50,8 @@ class CoordinateOffsetConverter : public AbstractConverter
 class SafeSpindleStopConverter : public AbstractConverter
 {
     public:
+        static QString parameterSchema();
+
         SafeSpindleStopConverter();
 
         bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
@@ -56,6 +62,8 @@ class SafeSpindleStopConverter : public AbstractConverter
 class MovementOptimizerConverter : public AbstractConverter
 {
     public:
+        static QString parameterSchema();
+
         MovementOptimizerConverter();
 
         bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;

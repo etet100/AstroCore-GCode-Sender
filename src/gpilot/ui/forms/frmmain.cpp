@@ -23,6 +23,7 @@
 #include "core/globals.h"
 #include "ui/forms/frmmain.h"
 #include "ui/forms/frmclosingapp.h"
+#include "ui/forms/frmconvertersettings.h"
 #include "utils/utils.h"
 #include "ui/forms/partials/main/partmainjog.h"
 #include "ui/forms/partials/main/partmaincontrol.h"
@@ -43,7 +44,7 @@
 #include "core/gcode/exporter/gcodeexporter.h"
 #include "core/gcode/converter/arcstolines.h"
 #include "core/gcode/converter/singleconverter.h"
-#include "core/gcode/converter/exampleconverter.h"
+#include "core/gcode/converter/feedrateconverter.h"
 #include "core/gcode/converter/fusionrestorerapidmovements.h"
 #include "core/gcode/converter/modifyfeedrate.h"
 #include "core/gcode/converter/movepath.h"
@@ -652,6 +653,9 @@ void FrmMain::initializeMainMenu()
     connect(ui->actTestConverterMovementOptimizerConverter, &QAction::triggered, this, [this] { testConverter(5); });
     connect(ui->actTestConverterShakingGCode, &QAction::triggered, this, [this] { testConverter(6); });
     connect(ui->actTestConverterApplyHeightmap, &QAction::triggered, this, [this] { testConverter(7); });
+    connect(ui->actTestConverterStripComments, &QAction::triggered, this, [this] { testConverter(8); });
+    connect(ui->actTestConverterMovePath, &QAction::triggered, this, [this] { testConverter(9); });
+    connect(ui->actTestConverterModifyFeedRate, &QAction::triggered, this, [this] { testConverter(10); });
     connect(ui->actAbout, &QAction::triggered, this, &FrmMain::aboutShow);
     connect(ui->actViewLockWindows, &QAction::toggled, this, &FrmMain::viewLockWindowsToggled);
     connect(ui->actViewDarkMode, &QAction::toggled, this, &FrmMain::viewDarkModeToggled);
@@ -2733,20 +2737,41 @@ void FrmMain::testConverter(int converterIndex)
         return;
     }
 
+    FrmConverterSettings settings(this);
+    switch (converterIndex) {
+        case 0: settings.loadConfig(ArcsToLines::parameterSchema()); break;
+        case 1: settings.loadConfig(FusionRestoreRapidMovements::parameterSchema()); break;
+        case 2: settings.loadConfig(FeedRateConverter::parameterSchema()); break;
+        case 3: settings.loadConfig(CoordinateOffsetConverter::parameterSchema()); break;
+        case 4: settings.loadConfig(SafeSpindleStopConverter::parameterSchema()); break;
+        case 5: settings.loadConfig(MovementOptimizerConverter::parameterSchema()); break;
+        case 6: settings.loadConfig(ShakingGCode::parameterSchema()); break;
+        case 7: settings.loadConfig(ApplyHeightmap::parameterSchema()); break;
+        case 8: settings.loadConfig(StripComments::parameterSchema()); break;
+        case 9: settings.loadConfig(MovePath::parameterSchema()); break;
+        case 10: settings.loadConfig(ModifyFeedRate::parameterSchema()); break;
+        default:
+            qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
+            return;
+    }
+    if (settings.exec() != QDialog::Accepted) return;
+
+    QVariantMap values = settings.values();
+
     AbstractBatchConverter *converter = nullptr;
 
     switch (converterIndex) {
-        case 0: converter = new SingleConverter(new ArcsToLines(0.1, false));            break;
-        case 1: converter = new SingleConverter(new FusionRestoreRapidMovements());      break;
-        case 2: converter = new SingleConverter(new FeedRateConverter(2.0));             break;
-        case 3: converter = new SingleConverter(new CoordinateOffsetConverter(10.0));    break;
-        case 4: converter = new SingleConverter(new SafeSpindleStopConverter());         break;
-        case 5: converter = new SingleConverter(new MovementOptimizerConverter());       break;
-        case 6: converter = new ShakingGCode(5.0, 1.0);                                 break;
-        case 7: converter = new ApplyHeightmap(&heightmap(), 1.0);                      break;
-        case 8: converter = new SingleConverter(new StripComments());                  break;
-        case 9: converter = new SingleConverter(new MovePath(10.0, 5.0, 0.0));         break;
-        case 10: converter = new SingleConverter(new ModifyFeedRate(150.0));            break;
+        case 0: converter = new SingleConverter(new ArcsToLines(values["arcPrecision"].toDouble(), values["arcDegreeMode"].toBool())); break;
+        case 1: converter = new SingleConverter(new FusionRestoreRapidMovements()); break;
+        case 2: converter = new SingleConverter(new FeedRateConverter(values["multiplier"].toDouble())); break;
+        case 3: converter = new SingleConverter(new CoordinateOffsetConverter(values["offsetX"].toDouble())); break;
+        case 4: converter = new SingleConverter(new SafeSpindleStopConverter()); break;
+        case 5: converter = new SingleConverter(new MovementOptimizerConverter()); break;
+        case 6: converter = new ShakingGCode(values["segmentLength"].toDouble(), values["maxOffset"].toDouble()); break;
+        case 7: converter = new ApplyHeightmap(&heightmap(), values["segmentLength"].toDouble()); break;
+        case 8: converter = new SingleConverter(new StripComments()); break;
+        case 9: converter = new SingleConverter(new MovePath(values["offsetX"].toDouble(), values["offsetY"].toDouble(), values["offsetZ"].toDouble())); break;
+        case 10: converter = new SingleConverter(new ModifyFeedRate(values["percent"].toDouble())); break;
         default:
             qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
             return;

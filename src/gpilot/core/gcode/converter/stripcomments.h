@@ -12,6 +12,8 @@
 class StripComments : public AbstractConverter
 {
 public:
+    static QString parameterSchema();
+
     StripComments();
     bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
 };

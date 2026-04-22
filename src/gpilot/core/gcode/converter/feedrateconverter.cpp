@@ -1,9 +1,29 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2025 BTS
 
-#include "exampleconverter.h"
+#include "feedrateconverter.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QRegularExpression>
+
+QString FeedRateConverter::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Feed rate multiplier (example)",
+  "description": "Example converter: multiplies every F value by a constant. Use 'Modify feed rate' for the production version with percentage and range checks.",
+  "image": ":/images/converters/feedrate.svg",
+  "fields": [
+    {
+      "name": "multiplier",
+      "label": "Multiplier",
+      "type": "float",
+      "min": 0.1,
+      "max": 10.0,
+      "default": 1.0,
+      "description": "Scaling factor applied to every F value. 1.0 = no change, 0.5 = half, 2.0 = double."
+    }
+  ]
+})JSON");
+}
 
 FeedRateConverter::FeedRateConverter(double multiplier)
     : AbstractConverter()
@@ -40,6 +60,44 @@ bool FeedRateConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIn
 void FeedRateConverter::reset()
 {
     AbstractConverter::reset();
+}
+
+QString CoordinateOffsetConverter::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Coordinate offset (example)",
+  "description": "Example converter: adds fixed X/Y/Z offsets to movement lines. Use 'Move path' for the production version that tracks G90/G91 mode.",
+  "image": ":/images/converters/coordinateoffset.svg",
+  "fields": [
+    {
+      "name": "offsetX",
+      "label": "Offset X",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to X coordinates. Units: mm."
+    },
+    {
+      "name": "offsetY",
+      "label": "Offset Y",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to Y coordinates. Units: mm."
+    },
+    {
+      "name": "offsetZ",
+      "label": "Offset Z",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to Z coordinates. Units: mm."
+    }
+  ]
+})JSON");
 }
 
 CoordinateOffsetConverter::CoordinateOffsetConverter(double offsetX, double offsetY, double offsetZ)
@@ -125,6 +183,16 @@ QString CoordinateOffsetConverter::modifyCoordinate(const QString &arg, char axi
     return arg;
 }
 
+QString SafeSpindleStopConverter::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Safe spindle stop (example)",
+  "description": "Example converter demonstrating the lookahead mechanism. Ensures the spindle is not stopped immediately before a cutting move.",
+  "image": ":/images/converters/safespindlestop.svg",
+  "fields": []
+})JSON");
+}
+
 SafeSpindleStopConverter::SafeSpindleStopConverter()
     : AbstractConverter()
 {
@@ -149,6 +217,16 @@ bool SafeSpindleStopConverter::convertLine(GCodeItem &item, GCode *gcode, int cu
     }
 
     return false;
+}
+
+QString MovementOptimizerConverter::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Movement optimizer (example)",
+  "description": "Example converter demonstrating full G-code access and lookahead. Analyzes neighbouring movement lines to spot optimisations.",
+  "image": ":/images/converters/movementoptimizer.svg",
+  "fields": []
+})JSON");
 }
 
 MovementOptimizerConverter::MovementOptimizerConverter()

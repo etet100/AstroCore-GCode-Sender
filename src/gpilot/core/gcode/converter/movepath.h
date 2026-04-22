@@ -19,6 +19,8 @@
 class MovePath : public AbstractConverter
 {
 public:
+    static QString parameterSchema();
+
     MovePath(double offsetX = 0.0, double offsetY = 0.0, double offsetZ = 0.0);
 
     bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;

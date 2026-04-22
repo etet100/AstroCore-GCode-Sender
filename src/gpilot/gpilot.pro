@@ -127,7 +127,7 @@ SOURCES += main.cpp\
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
     core/gcode/converter/abstractconverter.cpp \
-    core/gcode/converter/exampleconverter.cpp \
+    core/gcode/converter/feedrateconverter.cpp \
     core/gcode/converter/fusionrestorerapidmovements.cpp \
     core/gcode/converter/modifyfeedrate.cpp \
     core/gcode/converter/movepath.cpp \
@@ -185,6 +185,7 @@ SOURCES += main.cpp\
     ui/drawers/tablesurfacedrawer.cpp \
     ui/drawers/vertexdataexporter.cpp \
     ui/forms/frmclosingapp.cpp \
+    ui/forms/frmconvertersettings.cpp \
     ui/forms/frmlog.cpp \
     ui/forms/modals/dlgeditheightmappoint.cpp \
     ui/forms/modals/dlgeditprogram.cpp \
@@ -325,7 +326,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/converter/arcstolines.h \
     core/gcode/converter/abstractconverter.h \
     core/gcode/converter/abstractbatchconverter.h \
-    core/gcode/converter/exampleconverter.h \
+    core/gcode/converter/feedrateconverter.h \
     core/gcode/converter/fusionrestorerapidmovements.h \
     core/gcode/converter/modifyfeedrate.h \
     core/gcode/converter/movepath.h \
@@ -388,6 +389,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/drawers/tablesurfacedrawer.h \
     ui/drawers/vertexdataexporter.h \
     ui/forms/frmclosingapp.h \
+    ui/forms/frmconvertersettings.h \
     ui/forms/frmlog.h \
     ui/forms/modals/dlgeditheightmappoint.h \
     ui/forms/modals/dlgeditprogram.h \
@@ -493,6 +495,7 @@ HEADERS  += ui/forms/frmmain.h \
 
 FORMS    += ui/forms/frmmain.ui \
     ui/forms/frmclosingapp.ui \
+    ui/forms/frmconvertersettings.ui \
     ui/forms/frmlog.ui \
     ui/forms/modals/dlgeditheightmappoint.ui \
     ui/forms/modals/dlgeditprogram.ui \

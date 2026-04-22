@@ -7,6 +7,44 @@
 #include <QtGlobal>
 #include <cmath>
 
+QString MovePath::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Move path",
+  "description": "Shifts every G90 (absolute) movement line by fixed X/Y/Z offsets. G91 (incremental) lines are left unchanged.",
+  "image": ":/images/converters/movepath.svg",
+  "fields": [
+    {
+      "name": "offsetX",
+      "label": "Offset X",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to X coordinates on G90 movement lines. Units: mm."
+    },
+    {
+      "name": "offsetY",
+      "label": "Offset Y",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to Y coordinates on G90 movement lines. Units: mm."
+    },
+    {
+      "name": "offsetZ",
+      "label": "Offset Z",
+      "type": "float",
+      "min": -10000.0,
+      "max": 10000.0,
+      "default": 0.0,
+      "description": "Value added to Z coordinates on G90 movement lines. Units: mm."
+    }
+  ]
+})JSON");
+}
+
 MovePath::MovePath(double offsetX, double offsetY, double offsetZ)
     : m_offsetX(offsetX), m_offsetY(offsetY), m_offsetZ(offsetZ)
 {

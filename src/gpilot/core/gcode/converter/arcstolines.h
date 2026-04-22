@@ -18,6 +18,8 @@
 class ArcsToLines : public AbstractConverter
 {
 public:
+    static QString parameterSchema();
+
     explicit ArcsToLines(double arcPrecision = 0.1, bool arcDegreeMode = false);
 
     bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;

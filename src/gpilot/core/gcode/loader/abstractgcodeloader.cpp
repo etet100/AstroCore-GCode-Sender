@@ -13,6 +13,7 @@ static GCodeItemGroup groupFromSegment(const PointSegment *ps)
     if (!ps)                  return GCodeItemGroup::Unknown;
     if (ps->isFastTraverse()) return GCodeItemGroup::RapidMovement;
     if (ps->isArc())          return GCodeItemGroup::ArcMovement;
+
     return GCodeItemGroup::Movement;
 }
 

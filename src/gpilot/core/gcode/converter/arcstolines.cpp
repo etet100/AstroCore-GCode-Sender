@@ -10,6 +10,33 @@
 
 static const double MIN_ARC_SEGMENT_LENGTH = 0.1;
 
+QString ArcsToLines::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Arcs to lines",
+  "description": "Converts G2/G3 arc movements into chains of G1 linear segments. Useful for controllers with limited or buggy arc support.",
+  "image": ":/images/converters/arcstolines.svg",
+  "fields": [
+    {
+      "name": "arcPrecision",
+      "label": "Arc precision",
+      "type": "float",
+      "min": 0.001,
+      "max": 10.0,
+      "default": 0.1,
+      "description": "Max chord deviation in mm, or segment length in degrees when 'Degree mode' is enabled."
+    },
+    {
+      "name": "arcDegreeMode",
+      "label": "Degree mode",
+      "type": "bool",
+      "default": false,
+      "description": "When on, 'Arc precision' is interpreted as degrees per segment instead of chord deviation in mm."
+    }
+  ]
+})JSON");
+}
+
 ArcsToLines::ArcsToLines(double arcPrecision, bool arcDegreeMode)
     : AbstractConverter()
     , m_arcPrecision(arcPrecision)

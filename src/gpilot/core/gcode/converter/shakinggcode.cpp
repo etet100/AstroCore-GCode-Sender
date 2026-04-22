@@ -13,6 +13,35 @@
 // - Adds random offset to each point (±1mm configurable)
 // - Randomly varies feed rate (±20% configurable)
 
+QString ShakingGCode::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Shake path",
+  "description": "Test converter. Segments movement lines and adds a random XYZ offset to each segment endpoint. Intended for intentional path distortion when testing the sender.",
+  "image": ":/images/converters/shakinggcode.svg",
+  "fields": [
+    {
+      "name": "segmentLength",
+      "label": "Segment length",
+      "type": "float",
+      "min": 0.1,
+      "max": 100.0,
+      "default": 5.0,
+      "description": "Movement lines are split every N mm before random offsets are applied. Units: mm."
+    },
+    {
+      "name": "maxOffset",
+      "label": "Max offset",
+      "type": "float",
+      "min": 0.0,
+      "max": 10.0,
+      "default": 1.0,
+      "description": "Maximum random XYZ offset added to each segment endpoint (±). Units: mm."
+    }
+  ]
+})JSON");
+}
+
 ShakingGCode::ShakingGCode(double segmentLength, double maxOffset, QObject *parent)
     : QObject(parent)
     , m_parser(nullptr)

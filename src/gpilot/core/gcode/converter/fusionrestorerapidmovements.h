@@ -79,6 +79,8 @@
 class FusionRestoreRapidMovements : public AbstractConverter
 {
     public:
+        static QString parameterSchema();
+
         FusionRestoreRapidMovements();
 
         bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;

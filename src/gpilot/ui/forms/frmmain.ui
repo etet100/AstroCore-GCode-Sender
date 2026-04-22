@@ -854,6 +854,9 @@ QGroupBox::title {
     <addaction name="actTestConverterMovementOptimizerConverter"/>
     <addaction name="actTestConverterShakingGCode"/>
     <addaction name="actTestConverterApplyHeightmap"/>
+    <addaction name="actTestConverterStripComments"/>
+    <addaction name="actTestConverterMovePath"/>
+    <addaction name="actTestConverterModifyFeedRate"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1237,6 +1240,21 @@ QGroupBox::title {
   <action name="actTestConverterApplyHeightmap">
    <property name="text">
     <string>ApplyHeightmap (current heightmap, 1 mm segments)</string>
+   </property>
+  </action>
+  <action name="actTestConverterStripComments">
+   <property name="text">
+    <string>StripComments (remove all comments)</string>
+   </property>
+  </action>
+  <action name="actTestConverterMovePath">
+   <property name="text">
+    <string>MovePath (X+10, Y+5, Z+0)</string>
+   </property>
+  </action>
+  <action name="actTestConverterModifyFeedRate">
+   <property name="text">
+    <string>ModifyFeedRate (150% of original feed rate)</string>
    </property>
   </action>
  </widget>

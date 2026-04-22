@@ -13,6 +13,33 @@
 #include <QRegularExpression>
 #include <QtMath>
 
+QString ApplyHeightmap::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Apply heightmap",
+  "description": "Segments movement lines and shifts their Z by the height sampled from the probed heightmap. Use to compensate for an uneven work surface (e.g. PCB isolation).",
+  "image": ":/images/converters/applyheightmap.svg",
+  "fields": [
+    {
+      "name": "segmentLength",
+      "label": "Segment length",
+      "type": "float",
+      "min": 0.1,
+      "max": 100.0,
+      "default": 1.0,
+      "description": "Movement lines are split every N mm before heightmap Z-offset is applied. Smaller values follow the surface more accurately, but produce more lines. Units: mm."
+    },
+    {
+      "name": "applyToRapids",
+      "label": "Apply to rapids",
+      "type": "bool",
+      "default": false,
+      "description": "When on, heightmap Z-offset is applied also to G0 rapid moves. Usually left off so rapids stay at clearance height."
+    }
+  ]
+})JSON");
+}
+
 ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, bool applyToRapids, QObject *parent)
     : QObject(parent)
     , m_heightmap(heightmap)

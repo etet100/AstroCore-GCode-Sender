@@ -10,6 +10,16 @@
 static const QSet<int> MOTION_GCODES = {0, 1, 2, 3, 33, 38, 73, 76, 80, 81, 82, 84, 85, 86, 87, 88, 89};
 static const QSet<int> HOME_GCODES   = {28, 30};
 
+QString FusionRestoreRapidMovements::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Restore Fusion 360 rapids",
+  "description": "Detects G1 moves that Fusion 360 emitted as feed moves but which are actually repositioning moves above the material, and converts them to G0 rapids. Ported from Tim Paterson's PostProcessAll. Experimental — requires at least two Z-only moves above the material before the first plunge.",
+  "image": ":/images/converters/fusionrestorerapids.svg",
+  "fields": []
+})JSON");
+}
+
 FusionRestoreRapidMovements::FusionRestoreRapidMovements()
 {
     reset();

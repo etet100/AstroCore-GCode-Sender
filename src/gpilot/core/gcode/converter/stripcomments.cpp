@@ -5,6 +5,16 @@
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
 
+QString StripComments::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Strip comments",
+  "description": "Removes all G-code comments — both parenthetical (comment) and semicolon style ; comment. Lines that contained only a comment become empty lines.",
+  "image": ":/images/converters/stripcomments.svg",
+  "fields": []
+})JSON");
+}
+
 StripComments::StripComments() : AbstractConverter() {}
 
 bool StripComments::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)

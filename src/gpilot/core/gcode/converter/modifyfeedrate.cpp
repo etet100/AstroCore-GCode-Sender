@@ -7,6 +7,26 @@
 #include <QtGlobal>
 #include <cmath>
 
+QString ModifyFeedRate::parameterSchema()
+{
+    return QStringLiteral(R"JSON({
+  "title": "Modify feed rate",
+  "description": "Scales every F (feed rate) value in the G-code by a percentage. Comments are left untouched.",
+  "image": ":/images/converters/modifyfeedrate.svg",
+  "fields": [
+    {
+      "name": "percent",
+      "label": "Feed rate",
+      "type": "float",
+      "min": 1.0,
+      "max": 1000.0,
+      "default": 100.0,
+      "description": "Scaling factor applied to every F value in percent. 100 = no change, 50 = half speed, 200 = double."
+    }
+  ]
+})JSON");
+}
+
 ModifyFeedRate::ModifyFeedRate(double percent)
     : AbstractConverter()
     , m_percent(percent)

@@ -13,6 +13,8 @@
 class ModifyFeedRate : public AbstractConverter
 {
 public:
+    static QString parameterSchema();
+
     explicit ModifyFeedRate(double percent = 100.0);
 
     bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
