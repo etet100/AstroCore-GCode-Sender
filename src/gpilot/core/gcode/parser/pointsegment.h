@@ -38,9 +38,9 @@ public:
     bool isMetric();
     void setIsMetric(bool m_isMetric);
     void setIsArc(bool isA);
-    bool isArc();
+    bool isArc() const;
     void setIsFastTraverse(bool isF);
-    bool isFastTraverse();
+    bool isFastTraverse() const;
     void setArcCenter(QVector3D *center);
     QVector<double> centerPoints();
     QVector3D *center();

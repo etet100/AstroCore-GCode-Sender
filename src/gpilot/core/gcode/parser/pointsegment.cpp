@@ -118,7 +118,7 @@ void PointSegment::setIsArc(bool isA)
     m_isArc = isA;
 }
 
-bool PointSegment::isArc() {
+bool PointSegment::isArc() const {
     return m_isArc;
 }
 
@@ -127,7 +127,7 @@ void PointSegment::setIsFastTraverse(bool isF)
     m_isFastTraverse = isF;
 }
 
-bool PointSegment::isFastTraverse() {
+bool PointSegment::isFastTraverse() const {
     return m_isFastTraverse;
 }
 
