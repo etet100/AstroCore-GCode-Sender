@@ -12,6 +12,7 @@ in vec3 v_light_direction;
 in vec3 v_eye;
 in float v_log_depth;
 noperspective in float v_cumSegPosition;
+in float v_viewDepth;
 
 out vec4 fragColor;
 
@@ -47,8 +48,17 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
 
     // ambient light
-    float ambient = 0.7;
+    float ambient = 0.6;
 
     // calc fragment color
-    fragColor = vec4(v_color.rgb * (diff + ambient) + spec, v_color.a);
+    vec3 color = v_color.rgb * (diff + ambient) + spec;
+
+    // depth-based brightness: brighten near lines, darken far lines
+    float fogDensity = 0.01;
+    float nearBoost = 3.5;
+    float farAttenuation = 0.55;
+    float fog = 1.0 - exp(-v_viewDepth * fogDensity);
+    color *= mix(nearBoost, farAttenuation, clamp(fog, 0.0, 1.0));
+
+    fragColor = vec4(color, v_color.a);
 }

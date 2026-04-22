@@ -25,6 +25,7 @@ out vec3 v_normal;
 out vec3 v_light_direction;
 out vec3 v_eye;
 noperspective out float v_cumSegPosition;
+out float v_viewDepth;
 
 void main()
 {
@@ -46,4 +47,7 @@ void main()
     v_eye = (vec4(u_eye, 1.0) * u_mvp_matrix).xyz;
 
     v_cumSegPosition = a_cumSegPosition;
+
+    vec4 viewPos = u_mv_matrix * u_model_matrix * vertex_position;
+    v_viewDepth = -viewPos.z;
 }
