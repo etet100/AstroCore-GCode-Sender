@@ -1123,7 +1123,6 @@ void FrmMain::onFileOpen(QString filePath)
 
 void FrmMain::onFileSend()
 {
-    timer().startExecution();
     communicator()->sb()->action(RunAction(program()));
 
 #ifdef WINDOWS

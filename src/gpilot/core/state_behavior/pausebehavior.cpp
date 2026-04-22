@@ -3,6 +3,7 @@
 // Copyright 2024 BTS
 
 #include "core/globals.h"
+#include "core/core.h"
 #include "core/communicator/communicator.h"
 #include "pausebehavior.h"
 #include "runningbehavior.h"
@@ -66,6 +67,7 @@ AbstractStateBehavior::Result PauseBehavior::doOnEntry(CommunicatorApi *communic
             break;
     }
 
+    Core::instance().timer().pauseExecution();
     communicator->startQueryingMachineState();
 
     return AbstractStateBehavior::Result::Ok;
