@@ -267,7 +267,7 @@
        </widget>
       </item>
       <item row="10" column="1">
-       <widget class="StyledToolButton" name="cmdToggleLight">
+       <widget class="StyledToolButton" name="cmdToggleHeightmapPreview">
         <property name="minimumSize">
          <size>
           <width>35</width>
@@ -281,11 +281,11 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>Toggle rotating light</string>
+         <string>Toggle G-Code preview with heightmap applied</string>
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer/visualizer_light.svg</normaloff>:/images/visualizer/visualizer_light.svg</iconset>
+          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -815,6 +815,41 @@
         </property>
        </widget>
       </item>
+      <item row="12" column="0">
+       <widget class="StyledToolButton" name="cmdToggleLight">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle rotating light</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer/visualizer_light.svg</normaloff>:/images/visualizer/visualizer_light.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -1093,6 +1128,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmdToggleHeightmapPreview</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>toggleHeightmapPreviewClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>19</x>
+     <y>405</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>117</x>
+     <y>380</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>fitClicked()</slot>
@@ -1111,5 +1162,6 @@
   <slot>toggleLightClicked()</slot>
   <slot>toggleBoundingBoxClicked()</slot>
   <slot>toggleToolpathClicked()</slot>
+  <slot>toggleHeightmapPreviewClicked()</slot>
  </slots>
 </ui>

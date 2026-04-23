@@ -426,6 +426,10 @@ GLuint GcodeDrawer::getSegmentColorAndUpdateIndex(GLuint& var, GLuint index)
 
 QVector3D GcodeDrawer::sizes()
 {
+    if (!m_viewParser) {
+        return QVector3D();
+    }
+
     QVector3D min = m_viewParser->getMinimumExtremes() - QVector3D(1, 1, 1);
     QVector3D max = m_viewParser->getMaximumExtremes() + QVector3D(1, 1, 1);
 
@@ -434,6 +438,10 @@ QVector3D GcodeDrawer::sizes()
 
 QVector3D GcodeDrawer::minimumExtremes()
 {
+    if (!m_viewParser) {
+        return QVector3D();
+    }
+
     QVector3D v = m_viewParser->getMinimumExtremes();
     if (m_ignoreZ) {
         if (m_ignoreZ) v.setZ(0);
@@ -444,6 +452,10 @@ QVector3D GcodeDrawer::minimumExtremes()
 
 QVector3D GcodeDrawer::maximumExtremes()
 {
+    if (!m_viewParser) {
+        return QVector3D();
+    }
+
     QVector3D v = m_viewParser->getMaximumExtremes();
     if (m_ignoreZ) {
         v.setZ(0);
@@ -470,9 +482,7 @@ void GcodeDrawer::setSimplify(bool simplify)
     if (m_simplify && !m_simplifyTransform) {
         m_simplifyTransform = std::make_unique<SimplifyViewTransform>(m_simplifyPrecision);
     }
-    if (m_viewParser) {
-        m_viewParser->invalidateProcessedCache();
-    }
+    update();
 }
 
 void GcodeDrawer::setSimplifyPrecision(double simplifyPrecision)
@@ -480,9 +490,7 @@ void GcodeDrawer::setSimplifyPrecision(double simplifyPrecision)
     m_simplifyPrecision = simplifyPrecision;
     if (m_simplifyTransform) {
         m_simplifyTransform->setPrecision(simplifyPrecision);
-        if (m_viewParser) {
-            m_viewParser->invalidateProcessedCache();
-        }
+        update();
     }
 }
 
@@ -491,23 +499,30 @@ void GcodeDrawer::setHeightmapView(Heightmap* heightmap, double segmentLength)
     m_heightmapTransform = heightmap
         ? std::make_unique<HeightmapViewTransform>(heightmap, segmentLength)
         : nullptr;
-    if (m_viewParser) {
-        m_viewParser->invalidateProcessedCache();
-    }
+    update();
 }
 
 void GcodeDrawer::clearHeightmapView()
 {
     m_heightmapTransform.reset();
-    if (m_viewParser) {
-        m_viewParser->invalidateProcessedCache();
-    }
+    update();
+}
+
+void GcodeDrawer::setHeightmapPreview(bool enabled)
+{
+    m_heightmapPreview = enabled;
+    update();
+}
+
+void GcodeDrawer::toggleHeightmapPreview()
+{
+    setHeightmapPreview(!m_heightmapPreview);
 }
 
 QList<AbstractViewTransform*> GcodeDrawer::activeTransforms() const
 {
     QList<AbstractViewTransform*> list;
-    if (m_heightmapTransform) {
+    if (m_heightmapPreview && m_heightmapTransform) {
         list.append(m_heightmapTransform.get());
     }
     if (m_simplify && m_simplifyTransform) {

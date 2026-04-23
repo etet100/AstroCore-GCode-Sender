@@ -133,6 +133,7 @@ class PartMainVisualizer : public QWidget
         void toggleLightClicked();
         void toggleBoundingBoxClicked();
         void toggleToolpathClicked();
+        void toggleHeightmapPreviewClicked();
 
     private:
         Ui::partMainVisualizer* ui;

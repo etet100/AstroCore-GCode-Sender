@@ -50,6 +50,9 @@ public:
     void setSimplifyPrecision(double simplifyPrecision);
     void setHeightmapView(Heightmap* heightmap, double segmentLength);
     void clearHeightmapView();
+    void setHeightmapPreview(bool enabled);
+    void toggleHeightmapPreview();
+    bool heightmapPreview() const { return m_heightmapPreview; }
     void setInterpolationMode(Heightmap::InterpolationMode mode);
 
     bool geometryUpdated();
@@ -78,6 +81,7 @@ private:
     GCodeViewParser *m_viewParser = nullptr;
     bool m_simplify;
     double m_simplifyPrecision;
+    bool m_heightmapPreview = true;
 
     std::unique_ptr<SimplifyViewTransform> m_simplifyTransform;
     std::unique_ptr<HeightmapViewTransform> m_heightmapTransform;

@@ -828,3 +828,8 @@ void PartMainVisualizer::toggleToolpathClicked()
 {
     m_codeDrawer->toggleVisible();
 }
+
+void PartMainVisualizer::toggleHeightmapPreviewClicked()
+{
+    m_codeDrawer->toggleHeightmapPreview();
+}
