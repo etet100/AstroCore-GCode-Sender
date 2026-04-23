@@ -57,12 +57,12 @@ https://github.com/etet100/AstroCore-GCode-Sender/releases/latest
 
 Each release contains both **Debug** and **Release** versions:
 
-- **Debug Build** (`GPilotPortable-debug.zip`, `GPilotInstaller-debug.exe`):
+- **Debug Build** (`AstroCodePortable-debug.zip`, `AstroCodeInstaller-debug.exe`):
   - Includes debugging symbols and additional logging
   - Larger file size but better for troubleshooting issues
   - Recommended for testing and reporting bugs
 
-- **Release Build** (`GPilotPortable-release.zip`, `GPilotInstaller-release.exe`):
+- **Release Build** (`AstroCodePortable-release.zip`, `AstroCodeInstaller-release.exe`):
   - Optimized for performance with smaller file size
   - Recommended for normal usage
 
@@ -98,16 +98,16 @@ Command line options
 
 AstroCore supports several command line switches:
 
-- `-l` or `--log-to-file` – Enables logging debug info to GPilot.log file.
-- `-t` or `--trim-log` – Clears GPilot.log file at startup (use with log-to-file).
+- `-l` or `--log-to-file` – Enables logging debug info to AstroCode.log file.
+- `-t` or `--trim-log` – Clears AstroCode.log file at startup (use with log-to-file).
 - `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
 - `-co` or `--console` - Opens AstroCore with console window (for debugging purposes). Windows only.
 - `-lw` or `--log-wnd` - Opens AstroCore with log browser window.
 
 Examples:
 
-  G-Pilot.exe --log-to-file --trim-log --config-type json
-  G-Pilot.exe --console
+  AstroCode.exe --log-to-file --trim-log --config-type json
+  AstroCode.exe --console
 
 You can combine options as needed. See main.cpp for details.
 

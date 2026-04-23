@@ -1,4 +1,4 @@
-name: Build G-Pilot
+name: Build AstroCode
 
 on:
   push:
@@ -197,7 +197,7 @@ jobs:
             cp -r src/vendor/qcoro/install build/vendor/qcoro/
           fi
 
-      - name: Build G-Pilot
+      - name: Build AstroCode
         shell: bash
         env:
           QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
@@ -242,7 +242,7 @@ jobs:
           xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
           xcopy data\fluidnc\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
           xcopy data\gcode\* installer\packages\com.gpilot.examples.gcode\data\gcode-examples\ /E /I /H /Y
-          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages GPilotInstaller-${{ matrix.config }}.exe
+          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCodeInstaller-${{ matrix.config }}.exe
 
       - name: Package build artifacts
         if: matrix.os == 'windows-latest'
@@ -252,16 +252,16 @@ jobs:
           mkdir artifacts
           for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
           dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath GPilotPortable-${{ matrix.config }}.zip
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCodePortable-${{ matrix.config }}.zip
 
       - name: Upload build artifacts
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: gpilot-${{ matrix.config }}-artifacts
+          name: astrocode-${{ matrix.config }}-artifacts
           path: |
-            GPilotPortable-${{ matrix.config }}.zip
-            GPilotInstaller-${{ matrix.config }}.exe
+            AstroCodePortable-${{ matrix.config }}.zip
+            AstroCodeInstaller-${{ matrix.config }}.exe
 
   release:
     needs: build
@@ -287,14 +287,14 @@ jobs:
             ## Available Builds
 
             **Debug Build:**
-            - GPilotPortable-debug.zip - Portable debug version
-            - GPilotInstaller-debug.exe - Debug installer
+            - AstroCodePortable-debug.zip - Portable debug version
+            - AstroCodeInstaller-debug.exe - Debug installer
 
             **Release Build:**
-            - GPilotPortable-release.zip - Portable release version
-            - GPilotInstaller-release.exe - Release installer
+            - AstroCodePortable-release.zip - Portable release version
+            - AstroCodeInstaller-release.exe - Release installer
           files: |
-            artifacts/gpilot-debug-artifacts/GPilotPortable-debug.zip
-            artifacts/gpilot-debug-artifacts/GPilotInstaller-debug.exe
-            artifacts/gpilot-release-artifacts/GPilotPortable-release.zip
-            artifacts/gpilot-release-artifacts/GPilotInstaller-release.exe
+            artifacts/astrocode-debug-artifacts/AstroCodePortable-debug.zip
+            artifacts/astrocode-debug-artifacts/AstroCodeInstaller-debug.exe
+            artifacts/astrocode-release-artifacts/AstroCodePortable-release.zip
+            artifacts/astrocode-release-artifacts/AstroCodeInstaller-release.exe
