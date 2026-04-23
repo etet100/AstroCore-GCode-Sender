@@ -138,7 +138,8 @@ void PartMainProgram::scrollToIndex(int index)
     }
     auto* model = ui->tblProgram->model();
     if (model) {
-        const QModelIndex ind = currentModelIndex(m_programModel.toFilteredIndex(index) + 2, 0);
+        const int viewRow = m_programModel.mapFromSource(index);
+        const QModelIndex ind = currentModelIndex((viewRow < 0 ? 0 : viewRow) + 2, 0);
         ui->tblProgram->scrollTo(ind);
         // ui->tblProgram->setCurrentIndex(index);
     }
@@ -272,23 +273,46 @@ void PartMainProgram::setupFileSendMenu(QObject* receiver, const char* sendFromL
 
 void PartMainProgram::insertLines(bool before)
 {
-    QModelIndex current = ui->tblProgram->currentIndex();
+    // Editing is disabled when a filter is active (see onTableContextMenuRequested).
+    if (m_programModel.isFilterActive()) {
+        return;
+    }
 
-    emit insertLinesRequested(current.row(), before);
+    QModelIndex current = ui->tblProgram->currentIndex();
+    const int sourceRow = m_programModel.mapToSource(current.row());
+    if (sourceRow < 0) {
+        return;
+    }
+
+    emit insertLinesRequested(sourceRow, before);
 }
 
 void PartMainProgram::onEditSelectedTriggered()
 {
+    if (m_programModel.isFilterActive()) {
+        return;
+    }
+
     SelRange range = getSelectedRange();
     if (!range.count) {
         return;
     }
 
-    emit editLinesRequested(range.from, range.to);
+    const int fromSrc = m_programModel.mapToSource(range.from);
+    const int toSrc = m_programModel.mapToSource(range.to);
+    if (fromSrc < 0 || toSrc < 0) {
+        return;
+    }
+
+    emit editLinesRequested(fromSrc, toSrc);
 }
 
 void PartMainProgram::onDeleteSelectedTriggered()
 {
+    if (m_programModel.isFilterActive()) {
+        return;
+    }
+
     SelRange range = getSelectedRange();
     if (!range.count) {
         return;
@@ -298,7 +322,13 @@ void PartMainProgram::onDeleteSelectedTriggered()
         return;
     }
 
-    emit deleteLinesRequested(range.from, range.to);
+    const int fromSrc = m_programModel.mapToSource(range.from);
+    const int toSrc = m_programModel.mapToSource(range.to);
+    if (fromSrc < 0 || toSrc < 0) {
+        return;
+    }
+
+    emit deleteLinesRequested(fromSrc, toSrc);
 }
 
 void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
@@ -308,17 +338,23 @@ void PartMainProgram::onTableContextMenuRequested(const QPoint& pos)
     int selectedRow = hasSelection ? selectedRows[0].row() : -1;
     int totalRows = ui->tblProgram->model() ? ui->tblProgram->model()->rowCount() : 0;
 
+    // Editing actions are disabled while a filter is active. A contiguous
+    // selection in the filtered view may map to a non-contiguous source range,
+    // so insert/edit/delete on the underlying GCode would touch hidden rows.
+    const bool editingAllowed = !m_programModel.isFilterActive();
+
     // 0 - Insert (before)
     // 1 - Insert after
     // 2 - Delete selected
     // 3 - Edit selected
-    if (hasSelection) {
+    if (hasSelection && editingAllowed) {
         m_tableMenu->actions().at(0)->setEnabled(true);
         m_tableMenu->actions().at(1)->setEnabled(true);
         m_tableMenu->actions().at(3)->setEnabled(true);
         // Do not delete last row (placeholder for new line)
         m_tableMenu->actions().at(2)->setEnabled(selectedRow != totalRows - 1);
     } else {
+        m_tableMenu->actions().at(0)->setEnabled(false);
         m_tableMenu->actions().at(1)->setEnabled(false);
         m_tableMenu->actions().at(2)->setEnabled(false);
         m_tableMenu->actions().at(3)->setEnabled(false);

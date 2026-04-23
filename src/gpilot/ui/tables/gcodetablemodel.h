@@ -51,9 +51,17 @@ public:
     GCodeFilterView* filter() { return &m_filter; }
     const GCodeFilterView* filter() const { return &m_filter; }
 
-    // Maps a source row index to the visible view row (legacy name kept
-    // for compatibility with existing callers).
-    int toFilteredIndex(int index) const;
+    // True when the filter currently hides at least one source row.
+    bool isFilterActive() const { return m_filter.isActive(); }
+
+    // View row -> source row. Pass-through when filter is inactive.
+    // Returns -1 when the view row is invalid.
+    int mapToSource(int viewRow) const;
+
+    // Source row -> view row. Pass-through when filter is inactive.
+    // For hidden source rows returns the nearest earlier visible view row
+    // (matches GCodeFilterView::toViewRow). Returns -1 when invalid.
+    int mapFromSource(int sourceRow) const;
 
 private slots:
     void onFilterAboutToReset();

@@ -259,8 +259,18 @@ void GCodeTableModel::clearFilter()
     setFilter(QString());
 }
 
-int GCodeTableModel::toFilteredIndex(int index) const
+int GCodeTableModel::mapToSource(int viewRow) const
 {
-    const int viewRow = m_filter.toViewRow(index);
-    return viewRow < 0 ? 0 : viewRow;
+    if (!m_filter.isActive()) {
+        return viewRow;
+    }
+    return m_filter.toSourceRow(viewRow);
+}
+
+int GCodeTableModel::mapFromSource(int sourceRow) const
+{
+    if (!m_filter.isActive()) {
+        return sourceRow;
+    }
+    return m_filter.toViewRow(sourceRow);
 }

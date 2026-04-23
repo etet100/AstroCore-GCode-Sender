@@ -171,6 +171,22 @@ settings or the source change.
 API (`setCommentsVisible`, `setFilter`) to it. Access the filter directly
 via `GCodeTableModel::filter()` for overlay-level controls.
 
+For row translation across the model boundary, prefer the model's wrappers
+over reaching into the filter:
+
+- `GCodeTableModel::isFilterActive()` — true when any row is hidden.
+- `GCodeTableModel::mapToSource(viewRow)` — view → source. Pass-through
+  when the filter is inactive; -1 when the view row is invalid.
+- `GCodeTableModel::mapFromSource(sourceRow)` — source → view. Pass-through
+  when the filter is inactive; otherwise mirrors `GCodeFilterView::toViewRow`
+  (nearest earlier visible row when hidden).
+
+Any UI code that takes a row out of a `QModelIndex` and forwards it to
+`GCode` (e.g. `linesAsText`, `replace`, `deleteLines`) must call
+`mapToSource` first. A contiguous selection in the filtered view may map
+to a non-contiguous source range, so editing actions are typically
+disabled while `isFilterActive()` is true (see `PartMainProgram`).
+
 ```cpp
 GCodeFilterView* filter = tableModel->filter();
 
