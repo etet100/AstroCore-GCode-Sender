@@ -4,13 +4,13 @@ title: Help and Bug Reports
 
 # Help and Bug Reports
 
-If you have problems with G-Pilot, found a bug or want to request a feature, this page explains how to do it.
+If you have problems with AstroCore, found a bug or want to request a feature, this page explains how to do it.
 
 ## Where to report
 
 The main place for bug reports and feature requests is the GitHub issue tracker:
 
-- Issues: https://github.com/etet100/G-Pilot-GCode-Sender/issues
+- Issues: https://github.com/etet100/AstroCore-GCode-Sender/issues
 
 Before creating a new issue, quickly check if a similar issue already exists.
 
@@ -18,7 +18,7 @@ Before creating a new issue, quickly check if a similar issue already exists.
 
 To make it easier to reproduce and fix a problem, please include:
 
-- G-Pilot version (for example from the release name or About dialog)
+- AstroCore version (for example from the release name or About dialog)
 - Operating system (Windows / Linux, version and 32/64 bit)
 - CNC controller firmware and version (GRBL, uCNC, grblHAL, FluidNC, etc.)
 - Connection mode (serial, TCP, virtual mode)

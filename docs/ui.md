@@ -38,7 +38,7 @@ Heightmap preview:
 
 ## Layout and docking windows
 
-Most panels can be freely moved, resized, detached from the main window, or stacked on top of each other. The docking system requires one fixed **central widget** — the panel that always occupies the center and cannot be detached or closed. To give you more flexibility over which panel takes that prominent role, GPilot lets you switch the central widget between the **Visualizer** and the **Program** panel. The setting is in the **View > Central Widget** menu.
+Most panels can be freely moved, resized, detached from the main window, or stacked on top of each other. The docking system requires one fixed **central widget** — the panel that always occupies the center and cannot be detached or closed. To give you more flexibility over which panel takes that prominent role, AstroCore lets you switch the central widget between the **Visualizer** and the **Program** panel. The setting is in the **View > Central Widget** menu.
 
 **Visualizer as central widget:**
 

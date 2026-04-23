@@ -4,7 +4,7 @@ title: Application States
 
 # Application States
 
-G-Pilot uses a clear state machine to manage application and machine states. Transitions between states are triggered by events such as machine state changes or user actions.
+AstroCore uses a clear state machine to manage application and machine states. Transitions between states are triggered by events such as machine state changes or user actions.
 
 ## State diagram
 

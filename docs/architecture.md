@@ -4,7 +4,7 @@ title: Architecture Overview
 
 # Architecture Overview
 
-G-Pilot is being refactored into a modular architecture. One of the main goals is to clearly separate the user interface from the machine control logic.
+AstroCore is being refactored into a modular architecture. One of the main goals is to clearly separate the user interface from the machine control logic.
 
 This brings several advantages:
 

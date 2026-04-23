@@ -4,7 +4,7 @@ title: G-code Editing
 
 # G-code Editing
 
-G-Pilot allows you to edit G-code directly inside the application after loading a file.
+AstroCore allows you to edit G-code directly inside the application after loading a file.
 
 ## Editing options
 

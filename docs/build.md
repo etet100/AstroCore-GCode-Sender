@@ -4,7 +4,7 @@ title: Build and Packaging
 
 # Build and Packaging
 
-This page describes how to build G-Pilot from source and how to build Qt Creator designer plugins.
+This page describes how to build AstroCore from source and how to build Qt Creator designer plugins.
 
 ## Build requirements
 
@@ -17,8 +17,8 @@ This page describes how to build G-Pilot from source and how to build Qt Creator
 
 1. Clone the repository with submodules:
    ```
-   git clone --recurse-submodules https://github.com/etet100/G-Pilot-GCode-Sender
-   cd G-Pilot-GCode-Sender
+   git clone --recurse-submodules https://github.com/etet100/AstroCore-GCode-Sender
+   cd AstroCore-GCode-Sender
    git submodule update --init --recursive
    ```
 2. Open `gpilot.pro` in Qt Creator.
@@ -57,9 +57,9 @@ This page describes how to build G-Pilot from source and how to build Qt Creator
 
 ## Qt Creator designer plugins
 
-G-Pilot includes custom Qt Designer widgets that can be used in Qt Creator. These plugins must be built with the same compiler that was used for Qt Creator (typically MSVC 2022 64-bit).
+AstroCore includes custom Qt Designer widgets that can be used in Qt Creator. These plugins must be built with the same compiler that was used for Qt Creator (typically MSVC 2022 64-bit).
 
-> Important: The main G-Pilot project uses a different compiler (LLVM/Clang or MinGW). Designer plugins are built separately.
+> Important: The main AstroCore project uses a different compiler (LLVM/Clang or MinGW). Designer plugins are built separately.
 
 ### Steps
 

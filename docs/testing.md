@@ -4,7 +4,7 @@ title: Testing and Examples
 
 # Testing and Examples
 
-The repository contains a few small test and example resources that can be useful when experimenting with G-Pilot.
+The repository contains a few small test and example resources that can be useful when experimenting with AstroCore.
 
 ## G-code examples
 
@@ -33,7 +33,7 @@ The `testing/gl` folder contains experimental OpenGL/WebGL projects (TypeScript/
 
 ## How to use the tests
 
-- Use the G-code files as input for G-Pilot to test visualisation and streaming
+- Use the G-code files as input for AstroCore to test visualisation and streaming
 - Use the C++ test sources as reference when modifying related modules
 - Extend the tests or add new ones if you change behaviour in the corresponding features
 

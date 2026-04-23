@@ -9,8 +9,6 @@ What AstroCore stands for?
 - **Stellar Core**: Like the core of a star that powers everything around it, AstroCore is the beating heart of your workshop.
 - **A Smart, Trusted, Reliable, Open Core**: A nerdy backronym we stand by — free, open source, and smart in the details.
 
-*This fork is based on the Candle `experimental` branch. The main goal is to add joystick/joypad support. Other than that, I'm making improvements/bugfixes at my discretion.*
-
 *Any help is welcome!*
 
 Documentation

@@ -4,7 +4,7 @@ title: Screenshots
 
 # Screenshots
 
-This page collects selected screenshots of G-Pilot. They are useful to quickly see how the application looks in different themes and configurations.
+This page collects selected screenshots of AstroCore. They are useful to quickly see how the application looks in different themes and configurations.
 
 ## Main window (light theme)
 

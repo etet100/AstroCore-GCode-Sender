@@ -4,7 +4,7 @@ title: Connection and Virtual Modes
 
 # Connection and Virtual Modes
 
-G-Pilot supports several connection modes, including virtual modes that do not require real hardware.
+AstroCore supports several connection modes, including virtual modes that do not require real hardware.
 
 ## Supported connection modes
 
