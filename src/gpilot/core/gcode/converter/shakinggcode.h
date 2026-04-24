@@ -72,8 +72,9 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
         int m_currentIndex;
 
         // Helper methods
-        QList<GCodeItem> processLine(const GCodeItem &item);
-        QList<QVector3D> segmentLine(const QVector3D &start, const QVector3D &end);
+        QList<GCodeItem> processLine(const GCodeItem &item, bool nextIsArc = false);
+        QList<QVector3D> segmentLine(const QVector3D &start, const QVector3D &end, bool nextIsArc = false);
+
         void applyRandomOffset(QVector3D &point);
         double getRandomFeedRate(double originalFeedRate);
         QString generateGCodeLine(const QVector3D &start, const QVector3D &end,

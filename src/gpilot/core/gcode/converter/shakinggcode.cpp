@@ -94,7 +94,8 @@ int ShakingGCode::convertNext(int count)
 
     for (int i = m_currentIndex; i < targetCount; ++i) {
         const GCodeItem &sourceItem = m_gcode->at(i);
-        QList<GCodeItem> resultItems = processLine(sourceItem);
+        bool nextIsArc = (i + 1 < m_gcode->count()) && m_gcode->at(i + 1).isArc();
+        QList<GCodeItem> resultItems = processLine(sourceItem, nextIsArc);
 
         accumulatedItems.append(resultItems);
         processed++;
@@ -142,7 +143,8 @@ GCode* ShakingGCode::convertAll()
 
     for (int i = 0; i < sourceCount; ++i) {
         const GCodeItem &sourceItem = m_gcode->at(i);
-        QList<GCodeItem> resultItems = processLine(sourceItem);
+        bool nextIsArc = (i + 1 < sourceCount) && m_gcode->at(i + 1).isArc();
+        QList<GCodeItem> resultItems = processLine(sourceItem, nextIsArc);
 
         // Append all result items (may be 1 or many)
         for (const GCodeItem &item : resultItems) {
@@ -162,7 +164,7 @@ GCode* ShakingGCode::convertAll()
     return result;
 }
 
-QList<GCodeItem> ShakingGCode::processLine(const GCodeItem &item)
+QList<GCodeItem> ShakingGCode::processLine(const GCodeItem &item, bool nextIsArc)
 {
     QList<GCodeItem> result;
 
@@ -199,14 +201,16 @@ QList<GCodeItem> ShakingGCode::processLine(const GCodeItem &item)
     m_parser->popState();
 
     // Segment the line
-    QList<QVector3D> points = segmentLine(startPoint, endPoint);
+    QList<QVector3D> points = segmentLine(startPoint, endPoint, nextIsArc);
 
     // If no segmentation needed (short line)
     if (points.size() <= 2) {
         if (points.size() == 2) {
-            // Apply random offset to end point
+            // Apply random offset to end point, unless the next command is an arc
             QVector3D modifiedEnd = points[1];
-            applyRandomOffset(modifiedEnd);
+            if (!nextIsArc) {
+                applyRandomOffset(modifiedEnd);
+            }
 
             GCodeItem modifiedItem = item;
             modifiedItem.line = generateGCodeLine(startPoint, modifiedEnd, item, true);
@@ -238,7 +242,7 @@ QList<GCodeItem> ShakingGCode::processLine(const GCodeItem &item)
     return result;
 }
 
-QList<QVector3D> ShakingGCode::segmentLine(const QVector3D &start, const QVector3D &end)
+QList<QVector3D> ShakingGCode::segmentLine(const QVector3D &start, const QVector3D &end, bool nextIsArc)
 {
     QList<QVector3D> points;
     points.append(start);
@@ -248,7 +252,9 @@ QList<QVector3D> ShakingGCode::segmentLine(const QVector3D &start, const QVector
     // If line is short enough, no segmentation needed
     if (length <= m_segmentLength) {
         QVector3D endWithOffset = end;
-        applyRandomOffset(endWithOffset);
+        if (!nextIsArc) {
+            applyRandomOffset(endWithOffset);
+        }
         points.append(endWithOffset);
         return points;
     }
@@ -259,9 +265,13 @@ QList<QVector3D> ShakingGCode::segmentLine(const QVector3D &start, const QVector
     double segmentLen = length / numSegments;
 
     // Generate intermediate points with random offsets
+    // The last point (arc start) must not be offset when the next command is an arc
     for (int i = 1; i <= numSegments; i++) {
         QVector3D point = start + direction * (segmentLen * i);
-        applyRandomOffset(point);
+        bool isLastPoint = (i == numSegments);
+        if (!isLastPoint || !nextIsArc) {
+            applyRandomOffset(point);
+        }
         points.append(point);
     }
 

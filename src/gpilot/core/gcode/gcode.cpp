@@ -31,8 +31,7 @@ QString GCodeItem::command() const
 
 bool GCodeItem::isArc() const
 {
-    const QString c = command();
-    return c == "G2" || c == "G3";
+    return group == GCodeItemGroup::ArcMovement;
 }
 
 GCode::GCode(QObject *parent) : QObject(parent) {
