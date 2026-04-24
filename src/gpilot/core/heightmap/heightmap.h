@@ -5,14 +5,16 @@
 #ifndef HEIGHTMAP_H
 #define HEIGHTMAP_H
 
+#include <QObject>
 #include <QSize>
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
 #include <QList>
 
-class Heightmap
+class Heightmap : public QObject
 {
+    Q_OBJECT
     public:
         enum InterpolationMode {
             NearestNeighbour = 0,
@@ -26,18 +28,16 @@ class Heightmap
             Columns,
         };
 
-        Heightmap();
-        Heightmap(const Heightmap& other) = delete;
-        Heightmap& operator=(const Heightmap& other) = delete;
-        Heightmap(Heightmap&& other) noexcept = default;
-        Heightmap& operator=(Heightmap&& other) noexcept = default;
         Heightmap(
-            QSize size,
+            QSize size = QSize(11, 11),
             QPointF startPos = QPointF(0.0, 0.0),
             QSizeF stepSize = QSizeF(10.0, 10.0),
-            InterpolationMode interpolationMode = InterpolationMode::Bicubic
+            InterpolationMode interpolationMode = InterpolationMode::Bicubic,
+            QObject* parent = nullptr
         );
-        Heightmap(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data);
+        Heightmap(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data, QObject* parent = nullptr);
+        // Populate from loaded data (replaces move assignment, emits changed() once)
+        void assign(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data);
 
         struct MinMax {
             double min;
@@ -61,7 +61,7 @@ class Heightmap
         double stepHeight() const { return m_stepSize.height(); }
         QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
         InterpolationMode interpolationMode() const { return m_interpolationMode; }
-        void setInterpolationMode(InterpolationMode mode) { m_interpolationMode = mode; }
+        void setInterpolationMode(InterpolationMode mode);
         QRectF area() const { return QRectF(m_startPos, m_endPos); }
         void setArea(QRectF area);
         MinMax valuesMinMax() const { return m_valuesMinMax; }
@@ -83,6 +83,14 @@ class Heightmap
 
         void minMax(double value);
 
+        // Suppress changed() signal until endUpdate() is called. Nested calls are counted.
+        void beginUpdate();
+        // Resume signal emission; emits changed() once if anything changed inside the block.
+        void endUpdate();
+
+    signals:
+        void changed();
+
     private:
         QSize m_size;
         // left-bottom and right-top corners in mm
@@ -98,6 +106,9 @@ class Heightmap
         // array m_size.x * m_size.y
         // row-major order: rows -> cols = [height][width]
         QList<double> m_data;
+        int m_updateDepth = 0;
+        bool m_pendingChange = false;
+        void notifyChanged();
         void setSize(QSize size);
         void updateEndPos();
 

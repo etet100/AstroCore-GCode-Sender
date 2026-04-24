@@ -8,7 +8,7 @@
 
 HeightmapLoader::HeightmapLoader() {}
 
-Heightmap HeightmapLoader::loadFromFile(const QString fileName)
+void HeightmapLoader::loadFromFile(const QString fileName, Heightmap& out)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -49,7 +49,7 @@ Heightmap HeightmapLoader::loadFromFile(const QString fileName)
         throw std::runtime_error("Insufficient data rows in heightmap file");
     }
 
-    return Heightmap(size, startPos, stepSize, interpolationMode, data);
+    out.assign(size, startPos, stepSize, interpolationMode, data);
 }
 
 void HeightmapLoader::validateHeader(const QString &line)

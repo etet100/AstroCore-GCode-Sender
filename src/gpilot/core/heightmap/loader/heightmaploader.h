@@ -13,7 +13,7 @@ class HeightmapLoader
     public:
         HeightmapLoader();
 
-        static Heightmap loadFromFile(const QString fileName);
+        static void loadFromFile(const QString fileName, Heightmap& out);
 
     private:
         static QSize parseSize(const QString &line);

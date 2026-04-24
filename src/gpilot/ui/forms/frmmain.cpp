@@ -948,7 +948,7 @@ void FrmMain::openHeightmap()
     }
 
     try {
-        heightmap() = std::move(HeightmapLoader::loadFromFile(fileName));
+        HeightmapLoader::loadFromFile(fileName, heightmap());
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load heightmap: %1").arg(err.what()));
         return;
@@ -1134,7 +1134,7 @@ void FrmMain::onFileOpen(QString filePath)
         Core::instance().addRecentHeightmap(filePath);
 
         HeightmapLoader loader;
-        heightmap() = loader.loadFromFile(filePath);
+        loader.loadFromFile(filePath, heightmap());
     }
 }
 
@@ -1697,7 +1697,7 @@ void FrmMain::onLoadHeightmapRequested()
     if (filePath != "") {
         Core::instance().addRecentHeightmap(filePath);
         HeightmapLoader loader;
-        heightmap() = loader.loadFromFile(filePath);
+        loader.loadFromFile(filePath, heightmap());
 
         // If using heightmap
         if (ui->heightmap->useMap() && !m_heightmapMode) {
@@ -2021,7 +2021,7 @@ void FrmMain::onActRecentFileTriggered()
             loadFile(filePath);
         } else {
             HeightmapLoader loader;
-            heightmap() = loader.loadFromFile(filePath);
+            loader.loadFromFile(filePath, heightmap());
         }
     }
 }

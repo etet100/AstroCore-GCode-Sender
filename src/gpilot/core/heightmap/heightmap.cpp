@@ -6,27 +6,15 @@
 #include <QDebug>
 #include <cmath>
 
-Heightmap::Heightmap() : Heightmap(QSize(11, 11))
-{
-}
-
-// Heightmap::Heightmap(const Heightmap &other)
-// {
-//     m_size = other.m_size;
-//     m_startPos = other.m_startPos;
-//     m_stepSize = other.m_stepSize;
-//     m_endPos = other.m_endPos;
-//     m_data = other.m_data;
-//     m_valuesMinMax = other.m_valuesMinMax;
-// }
-
 Heightmap::Heightmap(
     QSize size,
     QPointF startPos,
     QSizeF stepSize,
     InterpolationMode interpolationMode,
-    const QList<double>& data
-) : m_size(size),
+    const QList<double>& data,
+    QObject* parent
+) : QObject(parent),
+    m_size(size),
     m_startPos(startPos),
     m_stepSize(stepSize),
     m_interpolationMode(interpolationMode),
@@ -40,16 +28,37 @@ Heightmap::Heightmap(
     QSize size,
     QPointF startPos,
     QSizeF stepSize,
-    InterpolationMode interpolationMode
-) : m_size(size)
-    , m_startPos(startPos)
-    , m_stepSize(stepSize)
-    , m_interpolationMode(interpolationMode)
+    InterpolationMode interpolationMode,
+    QObject* parent
+) : QObject(parent),
+    m_size(size),
+    m_startPos(startPos),
+    m_stepSize(stepSize),
+    m_interpolationMode(interpolationMode)
 {
     m_data.resize(m_size.width() * m_size.height());
     updateEndPos();
     generateRandom();
     updateMinMax();
+}
+
+void Heightmap::assign(QSize size, QPointF startPos, QSizeF stepSize, InterpolationMode interpolationMode, const QList<double>& data)
+{
+    beginUpdate();
+    m_size = size;
+    m_startPos = startPos;
+    m_stepSize = stepSize;
+    m_interpolationMode = interpolationMode;
+    m_data = data;
+    updateEndPos();
+    updateMinMax();
+    endUpdate();
+}
+
+void Heightmap::setInterpolationMode(InterpolationMode mode)
+{
+    m_interpolationMode = mode;
+    notifyChanged();
 }
 
 void Heightmap::updateEndPos()
@@ -78,12 +87,38 @@ bool Heightmap::isInside(QPointF ptMm) const
            ptMm.y() >= m_startPos.y() && ptMm.y() <= m_endPos.y();
 }
 
+void Heightmap::notifyChanged()
+{
+    if (m_updateDepth > 0) {
+        m_pendingChange = true;
+        return;
+    }
+    emit changed();
+}
+
+void Heightmap::beginUpdate()
+{
+    m_updateDepth++;
+}
+
+void Heightmap::endUpdate()
+{
+    if (m_updateDepth > 0) {
+        m_updateDepth--;
+    }
+    if (m_updateDepth == 0 && m_pendingChange) {
+        m_pendingChange = false;
+        notifyChanged();
+    }
+}
+
 // Change area, keep grid size the same
 void Heightmap::setArea(QRectF area)
 {
     m_startPos = area.topLeft();
     m_stepSize = QSizeF(area.width() / (float) (m_size.width() - 1), area.height() / (float) (m_size.height() - 1));
     updateEndPos();
+    notifyChanged();
     // reset();
 }
 
@@ -192,6 +227,7 @@ void Heightmap::setHeightAt(QPoint point, double height)
 {
     at(point.x(), point.y()) = height;
     updateMinMax();
+    notifyChanged();
 }
 
 void Heightmap::reset()
@@ -199,6 +235,7 @@ void Heightmap::reset()
     for (auto& value : m_data) {
         value = NAN;
     }
+    notifyChanged();
 }
 
 bool Heightmap::anyHeightSet()
@@ -217,6 +254,7 @@ void Heightmap::setSize(QSize size)
     m_size = size;
     m_data.resize(m_size.width() * m_size.height());
     updateEndPos();
+    notifyChanged();
 }
 
 void Heightmap::generateRandom()
@@ -255,7 +293,6 @@ void Heightmap::updateMinMax()
 void Heightmap::setZeroReference(int x, int y)
 {
     double referenceValue = at(x, y);
-
     offsetAllPoints(-referenceValue);
 }
 
@@ -269,6 +306,7 @@ void Heightmap::offsetAllPoints(double offset)
             minMax(value);
         }
     }
+    notifyChanged();
 }
 
 void Heightmap::minMax(double value)
