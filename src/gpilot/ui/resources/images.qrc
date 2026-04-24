@@ -101,5 +101,8 @@
         <file>../images/conn/disconnected.svg</file>
         <file>../images/control/scan_table.svg</file>
         <file>../images/control/scan_table_resume.svg</file>
+        <file>../images/converters/applyheightmap.png</file>
+        <file>../images/converters/movepath.png</file>
+        <file>../images/converters/stripcomments.png</file>
     </qresource>
 </RCC>

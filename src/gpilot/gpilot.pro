@@ -110,11 +110,11 @@ SOURCES += main.cpp\
     core/config/module/configurationmachine.cpp \
     core/config/module/configurationparser.cpp \
     core/config/module/configurationsender.cpp \
+    core/config/module/configurationmacros.cpp \
     core/heightmap/configurationheightmap.cpp \
     modules/ai/configurationai.cpp \
     modules/pendant/configurationpendant.cpp \
     ui/config/configurationconsole.cpp \
-    ui/config/configurationmacros.cpp \
     ui/config/configurationui.cpp \
     ui/config/configurationvisualizer.cpp \
     ui/config/uiconfigs.cpp \
@@ -306,11 +306,11 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationmachine.h \
     core/config/module/configurationparser.h \
     core/config/module/configurationsender.h \
+    core/config/module/configurationmacros.h \
     core/heightmap/configurationheightmap.h \
     modules/ai/configurationai.h \
     modules/pendant/configurationpendant.h \
     ui/config/configurationconsole.h \
-    ui/config/configurationmacros.h \
     ui/config/configurationui.h \
     ui/config/configurationvisualizer.h \
     ui/config/uiconfigs.h \

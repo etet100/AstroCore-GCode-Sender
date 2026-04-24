@@ -2,7 +2,7 @@
 #define CONFIGURATION_MACROS_H
 
 #include <QObject>
-#include "core/config/module/abstractconfigurationmodule.h"
+#include "abstractconfigurationmodule.h"
 
 struct MacroItem {
     QString name;

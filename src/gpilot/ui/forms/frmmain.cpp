@@ -2771,7 +2771,7 @@ void FrmMain::testConverter(int converterIndex)
         case 3: converter = new SingleConverter(new CoordinateOffsetConverter(values["offsetX"].toDouble())); break;
         case 4: converter = new SingleConverter(new SafeSpindleStopConverter()); break;
         case 5: converter = new SingleConverter(new MovementOptimizerConverter()); break;
-        case 6: converter = new ShakingGCode(values["segmentLength"].toDouble(), values["maxOffset"].toDouble()); break;
+        case 6: converter = new ShakingGCode(values["segmentLength"].toDouble(), values["maxOffset"].toDouble(), values["shakeZ"].toBool()); break;
         case 7: converter = new ApplyHeightmap(&heightmap(), values["segmentLength"].toDouble()); break;
         case 8: converter = new SingleConverter(new StripComments()); break;
         case 9: converter = new SingleConverter(new MovePath(values["offsetX"].toDouble(), values["offsetY"].toDouble(), values["offsetZ"].toDouble())); break;

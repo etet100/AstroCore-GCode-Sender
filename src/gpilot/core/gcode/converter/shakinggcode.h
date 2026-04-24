@@ -35,6 +35,7 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
 
         explicit ShakingGCode(double segmentLength = 5.0,
                              double maxOffset = 1.0,
+                             bool shakeZ = false,
                              QObject *parent = nullptr);
         ~ShakingGCode() override;
 
@@ -53,6 +54,9 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
         void setMaxOffset(double offset) { m_maxOffset = offset; }
         double maxOffset() const { return m_maxOffset; }
 
+        void setShakeZ(bool shakeZ) { m_shakeZ = shakeZ; }
+        bool shakeZ() const { return m_shakeZ; }
+
         void setFeedRateVariation(double variation) { m_feedRateVariation = variation; }
         double feedRateVariation() const { return m_feedRateVariation; }
 
@@ -69,6 +73,7 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
         double m_segmentLength;      // Segment every N mm
         double m_maxOffset;          // Max random offset in mm (±)
         double m_feedRateVariation;  // Feed rate variation (0.0-1.0, default 0.2 = ±20%)
+        bool m_shakeZ;
         int m_currentIndex;
 
         // Helper methods

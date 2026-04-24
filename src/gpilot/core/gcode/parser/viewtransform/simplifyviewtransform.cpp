@@ -10,10 +10,24 @@ int segmentType(const LineSegment& s)
     return s.isFastTraverse() + s.isZMovement() * 2;
 }
 
+bool areCollinear(const QVector3D& refDir, const LineSegment& s, float tolerance)
+{
+    QVector3D dir = s.getEnd() - s.getStart();
+    float len = dir.length();
+    if (len < 1e-7f) {
+        return true;
+    }
+
+    QVector3D cross = QVector3D::crossProduct(refDir, dir / len);
+
+    return cross.lengthSquared() < tolerance * tolerance;
 }
 
-SimplifyViewTransform::SimplifyViewTransform(double precision)
+}
+
+SimplifyViewTransform::SimplifyViewTransform(double precision, double collinearTolerance)
     : m_precision(precision)
+    , m_collinearTolerance(collinearTolerance)
 {
 }
 
@@ -30,24 +44,29 @@ QList<LineSegment> SimplifyViewTransform::apply(const QList<LineSegment>& input)
         int j = i;
 
         if (i < input.count() - 1) {
-            QVector3D start = input[i].getEnd() - input[i].getStart();
-            QVector3D next;
-            double length = start.length();
-            bool straight = false;
+            QVector3D refVec = input[j].getEnd() - input[j].getStart();
+            float refLen = refVec.length();
+            QVector3D refDir = (refLen > 1e-7f) ? (refVec / refLen) : QVector3D();
+            bool hasRefDir = refLen > 1e-7f && !input[j].isArc();
+            double length = refLen;
 
-            do {
-                i++;
-                if (i < input.count() - 1) {
-                    next = input[i].getEnd() - input[i].getStart();
-                    length += next.length();
+            while (i < input.count() - 1
+                   && segmentType(input[i + 1]) == segmentType(input[j])) {
+                bool collinear = hasRefDir && !input[i + 1].isArc()
+                                 && areCollinear(refDir, input[i + 1], (float)m_collinearTolerance);
+                bool withinPrecision = length < m_precision;
+
+                if (!collinear && !withinPrecision) {
+                    break;
                 }
-            } while ((length < m_precision || straight) && i < input.count()
-                     && segmentType(input[i]) == segmentType(input[j]));
-            i--;
+
+                length += (input[i + 1].getEnd() - input[i + 1].getStart()).length();
+                i++;
+            }
         }
 
         float segmentLen = (input[i].getEnd() - input[j].getStart()).length();
-        if (segmentLen > 0.0001) {
+        if (segmentLen > 0.0001f) {
             LineSegment simplified(input[j].getStart(), input[i].getEnd(), input[j].getLineNumber());
             simplified.setIsArc(input[j].isArc());
             simplified.setIsClockwise(input[j].isClockwise());

@@ -12,7 +12,7 @@ QString MovePath::parameterSchema()
     return QStringLiteral(R"JSON({
   "title": "Move path",
   "description": "Shifts every G90 (absolute) movement line by fixed X/Y/Z offsets. G91 (incremental) lines are left unchanged.",
-  "image": ":/images/converters/movepath.svg",
+  "image": ":/images/converters/movepath.png",
   "fields": [
     {
       "name": "offsetX",

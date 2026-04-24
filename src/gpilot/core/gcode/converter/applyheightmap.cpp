@@ -18,7 +18,7 @@ QString ApplyHeightmap::parameterSchema()
     return QStringLiteral(R"JSON({
   "title": "Apply heightmap",
   "description": "Segments movement lines and shifts their Z by the height sampled from the probed heightmap. Use to compensate for an uneven work surface (e.g. PCB isolation).",
-  "image": ":/images/converters/applyheightmap.svg",
+  "image": ":/images/converters/applyheightmap.png",
   "fields": [
     {
       "name": "segmentLength",
@@ -233,7 +233,9 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
             GCodeItem preservedItem = item;
             preservedItem.line = adjustZInArcLine(item, endPoint.z(), avgOffset);
             preservedItem.args = GcodePreprocessorUtils::splitCommand(preservedItem.line);
-            m_parser->addCommand(preservedItem);
+            // Track raw G-code position (without heightmap offset) so the next
+            // line's start Z is not already shifted, preventing double-application.
+            m_parser->addCommand(item);
             result.append(preservedItem);
             return result;
         }
@@ -258,12 +260,12 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
             // Arc linearised to G1 — update group to reflect the actual command.
             if (isArc) modifiedItem.group = GCodeItemGroup::Movement;
             result.append(modifiedItem);
-
-            m_parser->addCommand(modifiedItem);
         } else {
             result.append(item);
-            m_parser->addCommand(item);
         }
+        // Track raw G-code position (without heightmap offset) so the next
+        // line's start Z is not already shifted, preventing double-application.
+        m_parser->addCommand(item);
         return result;
     }
 
@@ -279,9 +281,10 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
         segmentItem.commandNumber = item.commandNumber;
 
         result.append(segmentItem);
-
-        m_parser->addCommand(segmentItem);
     }
+    // Track raw G-code position (without heightmap offset) so the next
+    // line's start Z is not already shifted, preventing double-application.
+    m_parser->addCommand(item);
 
     return result;
 }

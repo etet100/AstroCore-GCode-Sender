@@ -4,7 +4,8 @@
 #include "frmconvertersettings.h"
 #include "ui_frmconvertersettings.h"
 
-#include <QCheckBox>
+#include "XSwitchButton/xswitchbutton.h"
+
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFile>
@@ -102,8 +103,8 @@ QVariantMap FrmConverterSettings::values() const
 
     for (auto it = m_controls.constBegin(); it != m_controls.constEnd(); ++it) {
         QWidget* control = it.value();
-        if (auto* cb = qobject_cast<QCheckBox*>(control)) {
-            result.insert(it.key(), cb->isChecked());
+        if (auto* sw = qobject_cast<PropertyEditor::XSwitchButton*>(control)) {
+            result.insert(it.key(), sw->checked());
         } else if (auto* sp = qobject_cast<QSpinBox*>(control)) {
             result.insert(it.key(), sp->value());
         } else if (auto* dsp = qobject_cast<QDoubleSpinBox*>(control)) {
@@ -124,8 +125,8 @@ QVariantMap FrmConverterSettings::values() const
 //             continue;
 //         }
 
-//         if (auto* cb = qobject_cast<QCheckBox*>(control)) {
-//             cb->setChecked(it.value().toBool());
+//         if (auto* sw = qobject_cast<PropertyEditor::XSwitchButton*>(control)) {
+//             sw->setChecked(it.value().toBool());
 //         } else if (auto* sp = qobject_cast<QSpinBox*>(control)) {
 //             sp->setValue(it.value().toInt());
 //         } else if (auto* dsp = qobject_cast<QDoubleSpinBox*>(control)) {
@@ -212,8 +213,8 @@ void FrmConverterSettings::applyDefaults()
         }
 
         const QJsonValue def = field.value("default");
-        if (auto* cb = qobject_cast<QCheckBox*>(control)) {
-            cb->setChecked(def.toBool());
+        if (auto* sw = qobject_cast<PropertyEditor::XSwitchButton*>(control)) {
+            sw->setChecked(def.toBool());
         } else if (auto* sp = qobject_cast<QSpinBox*>(control)) {
             sp->setValue(def.toInt());
         } else if (auto* dsp = qobject_cast<QDoubleSpinBox*>(control)) {
@@ -229,12 +230,14 @@ void FrmConverterSettings::applyDefaults()
 
 QFrame* FrmConverterSettings::createBoolField(const QJsonObject& field)
 {
-    auto* checkBox = new QCheckBox();
-    checkBox->setChecked(field.value("default").toBool(false));
+    auto* switchBtn = new PropertyEditor::XSwitchButton();
+    switchBtn->setChecked(field.value("default").toBool(false));
+    switchBtn->setTextOff("");
+    switchBtn->setTextOn("");
 
-    registerControl(field, checkBox);
+    registerControl(field, switchBtn);
 
-    return createFieldBlock(field, checkBox);
+    return createFieldBlock(field, switchBtn);
 }
 
 QFrame* FrmConverterSettings::createIntField(const QJsonObject& field)

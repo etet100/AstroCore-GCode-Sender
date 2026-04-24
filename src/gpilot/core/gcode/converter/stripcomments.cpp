@@ -10,7 +10,7 @@ QString StripComments::parameterSchema()
     return QStringLiteral(R"JSON({
   "title": "Strip comments",
   "description": "Removes all G-code comments — both parenthetical (comment) and semicolon style ; comment. Lines that contained only a comment become empty lines.",
-  "image": ":/images/converters/stripcomments.svg",
+  "image": ":/images/converters/stripcomments.png",
   "fields": []
 })JSON");
 }

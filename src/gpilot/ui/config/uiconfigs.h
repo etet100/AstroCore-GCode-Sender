@@ -7,7 +7,7 @@
 #include "configurationui.h"
 #include "configurationconsole.h"
 #include "configurationvisualizer.h"
-#include "configurationmacros.h"
+#include "core/config/module/configurationmacros.h"
 
 class Configuration;
 

@@ -36,13 +36,20 @@ QString ShakingGCode::parameterSchema()
       "min": 0.0,
       "max": 10.0,
       "default": 1.0,
-      "description": "Maximum random XYZ offset added to each segment endpoint (±). Units: mm."
+      "description": "Maximum random XY (and optionally Z) offset added to each segment endpoint (±). Units: mm."
+    },
+    {
+      "name": "shakeZ",
+      "label": "Shake Z axis",
+      "type": "bool",
+      "default": false,
+      "description": "When on, random offset is also applied to the Z axis. When off, only X and Y are disturbed."
     }
   ]
 })JSON");
 }
 
-ShakingGCode::ShakingGCode(double segmentLength, double maxOffset, QObject *parent)
+ShakingGCode::ShakingGCode(double segmentLength, double maxOffset, bool shakeZ, QObject *parent)
     : QObject(parent)
     , m_parser(nullptr)
     , m_gcode(nullptr)
@@ -50,6 +57,7 @@ ShakingGCode::ShakingGCode(double segmentLength, double maxOffset, QObject *pare
     , m_segmentLength(segmentLength)
     , m_maxOffset(maxOffset)
     , m_feedRateVariation(0.2)  // ±20% by default
+    , m_shakeZ(shakeZ)
     , m_currentIndex(0)
 {
     m_random = QRandomGenerator::global();
@@ -287,11 +295,14 @@ void ShakingGCode::applyRandomOffset(QVector3D &point)
     // Generate random offset in range [-maxOffset, +maxOffset] for each axis
     double offsetX = (m_random->generateDouble() * 2.0 - 1.0) * m_maxOffset;
     double offsetY = (m_random->generateDouble() * 2.0 - 1.0) * m_maxOffset;
-    double offsetZ = (m_random->generateDouble() * 2.0 - 1.0) * m_maxOffset;
 
     point.setX(point.x() + offsetX);
     point.setY(point.y() + offsetY);
-    point.setZ(point.z() + offsetZ);
+
+    if (m_shakeZ) {
+        double offsetZ = (m_random->generateDouble() * 2.0 - 1.0) * m_maxOffset;
+        point.setZ(point.z() + offsetZ);
+    }
 }
 
 double ShakingGCode::getRandomFeedRate(double originalFeedRate)
