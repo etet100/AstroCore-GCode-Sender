@@ -1,6 +1,7 @@
 #include "core/globals.h"
 #include "ui/forms/frmgrblconfigurator.h"
 #include "ui_frmgrblconfigurator.h"
+#include "ui/config/configurationui.h"
 #include "utils/utils.h"
 #include <QMessageBox>
 #include <CPropertyEditor.h>

@@ -5,7 +5,9 @@
 #ifndef CONFIGURATIONHEIGHTMAP_H
 #define CONFIGURATIONHEIGHTMAP_H
 
-#include "abstractconfigurationmodule.h"
+#include "core/config/module/abstractconfigurationmodule.h"
+
+class Configuration;
 
 class ConfigurationHeightmap : public AbstractConfigurationModule
 {
@@ -48,6 +50,9 @@ class ConfigurationHeightmap : public AbstractConfigurationModule
         double interpolationStepY() const { return m_interpolationStepY; }
         int interpolationType() const { return m_interpolationType; }
         bool interpolationShow() const { return m_interpolationShow; }
+
+        static ConfigurationHeightmap& instance();
+        static void registerWith(Configuration& cfg);
 
     private:
         double m_areaX1;

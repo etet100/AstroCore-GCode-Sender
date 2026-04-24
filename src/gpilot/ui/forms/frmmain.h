@@ -54,6 +54,9 @@ class frmMain;
 class frmProgram;
 }
 
+class ConfigurationUI;
+class ConfigurationHeightmap;
+
 class CancelException : public std::exception {
 public:
 #ifdef Q_OS_MAC

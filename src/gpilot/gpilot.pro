@@ -104,19 +104,20 @@ SOURCES += main.cpp\
     core/communicator/statusreportprocessor.cpp \
     core/communicator/proberesponseparser.cpp \
     core/config/configuration.cpp \
-    core/config/module/configurationai.cpp \
+    core/config/module/abstractconfigurationmodule.cpp \
     core/config/module/configurationconnection.cpp \
-    core/config/module/configurationconsole.cpp \
-    core/config/module/configurationheightmap.cpp \
     core/config/module/configurationjogging.cpp \
     core/config/module/configurationmachine.cpp \
-    core/config/module/configurationmacros.cpp \
-    core/config/module/abstractconfigurationmodule.cpp \
     core/config/module/configurationparser.cpp \
-    core/config/module/configurationpendant.cpp \
     core/config/module/configurationsender.cpp \
-    core/config/module/configurationui.cpp \
-    core/config/module/configurationvisualizer.cpp \
+    core/heightmap/configurationheightmap.cpp \
+    modules/ai/configurationai.cpp \
+    modules/pendant/configurationpendant.cpp \
+    ui/config/configurationconsole.cpp \
+    ui/config/configurationmacros.cpp \
+    ui/config/configurationui.cpp \
+    ui/config/configurationvisualizer.cpp \
+    ui/config/uiconfigs.cpp \
     core/config/persistence/ini/inipersister.cpp \
     core/config/persistence/ini/iniprovider.cpp \
     core/config/persistence/json/jsonpersister.cpp \
@@ -299,19 +300,20 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/proberesponseparser.h \
     core/config/configuration.h \
     core/config/implementations.h \
-    core/config/module/configurationai.h \
+    core/config/module/abstractconfigurationmodule.h \
     core/config/module/configurationconnection.h \
-    core/config/module/configurationconsole.h \
-    core/config/module/configurationheightmap.h \
     core/config/module/configurationjogging.h \
     core/config/module/configurationmachine.h \
-    core/config/module/configurationmacros.h \
-    core/config/module/abstractconfigurationmodule.h \
     core/config/module/configurationparser.h \
-    core/config/module/configurationpendant.h \
     core/config/module/configurationsender.h \
-    core/config/module/configurationui.h \
-    core/config/module/configurationvisualizer.h \
+    core/heightmap/configurationheightmap.h \
+    modules/ai/configurationai.h \
+    modules/pendant/configurationpendant.h \
+    ui/config/configurationconsole.h \
+    ui/config/configurationmacros.h \
+    ui/config/configurationui.h \
+    ui/config/configurationvisualizer.h \
+    ui/config/uiconfigs.h \
     core/config/persistence/json/jsonpersister.h \
     core/config/persistence/json/jsonprovider.h \
     core/config/persistence/abstractpersister.h \

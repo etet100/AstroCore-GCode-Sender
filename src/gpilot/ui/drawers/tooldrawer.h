@@ -9,7 +9,7 @@
 #include <QColor>
 #include <cmath>
 #include "shaderdrawable.h"
-#include "core/config/module/configurationvisualizer.h"
+#include "ui/config/configurationvisualizer.h"
 
 class ToolDrawer : public ShaderDrawable
 {

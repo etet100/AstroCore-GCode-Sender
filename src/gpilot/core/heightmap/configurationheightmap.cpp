@@ -3,7 +3,8 @@
 // Copyright 2024 BTS
 
 #include "configurationheightmap.h"
-\
+#include "core/config/configuration.h"
+
 const QMap<QString,QVariant> DEFAULTS = {
     {"heightmapAreaX1", 0},
     {"heightmapAreaY1", 0},
@@ -24,4 +25,15 @@ const QMap<QString,QVariant> DEFAULTS = {
 
 ConfigurationHeightmap::ConfigurationHeightmap(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
+}
+
+ConfigurationHeightmap& ConfigurationHeightmap::instance()
+{
+    static ConfigurationHeightmap inst;
+    return inst;
+}
+
+void ConfigurationHeightmap::registerWith(Configuration& cfg)
+{
+    cfg.registerModule(&instance());
 }

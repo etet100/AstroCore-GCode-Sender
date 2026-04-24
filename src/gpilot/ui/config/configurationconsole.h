@@ -6,7 +6,7 @@
 #define CONFIGURATION_CONSOLE_H
 
 #include <QObject>
-#include "abstractconfigurationmodule.h"
+#include "core/config/module/abstractconfigurationmodule.h"
 
 class ConfigurationConsole : public AbstractConfigurationModule
 {

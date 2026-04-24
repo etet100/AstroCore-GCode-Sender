@@ -9,7 +9,7 @@
 #include <QKeySequence>
 #include <QList>
 #include <QString>
-#include "core/config/module/configurationui.h"
+#include "ui/config/configurationui.h"
 
 // One node in the shortcuts tree - a category or subcategory.
 // Each node can have child nodes and a list of actions (shortcuts).

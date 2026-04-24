@@ -6,7 +6,9 @@
 #define CONFIGURATIONPENDANT_H
 
 #include <QObject>
-#include "abstractconfigurationmodule.h"
+#include "core/config/module/abstractconfigurationmodule.h"
+
+class Configuration;
 
 class ConfigurationPendant : public AbstractConfigurationModule
 {
@@ -28,6 +30,9 @@ class ConfigurationPendant : public AbstractConfigurationModule
         QString hostIp() const { return m_hostIp; }
         int port() const { return m_port; }
         bool enabled() const { return m_enabled; }
+
+        static ConfigurationPendant& instance();
+        static void registerWith(Configuration& cfg);
 
     private:
         QString m_wifiSsid;

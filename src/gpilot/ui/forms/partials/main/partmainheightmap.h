@@ -6,7 +6,7 @@
 #define PARTMAINHEIGHTMAP_H
 
 #include <QWidget>
-#include "core/config/module/configurationheightmap.h"
+#include "core/heightmap/configurationheightmap.h"
 #include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 
 namespace Ui {

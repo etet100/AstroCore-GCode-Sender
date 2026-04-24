@@ -6,6 +6,10 @@
 #include "ui_frmsettings.h"
 #include "utils/utils.h"
 #include "ui/utils/thememanager.h"
+#include "ui/config/uiconfigs.h"
+#include "modules/ai/configurationai.h"
+#include "modules/pendant/configurationpendant.h"
+#include "core/heightmap/configurationheightmap.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
@@ -100,7 +104,7 @@ FrmSettings::~FrmSettings()
 
 void FrmSettings::initializeWidgets()
 {
-    const ConfigurationConsole &console = m_configuration.consoleModule();
+    const ConfigurationConsole &console = UiConfigs::instance().console();
     ui->chkConsoleAutocompletion->setChecked(console.commandAutoCompletion());
     ui->chkConsoleDarkMode->setChecked(console.darkBackgroundMode());
     ui->chkConsoleShowProgramCommands->setChecked(console.showProgramCommands());
@@ -115,7 +119,7 @@ void FrmSettings::initializeWidgets()
     ui->txtRawTcpHost->setText(connection.rawTcpHost());
     ui->txtRawTcpPort->setText(QString::number(connection.rawTcpPort()));
 
-    const ConfigurationVisualizer &visualizer = m_configuration.visualizerModule();
+    const ConfigurationVisualizer &visualizer = UiConfigs::instance().visualizer();
     ui->chkAntialiasing->setChecked(visualizer.antialiasing());
     ui->chkZBuffer->setChecked(visualizer.zBuffer());
     ui->txtFieldOfView->setValue(visualizer.fieldOfView());
@@ -202,7 +206,7 @@ void FrmSettings::initializeWidgets()
     ui->txtMaxTravelY->setValue(machine.maxTravel().y());
     ui->txtMaxTravelZ->setValue(machine.maxTravel().z());
 
-    const ConfigurationUI &ui_ = m_configuration.uiModule();
+    const ConfigurationUI &ui_ = UiConfigs::instance().ui();
     ui->cboUIScale->setCurrentText(QString::number((int)ui_.uiScale() * 100) + "%");
     ui->cboLanguage->setCurrentIndex(ui->cboLanguage->findData(ui_.language()));
     ui->chkDarkTheme->setChecked(ui_.darkTheme());
@@ -211,10 +215,10 @@ void FrmSettings::initializeWidgets()
     ui->jogging->setStepChoices(jogging.stepChoices());
     ui->jogging->setFeedChoices(jogging.feedChoices());
 
-    const ConfigurationAI &ai = m_configuration.aiModule();
+    const ConfigurationAI &ai = ConfigurationAI::instance();
     ui->ai->setOpenAIKey(ai.openAIKey());
 
-    const ConfigurationPendant &pendant = m_configuration.pendantModule();
+    const ConfigurationPendant &pendant = ConfigurationPendant::instance();
     ui->pendant->setWifiSsid(pendant.wifiSsid());
     ui->pendant->setWifiPassword(pendant.wifiPassword());
     ui->pendant->setHostIp(pendant.hostIp());
@@ -224,7 +228,7 @@ void FrmSettings::initializeWidgets()
 
 void FrmSettings::applySettings()
 {
-    ConfigurationConsole &console = m_configuration.consoleModule();
+    ConfigurationConsole &console = UiConfigs::instance().console();
     console.m_commandAutoCompletion = ui->chkConsoleAutocompletion->isChecked();
     console.m_darkBackgroundMode = ui->chkConsoleDarkMode->isChecked();
     console.m_showProgramCommands = ui->chkConsoleShowProgramCommands->isChecked();
@@ -241,7 +245,7 @@ void FrmSettings::applySettings()
     connection.m_rawTcpPort = ui->txtRawTcpPort->text().toInt();
     connection.emitChanged();
 
-    ConfigurationVisualizer &visualizer = m_configuration.visualizerModule();
+    ConfigurationVisualizer &visualizer = UiConfigs::instance().visualizer();
     visualizer.m_antialiasing = ui->chkAntialiasing->isChecked();
     visualizer.m_zBuffer = ui->chkZBuffer->isChecked();
     visualizer.m_fieldOfView = ui->txtFieldOfView->value();
@@ -321,7 +325,7 @@ void FrmSettings::applySettings()
     machine.m_maxTravel = QVector3D(ui->txtMaxTravelX->value(), ui->txtMaxTravelY->value(), ui->txtMaxTravelZ->value());
     machine.emitChanged();
 
-    ConfigurationUI &ui_ = m_configuration.uiModule();
+    ConfigurationUI &ui_ = UiConfigs::instance().ui();
     ui_.m_uiScale = ui->cboUIScale->currentText().toInt() / 100.0f;
     ui_.m_language = ui->cboLanguage->currentData().toString();
     ui_.m_darkMode = ui->chkDarkTheme->isChecked();
@@ -332,7 +336,7 @@ void FrmSettings::applySettings()
     jogging.m_feedChoices = ui->jogging->feedChoices();
     jogging.emitChanged();
 
-    ConfigurationPendant &pendant = m_configuration.pendantModule();
+    ConfigurationPendant &pendant = ConfigurationPendant::instance();
     pendant.m_wifiSsid = ui->pendant->wifiSsid();
     pendant.m_wifiPassword = ui->pendant->wifiPassword();
     pendant.m_hostIp = ui->pendant->hostIp();
@@ -340,7 +344,7 @@ void FrmSettings::applySettings()
     pendant.m_enabled = ui->pendant->enabled();
     pendant.emitChanged();
 
-    ConfigurationAI &ai = m_configuration.aiModule();
+    ConfigurationAI &ai = ConfigurationAI::instance();
     ai.m_openAIKey = ui->ai->openAIKey();
     ai.emitChanged();
 }
@@ -393,7 +397,7 @@ int FrmSettings::exec()
 
     int result = QDialog::exec();
 
-    m_configuration.uiModule().setSettingsFormSlicerSizes(ui->splitMain->sizes());
+    UiConfigs::instance().ui().setSettingsFormSlicerSizes(ui->splitMain->sizes());
 
     return result;
 }
@@ -584,7 +588,7 @@ void FrmSettings::showEvent(QShowEvent *se)
 {
     QDialog::showEvent(se);
     if (m_firstShow) {
-        Utils::positionDialog(this, m_configuration.uiModule().settingsFormGeometry(), m_configuration.uiModule().settingsFormMaximized());
+        Utils::positionDialog(this, UiConfigs::instance().ui().settingsFormGeometry(), UiConfigs::instance().ui().settingsFormMaximized());
         m_firstShow = false;
     }
 }
@@ -593,7 +597,7 @@ void FrmSettings::resizeEvent(QResizeEvent *re)
 {
     QDialog::resizeEvent(re);
     if (!m_firstShow) {
-        m_configuration.uiModule().setSettingsFormGeometry(this);
+        UiConfigs::instance().ui().setSettingsFormGeometry(this);
     }
 }
 
@@ -601,7 +605,7 @@ void FrmSettings::changeEvent(QEvent *ce)
 {
     QDialog::changeEvent(ce);
     if (ce->type() == QEvent::WindowStateChange) {
-        m_configuration.uiModule().setSettingsFormGeometry(this);
+        UiConfigs::instance().ui().setSettingsFormGeometry(this);
     }
 }
 
@@ -609,6 +613,6 @@ void FrmSettings::moveEvent(QMoveEvent *me)
 {
     QDialog::moveEvent(me);
     if (!m_firstShow) {
-        m_configuration.uiModule().setSettingsFormGeometry(this);
+        UiConfigs::instance().ui().setSettingsFormGeometry(this);
     }
 }

@@ -34,7 +34,11 @@
 #include "ui/utils/shortcutsmanager.h"
 #include "ui/utils/statecolors.h"
 #include "modules/pendant/pendant.h"
+#include "modules/pendant/configurationpendant.h"
+#include "modules/ai/configurationai.h"
 #include "modules/camera/camera.h"
+#include "ui/config/uiconfigs.h"
+#include "core/heightmap/configurationheightmap.h"
 #include "ui_frmmain.h"
 #include "ui/widgets/widgetmimedata.h"
 #include "ui/widgets/dockabletitle.h"
@@ -78,7 +82,7 @@ FrmMain::FrmMain(QWidget *parent) :
     initializeDockTitles();
     initializeUiScaleMenu();
     preloadSettings();
-    Utils::setVisualMode(this, m_configuration.uiModule().darkTheme());
+    Utils::setVisualMode(this, UiConfigs::instance().ui().darkTheme());
     initializeCommunicator();
 
     // Panels
@@ -99,8 +103,8 @@ FrmMain::FrmMain(QWidget *parent) :
     connectWindowTitleUpdater();
 
     // Initialize OpenAI key
-    if (m_configuration.aiModule().openAIKey() != "") {
-        OpenAIManager::instance(m_configuration.aiModule().openAIKey());
+    if (ConfigurationAI::instance().openAIKey() != "") {
+        OpenAIManager::instance(ConfigurationAI::instance().openAIKey());
     }
 
     m_heightmapMode = false;
@@ -240,7 +244,7 @@ void FrmMain::setLogFormWindow(FrmLog *logForm)
 
 void FrmMain::initializeConsolePanel()
 {
-    ui->console->initialize(m_configuration.consoleModule());
+    ui->console->initialize(UiConfigs::instance().console());
     connect(ui->console, &PartMainConsole::newCommand,
             &Core::instance(), &Core::handleConsoleCommand);
     connect(&Core::instance(), &Core::openFileRequested,
@@ -617,13 +621,13 @@ void FrmMain::initializeVisualizer()
     connect(ui->visualizer, &PartMainVisualizer::viewModeChanged, this, [this](GLWidget::ViewMode mode) {
         switch (mode) {
             case GLWidget::ViewMode::Perspective:
-                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::Perspective);
+                UiConfigs::instance().visualizer().setViewMode(ConfigurationVisualizer::ViewMode::Perspective);
                 break;
             case GLWidget::ViewMode::Orthogonal:
-                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::Orthogonal);
+                UiConfigs::instance().visualizer().setViewMode(ConfigurationVisualizer::ViewMode::Orthogonal);
                 break;
             case GLWidget::ViewMode::View2D:
-                m_configuration.visualizerModule().setViewMode(ConfigurationVisualizer::ViewMode::View2D);
+                UiConfigs::instance().visualizer().setViewMode(ConfigurationVisualizer::ViewMode::View2D);
                 break;
         }
     });
@@ -686,7 +690,7 @@ void FrmMain::showEvent(QShowEvent *se)
     Q_UNUSED(se)
 
     if (m_firstShow) {
-        Utils::positionDialog(this, m_configuration.uiModule().mainFormGeometry(), m_configuration.uiModule().mainFormMaximized());
+        Utils::positionDialog(this, UiConfigs::instance().ui().mainFormGeometry(), UiConfigs::instance().ui().mainFormMaximized());
         m_firstShow = false;
     }
 }
@@ -701,7 +705,7 @@ void FrmMain::resizeEvent(QResizeEvent *re)
     QMainWindow::resizeEvent(re);
 
     if (!m_firstShow) {
-        m_configuration.uiModule().setMainFormGeometry(this);
+        UiConfigs::instance().ui().setMainFormGeometry(this);
     }
 }
 
@@ -829,7 +833,7 @@ void FrmMain::changeEvent(QEvent *ce)
 {
     QMainWindow::changeEvent(ce);
     if (ce->type() == QEvent::WindowStateChange) {
-        m_configuration.uiModule().setMainFormGeometry(this);
+        UiConfigs::instance().ui().setMainFormGeometry(this);
     }
 }
 
@@ -837,7 +841,7 @@ void FrmMain::moveEvent(QMoveEvent *me)
 {
     QMainWindow::moveEvent(me);
     if (!m_firstShow) {
-        m_configuration.uiModule().setMainFormGeometry(this);
+        UiConfigs::instance().ui().setMainFormGeometry(this);
     }
 }
 
@@ -1013,7 +1017,7 @@ void FrmMain::fileSettings()
     emit settingsAboutToShow();
 
     QScopedPointer<FrmSettings> form(new FrmSettings(this, m_configuration));
-    Utils::setVisualMode(form.data(), m_configuration.uiModule().darkTheme());
+    Utils::setVisualMode(form.data(), UiConfigs::instance().ui().darkTheme());
     if (form->exec()) {
         // @TODO connection
         // if (m_settings->port() != "" && (m_settings->port() != m_serialPort.portName() ||
@@ -1046,7 +1050,7 @@ void FrmMain::fileSettings()
 
 void FrmMain::serviceConfigureGRBL()
 {
-    FrmGrblConfigurator *form = new FrmGrblConfigurator(this, m_configuration.uiModule(), communicator());
+    FrmGrblConfigurator *form = new FrmGrblConfigurator(this, UiConfigs::instance().ui(), communicator());
     form->exec();
     form->deleteLater();
 }
@@ -1075,12 +1079,12 @@ void FrmMain::viewLockWindowsToggled(bool checked)
         Utils::setDockableLocked(dock, checked);
     }
 
-    m_configuration.uiModule().setLockWindows(checked);
+    UiConfigs::instance().ui().setLockWindows(checked);
 }
 
 void FrmMain::viewDarkModeToggled(bool checked)
 {
-    m_configuration.uiModule().setDarkMode(checked);
+    UiConfigs::instance().ui().setDarkMode(checked);
     ThemeManager::instance().setDark(checked);
 }
 
@@ -1109,7 +1113,7 @@ void FrmMain::onFileOpen(QString filePath)
                 return;
             }
 
-            m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
+            UiConfigs::instance().ui().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
         Core::instance().addRecentFile(filePath);
@@ -1124,7 +1128,7 @@ void FrmMain::onFileOpen(QString filePath)
                 return;
             }
 
-            m_configuration.uiModule().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
+            UiConfigs::instance().ui().currentWorkingDirectory(filePath.left(filePath.lastIndexOf(QRegularExpression("[/\\\\]+"))));
         }
 
         Core::instance().addRecentHeightmap(filePath);
@@ -2179,8 +2183,8 @@ void FrmMain::onHeightmapDataChangedByUser()
 
 void FrmMain::preloadSettings()
 {
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
-    ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
+    ConfigurationUI &uiConfiguration = UiConfigs::instance().ui();
+    ConfigurationVisualizer &visualizerConfiguration = UiConfigs::instance().visualizer();
 
     ThemeManager::instance().setScale(uiConfiguration.uiScale());
     for (auto action : ui->menuUIScale->actions()) {
@@ -2248,10 +2252,10 @@ void FrmMain::loadSettings()
     applySettings();
 
     // Shortcuts
-    ShortcutsManager::instance().importList(m_configuration.uiModule().shortcuts());
+    ShortcutsManager::instance().importList(UiConfigs::instance().ui().shortcuts());
 
     // Menu
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
+    ConfigurationUI &uiConfiguration = UiConfigs::instance().ui();
     ui->actViewLockWindows->setChecked(uiConfiguration.lockWindows());
     ui->actViewLockPanels->setChecked(uiConfiguration.lockPanels());
     ui->actViewDarkMode->setChecked(uiConfiguration.darkTheme());
@@ -2263,7 +2267,7 @@ void FrmMain::loadSettings()
 
 void FrmMain::restoreDockableLayoutState()
 {
-    ConfigurationUI& uiConfiguration = m_configuration.uiModule();
+    ConfigurationUI& uiConfiguration = UiConfigs::instance().ui();
 
     ui->program->restoreHeaderState(uiConfiguration.programHeaderState());
     restoreGeometry(uiConfiguration.mainFormGeometryData());
@@ -2330,7 +2334,7 @@ void FrmMain::saveSettings()
 {
     emit settingsAboutToSave();
 
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
+    ConfigurationUI &uiConfiguration = UiConfigs::instance().ui();
 
     uiConfiguration.setAutoScrollGCode(ui->program->isAutoScroll());
     uiConfiguration.setProgramHeaderState(ui->program->saveHeaderState());
@@ -2425,7 +2429,7 @@ void FrmMain::addDockableWindow(const QString title, const QString name, QWidget
     dock->setObjectName("dock-" + name);
     dock->setMinimumHeight(200);
     dock->setWidget(widget);
-    Utils::setDockableLocked(dock, m_configuration.uiModule().lockWindows());
+    Utils::setDockableLocked(dock, UiConfigs::instance().ui().lockWindows());
     dock->setTitleBarWidget(new DockableTitle(dock));
     addDockWidget(area, dock, orientation);
 
@@ -2447,10 +2451,10 @@ void FrmMain::addDockableWindow(const QString title, const QString name, QWidget
 
 void FrmMain::applySettings()
 {
-    ConfigurationVisualizer &visualizerConfiguration = m_configuration.visualizerModule();
-    ConfigurationHeightmap &heightmapConfiguration = m_configuration.heightmapModule();
+    ConfigurationVisualizer &visualizerConfiguration = UiConfigs::instance().visualizer();
+    ConfigurationHeightmap &heightmapConfiguration = ConfigurationHeightmap::instance();
     ConfigurationMachine &machineConfiguration = m_configuration.machineModule();
-    ConfigurationUI &uiConfiguration = m_configuration.uiModule();
+    ConfigurationUI &uiConfiguration = UiConfigs::instance().ui();
     ConfigurationJogging &joggingConfiguration = m_configuration.joggingModule();
 
     ui->visualizer->applyVisualizerConfiguration(visualizerConfiguration, machineConfiguration);
@@ -2513,7 +2517,7 @@ void FrmMain::updateParser()
 
     // GcodeParser parser;
     // parser.setTraverseSpeed(communicator()->machineConfiguration().maxRate().x()); // uses only x axis speed
-    // if (m_configuration.visualizerModule().ignoreZ()) {
+    // if (UiConfigs::instance().visualizer().ignoreZ()) {
     //     parser.reset(QVector3D(qQNaN(), qQNaN(), 0));
     // }
 
@@ -2942,7 +2946,7 @@ void FrmMain::updateControlsState()
     // ui->program->setAbortButtonEnabled(senderState != SenderState::Stopped && senderState != SenderState::Stopping);
     ui->menuRecent->setEnabled(
         idle &&
-        ((m_configuration.uiModule().hasAnyRecentFiles() && !m_heightmapMode) || (m_configuration.uiModule().hasAnyRecentHeightmaps() && m_heightmapMode))
+        ((UiConfigs::instance().ui().hasAnyRecentFiles() && !m_heightmapMode) || (UiConfigs::instance().ui().hasAnyRecentHeightmaps() && m_heightmapMode))
     );
     ui->actFileSave->setEnabled(!program().empty());
     ui->actFileSaveAs->setEnabled(!program().empty());
@@ -2983,7 +2987,7 @@ void FrmMain::updateControlsState()
     // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogStep->setEnabled(!ui->chkKeyboardControl->isChecked());
     // ui->cboJogFeed->setEnabled(!ui->chkKeyboardControl->isChecked());
-    // ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
+    // ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(UiConfigs::instance().ui().fontSize()));
     // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 
     ui->program->setHeightMapVisible(m_heightmapMode);
@@ -3012,9 +3016,9 @@ void FrmMain::updateLayouts()
 void FrmMain::updateRecentFilesMenus()
 {
     ui->menuRecent->clear();
-    ui->program->setRecentFiles(m_configuration.uiModule().recentFiles());
+    ui->program->setRecentFiles(UiConfigs::instance().ui().recentFiles());
 
-    QStringList files = !m_heightmapMode ? m_configuration.uiModule().recentFiles() : m_configuration.uiModule().recentHeightmaps();
+    QStringList files = !m_heightmapMode ? UiConfigs::instance().ui().recentFiles() : UiConfigs::instance().ui().recentHeightmaps();
     if (!files.empty())
     {
         QStringList::const_iterator it = files.constEnd();
@@ -3302,7 +3306,7 @@ void FrmMain::updateToolPositionAndToolpathShadowing(QVector3D toolPosition)
 
 QString FrmMain::lastUsedDirectory()
 {
-    return m_configuration.uiModule().currentWorkingDirectory();
+    return UiConfigs::instance().ui().currentWorkingDirectory();
 }
 
 // QList<LineSegment*> FrmMain::subdivideSegment(LineSegment* segment)

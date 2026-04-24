@@ -6,6 +6,7 @@
 #include "pendant.h"
 #include "defines.h"
 #include "core/config/configuration.h"
+#include "configurationpendant.h"
 #include <QTcpSocket>
 #include "circularbuffer.h"
 #include <QTimer>
@@ -19,16 +20,16 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 {
     qDebug() << "[Pendant] Created";
 
-    connect(&configuration.pendantModule(), &ConfigurationPendant::changed, this, [this]() {
+    connect(&ConfigurationPendant::instance(), &ConfigurationPendant::changed, this, [this]() {
         qDebug() << "[Pendant] Configuration changed";
 
-        if (!m_configuration.pendantModule().enabled()) {
+        if (!ConfigurationPendant::instance().enabled()) {
             deinitialize();
 
             return;
         }
 
-        if (m_server != nullptr && m_server->serverPort() != m_configuration.pendantModule().port()) {
+        if (m_server != nullptr && m_server->serverPort() != ConfigurationPendant::instance().port()) {
             deinitialize();
         }
 
@@ -39,7 +40,7 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 void Pendant::initialize()
 {
     m_server = new QTcpServer(this);
-    m_server->listen(QHostAddress::Any, m_configuration.pendantModule().port());
+    m_server->listen(QHostAddress::Any, ConfigurationPendant::instance().port());
 
     connect(m_server, &QTcpServer::newConnection, [this]() {
         qDebug() << "[Pendant] New pendant connection";

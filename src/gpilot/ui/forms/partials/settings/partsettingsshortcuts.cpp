@@ -5,7 +5,7 @@
 #include "partsettingsshortcuts.h"
 #include "ui_partsettingsshortcuts.h"
 #include "ui/utils/shortcutsmanager.h"
-#include "core/config/module/configurationui.h"
+#include "ui/config/configurationui.h"
 #include <QStyledItemDelegate>
 #include <QKeySequenceEdit>
 #include <QKeyEvent>

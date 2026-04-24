@@ -16,6 +16,8 @@ namespace Ui {
 class frmGrblConfigurator;
 }
 
+class ConfigurationUI;
+
 enum Type {
     Boolean,
     Integer,

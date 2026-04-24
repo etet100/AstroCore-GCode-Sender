@@ -3,6 +3,7 @@
 // Copyright 2024 BTS
 
 #include "configurationpendant.h"
+#include "core/config/configuration.h"
 
 const QMap<QString,QVariant> DEFAULTS = {
     {"wifiSsid", "wifi"},
@@ -14,4 +15,15 @@ const QMap<QString,QVariant> DEFAULTS = {
 
 ConfigurationPendant::ConfigurationPendant(QObject *parent) : AbstractConfigurationModule(parent, DEFAULTS)
 {
+}
+
+ConfigurationPendant& ConfigurationPendant::instance()
+{
+    static ConfigurationPendant inst;
+    return inst;
+}
+
+void ConfigurationPendant::registerWith(Configuration& cfg)
+{
+    cfg.registerModule(&instance());
 }

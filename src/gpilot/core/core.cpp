@@ -6,6 +6,8 @@
 #include "io/connection/connectionmanager.h"
 #include "io/connection/abstractconnection.h"
 #include "modules/ai/openaimanager.h"
+#include "modules/ai/configurationai.h"
+#include "ui/config/uiconfigs.h"
 #include <QCoreApplication>
 #include <QDebug>
 
@@ -105,7 +107,7 @@ Core::ConsoleCommandResult Core::tryHandleInternalCommand(const QString& command
             return ConsoleCommandResult::stop();
         }
         OpenAIManager& ai = OpenAIManager::instance();
-        ai.setApiKey(m_configuration.aiModule().openAIKey());
+        ai.setApiKey(ConfigurationAI::instance().openAIKey());
         ai.sendRequest(args,
             [this](const QString& response) { emit log("[AI] " + response); },
             [this](const QString& error) { emit log("[AI][Error] " + error); },
@@ -166,14 +168,14 @@ Core::ConsoleCommandResult Core::tryHandleScanned(const QString& command)
 
 void Core::addRecentFile(QString fileName)
 {
-    m_configuration.uiModule().addRecentFile(fileName);
+    UiConfigs::instance().ui().addRecentFile(fileName);
     m_configuration.save();
     emit recentFilesChanged();
 }
 
 void Core::addRecentHeightmap(QString fileName)
 {
-    m_configuration.uiModule().addRecentHeightmap(fileName);
+    UiConfigs::instance().ui().addRecentHeightmap(fileName);
     m_configuration.save();
     emit recentFilesChanged();
 }
@@ -181,9 +183,9 @@ void Core::addRecentHeightmap(QString fileName)
 void Core::clearRecentFiles(bool heightmapMode)
 {
     if (heightmapMode) {
-        m_configuration.uiModule().clearRecentHeightmaps();
+        UiConfigs::instance().ui().clearRecentHeightmaps();
     } else {
-        m_configuration.uiModule().clearRecentFiles();
+        UiConfigs::instance().ui().clearRecentFiles();
     }
     m_configuration.save();
     emit recentFilesChanged();

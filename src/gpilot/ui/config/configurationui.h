@@ -9,7 +9,7 @@
 #include <QRect>
 #include <QByteArray>
 #include <QWidget>
-#include "abstractconfigurationmodule.h"
+#include "core/config/module/abstractconfigurationmodule.h"
 
 struct ShortcutEntry {
     QString objectName;

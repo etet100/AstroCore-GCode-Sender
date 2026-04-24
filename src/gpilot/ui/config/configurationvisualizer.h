@@ -7,7 +7,7 @@
 
 #include <QObject>
 #include <QColor>
-#include "abstractconfigurationmodule.h"
+#include "core/config/module/abstractconfigurationmodule.h"
 
 class ConfigurationVisualizer : public AbstractConfigurationModule
 {

@@ -15,29 +15,17 @@ Configuration::Configuration()
     : QObject(nullptr),
     m_sender(),
     m_connection(),
-    m_visualizer(),
-    m_console(),
     m_parser(),
-    m_ui(),
     m_machine(),
-    m_heightmap(),
-    m_jogging(),
-    m_ai(),
-    m_pendant(),
-    m_macros()
+    m_jogging()
 {
-    m_modules << &m_sender
-        << &m_connection
-        << &m_visualizer
-        << &m_console
-        << &m_parser
-        << &m_ui
-        << &m_machine
-        << &m_heightmap
-        << &m_jogging
-        << &m_ai
-        << &m_pendant
-        << &m_macros;
+    // Core modules are owned by Configuration — register them immediately so
+    // they are included in the first load/save pass.
+    registerModule(&m_sender);
+    registerModule(&m_connection);
+    registerModule(&m_parser);
+    registerModule(&m_machine);
+    registerModule(&m_jogging);
 }
 
 bool Configuration::init(const QString& appPath, const QString& configType)
@@ -59,9 +47,39 @@ bool Configuration::init(const QString& appPath, const QString& configType)
         return false;
     }
 
+    m_initialized = true;
     load();
 
     return true;
+}
+
+bool Configuration::registerModule(AbstractConfigurationModule* module)
+{
+    if (module == nullptr) {
+        qWarning() << "[Configuration] registerModule called with nullptr";
+        return false;
+    }
+    if (m_modules.contains(module)) {
+        qWarning() << "[Configuration] Module already registered:" << module->getSectionName();
+        return false;
+    }
+
+    m_modules.append(module);
+
+    // Lazy registration: persistence is already open, load this module now.
+    if (m_initialized && m_provider != nullptr) {
+        qDebug() << "[Configuration] Lazy-registering module" << module->getSectionName();
+        m_provider->open();
+        loadModule(module);
+        m_provider->close();
+    }
+
+    return true;
+}
+
+void Configuration::unregisterModule(AbstractConfigurationModule* module)
+{
+    m_modules.removeOne(module);
 }
 
 QString Configuration::language()
@@ -77,6 +95,11 @@ void Configuration::setLanguage(QString language)
 void Configuration::save()
 {
     qDebug() << "[Configuration] Save configurations";
+
+    if (!m_persister) {
+        qWarning() << "[Configuration] save() called before init()";
+        return;
+    }
 
     m_persister->open();
     for (AbstractConfigurationModule* module : std::as_const(m_modules)) {
@@ -202,6 +225,11 @@ void Configuration::load()
 {
     qInfo() << "Load configurations";
 
+    if (!m_provider) {
+        qWarning() << "[Configuration] load() called before init()";
+        return;
+    }
+
     m_provider->open();
     for (AbstractConfigurationModule* module : std::as_const(m_modules)) {
         loadModule(module);
@@ -326,4 +354,3 @@ void Configuration::loadModule(AbstractConfigurationModule *module)
         }
     }
 }
-

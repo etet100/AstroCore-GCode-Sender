@@ -4,12 +4,13 @@
 #include <QShortcut>
 #include "ui/forms/frmmain.h"
 #include "ui/utils/thememanager.h"
+#include "ui/config/uiconfigs.h"
 #include "ui_frmmain.h"
 
 void FrmMain::initializeUiScaleMenu()
 {
     QAction* action;
-    double scale = m_configuration.uiModule().uiScale();
+    double scale = UiConfigs::instance().ui().uiScale();
     for (int i = 80; i <= 140; i+=10) {
         action = ui->menuUIScale->addAction(QString::number(i) + "%" + (i == 100 ? " (default)" : ""));
         action->setProperty("scale", i);
@@ -43,14 +44,14 @@ void FrmMain::initializeUiScaleMenu()
     connect(shortcutReset, &QShortcut::activated, this, &FrmMain::resetUiScale);
 
     connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](double scale){
-        m_configuration.uiModule().setUiScale(scale);
+        UiConfigs::instance().ui().setUiScale(scale);
         updateUiScaleMenu();
     });
 }
 
 void FrmMain::updateUiScaleMenu()
 {
-    double scale = m_configuration.uiModule().uiScale();
+    double scale = UiConfigs::instance().ui().uiScale();
 
     for (auto& action : ui->menuUIScale->actions()) {
         action->setChecked(action->property("scale").toInt() == scale);

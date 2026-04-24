@@ -1,6 +1,6 @@
 #include "partmainvisualizer.h"
 #include "ui_partmainvisualizer.h"
-#include "core/config/module/configurationvisualizer.h"
+#include "ui/config/configurationvisualizer.h"
 #include "core/config/module/configurationmachine.h"
 #include "core/gcode/gcode.h"
 #include "ui/drawers/vertexdataexporter.h"

@@ -18,6 +18,10 @@
 #include "ui/forms/frmlog.h"
 #include "ui/utils/thememanager.h"
 #include "core/core.h"
+#include "ui/config/uiconfigs.h"
+#include "modules/ai/configurationai.h"
+#include "modules/pendant/configurationpendant.h"
+#include "core/heightmap/configurationheightmap.h"
 #ifdef WINDOWS
 #include <windows.h>
 #endif
@@ -175,11 +179,21 @@ int main(int argc, char *argv[])
 //     }
 // #endif
 
-    if (!Core::instance().configuration().init(QCoreApplication::applicationDirPath(), parser.value(configTypeOption))) {
+    Configuration& cfg = Core::instance().configuration();
+
+    // Register non-core modules before init() so they are loaded in the first
+    // pass. Lazy registration (after init()) is also allowed — the module is
+    // loaded from the config file immediately on registerModule().
+    UiConfigs::instance().registerAll(cfg);
+    ConfigurationAI::registerWith(cfg);
+    ConfigurationPendant::registerWith(cfg);
+    ConfigurationHeightmap::registerWith(cfg);
+
+    if (!cfg.init(QCoreApplication::applicationDirPath(), parser.value(configTypeOption))) {
         return -1;
     }
 
-    ThemeManager::instance().initialize(&app, Core::instance().configuration().uiModule().darkTheme());
+    ThemeManager::instance().initialize(&app, UiConfigs::instance().ui().darkTheme());
 
     FrmMain form;
     form.show();

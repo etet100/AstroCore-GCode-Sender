@@ -7,6 +7,7 @@
 #include <QLayout>
 #include <QSignalBlocker>
 #include "ui/forms/frmmain.h"
+#include "ui/config/uiconfigs.h"
 #include "ui_frmmain.h"
 
 void FrmMain::initializeCentralWidgets()
@@ -80,7 +81,7 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
     ui->centralWidget->layout()->addWidget(requestedConfig->widget);
     ui->centralWidgetTitle->setTitle(requestedConfig->title);
 
-    m_configuration.uiModule().setCentralWidget(requestedConfig->name);
+    UiConfigs::instance().ui().setCentralWidget(requestedConfig->name);
     const QSignalBlocker blocker(requestedConfig->action);
     requestedConfig->action->setChecked(true);
     requestedConfig->dock->setProperty("cw", true);
@@ -88,7 +89,7 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
 
 void FrmMain::restoreCentralWidget()
 {
-    QString centralWidgetName = m_configuration.uiModule().centralWidget();
+    QString centralWidgetName = UiConfigs::instance().ui().centralWidget();
     if (centralWidgetName.isEmpty()) {
         // it should never be empty since it has a default value
         return;

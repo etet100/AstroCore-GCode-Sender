@@ -8,7 +8,7 @@
 #include <QWidget>
 #include <QTextBlock>
 #include <QAbstractListModel>
-#include "core/config/module/configurationconsole.h"
+#include "ui/config/configurationconsole.h"
 #include "core/globals.h"
 
 namespace Ui {
