@@ -113,6 +113,15 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
 
     for (int x = 0; x < gridSize.width() - 1; x++) {
         for (int y = 0; y < gridSize.height() - 1; y++) {
+            if (
+                qIsNaN(m_model->at(x, y)) ||
+                qIsNaN(m_model->at(x + 1, y)) ||
+                qIsNaN(m_model->at(x, y + 1)) ||
+                qIsNaN(m_model->at(x + 1, y + 1))
+            ) {
+                continue; // Skip not fully defined cells
+            }
+
             // Split every cell into NxN subcells (N = SUBDIVISIONS_PER_CELL)
             const double substep = 1.0 / SUBDIVISIONS_PER_CELL;
             for (double x2 = x; x2 < x + 0.9; x2 += substep) {
