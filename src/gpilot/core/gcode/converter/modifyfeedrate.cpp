@@ -28,33 +28,36 @@ QString ModifyFeedRate::parameterSchema()
 }
 
 ModifyFeedRate::ModifyFeedRate(double percent)
-    : AbstractConverter()
-    , m_percent(percent)
+    : m_percent(percent)
 {
 }
 
-bool ModifyFeedRate::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> ModifyFeedRate::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode); Q_UNUSED(currentIndex); Q_UNUSED(parser);
-
-    if (item.state == GCodeItem::EmptyLine || item.state == GCodeItem::Comment) return false;
-    if (qIsNaN(GcodePreprocessorUtils::parseCoord(item.args, 'F'))) return false;
+    if (input.state == GCodeItem::EmptyLine || input.state == GCodeItem::Comment) {
+        return { input };
+    }
+    if (qIsNaN(GcodePreprocessorUtils::parseCoord(input.args, 'F'))) {
+        return { input };
+    }
 
     // Split line so we only modify the command part, not inline comments
-    int parenPos = item.line.indexOf('(');
-    int semiPos  = item.line.indexOf(';');
+    int parenPos = input.line.indexOf('(');
+    int semiPos  = input.line.indexOf(';');
     int splitPos = -1;
     if (parenPos >= 0 && semiPos >= 0) splitPos = qMin(parenPos, semiPos);
     else if (parenPos >= 0)            splitPos = parenPos;
     else if (semiPos >= 0)             splitPos = semiPos;
 
-    QString cmdPart     = (splitPos >= 0) ? item.line.left(splitPos) : item.line;
-    QString commentPart = (splitPos >= 0) ? item.line.mid(splitPos)  : QString();
+    QString cmdPart     = (splitPos >= 0) ? input.line.left(splitPos) : input.line;
+    QString commentPart = (splitPos >= 0) ? input.line.mid(splitPos)  : QString();
 
     static const QRegularExpression re("[F]\\s*([0-9]*\\.?[0-9]+)",
                                        QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatch match = re.match(cmdPart);
-    if (!match.hasMatch()) return false;
+    if (!match.hasMatch()) {
+        return { input };
+    }
 
     double original = match.captured(1).toDouble();
     double newFeed  = original * m_percent / 100.0;
@@ -68,9 +71,11 @@ bool ModifyFeedRate::convertLine(GCodeItem &item, GCode *gcode, int currentIndex
 
     cmdPart.replace(match.capturedStart(), match.capturedLength(), newStr);
 
-    item.line = cmdPart + commentPart;
-    item.args = GcodePreprocessorUtils::splitCommand(
-        GcodePreprocessorUtils::removeComment(item.line)
+    GCodeItem out = input;
+    out.line = cmdPart + commentPart;
+    out.args = GcodePreprocessorUtils::splitCommand(
+        GcodePreprocessorUtils::removeComment(out.line)
     );
-    return true;
+
+    return { out };
 }

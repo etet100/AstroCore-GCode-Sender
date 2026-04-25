@@ -9,39 +9,38 @@ QString StripComments::parameterSchema()
 {
     return QStringLiteral(R"JSON({
   "title": "Strip comments",
-  "description": "Removes all G-code comments — both parenthetical (comment) and semicolon style ; comment. Lines that contained only a comment become empty lines.",
+  "description": "Removes all G-code comments — both parenthetical (comment) and semicolon style ; comment. Lines that contained only a comment are dropped from the stream.",
   "image": ":/images/converters/stripcomments.png",
   "fields": []
 })JSON");
 }
 
-StripComments::StripComments() : AbstractConverter() {}
-
-bool StripComments::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> StripComments::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode); Q_UNUSED(currentIndex); Q_UNUSED(parser);
-
-    if (item.line.isEmpty()) return false;
-
     static const QRegularExpression parenComment(R"(\([^)]*\))");
     static const QRegularExpression semiComment(R"(;.*)");
 
-    QString stripped = item.line;
+    if (input.line.isEmpty()) {
+        return {};
+    }
+
+    QString stripped = input.line;
     stripped.remove(parenComment);
     stripped.remove(semiComment);
     stripped = stripped.trimmed();
 
-    if (stripped == item.line.trimmed()) return false;
-
-    item.line = stripped;
-    item.comment.clear();
-
     if (stripped.isEmpty()) {
-        item.state = GCodeItem::EmptyLine;
-        item.args.clear();
-    } else {
-        item.args = GcodePreprocessorUtils::splitCommand(stripped);
+        return {};
     }
 
-    return true;
+    if (stripped == input.line.trimmed()) {
+        return { input };
+    }
+
+    GCodeItem modified = input;
+    modified.line = stripped;
+    modified.comment.clear();
+    modified.args = GcodePreprocessorUtils::splitCommand(stripped);
+
+    return { modified };
 }

@@ -63,50 +63,54 @@ void MovePath::setOffset(double x, double y, double z)
     m_offsetZ = z;
 }
 
-bool MovePath::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> MovePath::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode); Q_UNUSED(currentIndex); Q_UNUSED(parser);
-
-    if (item.state == GCodeItem::EmptyLine || item.state == GCodeItem::Comment) {
-        return false;
+    if (input.state == GCodeItem::EmptyLine || input.state == GCodeItem::Comment) {
+        return { input };
     }
 
     // Track absolute / incremental mode changes
-    for (float gc : GcodePreprocessorUtils::parseCodes(item.args, 'G')) {
+    for (float gc : GcodePreprocessorUtils::parseCodes(input.args, 'G')) {
         int g = qRound(gc);
         if (g == 90)      m_absoluteMode = true;
         else if (g == 91) m_absoluteMode = false;
     }
 
-    if (!item.isMovement || !m_absoluteMode) return false;
+    if (!input.isMovement || !m_absoluteMode) {
+        return { input };
+    }
 
     // Split line into command and comment parts so we don't modify comment text
-    int parenPos = item.line.indexOf('(');
-    int semiPos  = item.line.indexOf(';');
+    int parenPos = input.line.indexOf('(');
+    int semiPos  = input.line.indexOf(';');
     int splitPos = -1;
     if (parenPos >= 0 && semiPos >= 0) splitPos = qMin(parenPos, semiPos);
     else if (parenPos >= 0)            splitPos = parenPos;
     else if (semiPos >= 0)             splitPos = semiPos;
 
-    QString cmdPart     = (splitPos >= 0) ? item.line.left(splitPos) : item.line;
-    QString commentPart = (splitPos >= 0) ? item.line.mid(splitPos)  : QString();
+    QString cmdPart     = (splitPos >= 0) ? input.line.left(splitPos) : input.line;
+    QString commentPart = (splitPos >= 0) ? input.line.mid(splitPos)  : QString();
 
     QString newCmd = cmdPart;
 
-    if (m_offsetX != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(item.args, 'X')))
+    if (m_offsetX != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(input.args, 'X')))
         newCmd = applyOffset(newCmd, 'X', m_offsetX);
-    if (m_offsetY != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(item.args, 'Y')))
+    if (m_offsetY != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(input.args, 'Y')))
         newCmd = applyOffset(newCmd, 'Y', m_offsetY);
-    if (m_offsetZ != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(item.args, 'Z')))
+    if (m_offsetZ != 0.0 && !qIsNaN(GcodePreprocessorUtils::parseCoord(input.args, 'Z')))
         newCmd = applyOffset(newCmd, 'Z', m_offsetZ);
 
-    if (newCmd == cmdPart) return false;
+    if (newCmd == cmdPart) {
+        return { input };
+    }
 
-    item.line = newCmd + commentPart;
-    item.args = GcodePreprocessorUtils::splitCommand(
-        GcodePreprocessorUtils::removeComment(item.line)
+    GCodeItem out = input;
+    out.line = newCmd + commentPart;
+    out.args = GcodePreprocessorUtils::splitCommand(
+        GcodePreprocessorUtils::removeComment(out.line)
     );
-    return true;
+
+    return { out };
 }
 
 QString MovePath::applyOffset(const QString &cmd, char axis, double offset) const
@@ -132,5 +136,6 @@ QString MovePath::applyOffset(const QString &cmd, char axis, double offset) cons
 
     QString result = cmd;
     result.replace(match.capturedStart(), match.capturedLength(), newStr);
+
     return result;
 }

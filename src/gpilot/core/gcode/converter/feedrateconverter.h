@@ -1,20 +1,23 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2025 BTS
 
-#ifndef EXAMPLECONVERTER_H
-#define EXAMPLECONVERTER_H
+#ifndef FEEDRATECONVERTER_H
+#define FEEDRATECONVERTER_H
 
-#include "abstractconverter.h"
+#include "streamconverter.h"
+#include <optional>
 
-class FeedRateConverter : public AbstractConverter
+// Example: simple stateless 1->1 converter.
+class FeedRateConverter : public StreamConverter
 {
     public:
         static QString parameterSchema();
 
         explicit FeedRateConverter(double multiplier = 1.0);
 
-        bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
-        void reset() override;
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override { return {}; }
+        void reset() override {}
 
         void setMultiplier(double multiplier) { m_multiplier = multiplier; }
         double getMultiplier() const { return m_multiplier; }
@@ -23,18 +26,19 @@ class FeedRateConverter : public AbstractConverter
         double m_multiplier;
 };
 
-class CoordinateOffsetConverter : public AbstractConverter
+// Example: simple stateless 1->1 converter modifying coordinates.
+class CoordinateOffsetConverter : public StreamConverter
 {
     public:
         static QString parameterSchema();
 
         explicit CoordinateOffsetConverter(double offsetX = 0.0,
-                                          double offsetY = 0.0,
-                                          double offsetZ = 0.0);
+                                           double offsetY = 0.0,
+                                           double offsetZ = 0.0);
 
-        bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
-        void reset() override;
-        bool needsParser() const override { return true; }
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override { return {}; }
+        void reset() override {}
 
         void setOffset(double x, double y, double z);
 
@@ -46,29 +50,45 @@ class CoordinateOffsetConverter : public AbstractConverter
         QString modifyCoordinate(const QString &arg, char axis, double offset);
 };
 
-// Example: lookahead usage
-class SafeSpindleStopConverter : public AbstractConverter
+// Example: 1-line lookahead via a one-slot internal buffer.
+// Holds back the current item until the next push() arrives, so it can
+// inspect the following command before deciding whether to annotate.
+class SafeSpindleStopConverter : public StreamConverter
 {
     public:
         static QString parameterSchema();
 
-        SafeSpindleStopConverter();
+        SafeSpindleStopConverter() = default;
 
-        bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
-        int needsLookahead() const override { return 1; }
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override;
+        void reset() override { m_pending.reset(); }
+
+    private:
+        std::optional<GCodeItem> m_pending;
 };
 
-// Example: full G-Code access
-class MovementOptimizerConverter : public AbstractConverter
+// Example: N-line lookahead via a ring of pending items.
+// Note: the original example also did a full-program scan (counting all
+// movement lines) — that is incompatible with streaming and was removed.
+// If a stage genuinely needs whole-program statistics, compute them once
+// up-front and pass the result in via the constructor.
+class MovementOptimizerConverter : public StreamConverter
 {
     public:
         static QString parameterSchema();
 
-        MovementOptimizerConverter();
+        MovementOptimizerConverter() = default;
 
-        bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
-        bool needsFullGCode() const override { return true; }
-        int needsLookahead() const override { return 5; }
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override;
+        void reset() override { m_buffer.clear(); }
+
+    private:
+        static constexpr int LOOKAHEAD = 5;
+        QList<GCodeItem> m_buffer;
+
+        GCodeItem annotate(const GCodeItem &item) const;
 };
 
-#endif // EXAMPLECONVERTER_H
+#endif // FEEDRATECONVERTER_H

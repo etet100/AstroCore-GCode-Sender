@@ -1,48 +1,39 @@
 // This file is a part of "G-Pilot GCode Sender" application.
-// Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
 #ifndef APPLYHEIGHTMAP_H
 #define APPLYHEIGHTMAP_H
 
-#include "abstractbatchconverter.h"
+#include "streamconverter.h"
 #include "core/heightmap/heightmap.h"
 #include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QVector3D>
-#include <QObject>
 
 /**
- * ApplyHeightmap is a specialized converter that segments movement lines
- * and applies Z-offset from heightmap. Due to line insertion requirement,
- * it implements AbstractBatchConverter directly rather than using AbstractConverter base.
+ * Segments movement lines and applies a heightmap-driven Z offset to each
+ * intermediate point. Used to compensate for an uneven work surface
+ * (typical case: PCB isolation milling).
  *
- * IMPORTANT: Do not use in Pipeline with other converters. Use standalone:
- *   ApplyHeightmap converter(heightmap, 1.0);
- *   converter.setGCode(originalGCode);
- *   GCode* result = converter.convertAll();
+ * Stream contract: 1 input movement line yields N output segments.
+ * Non-movement lines pass through unchanged. The internal parser is fed
+ * with raw (input) coordinates so each new line starts from the
+ * un-offset position — preventing double application.
  */
-class ApplyHeightmap : public QObject, public AbstractBatchConverter
+class ApplyHeightmap : public StreamConverter
 {
-    Q_OBJECT
-
     public:
         // Schema covers only the values the user chooses in UI.
         // The Heightmap pointer is supplied by the caller, not by the dialog.
         static QString parameterSchema();
 
         explicit ApplyHeightmap(Heightmap* heightmap, double segmentLength = 1.0,
-                                bool applyToRapids = false, QObject *parent = nullptr);
+                                bool applyToRapids = false);
         ~ApplyHeightmap() override;
 
-        // AbstractBatchConverter implementation
-        void setGCode(GCode *gcode) override;
-        int convertNext(int count) override;
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override { return {}; }
         void reset() override;
-        bool hasMore() const override;
-        int currentPosition() const override { return m_currentIndex; }
-        int totalLines() const override;
-        GCode* convertAll() override;
 
         void setSegmentLength(double length) { m_segmentLength = length; }
         double segmentLength() const { return m_segmentLength; }
@@ -56,21 +47,14 @@ class ApplyHeightmap : public QObject, public AbstractBatchConverter
         void setArcPreserveTolerance(double tolerance) { m_arcPreserveTolerance = tolerance; }
         double arcPreserveTolerance() const { return m_arcPreserveTolerance; }
 
-    signals:
-        void progressChanged(int current, int total);
-
     private:
         Heightmap* m_heightmap;
         AbstractHeightmapInterpolator* m_interpolator;
         GcodeParser* m_parser;
-        GCode* m_gcode;
         double m_segmentLength;
         double m_arcPreserveTolerance;
         bool   m_applyToRapids;
-        int m_currentIndex;
 
-        // Helper methods for processing single line
-        QList<GCodeItem> processLine(const GCodeItem &item);
         QList<QVector3D> segmentLine(const QVector3D &start, const QVector3D &end);
         QList<QVector3D> segmentArc(const QVector3D &start, const QVector3D &end,
                                      const QVector3D &center, double radius,

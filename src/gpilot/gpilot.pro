@@ -127,15 +127,14 @@ SOURCES += main.cpp\
     core/core.cpp \
     core/gcode/converter/applyheightmap.cpp \
     core/gcode/converter/arcstolines.cpp \
-    core/gcode/converter/abstractconverter.cpp \
     core/gcode/converter/feedrateconverter.cpp \
     core/gcode/converter/fusionrestorerapidmovements.cpp \
     core/gcode/converter/modifyfeedrate.cpp \
     core/gcode/converter/movepath.cpp \
-    core/gcode/converter/pipeline.cpp \
+    core/gcode/converter/streamconverter.cpp \
+    core/gcode/converter/streampipeline.cpp \
     core/gcode/converter/stripcomments.cpp \
     core/gcode/converter/shakinggcode.cpp \
-    core/gcode/converter/singleconverter.cpp \
     core/heightmap/exporter/heightmapexporter.cpp \
     core/heightmap/interpolator/heightmapbicubicinterpolator.cpp \
     core/heightmap/interpolator/heightmapbilinearinterpolator.cpp \
@@ -326,16 +325,14 @@ HEADERS  += ui/forms/frmmain.h \
     core/core.h \
     core/gcode/converter/applyheightmap.h \
     core/gcode/converter/arcstolines.h \
-    core/gcode/converter/abstractconverter.h \
-    core/gcode/converter/abstractbatchconverter.h \
     core/gcode/converter/feedrateconverter.h \
     core/gcode/converter/fusionrestorerapidmovements.h \
     core/gcode/converter/modifyfeedrate.h \
     core/gcode/converter/movepath.h \
-    core/gcode/converter/pipeline.h \
+    core/gcode/converter/streamconverter.h \
+    core/gcode/converter/streampipeline.h \
     core/gcode/converter/stripcomments.h \
     core/gcode/converter/shakinggcode.h \
-    core/gcode/converter/singleconverter.h \
     core/heightmap/exporter/heightmapexporter.h \
     core/heightmap/interpolator/heightmapbicubicinterpolator.h \
     core/heightmap/interpolator/heightmapbilinearinterpolator.h \

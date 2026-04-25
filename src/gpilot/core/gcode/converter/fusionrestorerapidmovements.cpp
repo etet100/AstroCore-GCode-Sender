@@ -37,17 +37,13 @@ void FusionRestoreRapidMovements::reset()
     m_lockSpeed       = false;
 }
 
-bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> FusionRestoreRapidMovements::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode)
-    Q_UNUSED(currentIndex)
-    Q_UNUSED(parser)
-
-    if (item.state == GCodeItem::EmptyLine || item.state == GCodeItem::Comment) {
-        return false;
+    if (input.state == GCodeItem::EmptyLine || input.state == GCodeItem::Comment) {
+        return { input };
     }
 
-    const auto &args = item.args;
+    const auto &args = input.args;
 
     // Handle M49/M48 (disable/enable speed overrides)
     for (float mc : GcodePreprocessorUtils::parseCodes(args, 'M')) {
@@ -74,7 +70,7 @@ bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int
     }
 
     if (fHomeGcode) {
-        return false;
+        return { input };
     }
 
     double zVal = GcodePreprocessorUtils::parseCoord(args, 'Z');
@@ -92,7 +88,7 @@ bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int
         m_feedcur = fVal;
     }
 
-    QString original = item.line.trimmed();
+    QString original = input.line.trimmed();
     QString newLine;
 
     // Step A: learn Zfeed from the first two Z-only moves (G0 or G1, no XY)
@@ -175,16 +171,17 @@ bool FusionRestoreRapidMovements::convertLine(GCodeItem &item, GCode *gcode, int
     }
 
     if (newLine.isEmpty()) {
-        return false;
+        return { input };
     }
 
-    item.line       = newLine;
-    item.args       = GcodePreprocessorUtils::splitCommand(GcodePreprocessorUtils::removeComment(newLine));
-    item.isMovement = true;
-    item.group      = (m_lastMotionGcode == 0) ? GCodeItemGroup::RapidMovement
-                                               : GCodeItemGroup::Movement;
+    GCodeItem out = input;
+    out.line       = newLine;
+    out.args       = GcodePreprocessorUtils::splitCommand(GcodePreprocessorUtils::removeComment(newLine));
+    out.isMovement = true;
+    out.group      = (m_lastMotionGcode == 0) ? GCodeItemGroup::RapidMovement
+                                              : GCodeItemGroup::Movement;
 
-    return true;
+    return { out };
 }
 
 QString FusionRestoreRapidMovements::formatZ(double z)

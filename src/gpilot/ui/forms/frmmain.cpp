@@ -47,7 +47,7 @@
 #include "core/gcode/loader/gcodethreadedloader.h"
 #include "core/gcode/exporter/gcodeexporter.h"
 #include "core/gcode/converter/arcstolines.h"
-#include "core/gcode/converter/singleconverter.h"
+#include "core/gcode/converter/streamconverter.h"
 #include "core/gcode/converter/feedrateconverter.h"
 #include "core/gcode/converter/fusionrestorerapidmovements.h"
 #include "core/gcode/converter/modifyfeedrate.h"
@@ -60,6 +60,7 @@
 #include "core/utils/filesmanager.h"
 #include "modules/ai/openaimanager.h"
 #include "core/state_behavior/action.h"
+#include "ui/utils/uipermissions.h"
 // #include "core/state_behavior/joggingbehavior.h"
 // #include "core/state_behavior/gotobehavior.h"
 // #include "core/state_behavior/reconnectingbehavior.h"
@@ -2762,27 +2763,26 @@ void FrmMain::testConverter(int converterIndex)
 
     QVariantMap values = settings.values();
 
-    AbstractBatchConverter *converter = nullptr;
+    StreamConverter *converter = nullptr;
 
     switch (converterIndex) {
-        case 0: converter = new SingleConverter(new ArcsToLines(values["arcPrecision"].toDouble(), values["arcDegreeMode"].toBool())); break;
-        case 1: converter = new SingleConverter(new FusionRestoreRapidMovements()); break;
-        case 2: converter = new SingleConverter(new FeedRateConverter(values["multiplier"].toDouble())); break;
-        case 3: converter = new SingleConverter(new CoordinateOffsetConverter(values["offsetX"].toDouble())); break;
-        case 4: converter = new SingleConverter(new SafeSpindleStopConverter()); break;
-        case 5: converter = new SingleConverter(new MovementOptimizerConverter()); break;
+        case 0: converter = new ArcsToLines(values["arcPrecision"].toDouble(), values["arcDegreeMode"].toBool()); break;
+        case 1: converter = new FusionRestoreRapidMovements(); break;
+        case 2: converter = new FeedRateConverter(values["multiplier"].toDouble()); break;
+        case 3: converter = new CoordinateOffsetConverter(values["offsetX"].toDouble()); break;
+        case 4: converter = new SafeSpindleStopConverter(); break;
+        case 5: converter = new MovementOptimizerConverter(); break;
         case 6: converter = new ShakingGCode(values["segmentLength"].toDouble(), values["maxOffset"].toDouble(), values["shakeZ"].toBool()); break;
         case 7: converter = new ApplyHeightmap(&heightmap(), values["segmentLength"].toDouble()); break;
-        case 8: converter = new SingleConverter(new StripComments()); break;
-        case 9: converter = new SingleConverter(new MovePath(values["offsetX"].toDouble(), values["offsetY"].toDouble(), values["offsetZ"].toDouble())); break;
-        case 10: converter = new SingleConverter(new ModifyFeedRate(values["percent"].toDouble())); break;
+        case 8: converter = new StripComments(); break;
+        case 9: converter = new MovePath(values["offsetX"].toDouble(), values["offsetY"].toDouble(), values["offsetZ"].toDouble()); break;
+        case 10: converter = new ModifyFeedRate(values["percent"].toDouble()); break;
         default:
             qDebug() << "[FrmMain] testConverter: unknown index" << converterIndex;
             return;
     }
 
-    converter->setGCode(&program());
-    GCode *result = converter->convertAll();
+    GCode *result = converter->convertAll(program());
     delete converter;
 
     if (!result) {
@@ -2923,9 +2923,10 @@ void FrmMain::updateControlsState()
     //ui->spindle->...
     // ui->cmdSpindle->setEnabled(!running);
 
+    bool canOpenFile = UiPermissions::isAllowed(UiPermission::OpenFile, sb->type());
     ui->actFileNew->setEnabled(idle);
-    ui->actFileOpen->setEnabled(idle);
-    ui->program->setOpenButtonEnabled(idle);
+    ui->actFileOpen->setEnabled(canOpenFile);
+    ui->program->setOpenButtonEnabled(canOpenFile);
     ui->program->setResetButtonEnabled(idle && !program().empty());
     ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !program().empty());
     // switch (senderState) {

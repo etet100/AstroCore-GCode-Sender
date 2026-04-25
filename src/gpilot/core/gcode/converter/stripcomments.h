@@ -4,18 +4,21 @@
 #ifndef STRIPCOMMENTS_H
 #define STRIPCOMMENTS_H
 
-#include "abstractconverter.h"
+#include "streamconverter.h"
 
-// Removes all G-code comments from every line.
-// Supports parenthetical style (comment) and semicolon style ; comment.
-// Lines that contained only a comment become empty lines.
-class StripComments : public AbstractConverter
+// Removes all G-code comments. Supports parenthetical (comment) and
+// semicolon ; comment styles. Lines that contained only a comment are
+// dropped entirely from the stream.
+class StripComments : public StreamConverter
 {
-public:
-    static QString parameterSchema();
+    public:
+        static QString parameterSchema();
 
-    StripComments();
-    bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
+        StripComments() = default;
+
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override { return {}; }
+        void reset() override {}
 };
 
 #endif // STRIPCOMMENTS_H

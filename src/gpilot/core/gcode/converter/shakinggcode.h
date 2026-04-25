@@ -1,52 +1,40 @@
 // This file is a part of "G-Pilot GCode Sender" application.
 // Copyright 2025 BTS
-// Test/example converter for G-code modification
 
 #ifndef SHAKINGGCODE_H
 #define SHAKINGGCODE_H
 
-#include "abstractbatchconverter.h"
+#include "streamconverter.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include <QVector3D>
-#include <QObject>
 #include <QRandomGenerator>
+#include <optional>
 
 /**
- * ShakingGCode is a test converter that demonstrates G-code modification.
+ * Test/example converter that intentionally distorts movement paths.
  *
  * Features:
- * - Segments movement lines every 5mm
- * - Adds random XYZ offset to each segment endpoint (±1mm)
- * - Randomly modifies feed rate (±20%)
+ *   - Segments movement lines every N mm
+ *   - Adds random XYZ offset to each segment endpoint (±maxOffset)
+ *   - Optionally varies feed rate (±feedRateVariation)
  *
- * Purpose: Testing, demonstration, intentional path distortion for testing
- *
- * Usage:
- *   ShakingGCode shaker(5.0, 1.0);
- *   shaker.setGCode(originalGCode);
- *   GCode* result = shaker.convertAll();
+ * Lookahead: holds back the current movement until the next push() arrives,
+ * so it can avoid distorting the endpoint that is the start of an arc
+ * (offsetting an arc start would change its geometry).
  */
-class ShakingGCode : public QObject, public AbstractBatchConverter
+class ShakingGCode : public StreamConverter
 {
-    Q_OBJECT
-
     public:
         static QString parameterSchema();
 
         explicit ShakingGCode(double segmentLength = 5.0,
-                             double maxOffset = 1.0,
-                             bool shakeZ = false,
-                             QObject *parent = nullptr);
+                              double maxOffset = 1.0,
+                              bool shakeZ = false);
         ~ShakingGCode() override;
 
-        // AbstractBatchConverter implementation
-        void setGCode(GCode *gcode) override;
-        int convertNext(int count) override;
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override;
         void reset() override;
-        bool hasMore() const override;
-        int currentPosition() const override { return m_currentIndex; }
-        int totalLines() const override;
-        GCode* convertAll() override;
 
         void setSegmentLength(double length) { m_segmentLength = length; }
         double segmentLength() const { return m_segmentLength; }
@@ -62,23 +50,19 @@ class ShakingGCode : public QObject, public AbstractBatchConverter
 
         void setSeed(quint32 seed);
 
-    signals:
-        void progressChanged(int current, int total);
-
     private:
-        GcodeParser* m_parser;
-        GCode* m_gcode;
-        QRandomGenerator* m_random;
+        GcodeParser*       m_parser;
+        QRandomGenerator*  m_random;
+        bool               m_ownsRandom;
+        std::optional<GCodeItem> m_pending;
 
         double m_segmentLength;      // Segment every N mm
         double m_maxOffset;          // Max random offset in mm (±)
         double m_feedRateVariation;  // Feed rate variation (0.0-1.0, default 0.2 = ±20%)
-        bool m_shakeZ;
-        int m_currentIndex;
+        bool   m_shakeZ;
 
-        // Helper methods
-        QList<GCodeItem> processLine(const GCodeItem &item, bool nextIsArc = false);
-        QList<QVector3D> segmentLine(const QVector3D &start, const QVector3D &end, bool nextIsArc = false);
+        QList<GCodeItem> processOne(const GCodeItem &item, bool nextIsArc);
+        QList<QVector3D> segmentLine(const QVector3D &start, const QVector3D &end, bool nextIsArc);
 
         void applyRandomOffset(QVector3D &point);
         double getRandomFeedRate(double originalFeedRate);

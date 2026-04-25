@@ -1,9 +1,7 @@
 // This file is a part of "G-Pilot GCode Sender" application.
-// Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
 #include "arcstolines.h"
-#include "core/gcode/gcode.h"
 #include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
@@ -38,25 +36,37 @@ QString ArcsToLines::parameterSchema()
 }
 
 ArcsToLines::ArcsToLines(double arcPrecision, bool arcDegreeMode)
-    : AbstractConverter()
+    : m_parser(new GcodeParser())
     , m_arcPrecision(arcPrecision)
     , m_arcDegreeMode(arcDegreeMode)
 {
 }
 
-bool ArcsToLines::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+ArcsToLines::~ArcsToLines()
 {
-    if (!item.isArc() || !parser) {
-        return false;
+    delete m_parser;
+}
+
+void ArcsToLines::reset()
+{
+    m_parser->reset();
+}
+
+QList<GCodeItem> ArcsToLines::push(const GCodeItem &input)
+{
+    if (!input.isArc()) {
+        m_parser->addCommand(input);
+
+        return { input };
     }
 
-    QVector3D startPoint = *parser->getCurrentPoint();
+    QVector3D startPoint = *m_parser->getCurrentPoint();
 
-    // addCommand() adds the arc into the parser's pushed state.
-    // All data must be saved before popState() deletes ps.
-    PointSegment *ps = parser->addCommand(item);
+    // addCommand() commits the arc to the parser. All point segment data must
+    // be read before any subsequent call invalidates the returned pointer.
+    PointSegment *ps = m_parser->addCommand(input);
     if (!ps || !ps->isArc()) {
-        return false;
+        return { input };
     }
 
     QVector3D endPoint  = *ps->point();
@@ -81,29 +91,32 @@ bool ArcsToLines::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, G
     }
 
     if (points.size() < 2) {
-        return false;
+        return { input };
     }
 
-    item.line       = buildG1Line(points[0], points[1], item, true);
-    item.args       = GcodePreprocessorUtils::splitCommand(item.line);
-    item.group      = GCodeItemGroup::Movement;
-    item.isMovement = true;
+    QList<GCodeItem> out;
+    out.reserve(points.size() - 1);
 
-    // Insert remaining segments. Each insert shifts subsequent items right,
-    // so inserting at currentIndex+1, +2, ... keeps the correct order.
+    GCodeItem first = input;
+    first.line       = buildG1Line(points[0], points[1], input, true);
+    first.args       = GcodePreprocessorUtils::splitCommand(first.line);
+    first.group      = GCodeItemGroup::Movement;
+    first.isMovement = true;
+    out << first;
+
     for (int i = 2; i < points.size(); ++i) {
         GCodeItem seg;
-        seg.line          = buildG1Line(points[i - 1], points[i], item, false);
+        seg.line          = buildG1Line(points[i - 1], points[i], input, false);
         seg.args          = GcodePreprocessorUtils::splitCommand(seg.line);
         seg.isMovement    = true;
         seg.state         = GCodeItem::InQueue;
         seg.group         = GCodeItemGroup::Movement;
-        seg.commandNumber = item.commandNumber;
-
-        gcode->insert(currentIndex + i - 1, seg);
+        seg.commandNumber = input.commandNumber;
+        seg.overlayId     = input.overlayId;
+        out << seg;
     }
 
-    return true;
+    return out;
 }
 
 QString ArcsToLines::buildG1Line(const QVector3D &start, const QVector3D &end,

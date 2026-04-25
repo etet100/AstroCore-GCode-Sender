@@ -2,7 +2,6 @@
 // Copyright 2025 BTS
 
 #include "feedrateconverter.h"
-#include "core/gcode/parser/gcodeparser.h"
 #include <QRegularExpression>
 
 QString FeedRateConverter::parameterSchema()
@@ -26,40 +25,33 @@ QString FeedRateConverter::parameterSchema()
 }
 
 FeedRateConverter::FeedRateConverter(double multiplier)
-    : AbstractConverter()
-    , m_multiplier(multiplier)
+    : m_multiplier(multiplier)
 {
 }
 
-bool FeedRateConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> FeedRateConverter::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode);
-    Q_UNUSED(currentIndex);
-    Q_UNUSED(parser);
-
-    if (item.line.trimmed().isEmpty() || item.line.trimmed().startsWith(';')) {
-        return false;
+    if (input.line.trimmed().isEmpty() || input.line.trimmed().startsWith(';')) {
+        return { input };
     }
 
-    static QRegularExpression feedRateRegex("F([0-9.]+)", QRegularExpression::CaseInsensitiveOption);
-    QRegularExpressionMatch match = feedRateRegex.match(item.line);
+    static const QRegularExpression feedRateRegex("F([0-9.]+)",
+                                                  QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch match = feedRateRegex.match(input.line);
 
-    if (match.hasMatch()) {
-        double originalFeedRate = match.captured(1).toDouble();
-        double newFeedRate = originalFeedRate * m_multiplier;
-
-        QString newFeedRateStr = QString("F%1").arg(newFeedRate, 0, 'f', 2);
-        item.line.replace(match.capturedStart(), match.capturedLength(), newFeedRateStr);
-
-        return true;
+    if (!match.hasMatch()) {
+        return { input };
     }
 
-    return false;
-}
+    double originalFeedRate = match.captured(1).toDouble();
+    double newFeedRate = originalFeedRate * m_multiplier;
 
-void FeedRateConverter::reset()
-{
-    AbstractConverter::reset();
+    QString newFeedRateStr = QString("F%1").arg(newFeedRate, 0, 'f', 2);
+
+    GCodeItem out = input;
+    out.line.replace(match.capturedStart(), match.capturedLength(), newFeedRateStr);
+
+    return { out };
 }
 
 QString CoordinateOffsetConverter::parameterSchema()
@@ -101,8 +93,7 @@ QString CoordinateOffsetConverter::parameterSchema()
 }
 
 CoordinateOffsetConverter::CoordinateOffsetConverter(double offsetX, double offsetY, double offsetZ)
-    : AbstractConverter()
-    , m_offsetX(offsetX)
+    : m_offsetX(offsetX)
     , m_offsetY(offsetY)
     , m_offsetZ(offsetZ)
 {
@@ -115,18 +106,14 @@ void CoordinateOffsetConverter::setOffset(double x, double y, double z)
     m_offsetZ = z;
 }
 
-bool CoordinateOffsetConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> CoordinateOffsetConverter::push(const GCodeItem &input)
 {
-    Q_UNUSED(gcode);
-    Q_UNUSED(currentIndex);
-    Q_UNUSED(parser);
-
-    if (!item.isMovement) {
-        return false;
+    if (!input.isMovement) {
+        return { input };
     }
 
     bool modified = false;
-    QString line = item.line;
+    QString line = input.line;
 
     if (m_offsetX != 0.0) {
         QString newLine = modifyCoordinate(line, 'X', m_offsetX);
@@ -152,16 +139,14 @@ bool CoordinateOffsetConverter::convertLine(GCodeItem &item, GCode *gcode, int c
         }
     }
 
-    if (modified) {
-        item.line = line;
+    if (!modified) {
+        return { input };
     }
 
-    return modified;
-}
+    GCodeItem out = input;
+    out.line = line;
 
-void CoordinateOffsetConverter::reset()
-{
-    AbstractConverter::reset();
+    return { out };
 }
 
 QString CoordinateOffsetConverter::modifyCoordinate(const QString &arg, char axis, double offset)
@@ -177,6 +162,7 @@ QString CoordinateOffsetConverter::modifyCoordinate(const QString &arg, char axi
         QString newCoordStr = QString("%1%2").arg(axis).arg(newValue, 0, 'f', 3);
         QString result = arg;
         result.replace(match.capturedStart(), match.capturedLength(), newCoordStr);
+
         return result;
     }
 
@@ -187,86 +173,92 @@ QString SafeSpindleStopConverter::parameterSchema()
 {
     return QStringLiteral(R"JSON({
   "title": "Safe spindle stop (example)",
-  "description": "Example converter demonstrating the lookahead mechanism. Ensures the spindle is not stopped immediately before a cutting move.",
+  "description": "Example converter demonstrating 1-line lookahead via internal buffering. Annotates an M5 that is immediately followed by a rapid move.",
   "image": ":/images/converters/safespindlestop.svg",
   "fields": []
 })JSON");
 }
 
-SafeSpindleStopConverter::SafeSpindleStopConverter()
-    : AbstractConverter()
+QList<GCodeItem> SafeSpindleStopConverter::push(const GCodeItem &input)
 {
+    QList<GCodeItem> out;
+
+    if (m_pending) {
+        GCodeItem item = *m_pending;
+        if (item.command().startsWith("M5") && input.command().startsWith("G0")) {
+            item.line += " ; Warning: Rapid move after spindle stop";
+        }
+        out << item;
+    }
+
+    m_pending = input;
+
+    return out;
 }
 
-bool SafeSpindleStopConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> SafeSpindleStopConverter::flush()
 {
-    Q_UNUSED(parser);
-
-    if (!item.command().startsWith("M5")) {
-        return false;
+    if (!m_pending) {
+        return {};
     }
 
-    GCodeItem *nextLine = gcode ? gcode->lookAhead(currentIndex, 1) : nullptr;
-    if (!nextLine) {
-        return false;
-    }
+    QList<GCodeItem> out = { *m_pending };
+    m_pending.reset();
 
-    if (nextLine->command().startsWith("G0")) {
-        item.line += " ; Warning: Rapid move after spindle stop";
-        return true;
-    }
-
-    return false;
+    return out;
 }
 
 QString MovementOptimizerConverter::parameterSchema()
 {
     return QStringLiteral(R"JSON({
   "title": "Movement optimizer (example)",
-  "description": "Example converter demonstrating full G-code access and lookahead. Analyzes neighbouring movement lines to spot optimisations.",
+  "description": "Example converter demonstrating N-line lookahead via internal buffering. Annotates G1 movement lines that are followed by more G1 movements.",
   "image": ":/images/converters/movementoptimizer.svg",
   "fields": []
 })JSON");
 }
 
-MovementOptimizerConverter::MovementOptimizerConverter()
-    : AbstractConverter()
+QList<GCodeItem> MovementOptimizerConverter::push(const GCodeItem &input)
 {
+    m_buffer.append(input);
+
+    if (m_buffer.size() <= LOOKAHEAD) {
+        return {};
+    }
+
+    return { annotate(m_buffer.takeFirst()) };
 }
 
-bool MovementOptimizerConverter::convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser)
+QList<GCodeItem> MovementOptimizerConverter::flush()
 {
-    Q_UNUSED(parser);
+    QList<GCodeItem> out;
+    while (!m_buffer.isEmpty()) {
+        out << annotate(m_buffer.takeFirst());
+    }
 
+    return out;
+}
+
+GCodeItem MovementOptimizerConverter::annotate(const GCodeItem &item) const
+{
     if (!item.command().startsWith("G1") || !item.isMovement) {
-        return false;
+        return item;
     }
 
     int consecutiveMoves = 0;
-    for (int i = 1; i <= 5; ++i) {
-        GCodeItem *ahead = gcode ? gcode->lookAhead(currentIndex, i) : nullptr;
-        if (!ahead || !ahead->command().startsWith("G1") || !ahead->isMovement) {
+    for (const auto &ahead : m_buffer) {
+        if (!ahead.command().startsWith("G1") || !ahead.isMovement) {
             break;
         }
         consecutiveMoves++;
     }
 
-    if (consecutiveMoves > 0) {
-        item.line += QString(" ; %1 consecutive moves").arg(consecutiveMoves + 1);
-        return true;
+    if (consecutiveMoves == 0) {
+        return item;
     }
 
-    // Example: scan entire program for statistics
-    if (gcode && currentIndex < 10) {
-        int totalMoves = 0;
-        for (int i = 0; i < gcode->count(); ++i) {
-            if ((*gcode)[i].isMovement) {
-                totalMoves++;
-            }
-        }
-        item.line += QString(" ; Total moves: %1").arg(totalMoves);
-        return true;
-    }
+    GCodeItem out = item;
+    out.line += QString(" ; %1 consecutive moves").arg(consecutiveMoves + 1);
 
-    return false;
+    return out;
 }

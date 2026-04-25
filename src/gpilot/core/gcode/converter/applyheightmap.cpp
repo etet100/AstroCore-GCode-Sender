@@ -1,5 +1,4 @@
 // This file is a part of "G-Pilot GCode Sender" application.
-// Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2025 BTS
 
 #include "applyheightmap.h"
@@ -7,8 +6,6 @@
 #include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
 #include "core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h"
-#include "core/gcode/gcode.h"
-#include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
 #include <QtMath>
@@ -40,15 +37,12 @@ QString ApplyHeightmap::parameterSchema()
 })JSON");
 }
 
-ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, bool applyToRapids, QObject *parent)
-    : QObject(parent)
-    , m_heightmap(heightmap)
+ApplyHeightmap::ApplyHeightmap(Heightmap* heightmap, double segmentLength, bool applyToRapids)
+    : m_heightmap(heightmap)
     , m_interpolator(nullptr)
-    , m_parser(nullptr)
-    , m_gcode(nullptr)
+    , m_parser(new GcodeParser())
     , m_segmentLength(segmentLength)
     , m_arcPreserveTolerance(0.01)
-    , m_currentIndex(0)
     , m_applyToRapids(applyToRapids)
 {
     if (m_heightmap) {
@@ -79,133 +73,38 @@ ApplyHeightmap::~ApplyHeightmap()
     delete m_parser;
 }
 
-void ApplyHeightmap::setGCode(GCode *gcode)
-{
-    m_gcode = gcode;
-    reset();
-}
-
 void ApplyHeightmap::reset()
 {
-    m_currentIndex = 0;
-
-    if (!m_parser) {
-        m_parser = new GcodeParser();
-    }
     m_parser->reset();
 }
 
-int ApplyHeightmap::convertNext(int count)
+QList<GCodeItem> ApplyHeightmap::push(const GCodeItem &input)
 {
-    if (!m_gcode || !m_heightmap || !m_interpolator) {
-        return 0;
+    if (!m_heightmap || !m_interpolator) {
+        return { input };
     }
 
-    // WARNING: Pull mode with line insertion is problematic.
-    // This implementation processes lines but doesn't handle
-    // the growing GCode list properly. Use convertAll() instead.
+    if (!input.isMovement) {
+        m_parser->addCommand(input);
 
-    int processed = 0;
-    int targetCount = qMin(m_currentIndex + count, m_gcode->count());
-
-    QList<GCodeItem> accumulatedItems;
-
-    for (int i = m_currentIndex; i < targetCount; ++i) {
-        const GCodeItem &sourceItem = m_gcode->at(i);
-        QList<GCodeItem> resultItems = processLine(sourceItem);
-
-        accumulatedItems.append(resultItems);
-        processed++;
-
-        if (processed % 10 == 0) {
-            emit progressChanged(m_currentIndex + processed, m_gcode->count());
-        }
+        return { input };
     }
 
-    // Replace processed lines with results
-    // This is inefficient but necessary for pull mode
-    if (!accumulatedItems.isEmpty()) {
-        m_gcode->erase(m_currentIndex, m_currentIndex + processed);
+    if (!m_applyToRapids && input.group == GCodeItemGroup::RapidMovement) {
+        m_parser->addCommand(input);
 
-        for (int i = 0; i < accumulatedItems.size(); ++i) {
-            m_gcode->insert(m_currentIndex + i, accumulatedItems[i]);
-        }
-    }
-
-    m_currentIndex += accumulatedItems.size();
-
-    return processed;
-}
-
-bool ApplyHeightmap::hasMore() const
-{
-    return m_gcode && m_currentIndex < m_gcode->count();
-}
-
-int ApplyHeightmap::totalLines() const
-{
-    return m_gcode ? m_gcode->count() : 0;
-}
-
-GCode* ApplyHeightmap::convertAll()
-{
-    if (!m_gcode || !m_heightmap || !m_interpolator) {
-        return nullptr;
-    }
-
-    GCode *result = new GCode();
-    m_parser->reset();
-
-    int sourceCount = m_gcode->count();
-    int lastProgress = 0;
-
-    for (int i = 0; i < sourceCount; ++i) {
-        const GCodeItem &sourceItem = m_gcode->at(i);
-        QList<GCodeItem> resultItems = processLine(sourceItem);
-
-        // Append all result items (may be 1 or many)
-        for (const GCodeItem &item : resultItems) {
-            *result << item;
-        }
-
-        // Emit progress
-        int progress = (i * 100) / sourceCount;
-        if (progress != lastProgress && progress % 5 == 0) {
-            emit progressChanged(i, sourceCount);
-            lastProgress = progress;
-        }
-    }
-
-    emit progressChanged(sourceCount, sourceCount);
-
-    return result;
-}
-
-QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
-{
-    QList<GCodeItem> result;
-
-    if (!item.isMovement) {
-        result.append(item);
-        m_parser->addCommand(item);
-        return result;
-    }
-
-    if (!m_applyToRapids && item.group == GCodeItemGroup::RapidMovement) {
-        result.append(item);
-        m_parser->addCommand(item);
-        return result;
+        return { input };
     }
 
     QVector3D startPoint = *m_parser->getCurrentPoint();
 
     m_parser->pushState();
-    PointSegment *ps = m_parser->addCommand(item);
+    PointSegment *ps = m_parser->addCommand(input);
 
     if (!ps) {
         m_parser->popState();
-        result.append(item);
-        return result;
+
+        return { input };
     }
 
     QVector3D endPoint = *ps->point();
@@ -224,20 +123,20 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
         arcPlane    = ps->plane();
     }
 
-    m_parser->popState(); // deletes ps
+    m_parser->popState();
 
     // For G17 arcs: if Z offsets are uniform along the arc, keep it as G2/G3.
     if (isArc && arcPlane == PointSegment::XY) {
         double avgOffset;
         if (checkArcZOffsetUniform(startPoint, endPoint, arcCenter, arcRadius, arcClockwise, avgOffset)) {
-            GCodeItem preservedItem = item;
-            preservedItem.line = adjustZInArcLine(item, endPoint.z(), avgOffset);
-            preservedItem.args = GcodePreprocessorUtils::splitCommand(preservedItem.line);
+            GCodeItem preserved = input;
+            preserved.line = adjustZInArcLine(input, endPoint.z(), avgOffset);
+            preserved.args = GcodePreprocessorUtils::splitCommand(preserved.line);
             // Track raw G-code position (without heightmap offset) so the next
             // line's start Z is not already shifted, preventing double-application.
-            m_parser->addCommand(item);
-            result.append(preservedItem);
-            return result;
+            m_parser->addCommand(input);
+
+            return { preserved };
         }
     }
 
@@ -252,41 +151,45 @@ QList<GCodeItem> ApplyHeightmap::processLine(const GCodeItem &item)
     QString outputCmd = isArc ? "G1" : QString();
 
     if (points.size() <= 2) {
+        QList<GCodeItem> out;
         if (points.size() == 2) {
-            // points[1] already has heightmap applied - do not apply again.
-            GCodeItem modifiedItem = item;
-            modifiedItem.line = generateGCodeLine(startPoint, points[1], item, true, outputCmd);
-            modifiedItem.args = GcodePreprocessorUtils::splitCommand(modifiedItem.line);
+            // points[1] already has heightmap applied — do not apply again.
+            GCodeItem modified = input;
+            modified.line = generateGCodeLine(startPoint, points[1], input, true, outputCmd);
+            modified.args = GcodePreprocessorUtils::splitCommand(modified.line);
             // Arc linearised to G1 — update group to reflect the actual command.
-            if (isArc) modifiedItem.group = GCodeItemGroup::Movement;
-            result.append(modifiedItem);
+            if (isArc) modified.group = GCodeItemGroup::Movement;
+            out << modified;
         } else {
-            result.append(item);
+            out << input;
         }
         // Track raw G-code position (without heightmap offset) so the next
         // line's start Z is not already shifted, preventing double-application.
-        m_parser->addCommand(item);
-        return result;
+        m_parser->addCommand(input);
+
+        return out;
     }
 
+    QList<GCodeItem> out;
+    out.reserve(points.size() - 1);
     for (int i = 0; i < points.size() - 1; i++) {
-        GCodeItem segmentItem;
-        segmentItem.line = generateGCodeLine(points[i], points[i + 1], item, i == 0, outputCmd);
-        segmentItem.state = GCodeItem::InQueue;
-        segmentItem.args = GcodePreprocessorUtils::splitCommand(segmentItem.line);
-        segmentItem.isMovement = true;
+        GCodeItem segment;
+        segment.line = generateGCodeLine(points[i], points[i + 1], input, i == 0, outputCmd);
+        segment.state = GCodeItem::InQueue;
+        segment.args = GcodePreprocessorUtils::splitCommand(segment.line);
+        segment.isMovement = true;
         // Arcs are linearised to G1 (Movement). Lines keep the original group
         // so that G0 segments (when applyToRapids=true) stay RapidMovement.
-        segmentItem.group = isArc ? GCodeItemGroup::Movement : item.group;
-        segmentItem.commandNumber = item.commandNumber;
-
-        result.append(segmentItem);
+        segment.group = isArc ? GCodeItemGroup::Movement : input.group;
+        segment.commandNumber = input.commandNumber;
+        segment.overlayId     = input.overlayId;
+        out << segment;
     }
     // Track raw G-code position (without heightmap offset) so the next
     // line's start Z is not already shifted, preventing double-application.
-    m_parser->addCommand(item);
+    m_parser->addCommand(input);
 
-    return result;
+    return out;
 }
 
 QList<QVector3D> ApplyHeightmap::segmentLine(const QVector3D &start, const QVector3D &end)
@@ -300,6 +203,7 @@ QList<QVector3D> ApplyHeightmap::segmentLine(const QVector3D &start, const QVect
         QVector3D endWithHeight = end;
         applyHeightmapToPoint(endWithHeight);
         points.append(endWithHeight);
+
         return points;
     }
 
@@ -373,12 +277,14 @@ bool ApplyHeightmap::checkArcZOffsetUniform(
     if (validCount == 0) {
         // Arc is outside heightmap bounds - no Z modification needed.
         avgOffset = 0.0;
+
         return true;
     }
 
     if ((maxOffset - minOffset) > m_arcPreserveTolerance) return false;
 
     avgOffset = sumOffset / validCount;
+
     return true;
 }
 
@@ -395,6 +301,7 @@ QString ApplyHeightmap::adjustZInArcLine(const GCodeItem &item, double originalE
     QString newZStr = QString("Z%1").arg(originalEndZ + zOffset, 0, 'f', 3);
     QString result = item.line;
     result.replace(match.capturedStart(), match.capturedLength(), newZStr);
+
     return result;
 }
 

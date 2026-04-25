@@ -4,7 +4,7 @@
 #ifndef FUSIONRESTORERAPIDMOVEMENTS_H
 #define FUSIONRESTORERAPIDMOVEMENTS_H
 
-#include "abstractconverter.h"
+#include "streamconverter.h"
 #include <vector>
 #include <string>
 
@@ -19,9 +19,8 @@
  * the material surface and could be G0 (rapid). This converter detects them and
  * replaces them with G0.
  *
- * The converter is stateful: it reads lines one by one and tracks position and
- * feed height. Call reset() before processing a new file.
- * Modified lines get a (Changed from: "...") inline comment.
+ * The converter is stateful: it observes lines one by one and tracks position and
+ * feed height. Modified lines get a (Changed from: "...") inline comment.
  *
  * Algorithm
  * ---------
@@ -76,16 +75,16 @@
  *     to G0 (tool crash risk). At least two Z-only moves above material are needed
  *     for Zfeed to be confirmed before the first plunge.
  */
-class FusionRestoreRapidMovements : public AbstractConverter
+class FusionRestoreRapidMovements : public StreamConverter
 {
     public:
         static QString parameterSchema();
 
         FusionRestoreRapidMovements();
 
-        bool convertLine(GCodeItem &item, GCode *gcode, int currentIndex, GcodeParser *parser) override;
+        QList<GCodeItem> push(const GCodeItem &input) override;
+        QList<GCodeItem> flush() override { return {}; }
         void reset() override;
-        bool needsParser() const override { return false; }
 
     private:
         // -1 = none seen yet, 0 = G0, 1 = G1, 2/3 = arc
