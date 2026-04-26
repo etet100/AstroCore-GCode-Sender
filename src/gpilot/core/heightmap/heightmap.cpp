@@ -122,6 +122,51 @@ void Heightmap::setArea(QRectF area)
     // reset();
 }
 
+void Heightmap::setGridSize(QSize size)
+{
+    if (size == m_size) {
+        return;
+    }
+
+    QSizeF currentArea(m_endPos.x() - m_startPos.x(), m_endPos.y() - m_startPos.y());
+    m_size = size;
+    m_stepSize = QSizeF(
+        size.width()  > 1 ? currentArea.width()  / (size.width()  - 1) : 0,
+        size.height() > 1 ? currentArea.height() / (size.height() - 1) : 0
+    );
+    m_data = QList<double>(size.width() * size.height(), NAN);
+    updateEndPos();
+    updateMinMax();
+    notifyChanged();
+}
+
+void Heightmap::setProbeFeed(int probeFeed)
+{
+    if (probeFeed == m_probeFeed) {
+        return;
+    }
+    m_probeFeed = probeFeed;
+    notifyChanged();
+}
+
+void Heightmap::setZBottomTop(BottomTop zBottomTop)
+{
+    if (zBottomTop.bottom == m_zBottomTop.bottom && zBottomTop.top == m_zBottomTop.top) {
+        return;
+    }
+    m_zBottomTop = zBottomTop;
+    notifyChanged();
+}
+
+void Heightmap::setInterpolationStepSize(QSizeF stepSize)
+{
+    if (stepSize == m_interpolationStepSize) {
+        return;
+    }
+    m_interpolationStepSize = stepSize;
+    notifyChanged();
+}
+
 QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const
 {
     int i = static_cast<int>((ptMm.x() - m_startPos.x()) / m_stepSize.width());

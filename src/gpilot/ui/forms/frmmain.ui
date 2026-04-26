@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>G-Pilot GCode Sender</string>
+   <string>AstroCore GCode Sender</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/images.qrc">
@@ -384,13 +384,13 @@ QGroupBox::title {
           <x>0</x>
           <y>0</y>
           <width>105</width>
-          <height>525</height>
+          <height>565</height>
          </rect>
         </property>
         <property name="acceptDrops">
          <bool>true</bool>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,0,0,0,0">
          <property name="sizeConstraint">
           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
          </property>
@@ -532,7 +532,6 @@ QGroupBox::title {
            </layout>
           </widget>
          </item>
-
         </layout>
        </widget>
       </widget>
@@ -742,7 +741,7 @@ QGroupBox::title {
           <x>0</x>
           <y>0</y>
           <width>105</width>
-          <height>335</height>
+          <height>295</height>
          </rect>
         </property>
         <property name="acceptDrops">

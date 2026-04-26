@@ -66,10 +66,6 @@ class PartMainProgram : public QWidget
         void setAutoScroll(bool enabled);
         bool isAutoScroll() const;
 
-        void setHeightMapVisible(bool visible);
-        void setProgramVisible(bool visible);
-        void showProgramTable();
-        void showHeightmapTable();
         QByteArray saveHeaderState() const;
         void restoreHeaderState(const QByteArray& state);
 
@@ -162,12 +158,17 @@ class PartMainProgram : public QWidget
 
         void setupUi();
         void setupTableContextMenu();
-        void resizeHeightMapSections();
         void selectRow(int row);
         QModelIndexList getSelectedRows() const;
         SelRange getSelectedRange() const;
         int getFirstSelectedRow() const;
         void insertLines(bool before);
+
+        void setHeightMapVisible(bool visible);
+        void setProgramVisible(bool visible);
+        void showProgramTable();
+        void showHeightmapTable();
+        void refreshHeightmapSections();
 };
 
 #endif // PARTMAINPROGRAM_H

@@ -14,6 +14,10 @@ class HeightmapTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    enum HeightmapRole {
+        PositionMmRole = Qt::UserRole + 1,
+    };
+
     explicit HeightmapTableModel(Heightmap* heightmap, QObject *parent = nullptr);
     void setHeightmap(Heightmap* heightmap);
 
@@ -33,6 +37,9 @@ public:
 
 signals:
     void dataChangedByUserInput();
+
+private slots:
+    void onHeightmapChanged();
 
 private:
     Heightmap* m_heightmap = nullptr;

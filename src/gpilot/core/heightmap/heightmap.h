@@ -29,7 +29,7 @@ class Heightmap : public QObject
         };
 
         Heightmap(
-            QSize size = QSize(11, 11),
+            QSize size = QSize(5, 5),
             QPointF startPos = QPointF(0.0, 0.0),
             QSizeF stepSize = QSizeF(10.0, 10.0),
             InterpolationMode interpolationMode = InterpolationMode::Bicubic,
@@ -60,13 +60,18 @@ class Heightmap : public QObject
         double stepWidth() const { return m_stepSize.width(); }
         double stepHeight() const { return m_stepSize.height(); }
         QSizeF interpolationStepSize() const { return m_interpolationStepSize; }
+        void setInterpolationStepSize(QSizeF stepSize);
         InterpolationMode interpolationMode() const { return m_interpolationMode; }
         void setInterpolationMode(InterpolationMode mode);
         QRectF area() const { return QRectF(m_startPos, m_endPos); }
         void setArea(QRectF area);
+        // Resize grid keeping the current area; recomputes stepSize and resets data to NaN.
+        void setGridSize(QSize size);
         MinMax valuesMinMax() const { return m_valuesMinMax; }
         BottomTop zBottomTop() const { return m_zBottomTop; }
+        void setZBottomTop(BottomTop zBottomTop);
         int probeFeed() const { return m_probeFeed; }
+        void setProbeFeed(int probeFeed);
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
         QList<QPointF> probePoints(QPointF currentPos, ScanMode mode) const;
         double& at(int x, int y);

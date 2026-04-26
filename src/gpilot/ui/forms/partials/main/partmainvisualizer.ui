@@ -815,6 +815,41 @@
         </property>
        </widget>
       </item>
+      <item row="12" column="1">
+       <widget class="StyledToolButton" name="cmdToggleGrid">
+        <property name="minimumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>35</width>
+          <height>31</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Toggle grid</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources/images.qrc">
+          <normaloff>:/images/visualizer/visualizer_grid.svg</normaloff>:/images/visualizer/visualizer_grid.svg</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="invertedDartThemeIconColors" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="imagePadding" stdset="0">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
       <item row="12" column="0">
        <widget class="StyledToolButton" name="cmdToggleLight">
         <property name="minimumSize">
@@ -1129,6 +1164,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>cmdToggleGrid</sender>
+   <signal>clicked()</signal>
+   <receiver>partMainVisualizer</receiver>
+   <slot>toggleGridClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>373</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>117</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>cmdToggleHeightmapPreview</sender>
    <signal>clicked()</signal>
    <receiver>partMainVisualizer</receiver>
@@ -1163,5 +1214,6 @@
   <slot>toggleBoundingBoxClicked()</slot>
   <slot>toggleToolpathClicked()</slot>
   <slot>toggleHeightmapPreviewClicked()</slot>
+  <slot>toggleGridClicked()</slot>
  </slots>
 </ui>

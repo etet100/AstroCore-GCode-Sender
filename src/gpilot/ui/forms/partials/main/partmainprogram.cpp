@@ -11,6 +11,7 @@
 #include "core/gcode/gcode.h"
 #include "core/heightmap/heightmap.h"
 #include "ui/tables/heightmapitemdelegate.h"
+#include "ui/utils/thememanager.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
@@ -57,17 +58,54 @@ void PartMainProgram::setupUi()
     // O(n) rebuild of the filter mapping on large programs.
     m_filterDebounceTimer.setSingleShot(true);
     m_filterDebounceTimer.setInterval(200);
-    connect(&m_filterDebounceTimer, &QTimer::timeout, this, [this]() {
-        m_programModel.setFilter(ui->txtFilter->text());
-    });
-    connect(ui->txtFilter, &QLineEdit::textChanged, this, [this]() {
-        m_filterDebounceTimer.start();
-    });
+    // connect(&m_filterDebounceTimer, &QTimer::timeout, this, [this]() {
+    //     m_programModel.setFilter(ui->txtFilter->text());
+    // });
+    // connect(ui->txtFilter, &QLineEdit::textChanged, this, [this]() {
+    //     m_filterDebounceTimer.start();
+    // });
 
     connect(&m_programModel, &GCodeTableModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight) {
         // emit currentChanged(topLeft, bottomRight);
         qDebug() << "Program model data changed from" << topLeft.row() << "to" << bottomRight.row();
     });
+
+    connect(ui->btnProgram, &QPushButton::clicked, this, [this]() {
+        //don't allow unchecking
+        if (!ui->btnProgram->isChecked()) {
+            QSignalBlocker blocker(ui->btnProgram);
+            ui->btnProgram->setChecked(true);
+            return;
+        }
+        // updateGroupsFromUI();
+        ui->btnHeightmap->setChecked(false);
+        // m_dark = true;
+        // updateUIFromGroups();
+        showProgramTable();
+    });
+    connect(ui->btnHeightmap, &QPushButton::clicked, this, [this]() {
+        //don't allow unchecking
+        if (!ui->btnHeightmap->isChecked()) {
+            QSignalBlocker blocker(ui->btnHeightmap);
+            ui->btnHeightmap->setChecked(true);
+            return;
+        }
+        // updateGroupsFromUI();
+        ui->btnProgram->setChecked(false);
+        // m_dark = false;
+        // updateUIFromGroups();
+        showHeightmapTable();
+    });
+
+    setHeightMapVisible(false);
+
+    auto* hh = ui->tblHeightmap->horizontalHeader();
+    hh->setSectionResizeMode(QHeaderView::Interactive);
+    auto* vh = ui->tblHeightmap->verticalHeader();
+    vh->setSectionResizeMode(QHeaderView::Interactive);
+
+    refreshHeightmapSections();
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, &PartMainProgram::refreshHeightmapSections);
 }
 
 void PartMainProgram::setupTableContextMenu()
@@ -91,13 +129,21 @@ void PartMainProgram::setHeightmap(Heightmap* heightmap)
     m_heightmapModel = new HeightmapTableModel(heightmap, this);
     ui->tblHeightmap->setModel(m_heightmapModel);
     ui->tblHeightmap->setItemDelegate(new HeightmapItemDelegate(-5.0, 5.0, this));
+    refreshHeightmapSections();
+}
 
-    // Logic from FrmMain for heightmap table header
-    if (ui->tblHeightmap->horizontalHeader()->defaultSectionSize() * ui->tblHeightmap->horizontalHeader()->count() < width()) {
-         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    } else {
-         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+void PartMainProgram::refreshHeightmapSections()
+{
+    float s = ThemeManager::instance().scaleF();
+    int rowH = qRound(36 * s);
+    auto* hh = ui->tblHeightmap->horizontalHeader();
+    auto* vh = ui->tblHeightmap->verticalHeader();
+    hh->setDefaultSectionSize(qRound(60 * s));
+    vh->setDefaultSectionSize(rowH);
+    for (int i = 0; i < vh->count(); ++i) {
+        vh->resizeSection(i, rowH);
     }
+    ui->tblHeightmap->resizeColumnsToContents();
 }
 
 void PartMainProgram::setAutoScroll(bool enabled)
@@ -174,6 +220,7 @@ void PartMainProgram::abortClicked() { emit abortRequested(); }
 void PartMainProgram::startClicked() { emit startRequested(); }
 void PartMainProgram::openClicked() { emit openFile(); }
 void PartMainProgram::resetClicked() { emit programResetRequested(); }
+
 void PartMainProgram::setProgramVisible(bool visible)
 {
     ui->tblProgram->setVisible(visible);
@@ -189,15 +236,6 @@ void PartMainProgram::showHeightmapTable()
 {
     ui->tblHeightmap->setVisible(true);
     ui->tblProgram->setVisible(false);
-}
-
-void PartMainProgram::resizeHeightMapSections()
-{
-    if (ui->tblHeightmap->horizontalHeader()->defaultSectionSize() * ui->tblHeightmap->horizontalHeader()->count() < width()) {
-         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    } else {
-         ui->tblHeightmap->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    }
 }
 
 QByteArray PartMainProgram::saveHeaderState() const
@@ -457,8 +495,6 @@ void PartMainProgram::close()
     m_programModel.setProgram(nullptr);
     delete m_probeModel; m_probeModel = nullptr;
     delete m_programHeightmapModel; m_programHeightmapModel = nullptr;
-    delete m_heightmapModel; m_heightmapModel = nullptr;
-    ui->tblHeightmap->setModel(nullptr);
 }
 
 void PartMainProgram::pauseClicked(bool checked) {
@@ -491,7 +527,6 @@ bool PartMainProgram::eventFilter(QObject *obj, QEvent *event)
 void PartMainProgram::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    resizeHeightMapSections();
 }
 
 void PartMainProgram::onScrollBarAction(int action)

@@ -2,19 +2,36 @@
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 
 #include "heightmaptablemodel.h"
+#include "ui/utils/thememanager.h"
 #include <QColor>
 #include <QtMath>
 
 HeightmapTableModel::HeightmapTableModel(Heightmap* heightmap, QObject* parent)
     : QAbstractTableModel(parent)
-    , m_heightmap(heightmap)
 {
+    setHeightmap(heightmap);
 }
 
 void HeightmapTableModel::setHeightmap(Heightmap* heightmap)
 {
+    if (m_heightmap == heightmap) {
+        return;
+    }
+
     beginResetModel();
+    if (m_heightmap) {
+        disconnect(m_heightmap, &Heightmap::changed, this, &HeightmapTableModel::onHeightmapChanged);
+    }
     m_heightmap = heightmap;
+    if (m_heightmap) {
+        connect(m_heightmap, &Heightmap::changed, this, &HeightmapTableModel::onHeightmapChanged);
+    }
+    endResetModel();
+}
+
+void HeightmapTableModel::onHeightmapChanged()
+{
+    beginResetModel();
     endResetModel();
 }
 
@@ -82,6 +99,15 @@ QVariant HeightmapTableModel::data(const QModelIndex &index, int role) const
         return Qt::AlignCenter;
     }
 
+    if (role == PositionMmRole) {
+        QPointF startPos = m_heightmap->startPos();
+        QSizeF stepSize = m_heightmap->stepSize();
+        double mmX = startPos.x() + index.column() * stepSize.width();
+        double mmY = startPos.y() + ((rows - 1) - index.row()) * stepSize.height();
+
+        return QPointF(mmX, mmY);
+    }
+
     return QVariant();
 }
 
@@ -98,8 +124,9 @@ QColor HeightmapTableModel::cellColor(double value) const
 
     double range = minMax.max - minMax.min;
     double hue = qFuzzyIsNull(range) ? 0.33 : 0.67 * (minMax.max - value) / range;
+    double v = ThemeManager::instance().dark() ? 0.45 : 1.0;
 
-    return QColor::fromHsvF(qBound(0.0, hue, 0.67), 0.55, 1.0);
+    return QColor::fromHsvF(qBound(0.0, hue, 0.67), 0.55, v);
 }
 
 bool HeightmapTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -115,10 +142,12 @@ bool HeightmapTableModel::setData(const QModelIndex &index, const QVariant &valu
             return false;
         }
         int rows = m_heightmap->gridHeight();
-        m_heightmap->at(index.column(), (rows - 1) - index.row()) = v;
+        // m_heightmap->at(index.column(), (rows - 1) - index.row()) = v;
+        m_heightmap->setHeightAt(QPoint(index.column(), (rows - 1) - index.row()), v);
         emit dataChangedByUserInput();
     } else if (role == Qt::UserRole) {
-        m_heightmap->at(index.column(), index.row()) = value.toDouble();
+        // m_heightmap->at(index.column(), index.row()) = value.toDouble();
+        m_heightmap->setHeightAt(QPoint(index.column(), index.row()), value.toDouble());
     } else {
         return false;
     }

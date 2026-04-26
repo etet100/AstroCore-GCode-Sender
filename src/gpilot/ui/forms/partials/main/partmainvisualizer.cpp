@@ -284,6 +284,9 @@ void PartMainVisualizer::setHeightmap(Heightmap& heightmap)
     m_heightmapBorderDrawer.setModel(heightmap);
     m_heightmapGridDrawer.setModel(heightmap);
     m_codeDrawer->setHeightmapView(&heightmap, 1);
+    connect(&heightmap, &Heightmap::changed, this, [this]() {
+        updateHeightmap();
+    });
 }
 
 void PartMainVisualizer::setSelectionEndPosition(QVector3D pos)
@@ -742,6 +745,7 @@ void PartMainVisualizer::showHeightmapBorder(bool show)
 void PartMainVisualizer::showHeightmapProbeGrid(bool show)
 {
     m_heightmapGridDrawer.setVisible(show);
+    m_noGcodeDefaultDrawer.setVisible(false);
 }
 
 void PartMainVisualizer::showHeightmapInterpolationGrid(bool show)
@@ -832,4 +836,9 @@ void PartMainVisualizer::toggleToolpathClicked()
 void PartMainVisualizer::toggleHeightmapPreviewClicked()
 {
     m_codeDrawer->toggleHeightmapPreview();
+}
+
+void PartMainVisualizer::toggleGridClicked()
+{
+    m_tableSurfaceDrawer.toggleVisible();
 }

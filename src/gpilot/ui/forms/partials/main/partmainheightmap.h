@@ -57,7 +57,7 @@ class PartMainHeightmap : public QWidget
         void useHeightmapToggled(bool checked);
         void heightmapModeToggled(bool checked);
         void interpolationModeChanged(Heightmap::InterpolationMode mode);
-        void gridParametersChanged(QPoint gridStart, PartMainHeightmap::MinMax zMinMax, int probeFeed, QPoint interpolationStep);
+        void gridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep);
 
     private slots:
         void requestNewHeightmap();

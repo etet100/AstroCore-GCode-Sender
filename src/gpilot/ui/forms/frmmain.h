@@ -33,6 +33,7 @@
 #include "ui/forms/partials/main/partmainstate.h"
 #include "ui/forms/partials/main/partmainconsole.h"
 #include "ui/forms/partials/main/partmainvisualizer.h"
+#include "ui/forms/partials/main/partmainheightmap.h"
 #include "ui/forms/partials/main/partmainoverride.h"
 #include "ui/forms/frmgrblconfigurator.h"
 #include "ui/forms/frmlog.h"
@@ -182,6 +183,7 @@ private slots:
     // void onProgramLinesUpdated(int from, int to);
     // void updateHeightmapInterpolationDrawer(bool reset = false);
     void onHeightmapDataChangedByUser();
+    void onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep);
     void centralWidgetActionTriggered(bool checked);
 
 protected:

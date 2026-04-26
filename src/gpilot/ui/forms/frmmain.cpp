@@ -463,6 +463,7 @@ void FrmMain::initializeHeightmapPanel()
             ui->visualizer->updateHeightmap();
         }
     });
+    connect(ui->heightmap, &PartMainHeightmap::gridParametersChanged, this, &FrmMain::onGridParametersChanged);
     connect(ui->heightmap, &PartMainHeightmap::interpolationModeChanged, this, [this](Heightmap::InterpolationMode mode) {
         ui->visualizer->setHeightmapInterpolationMode(mode);
         heightmap().setInterpolationMode(mode);
@@ -715,7 +716,7 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     bool mode = m_heightmapMode;
     m_heightmapMode = false;
 
-    if (!saveChanges(m_heightmapMode)) {
+    if (!saveChanges(false) || !saveChanges(true)) {
         ce->ignore();
         m_heightmapMode = mode;
         return;
@@ -2182,6 +2183,28 @@ void FrmMain::onHeightmapDataChangedByUser()
     // updateHeightmapInterpolationDrawer();
 }
 
+void FrmMain::onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep)
+{
+    auto& cfg = ConfigurationHeightmap::instance();
+    cfg.setProperty("gridX", gridSize.width());
+    cfg.setProperty("gridY", gridSize.height());
+    cfg.setProperty("gridZBottom", zMinMax.min);
+    cfg.setProperty("gridZTop", zMinMax.max);
+    cfg.setProperty("probeFeed", probeFeed);
+    cfg.setProperty("interpolationStepX", interpolationStep.width());
+    cfg.setProperty("interpolationStepY", interpolationStep.height());
+
+    Heightmap& hm = heightmap();
+    hm.beginUpdate();
+    hm.setGridSize(gridSize);
+    hm.setZBottomTop({ zMinMax.min, zMinMax.max });
+    hm.setProbeFeed(probeFeed);
+    hm.setInterpolationStepSize(QSizeF(interpolationStep.width(), interpolationStep.height()));
+    hm.endUpdate();
+
+    updateHeightmapGrid();
+}
+
 void FrmMain::preloadSettings()
 {
     ConfigurationUI &uiConfiguration = UiConfigs::instance().ui();
@@ -2719,7 +2742,6 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
 
     ui->program->selectFirstRow();
 
-    resetHeightmap();
     updateControlsState();
 }
 
@@ -2808,7 +2830,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
 {
     FilesManager& fm = FilesManager::instance();
 
-    if ((!heightMapMode && fm.gcodeModified())) {
+    if (!heightMapMode && fm.gcodeModified()) {
         int res = QMessageBox::warning(this, this->windowTitle(), tr("G-code program file was changed. Save?"),
                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (res == QMessageBox::Cancel) return false;
@@ -2817,7 +2839,7 @@ bool FrmMain::saveChanges(bool heightMapMode)
         fm.setGcodeModified(false);
     }
 
-    if (fm.heightmapModified()) {
+    if (heightMapMode && fm.heightmapModified()) {
         int res = QMessageBox::warning(this, this->windowTitle(), tr("Heightmap file was changed. Save?"),
                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (res == QMessageBox::Cancel) return false;
@@ -2991,8 +3013,8 @@ void FrmMain::updateControlsState()
     // ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(UiConfigs::instance().ui().fontSize()));
     // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
 
-    ui->program->setHeightMapVisible(m_heightmapMode);
-    ui->program->setProgramVisible(!m_heightmapMode);
+    // ui->program->setHeightMapVisible(m_heightmapMode);
+    // ui->program->setProgramVisible(!m_heightmapMode);
 
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
@@ -3066,25 +3088,10 @@ void FrmMain::updateJogTitle()
 
 bool FrmMain::updateHeightmapGrid()
 {
-    if (!heightmap().anyHeightSet()) {
-        if (QMessageBox::warning(this, this->windowTitle(), tr("Changing grid settings will reset probe data. Continue?"),
-                                                           QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) return false;
-    }
-
-    // Update grid drawer
     QRectF borderRect = ui->heightmap->areaRectFromTextboxes();
-    // ui->visualizer->heightmapGridDrawer()->setBorderRect(borderRect);
-    // ui->visualizer->heightmapGridDrawer()->setGridSize(QPointF(ui->txtHeightMapGridX->value(), ui->txtHeightMapGridY->value()));
-    // ui->visualizer->heightmapGridDrawer()->setZBottom(ui->txtHeightMapGridZBottom->value());
-    // ui->visualizer->heightmapGridDrawer()->setZTop(ui->txtHeightMapGridZTop->value());
 
-    // Reset model
     int gridPointsX = heightmap().gridSize().width();
     int gridPointsY = heightmap().gridSize().height();
-
-    ui->program->resizeHeightmapModel(gridPointsX, gridPointsY);
-    ui->program->setHeightmap(nullptr);
-    ui->program->setHeightmap(&heightmap());
 
     // Update interpolation
     ui->visualizer->updateHeightmapInterpolation(true);
@@ -3426,7 +3433,7 @@ bool FrmMain::actionTextLessThan(const QAction *a1, const QAction *a2)
 void FrmMain::setHeightmapPoint(QPoint point, double height)
 {
     heightmap().setHeightAt(point, height);
-    ui->visualizer->updateHeightmap();
+    // ui->visualizer->updateHeightmap();
 
     ui->console->append(QString("[Heightmap] Point (%1, %2) set to %3").arg(point.x()).arg(point.y()).arg(height));
 }

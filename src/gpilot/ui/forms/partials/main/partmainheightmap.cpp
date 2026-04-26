@@ -74,6 +74,8 @@ QRectF PartMainHeightmap::areaRectFromTextboxes()
 
 void PartMainHeightmap::applyHeightmapConfiguration(ConfigurationHeightmap &configurationHeightmap)
 {
+    QSignalBlocker blocker(this);
+
     ui->txtAreaX->setValue(configurationHeightmap.areaX1());
     ui->txtAreaX1->setValue(configurationHeightmap.areaX1());
     ui->txtAreaY->setValue(configurationHeightmap.areaY1());
@@ -203,10 +205,10 @@ void PartMainHeightmap::emitShowVisualizationChanged()
 void PartMainHeightmap::emitGridParametersChanged()
 {
     emit gridParametersChanged(
-        QPoint(ui->txtGridX->value(), ui->txtGridY->value()),
+        QSize(ui->txtGridX->value(), ui->txtGridY->value()),
         { ui->txtGridZBottom->value(), ui->txtGridZTop->value() },
         ui->txtProbeFeed->value(),
-        QPoint(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
+        QSize(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
     );
 }
 
@@ -241,10 +243,10 @@ void PartMainHeightmap::onAreaChanged()
 void PartMainHeightmap::onGridParametersChanged()
 {
     emit gridParametersChanged(
-        QPoint(ui->txtGridX->value(), ui->txtGridY->value()),
+        QSize(ui->txtGridX->value(), ui->txtGridY->value()),
         { ui->txtGridZBottom->value(),  ui->txtGridZTop->value() },
         ui->txtProbeFeed->value(),
-        QPoint(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
+        QSize(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
     );
 }
 
