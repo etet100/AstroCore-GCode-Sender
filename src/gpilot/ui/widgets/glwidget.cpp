@@ -1087,8 +1087,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
 
-    // Block rotation cube clicks in 2D mode
-    if (pos.x() < 100 && pos.y() < 100 && m_mode != ViewMode::View2D) {
+    // Block rotation cube clicks in 2D mode or when cube is hidden
+    if (m_rotationCube && pos.x() < 100 && pos.y() < 100 && m_mode != ViewMode::View2D) {
         CubeClickableFace face = m_cubeDrawer.faceAtPos(pos);
         switch (face) {
             case CubeClickableFace::Front:
@@ -1326,7 +1326,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         updateView();
     }
 
-    if (pos.x() < 200 && pos.y() < 200) {
+    if (m_rotationCube && pos.x() < 200 && pos.y() < 200) {
         CubeClickableFace face = m_cubeDrawer.mouseMoveEvent(event);
         if (face != CubeClickableFace::None) {
             setCursor(Qt::PointingHandCursor);
