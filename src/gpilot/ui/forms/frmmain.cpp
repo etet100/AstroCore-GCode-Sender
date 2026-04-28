@@ -2626,6 +2626,9 @@ void FrmMain::loadFile(QString filePath)
     connect(loader, &GCodeThreadedLoader::finished, this, [this, loader, filePath](GCodeLoaderData *data) {
         qDebug() << "[FrmMain] Finished loading file" << data->gcode->count();
         ui->console->appendSystem("Finished loading");
+        #ifdef WINDOWS
+            m_taskBar.hide();
+        #endif
         this->applyLoaderGCode(data);
 
         // GCodeLoaderData only holds raw pointers. The worker allocated both
