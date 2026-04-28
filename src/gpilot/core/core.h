@@ -56,10 +56,9 @@ class Core : public QObject
         // reference to ConfigurationConnection and dereferences it later.
         ConnectionManager& connectionManager();
 
-        // Communicator is created explicitly by the UI so it can pass itself
-        // (or any QObject) as parent. The pointer is owned by Core.
-        Communicator* communicator() const { return m_communicator; }
-        Communicator* createCommunicator(QObject* parent);
+        // Lazy core object owned by Core. UI code must not be its QObject
+        // parent, otherwise Qt will destroy it with the window.
+        Communicator* communicator();
 
         // Current active connection. Core owns the pointer — setConnection()
         // deletes any previous one.

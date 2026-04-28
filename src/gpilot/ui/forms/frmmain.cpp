@@ -190,7 +190,6 @@ void FrmMain::initializeGCodeLoaderConfiguration()
 
 void FrmMain::initializeCommunicator()
 {
-    Core::instance().createCommunicator(this);
     //program() = new GCode();
     // @TODO temporary!
     // communicator()->streamCommands(program());

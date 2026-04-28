@@ -40,13 +40,12 @@ ConnectionManager& Core::connectionManager()
     return *m_connectionManager;
 }
 
-Communicator* Core::createCommunicator(QObject* parent)
+Communicator* Core::communicator()
 {
-    if (m_communicator) {
-        qWarning() << "[Core] Communicator already created, returning existing";
-        return m_communicator;
+    if (!m_communicator) {
+        m_communicator = new Communicator(nullptr, nullptr, &m_configuration);
     }
-    m_communicator = new Communicator(parent, nullptr, &m_configuration);
+
     return m_communicator;
 }
 
