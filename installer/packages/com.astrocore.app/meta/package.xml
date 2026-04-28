@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-    <DisplayName>G-Pilot Application</DisplayName>
-    <Description>Install G-Pilot G-Code Sender</Description>
+    <DisplayName>AstroCore Application</DisplayName>
+    <Description>Install AstroCore GCode Sender</Description>
     <Version>1.0.0</Version>
     <ReleaseDate>2025-12-22</ReleaseDate>
-    <Name>com.gpilot.app</Name>
+    <Name>com.astrocore.app</Name>
     <Default>true</Default>
     <Script>installscript.qs</Script>
 </Package>

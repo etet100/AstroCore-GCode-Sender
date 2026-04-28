@@ -11,21 +11,21 @@ Component.prototype.createOperations = function()
     if (systemInfo.productType === "windows") {
         // Create Start Menu shortcuts
         component.addOperation("CreateShortcut",
-            "@TargetDir@/GPilot.exe",
-            "@StartMenuDir@/G-Pilot.lnk",
+            "@TargetDir@/AstroCore.exe",
+            "@StartMenuDir@/AstroCore.lnk",
             "workingDirectory=@TargetDir@",
-            "iconPath=@TargetDir@/GPilot.exe",
+            "iconPath=@TargetDir@/AstroCore.exe",
             "iconId=0",
-            "description=Launch G-Pilot CNC Controller");
+            "description=Launch AstroCore GCode Sender");
 
         // Create Desktop shortcut (optional)
         component.addOperation("CreateShortcut",
-            "@TargetDir@/GPilot.exe",
-            "@DesktopDir@/G-Pilot.lnk",
+            "@TargetDir@/AstroCore.exe",
+            "@DesktopDir@/AstroCore.lnk",
             "workingDirectory=@TargetDir@",
-            "iconPath=@TargetDir@/GPilot.exe",
+            "iconPath=@TargetDir@/AstroCore.exe",
             "iconId=0",
-            "description=Launch G-Pilot CNC Controller");
+            "description=Launch AstroCore GCode Sender");
     }
 }
 

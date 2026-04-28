@@ -8,7 +8,7 @@ Controller.prototype.ComponentSelectionPageCallback = function() {
     var maintenanceTool = targetDir + "/maintenancetool.exe";
 
     if (installer.fileExists(maintenanceTool)) {
-         var result = QMessageBox.question("quit.question", "G-Pilot Installer",
+         var result = QMessageBox.question("quit.question", "AstroCore Installer",
              "The selected directory is not empty.\nIf you continue, files in it will be overwritten.\n\nDo you want to continue?",
              QMessageBox.Yes | QMessageBox.No);
 

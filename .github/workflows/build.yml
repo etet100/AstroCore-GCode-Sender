@@ -1,4 +1,4 @@
-name: Build AstroCode
+name: Build AstroCore
 
 on:
   push:
@@ -197,7 +197,7 @@ jobs:
             cp -r src/vendor/qcoro/install build/vendor/qcoro/
           fi
 
-      - name: Build AstroCode
+      - name: Build AstroCore
         shell: bash
         env:
           QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
@@ -239,10 +239,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          xcopy build\gpilot\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
-          xcopy data\fluidnc\* installer\packages\com.gpilot.app\data\ /E /I /H /Y
-          xcopy data\gcode\* installer\packages\com.gpilot.examples.gcode\data\gcode-examples\ /E /I /H /Y
-          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCodeInstaller-${{ matrix.config }}.exe
+          xcopy build\gpilot\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
+          xcopy data\fluidnc\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
+          xcopy data\gcode\* installer\packages\com.astrocore.examples.gcode\data\gcode-examples\ /E /I /H /Y
+          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCoreInstaller-${{ matrix.config }}.exe
 
       - name: Package build artifacts
         if: matrix.os == 'windows-latest'
@@ -252,16 +252,16 @@ jobs:
           mkdir artifacts
           for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
           dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCodePortable-${{ matrix.config }}.zip
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCorePortable-${{ matrix.config }}.zip
 
       - name: Upload build artifacts
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: astrocode-${{ matrix.config }}-artifacts
+          name: astrocore-${{ matrix.config }}-artifacts
           path: |
-            AstroCodePortable-${{ matrix.config }}.zip
-            AstroCodeInstaller-${{ matrix.config }}.exe
+            AstroCorePortable-${{ matrix.config }}.zip
+            AstroCoreInstaller-${{ matrix.config }}.exe
 
   release:
     needs: build
@@ -287,14 +287,14 @@ jobs:
             ## Available Builds
 
             **Debug Build:**
-            - AstroCodePortable-debug.zip - Portable debug version
-            - AstroCodeInstaller-debug.exe - Debug installer
+            - AstroCorePortable-debug.zip - Portable debug version
+            - AstroCoreInstaller-debug.exe - Debug installer
 
             **Release Build:**
-            - AstroCodePortable-release.zip - Portable release version
-            - AstroCodeInstaller-release.exe - Release installer
+            - AstroCorePortable-release.zip - Portable release version
+            - AstroCoreInstaller-release.exe - Release installer
           files: |
-            artifacts/astrocode-debug-artifacts/AstroCodePortable-debug.zip
-            artifacts/astrocode-debug-artifacts/AstroCodeInstaller-debug.exe
-            artifacts/astrocode-release-artifacts/AstroCodePortable-release.zip
-            artifacts/astrocode-release-artifacts/AstroCodeInstaller-release.exe
+            artifacts/astrocore-debug-artifacts/AstroCorePortable-debug.zip
+            artifacts/astrocore-debug-artifacts/AstroCoreInstaller-debug.exe
+            artifacts/astrocore-release-artifacts/AstroCorePortable-release.zip
+            artifacts/astrocore-release-artifacts/AstroCoreInstaller-release.exe

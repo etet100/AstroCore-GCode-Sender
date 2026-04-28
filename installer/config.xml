@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
-    <Name>G-Pilot GCode Sender</Name>
+    <Name>AstroCore GCode Sender</Name>
     <Version>1.0.0</Version>
-    <Title>G-Pilot Installer</Title>
+    <Title>AstroCore Installer</Title>
     <Publisher>BTS</Publisher>
-    <StartMenuDir>G-Pilot GCode Sender</StartMenuDir>
-    <TargetDir>@HomeDir@/GPilot</TargetDir>
+    <StartMenuDir>AstroCore GCode Sender</StartMenuDir>
+    <TargetDir>@HomeDir@/AstroCore</TargetDir>
     <ControlScript>controlscript.qs</ControlScript>
     <InstallActionColumnVisible>true</InstallActionColumnVisible>
     <RemoveTargetDir>false</RemoveTargetDir>
-    <RunProgram>@TargetDir@/GPilot.exe</RunProgram>
-    <RunProgramDescription>Launch G-Pilot</RunProgramDescription>
+    <RunProgram>@TargetDir@/AstroCore.exe</RunProgram>
+    <RunProgramDescription>Launch AstroCore</RunProgramDescription>
     <RunProgramArguments></RunProgramArguments>
     <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
     <RepositorySettingsPageVisible>false</RepositorySettingsPageVisible>
@@ -20,7 +20,7 @@
     <Watermark></Watermark>
     <Banner></Banner>
     <Background></Background>
-    <InstallerApplicationIcon>gpilot.ico</InstallerApplicationIcon>
-    <InstallerWindowIcon>gpilot.ico</InstallerWindowIcon>
-    <ProductUrl>https://github.com/etet100/G-Pilot-GCode-Sender</ProductUrl>
+    <InstallerApplicationIcon>astrocore.ico</InstallerApplicationIcon>
+    <InstallerWindowIcon>astrocore.ico</InstallerWindowIcon>
+    <ProductUrl>https://github.com/etet100/AstroCore-GCode-Sender</ProductUrl>
 </Installer>
