@@ -225,6 +225,10 @@ QList<QVector3D> ApplyHeightmap::segmentArc(const QVector3D &start, const QVecto
                                             bool clockwise, PointSegment::planes plane)
 {
     QList<QVector3D> points;
+    // Include the raw start so the loop in push() generates the first chord
+    // (startPoint → arc[0]) correctly, matching segmentLine's convention.
+    // generatePointsAlongArcBDring does NOT include the start point.
+    points.append(start);
 
     QList<QVector3D> arcPoints = GcodePreprocessorUtils::generatePointsAlongArcBDring(
         plane, start, end, center, clockwise, radius,
@@ -330,11 +334,20 @@ QString ApplyHeightmap::generateGCodeLine(const QVector3D &start, const QVector3
     if (!commandOverride.isEmpty()) {
         command = commandOverride;
     } else {
-        // Take only the G/M code prefix (first token) because later we append
-        // fresh X/Y/Z/F values; the original args would duplicate coordinates.
-        const QString full = originalItem.command();
-        const int sp = full.indexOf(' ');
-        command = (sp < 0) ? full : full.left(sp);
+        // Always emit an explicit motion code so that the machine's modal state
+        // from a preceding G2/G3 (preserved arc) does not carry over into what
+        // should be a G1/G0 move. A modal G1 line ("X10 Y5" without a G-word)
+        // would otherwise be interpreted as G2/G3 by the controller.
+        switch (originalItem.group) {
+            case GCodeItemGroup::Movement:      command = "G1"; break;
+            case GCodeItemGroup::RapidMovement: command = "G0"; break;
+            default: {
+                const QString full = originalItem.command();
+                const int sp = full.indexOf(' ');
+                command = (sp < 0) ? full : full.left(sp);
+                break;
+            }
+        }
     }
     if (command.isEmpty() && !originalItem.args.empty()) {
         command = QString::fromStdString(originalItem.args.front());

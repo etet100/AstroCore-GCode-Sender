@@ -23,6 +23,17 @@ bool areCollinear(const QVector3D& refDir, const LineSegment& s, float tolerance
     return cross.lengthSquared() < tolerance * tolerance;
 }
 
+float perpendicularDistance(const QVector3D& p, const QVector3D& lineStart, const QVector3D& lineEnd)
+{
+    QVector3D chord = lineEnd - lineStart;
+    float chordLen = chord.length();
+    if (chordLen < 1e-7f) {
+        return (p - lineStart).length();
+    }
+
+    return QVector3D::crossProduct(p - lineStart, chord / chordLen).length();
+}
+
 }
 
 SimplifyViewTransform::SimplifyViewTransform(double precision, double collinearTolerance)
@@ -48,19 +59,25 @@ QList<LineSegment> SimplifyViewTransform::apply(const QList<LineSegment>& input)
             float refLen = refVec.length();
             QVector3D refDir = (refLen > 1e-7f) ? (refVec / refLen) : QVector3D();
             bool hasRefDir = refLen > 1e-7f && !input[j].isArc();
-            double length = refLen;
 
             while (i < input.count() - 1
                    && segmentType(input[i + 1]) == segmentType(input[j])) {
-                bool collinear = hasRefDir && !input[i + 1].isArc()
-                                 && areCollinear(refDir, input[i + 1], (float)m_collinearTolerance);
-                bool withinPrecision = length < m_precision;
-
-                if (!collinear && !withinPrecision) {
+                if (input[i + 1].isArc() || !hasRefDir) {
                     break;
                 }
 
-                length += (input[i + 1].getEnd() - input[i + 1].getStart()).length();
+                bool collinear = areCollinear(refDir, input[i + 1], (float)m_collinearTolerance);
+                bool withinDeviation = m_precision > 0.0
+                                       && perpendicularDistance(
+                                              input[i].getEnd(),
+                                              input[j].getStart(),
+                                              input[i + 1].getEnd()
+                                          ) <= (float)m_precision;
+
+                if (!collinear && !withinDeviation) {
+                    break;
+                }
+
                 i++;
             }
         }

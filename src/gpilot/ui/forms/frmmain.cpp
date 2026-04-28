@@ -2683,7 +2683,7 @@ void FrmMain::applyLoaderGCode(GCodeLoaderData *data)
     // pendant or scripted actions could still push the machine into Running
     // between load start and load finish. Replacing program() while the
     // RunningBehavior is iterating it crashes the sender.
-    if (!communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Idle)) {
+    if (!communicator()->stateBehavior()->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::Alarm)) {
         qWarning() << "[FrmMain] applyLoaderGCode: machine is not idle, discarding loaded data";
         ui->console->appendSystem(tr("Cannot replace program: machine is not idle"));
         return;
