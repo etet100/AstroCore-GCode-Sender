@@ -243,9 +243,9 @@ void PartMainVisualizer::setProgram(GCode* program, GCodeViewParser* parser)
             (minEx.y() + maxEx.y()) / 2.0f,
             maxEx.z()
         ));
-
-        m_noGcodeDefaultDrawer.setVisible(false);
     }
+
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::updateCodeDrawer(const QList<int>& indexes)
@@ -274,8 +274,11 @@ void PartMainVisualizer::close()
     m_program = nullptr;
     m_codeDrawer->setViewParser(nullptr);
     m_boundingBoxDrawer.setViewParser(nullptr);
-    m_noGcodeDefaultDrawer.setVisible(true);
+    m_heightmapGridDrawer.setVisible(false);
+    m_heightmapBorderDrawer.setVisible(false);
+    m_heightmapInterpolationDrawer.setVisible(false);
     m_boundingBoxDrawer.setVisible(false);
+    m_noGcodeDefaultDrawer.setVisible(true);
 }
 
 void PartMainVisualizer::setHeightmap(Heightmap& heightmap)
@@ -312,6 +315,7 @@ void PartMainVisualizer::setHeightmapMode(bool enabled)
     // m_heightmapGridDrawer.setVisible(ui->visualizer->property("showGrid").toBool() && enabled);
 
     m_selectionDrawer.setVisible(!enabled);
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::updateHeightmapGrid()
@@ -334,6 +338,7 @@ void PartMainVisualizer::setInterpolationData(QVector<QVector<double>> *data, QR
 void PartMainVisualizer::setHeightmapInterpolationVisible(bool visible)
 {
     m_heightmapInterpolationDrawer.setVisible(visible);
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::setSelectionVisible(bool visible)
@@ -386,6 +391,7 @@ void PartMainVisualizer::heightmapClicked()
     if (m_heightmapGridDrawer.visible()) {
         updateBillboardsScreenPositions();
     }
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::heightmapMarkersClicked()
@@ -414,8 +420,7 @@ void PartMainVisualizer::toggleOriginClicked()
 
 void PartMainVisualizer::fitClicked()
 {
-    // If gcode is loaded, fit code drawer, otherwise fit default rectangle drawer
-    if (m_codeDrawer != nullptr) {
+    if (m_codeDrawer->viewParser() != nullptr) {
         ui->visualizer->fitDrawable(m_codeDrawer);
     } else {
         ui->visualizer->fitDrawable(&m_noGcodeDefaultDrawer);
@@ -737,20 +742,31 @@ void PartMainVisualizer::exportCodeDrawerToFile(const QString& filename)
     VertexDataExporter::exportToJsFile(filename, m_codeDrawer->lines());
 }
 
+void PartMainVisualizer::updateDefaultDrawerVisibility()
+{
+    bool hasContent = m_codeDrawer->viewParser() != nullptr
+                   || m_heightmapGridDrawer.visible()
+                   || m_heightmapBorderDrawer.visible()
+                   || m_heightmapInterpolationDrawer.visible();
+    m_noGcodeDefaultDrawer.setVisible(!hasContent);
+}
+
 void PartMainVisualizer::showHeightmapBorder(bool show)
 {
     m_heightmapBorderDrawer.setVisible(show);
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::showHeightmapProbeGrid(bool show)
 {
     m_heightmapGridDrawer.setVisible(show);
-    m_noGcodeDefaultDrawer.setVisible(false);
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::showHeightmapInterpolationGrid(bool show)
 {
     m_heightmapInterpolationDrawer.setVisible(show);
+    updateDefaultDrawerVisibility();
 }
 
 void PartMainVisualizer::setHeightmapInterpolationMode(Heightmap::InterpolationMode mode)

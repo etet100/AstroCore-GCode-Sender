@@ -177,6 +177,7 @@ class PartMainVisualizer : public QWidget
         void placeInfoBar();
         void initializeInfoBar();
         void initializeButtons();
+        void updateDefaultDrawerVisibility();
 };
 
 #endif // PARTMAINVISUALIZER_H
