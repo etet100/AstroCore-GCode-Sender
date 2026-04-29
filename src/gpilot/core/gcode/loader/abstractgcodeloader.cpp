@@ -8,11 +8,11 @@
 #include <QDebug>
 #include <QTextStream>
 
-static GCodeItemGroup groupFromSegment(const PointSegment *ps)
+static GCodeItemGroup groupFromSegment(const PointSegment *ps, bool isComment)
 {
-    if (!ps)                  return GCodeItemGroup::Unknown;
+    if (!ps) return isComment ? GCodeItemGroup::Comment : GCodeItemGroup::Unknown;
     if (ps->isFastTraverse()) return GCodeItemGroup::RapidMovement;
-    if (ps->isArc())          return GCodeItemGroup::ArcMovement;
+    if (ps->isArc()) return GCodeItemGroup::ArcMovement;
 
     return GCodeItemGroup::Movement;
 }
@@ -63,7 +63,7 @@ void GCodeLoader::loadFromFile(const QString &fileName)
         item.commandNumber = parser.getCommandNumber();
         PointSegment *ps = parser.addCommand(item);
         item.isMovement = ps != nullptr;
-        item.group = groupFromSegment(ps);
+        item.group = groupFromSegment(ps, item.args.empty());
         *gcode << std::move(item);
 
         int percentage = (int)(file.pos() * 100LL / fileSize);
@@ -128,7 +128,7 @@ std::optional<GCodeLoaderData> GCodeLoader::loadFromLines(const QStringList &lin
             item.commandNumber = parser.getCommandNumber();
             PointSegment *ps = parser.addCommand(item);
             item.isMovement = ps != nullptr;
-            item.group = groupFromSegment(ps);
+            item.group = groupFromSegment(ps, item.args.empty());
             *gcode << std::move(item);
         }
 
@@ -187,7 +187,7 @@ void GCodeLoader::update(GCode* gcode)
         item.commandNumber = parser.getCommandNumber();
         PointSegment *ps = parser.addCommand(item);
         item.isMovement = ps != nullptr;
-        item.group = groupFromSegment(ps);
+        item.group = groupFromSegment(ps, item.args.empty());
 
         remaining--;
         int percentage = 100 - (remaining * 100 / size);
