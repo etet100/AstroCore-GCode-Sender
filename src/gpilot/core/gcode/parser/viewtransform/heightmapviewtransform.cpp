@@ -68,7 +68,7 @@ QList<LineSegment> HeightmapViewTransform::apply(const QList<LineSegment>& input
 
         const double length = (end - start).length();
 
-        if (length <= m_segmentLength || qIsNaN(length) || length == 0.0) {
+        if (src.isFastTraverse() || length <= m_segmentLength || qIsNaN(length) || length == 0.0) {
             QVector3D newStart = start;
             QVector3D newEnd = end;
             newStart.setZ(newStart.z() + zOffsetAt(QPointF(newStart.x(), newStart.y())));
