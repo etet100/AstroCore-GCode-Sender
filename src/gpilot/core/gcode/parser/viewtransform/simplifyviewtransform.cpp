@@ -3,35 +3,177 @@
 
 #include "simplifyviewtransform.h"
 
+#include <QPair>
+#include <QtGlobal>
+#include <QVector>
+
 namespace {
 
-int segmentType(const LineSegment& s)
-{
-    return s.isFastTraverse() + s.isZMovement() * 2;
-}
+constexpr double PointEpsilon = 1e-7;
+constexpr double SegmentEpsilon = 0.0001;
 
-bool areCollinear(const QVector3D& refDir, const LineSegment& s, float tolerance)
+QVector3D pointAt(const QList<LineSegment>& input, int runStart, int pointIndex)
 {
-    QVector3D dir = s.getEnd() - s.getStart();
-    float len = dir.length();
-    if (len < 1e-7f) {
-        return true;
+    if (pointIndex == 0) {
+        return input[runStart].getStart();
     }
 
-    QVector3D cross = QVector3D::crossProduct(refDir, dir / len);
-
-    return cross.lengthSquared() < tolerance * tolerance;
+    return input[runStart + pointIndex - 1].getEnd();
 }
 
-float perpendicularDistance(const QVector3D& p, const QVector3D& lineStart, const QVector3D& lineEnd)
+bool sameDouble(double a, double b)
+{
+    return qAbs(a - b) <= 1e-9;
+}
+
+bool canMerge(const LineSegment& a, const LineSegment& b)
+{
+    return (a.getEnd() - b.getStart()).lengthSquared() <= SegmentEpsilon * SegmentEpsilon
+           && !a.isArc()
+           && !b.isArc()
+           && a.isFastTraverse() == b.isFastTraverse()
+           && a.isZMovement() == b.isZMovement()
+           && a.isMetric() == b.isMetric()
+           && a.isAbsolute() == b.isAbsolute()
+           && a.isHightlight() == b.isHightlight()
+           && a.getToolhead() == b.getToolhead()
+           && sameDouble(a.getSpeed(), b.getSpeed())
+           && sameDouble(a.getSpindleSpeed(), b.getSpindleSpeed())
+           && sameDouble(a.getDwell(), b.getDwell());
+}
+
+double perpendicularDistanceSquared(const QVector3D& p, const QVector3D& lineStart, const QVector3D& lineEnd)
 {
     QVector3D chord = lineEnd - lineStart;
-    float chordLen = chord.length();
-    if (chordLen < 1e-7f) {
-        return (p - lineStart).length();
+    double chordLenSquared = chord.lengthSquared();
+    if (chordLenSquared < PointEpsilon * PointEpsilon) {
+        return (p - lineStart).lengthSquared();
     }
 
-    return QVector3D::crossProduct(p - lineStart, chord / chordLen).length();
+    double projection = QVector3D::dotProduct(p - lineStart, chord) / chordLenSquared;
+    if (projection <= 0.0) {
+        return (p - lineStart).lengthSquared();
+    }
+
+    if (projection >= 1.0) {
+        return (p - lineEnd).lengthSquared();
+    }
+
+    QVector3D projected = lineStart + chord * projection;
+
+    return (p - projected).lengthSquared();
+}
+
+LineSegment makeSegmentLike(const LineSegment& source,
+                            const QVector3D& start,
+                            const QVector3D& end,
+                            int vertexIndex)
+{
+    LineSegment segment(start, end, source.getLineNumber());
+    segment.setToolHead(source.getToolhead());
+    segment.setSpeed(source.getSpeed());
+    segment.setIsZMovement(source.isZMovement());
+    segment.setIsArc(source.isArc());
+    segment.setIsClockwise(source.isClockwise());
+    segment.setPlane(source.plane());
+    segment.setIsFastTraverse(source.isFastTraverse());
+    segment.setDrawn(source.drawn());
+    segment.setIsMetric(source.isMetric());
+    segment.setIsAbsolute(source.isAbsolute());
+    segment.setIsHightlight(source.isHightlight());
+    segment.setSpindleSpeed(source.getSpindleSpeed());
+    segment.setDwell(source.getDwell());
+    segment.setVertexIndex(vertexIndex);
+
+    return segment;
+}
+
+void appendSegmentLike(const LineSegment& source,
+                       const QVector3D& start,
+                       const QVector3D& end,
+                       QList<LineSegment>& result,
+                       int& vertexCount)
+{
+    if ((end - start).length() <= SegmentEpsilon) {
+        return;
+    }
+
+    result.append(makeSegmentLike(source, start, end, vertexCount));
+    vertexCount++;
+}
+
+void appendSimplifiedRun(const QList<LineSegment>& input,
+                         int runStart,
+                         int runEnd,
+                         double tolerance,
+                         QList<LineSegment>& result,
+                         int& vertexCount)
+{
+    int segmentCount = runEnd - runStart;
+    if (segmentCount <= 0) {
+        return;
+    }
+
+    if (segmentCount == 1) {
+        appendSegmentLike(input[runStart],
+                          input[runStart].getStart(),
+                          input[runStart].getEnd(),
+                          result,
+                          vertexCount);
+
+        return;
+    }
+
+    QVector<char> keep(segmentCount + 1, false);
+    keep[0] = true;
+    keep[segmentCount] = true;
+
+    QVector<QPair<int, int>> stack;
+    stack.reserve(64);
+    stack.append(QPair<int, int>(0, segmentCount));
+
+    double toleranceSquared = tolerance * tolerance;
+    while (!stack.isEmpty()) {
+        QPair<int, int> range = stack.takeLast();
+        int first = range.first;
+        int last = range.second;
+        if (last <= first + 1) {
+            continue;
+        }
+
+        QVector3D lineStart = pointAt(input, runStart, first);
+        QVector3D lineEnd = pointAt(input, runStart, last);
+        double maxDistanceSquared = -1.0;
+        int maxIndex = -1;
+
+        for (int i = first + 1; i < last; i++) {
+            double distanceSquared = perpendicularDistanceSquared(pointAt(input, runStart, i), lineStart, lineEnd);
+            if (distanceSquared > maxDistanceSquared) {
+                maxDistanceSquared = distanceSquared;
+                maxIndex = i;
+            }
+        }
+
+        if (maxDistanceSquared > toleranceSquared && maxIndex > first && maxIndex < last) {
+            keep[maxIndex] = true;
+            stack.append(QPair<int, int>(first, maxIndex));
+            stack.append(QPair<int, int>(maxIndex, last));
+        }
+    }
+
+    int previousPoint = 0;
+    for (int i = 1; i <= segmentCount; i++) {
+        if (!keep[i]) {
+            continue;
+        }
+
+        appendSegmentLike(input[runStart + previousPoint],
+                          pointAt(input, runStart, previousPoint),
+                          pointAt(input, runStart, i),
+                          result,
+                          vertexCount);
+        previousPoint = i;
+    }
 }
 
 }
@@ -51,55 +193,28 @@ QList<LineSegment> SimplifyViewTransform::apply(const QList<LineSegment>& input)
     }
 
     int vertexCount = 0;
-    for (int i = 0; i < input.count(); i++) {
-        int j = i;
+    double tolerance = m_precision > 0.0 ? m_precision : m_collinearTolerance;
 
-        if (i < input.count() - 1) {
-            QVector3D refVec = input[j].getEnd() - input[j].getStart();
-            float refLen = refVec.length();
-            QVector3D refDir = (refLen > 1e-7f) ? (refVec / refLen) : QVector3D();
-            bool hasRefDir = refLen > 1e-7f && !input[j].isArc();
+    for (int i = 0; i < input.count();) {
+        if (input[i].isArc()) {
+            appendSegmentLike(input[i],
+                              input[i].getStart(),
+                              input[i].getEnd(),
+                              result,
+                              vertexCount);
+            i++;
 
-            while (i < input.count() - 1
-                   && segmentType(input[i + 1]) == segmentType(input[j])) {
-                if (input[i + 1].isArc() || !hasRefDir) {
-                    break;
-                }
-
-                bool collinear = areCollinear(refDir, input[i + 1], (float)m_collinearTolerance);
-                bool withinDeviation = m_precision > 0.0
-                                       && perpendicularDistance(
-                                              input[i].getEnd(),
-                                              input[j].getStart(),
-                                              input[i + 1].getEnd()
-                                          ) <= (float)m_precision;
-
-                if (!collinear && !withinDeviation) {
-                    break;
-                }
-
-                i++;
-            }
+            continue;
         }
 
-        float segmentLen = (input[i].getEnd() - input[j].getStart()).length();
-        if (segmentLen > 0.0001f) {
-            LineSegment simplified(input[j].getStart(), input[i].getEnd(), input[j].getLineNumber());
-            simplified.setIsArc(input[j].isArc());
-            simplified.setIsClockwise(input[j].isClockwise());
-            simplified.setPlane(input[j].plane());
-            simplified.setIsFastTraverse(input[j].isFastTraverse());
-            simplified.setIsZMovement(input[j].isZMovement());
-            simplified.setIsMetric(input[j].isMetric());
-            simplified.setIsAbsolute(input[j].isAbsolute());
-            simplified.setSpeed(input[j].getSpeed());
-            simplified.setSpindleSpeed(input[j].getSpindleSpeed());
-            simplified.setDwell(input[j].getDwell());
-            simplified.setVertexIndex(vertexCount);
+        int runStart = i;
+        i++;
 
-            result.append(simplified);
-            vertexCount++;
+        while (i < input.count() && canMerge(input[i - 1], input[i])) {
+            i++;
         }
+
+        appendSimplifiedRun(input, runStart, i, tolerance, result, vertexCount);
     }
 
     return result;
