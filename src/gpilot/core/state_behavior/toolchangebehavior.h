@@ -28,9 +28,6 @@ class ToolChangeBehavior : public AbstractStateBehavior
         explicit ToolChangeBehavior(int toolNumber, ToolChangeSource source = ToolChangeSource::Program, QObject *parent = nullptr);
         QString description() override;
         Type type() const override { return Type::ToolChange; }
-        QSet<Action::Type> availableActions() const override {
-            return { Action::Resume, Action::CycleStart };
-        }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         Result doOnExit(AbstractStateBehavior *next) override;
         void onMachineStateChanged(MachineState state) override;
@@ -41,7 +38,6 @@ class ToolChangeBehavior : public AbstractStateBehavior
 
     protected:
         QString name() const override { return "ToolChange"; }
-        bool doAction(const Action &action) override;
 
     private:
         int m_toolNumber;

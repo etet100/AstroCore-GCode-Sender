@@ -13,6 +13,7 @@
 #include <QVariantMap>
 #include "core/globals.h"
 #include "action.h"
+#include "userpromptspec.h"
 #include <functional>
 #include <QMap>
 #include <QPointer>
@@ -65,8 +66,8 @@ class AbstractStateBehavior : public QObject
             Reset,
             Running,
             ScanTable,
-            ScanTableError,
             ToolChange,
+            UserPrompt,
         };
 
         // Transition semantics for the `transition` signal.
@@ -166,6 +167,12 @@ class AbstractStateBehavior : public QObject
                                  int milliseconds = 0);
         void clearWaitForStateResponse(int id);
 
+        // Routes a UI-supplied prompt response into the active behavior.
+        // Default behavior just emits userPromptAnswered for any coroutine
+        // currently inside askUser(). UserPromptBehavior overrides this to
+        // also map the choice into exit data and resumePrevious().
+        virtual void respondToPrompt(const QString &promptId, const QString &choiceId);
+
     signals:
         void transition(AbstractStateBehavior *state, AbstractStateBehavior *newState,
                         AbstractStateBehavior::TransitionKind kind = AbstractStateBehavior::TransitionKind::Replace);
@@ -182,6 +189,15 @@ class AbstractStateBehavior : public QObject
         // into other signals. Use a short camelCase type string and a flat
         // QVariantMap with the relevant data.
         void stateEvent(QString type, QVariantMap data);
+
+        // Behavior wants the UI to ask the user for a decision. The UI is
+        // expected to display the prompt, collect the user's choice, and
+        // call Communicator::respondToPrompt(promptId, choiceId).
+        void userPromptRequested(PromptSpec spec);
+
+        // Sister signal: fired by the base when respondToPrompt() arrives,
+        // so coroutines inside askUser() can co_await it.
+        void userPromptAnswered(QString promptId, QString choiceId);
 
         // QCoro bridge signals — emitted from the default onCommandResponse / onMachineStateChanged
         // implementations so that coroutine-based behaviors can co_await them.
@@ -214,6 +230,14 @@ class AbstractStateBehavior : public QObject
         QCoro::Task<std::optional<MachineState>> awaitMachineState(
             std::function<bool(MachineState)> predicate,
             std::chrono::milliseconds timeout);
+
+        // Emits userPromptRequested(spec) and suspends the coroutine until
+        // a matching userPromptAnswered arrives. Returns the chosen choiceId,
+        // or std::nullopt on timeout (zero / negative = wait forever).
+        // The current behavior remains active throughout — no transition.
+        QCoro::Task<std::optional<QString>> askUser(
+            PromptSpec spec,
+            std::chrono::milliseconds timeout = std::chrono::milliseconds::zero());
 
         struct StateResponseEntry {
             int id;

@@ -26,9 +26,10 @@
 #include "resetbehavior.h"
 #include "gotobehavior.h"
 #include "scantablebehavior.h"
-#include "scantableerrorbehavior.h"
+// #include "scantableerrorbehavior.h"
 #include "handshakebehavior.h"
 #include "externalprocessbehavior.h"
 #include "disconnectingbehavior.h"
+#include "userpromptbehavior.h"
 
 #endif // BEHAVIORS_H

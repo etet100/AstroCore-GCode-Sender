@@ -15,6 +15,8 @@
 #include <QDropEvent>
 #include <QProgressDialog>
 #include <QGroupBox>
+#include <QPointer>
+#include <QMessageBox>
 #include <exception>
 #ifdef WINDOWS
 #include <windows.h>
@@ -49,6 +51,7 @@
 #include "core/utils/programtimeestimator.h"
 #include "core/utils/timer.h"
 #include "core/core.h"
+#include "core/state_behavior/userpromptspec.h"
 
 namespace Ui {
 class frmMain;
@@ -167,6 +170,7 @@ private slots:
     void onTransferCompleted();
     void onConnectionError(QString error);
     void updateOnStateBehaviorChanged(AbstractStateBehavior *sb);
+    void onUserPromptRequested(PromptSpec spec);
 
     void programInsertLines(int current, bool before);
     void programDeleteLines(int from, int to);
@@ -207,6 +211,8 @@ private:
     Ui::frmMain *ui;
 
     QMessageBox* m_senderErrorBox;
+    QPointer<QMessageBox> m_userPromptBox;
+    QString m_activeUserPromptId;
 #ifdef WINDOWS
     UINT m_taskbarButtonCreatedMessageId;
     WindowsTaskbar m_taskBar;

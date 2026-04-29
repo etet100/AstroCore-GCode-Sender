@@ -169,11 +169,11 @@ SOURCES += main.cpp\
     core/state_behavior/reconnectingbehavior.cpp \
     core/state_behavior/resetbehavior.cpp \
     core/state_behavior/scantablebehavior.cpp \
-    core/state_behavior/scantableerrorbehavior.cpp \
     core/state_behavior/handshakebehavior.cpp \
     core/state_behavior/externalprocessbehavior.cpp \
     core/state_behavior/disconnectingbehavior.cpp \
     core/state_behavior/toolchangebehavior.cpp \
+    core/state_behavior/userpromptbehavior.cpp \
     ui/drawers/billboarddrawable.cpp \
     ui/drawers/boundingboxdrawer.cpp \
     ui/drawers/compositedrawable.cpp \
@@ -370,11 +370,12 @@ HEADERS  += ui/forms/frmmain.h \
     core/state_behavior/reconnectingbehavior.h \
     core/state_behavior/resetbehavior.h \
     core/state_behavior/scantablebehavior.h \
-    core/state_behavior/scantableerrorbehavior.h \
     core/state_behavior/handshakebehavior.h \
     core/state_behavior/externalprocessbehavior.h \
     core/state_behavior/disconnectingbehavior.h \
     core/state_behavior/toolchangebehavior.h \
+    core/state_behavior/userpromptbehavior.h \
+    core/state_behavior/userpromptspec.h \
     ui/drawers/billboarddrawable.h \
     ui/drawers/boundingboxdrawer.h \
     ui/drawers/compositedrawable.h \

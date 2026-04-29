@@ -9,6 +9,7 @@
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
 #include "toolchangebehavior.h"
+#include "userpromptbehavior.h"
 #include "core/communicator/communicator.h"
 #include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
@@ -34,6 +35,28 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
         Core::instance().timer().stopExecution();
         emit transition(this, new IdleBehavior());
     } else if (m_stage == Stage::Pausing && (state == MachineState::Hold0 || state == MachineState::Hold1)) {
+        // Error-driven pause: ask the user whether to continue past the bad
+        // command or abort the program. Plain pauses fall through to PauseBehavior.
+        if (!m_errorDescription.isEmpty()) {
+            PromptSpec spec;
+            spec.promptId = "running.command-error";
+            spec.title = "Command error";
+            spec.message = QString("Command \"%1\" failed: %2.")
+                               .arg(m_errorCommand, m_errorDescription);
+            spec.context = {
+                {"command", m_errorCommand},
+                {"errorCode", m_errorCode},
+                {"reason", m_errorDescription},
+            };
+            spec.choices = {
+                {"continue", "Continue", /*destructive=*/false, /*isDefault=*/false},
+                {"abort", "Abort", /*destructive=*/true, /*isDefault=*/true},
+            };
+            emit transition(this, new UserPromptBehavior(spec), TransitionKind::Suspend);
+
+            return;
+        }
+
         PauseBehavior::PauseSource source = m_stage == Stage::Pausing
             ? PauseBehavior::PauseSource::UserRequest
             : PauseBehavior::PauseSource::External;
@@ -70,6 +93,9 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
 
         qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
                    << "for" << command << "— pausing program";
+        m_errorCommand = command;
+        m_errorDescription = enrichErrorMessage(response);
+        m_errorCode = cmdStatus.errorCode;
         pause();
 
         return Result::Ok;
@@ -128,15 +154,33 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
 
     communicator->startQueryingMachineState();
 
-    if (ctx.previousType == Type::Pause) {
-        qDebug() << "[Behavior][Running] Resuming from Pause, sending Cycle Start and waiting for Run state";
+    // Resumed either from a plain Pause or from a UserPrompt (the latter is
+    // raised by an error-driven pause). Both paths normalize to a single
+    // "abort" / "resume" decision read from exit data.
+    const bool resumingFromPause = (ctx.previousType == Type::Pause);
+    const bool resumingFromPrompt = (ctx.previousType == Type::UserPrompt);
+    if (resumingFromPause || resumingFromPrompt) {
+        const QString decision = resumingFromPrompt
+            ? ctx.data.value("choiceId").toString()           // "continue" | "abort"
+            : ctx.data.value("action").toString();            // "resume"   | "abort"
 
-        if (ctx.data.value("action").toString() == "abort") {
-            qDebug() << "[Behavior][Running] Previous Pause behavior requested abort";
+        const bool abort = (decision == "abort");
+
+        qDebug() << "[Behavior][Running] Resuming from"
+                 << (resumingFromPrompt ? "UserPrompt" : "Pause")
+                 << "decision:" << decision;
+
+        if (abort) {
+            qDebug() << "[Behavior][Running] Previous behavior requested abort";
             this->abort();
 
             return Result::Ok;
         } else {
+            // Past the error or the pause — clear any error context.
+            m_errorCommand.clear();
+            m_errorDescription.clear();
+            m_errorCode = 0;
+
             Core::instance().timer().resumeExecution();
 
             // Machine is in Hold — send Cycle Start and wait for Run state before filling buffer

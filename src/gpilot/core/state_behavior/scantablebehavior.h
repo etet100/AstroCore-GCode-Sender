@@ -3,6 +3,7 @@
 
 #include "abstractstatebehavior.h"
 #include "core/heightmap/heightmap.h"
+#include <optional>
 
 // ScanTableBehavior orchestrates an automatic height-map scan.
 //
@@ -59,9 +60,21 @@ private:
     Stage m_phase = Stage::Initial;
     bool  m_retractBeforeNextProbe = false;
 
+    std::optional<QCoro::Task<void>> m_recoveryTask;
+
     void processCurrentPoint();
     void startProbeAtCurrentPoint();
     void finishScanning(bool success, const QString &reason = QString());
+
+    // Builds a UserPromptBehavior(spec) suspended on top so the user can
+    // resume or abort. Stage = "move" or "probe", failedPoint optional.
+    void raiseScanErrorPrompt(const QString &reason, const QString &stage,
+                              std::optional<QPointF> failedPoint, int alarmCode);
+
+    // Coroutine started after the user picks "resume" on a scan-error
+    // prompt. Unlocks ($X) if the failure was an alarm, then retries the
+    // current point according to m_phase.
+    QCoro::Task<void> recoverFromError(int alarmCode);
 };
 
 #endif // SCANTABLEBEHAVIOR_H

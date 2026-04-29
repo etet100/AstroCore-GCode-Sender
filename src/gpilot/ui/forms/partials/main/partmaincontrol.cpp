@@ -2,6 +2,7 @@
 #include "ui_partmaincontrol.h"
 #include "ui/utils/thememanager.h"
 #include "utils/utils.h"
+#include "core/state_behavior/userpromptbehavior.h"
 #include <QDebug>
 #include <QActionGroup>
 #include <QToolButton>
@@ -99,7 +100,12 @@ void PartMainControl::updateControlsState(AbstractStateBehavior *sb)
     ui->cmdProbe->setEnabled(sb->canExecute(Action::Type::Probe));
     ui->cmdZeroZ->setEnabled(sb->canExecute(Action::Type::ZeroZ));
     ui->cmdZeroXY->setEnabled(sb->canExecute(Action::Type::ZeroXY));
-    if (sb->isOneOf(AbstractStateBehavior::Type::ScanTableError)) {
+    bool scanPrompt = false;
+    if (sb->is(AbstractStateBehavior::Type::UserPrompt)) {
+        auto *prompt = static_cast<UserPromptBehavior*>(sb);
+        scanPrompt = prompt->spec().promptId.startsWith("scan.");
+    }
+    if (scanPrompt) {
         ui->cmdScanTable->setIcon(QIcon(":/images/control/scan_table_resume.svg"));
         ui->cmdScanTable->setEnabled(true);
         ui->cmdScanTable->setProperty("action", "scan");

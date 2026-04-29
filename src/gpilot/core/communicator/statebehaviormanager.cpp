@@ -163,6 +163,8 @@ bool StateBehaviorManager::finalizeExecute(AbstractStateBehavior *sb, Communicat
                            &Communicator::onStateError, Qt::ConnectionType::UniqueConnection);
             QObject::connect(sb, &AbstractStateBehavior::logSignal, communicator,
                            &Communicator::log, Qt::ConnectionType::UniqueConnection);
+            QObject::connect(sb, &AbstractStateBehavior::userPromptRequested, communicator,
+                           &Communicator::userPromptRequested, Qt::ConnectionType::UniqueConnection);
             QObject::connect(sb, &QObject::destroyed, m_signalEmitter, []() {
                 qDebug() << "[Behavior][Manager] State behavior destroyed";
             });

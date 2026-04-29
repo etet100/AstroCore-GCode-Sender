@@ -9,6 +9,9 @@
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QAbstractButton>
+#include <QHash>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QScrollBar>
@@ -60,6 +63,7 @@
 #include "core/utils/filesmanager.h"
 #include "modules/ai/openaimanager.h"
 #include "core/state_behavior/action.h"
+#include "core/state_behavior/userpromptbehavior.h"
 #include "ui/utils/uipermissions.h"
 // #include "core/state_behavior/joggingbehavior.h"
 // #include "core/state_behavior/gotobehavior.h"
@@ -229,6 +233,7 @@ void FrmMain::initializeCommunicator()
         m_partMainVirtualSettings->deviceConfigurationReceived(configuration);
     });
     connect(communicator()->stateBehaviorManager(), &StateBehaviorManager::stateBehaviorChanged, this, &FrmMain::updateOnStateBehaviorChanged);
+    connect(communicator(), &Communicator::userPromptRequested, this, &FrmMain::onUserPromptRequested);
     connect(communicator(), &Communicator::connectionChanged, this, [this](AbstractConnection *connection) {
         ui->state->setConnectionName(connection->name());
     });
@@ -296,11 +301,18 @@ void FrmMain::initializeControlPanel()
     });
     connect(ui->control, &PartMainControl::scanTable, this, [this]() {
         AbstractStateBehavior* sb = communicator()->stateBehavior();
-        if (sb->is(AbstractStateBehavior::Type::ScanTable)) {
-            communicator()->stateBehavior()->action(Action::Resume);
-        } else {
-            communicator()->stateBehavior()->action(ScanTableAction(&heightmap()));
+        // Scan button doubles as the resume control while a scan-error prompt
+        // is on top of a suspended ScanTableBehavior — fire the prompt's
+        // "resume" choice. The UserPromptBehavior maps that to resumePrevious().
+        if (sb->is(AbstractStateBehavior::Type::UserPrompt)) {
+            auto *prompt = static_cast<UserPromptBehavior*>(sb);
+            if (prompt->spec().promptId.startsWith("scan.")) {
+                communicator()->respondToPrompt(prompt->spec().promptId, "resume");
+
+                return;
+            }
         }
+        communicator()->stateBehavior()->action(ScanTableAction(&heightmap()));
     });
     connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
         ProbeAction::ProbeParameters params;
@@ -1921,6 +1933,65 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
     );
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
     updateControlsState();
+
+    // Auto-dismiss the prompt dialog when the user-prompt state goes away
+    // (e.g. user resolved the prompt via a side-channel like the toolbar
+    // resume button, or another behavior took over via Reset).
+    if (m_userPromptBox && sb->type() != AbstractStateBehavior::Type::UserPrompt) {
+        m_userPromptBox->reject();
+        m_userPromptBox = nullptr;
+        m_activeUserPromptId.clear();
+    }
+}
+
+void FrmMain::onUserPromptRequested(PromptSpec spec)
+{
+    if (m_userPromptBox && m_activeUserPromptId == spec.promptId) {
+        // Same prompt re-emitted (e.g. recovery coroutine fell back to a
+        // re-prompt). Keep the dialog as-is.
+        return;
+    }
+    if (m_userPromptBox) {
+        m_userPromptBox->reject();
+        m_userPromptBox = nullptr;
+    }
+
+    auto *box = new QMessageBox(this);
+    box->setAttribute(Qt::WA_DeleteOnClose);
+    box->setIcon(QMessageBox::Question);
+    box->setWindowTitle(spec.title.isEmpty() ? tr("AstroCore") : spec.title);
+    box->setText(spec.message);
+
+    QHash<QAbstractButton*, QString> buttonChoices;
+    QAbstractButton *defaultBtn = nullptr;
+    for (const PromptChoice &choice : spec.choices) {
+        QMessageBox::ButtonRole role = choice.destructive
+            ? QMessageBox::DestructiveRole
+            : QMessageBox::AcceptRole;
+        QPushButton *btn = box->addButton(choice.label, role);
+        buttonChoices.insert(btn, choice.id);
+        if (choice.isDefault) {
+            defaultBtn = btn;
+        }
+    }
+    if (defaultBtn) {
+        box->setDefaultButton(static_cast<QPushButton*>(defaultBtn));
+    }
+
+    const QString promptId = spec.promptId;
+    connect(box, &QMessageBox::buttonClicked, this, [this, promptId, buttonChoices](QAbstractButton *btn) {
+        const QString choiceId = buttonChoices.value(btn);
+        if (choiceId.isEmpty()) {
+            return;
+        }
+        m_activeUserPromptId.clear();
+        m_userPromptBox = nullptr;
+        communicator()->respondToPrompt(promptId, choiceId);
+    });
+
+    m_userPromptBox = box;
+    m_activeUserPromptId = promptId;
+    box->open();  // non-modal — user keeps access to the rest of the UI
 }
 
 void FrmMain::programEditLines(int from, int to)

@@ -66,7 +66,7 @@ bool IdleBehavior::doAction(const Action &action)
     switch (action.type()) {
         case Action::Type::Home:
             qDebug() << "[Behavior][Idle] Action: Home";
-            emit transition(this, new HomingBehavior());
+            emit transition(this, new HomingBehavior(), TransitionKind::Suspend);
 
             return true;
 

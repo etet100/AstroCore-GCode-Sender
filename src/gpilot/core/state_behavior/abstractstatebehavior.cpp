@@ -316,6 +316,47 @@ QCoro::Task<std::optional<AbstractStateBehavior::CommandResult>> AbstractStateBe
     co_return co_await awaitResponse(r.commandIndex, timeout);
 }
 
+void AbstractStateBehavior::respondToPrompt(const QString &promptId, const QString &choiceId)
+{
+    qDebug() << QString("[%1] Prompt response: %2 -> %3").arg(name(), promptId, choiceId);
+
+    emit userPromptAnswered(promptId, choiceId);
+}
+
+QCoro::Task<std::optional<QString>> AbstractStateBehavior::askUser(
+    PromptSpec spec, std::chrono::milliseconds timeout)
+{
+    using namespace std::chrono;
+    const QString promptId = spec.promptId;
+
+    qDebug() << QString("[%1] askUser: %2").arg(name(), promptId);
+    emit userPromptRequested(spec);
+
+    // QCoro convention: -1ms = wait forever. Map zero/negative input to that.
+    const bool hasDeadline = timeout > milliseconds::zero();
+    const auto deadline = hasDeadline ? steady_clock::now() + timeout : steady_clock::time_point{};
+
+    while (true) {
+        milliseconds wait = milliseconds{-1};
+        if (hasDeadline) {
+            wait = duration_cast<milliseconds>(deadline - steady_clock::now());
+            if (wait <= milliseconds::zero()) {
+                co_return std::nullopt;
+            }
+        }
+
+        auto result = co_await qCoro(this, &AbstractStateBehavior::userPromptAnswered, wait);
+        if (!result) {
+            co_return std::nullopt;
+        }
+        const auto &[answeredId, choiceId] = *result;
+        if (answeredId == promptId) {
+            co_return choiceId;
+        }
+        // Stale answer for a different prompt id — keep waiting.
+    }
+}
+
 int AbstractStateBehavior::setTimeout(int milliseconds, std::function<void ()> callback)
 {
     static int nextId = 0;

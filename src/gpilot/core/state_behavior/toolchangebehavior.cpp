@@ -6,6 +6,7 @@
 #include "runningbehavior.h"
 #include "idlebehavior.h"
 #include "alarmbehavior.h"
+#include "userpromptbehavior.h"
 #include "core/communicator/communicator.h"
 
 ToolChangeBehavior::ToolChangeBehavior(int toolNumber, ToolChangeSource source, QObject *parent)
@@ -37,6 +38,22 @@ QString ToolChangeBehavior::description()
 
 AbstractStateBehavior::Result ToolChangeBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
+    Q_UNUSED(communicator);
+
+    // Resumed from the confirmation prompt (see waitForUserConfirmation()).
+    if (ctx.previousType == Type::UserPrompt) {
+        const QString choiceId = ctx.data.value("choiceId").toString();
+        qDebug() << "[Behavior][ToolChange] Resumed from prompt with choice:" << choiceId;
+
+        if (choiceId == "confirm") {
+            returnToWorkPosition();
+        } else {
+            log("Tool change aborted by user", {"ToolChange"});
+            emit transition(this, new IdleBehavior());
+        }
+
+        return Result::Ok;
+    }
 
     qDebug() << "[Behavior][ToolChange] Tool change requested for tool:" << m_toolNumber;
 
@@ -93,20 +110,6 @@ AbstractStateBehavior::Result ToolChangeBehavior::onCommandResponse(QString comm
     return Result::Ok;
 }
 
-bool ToolChangeBehavior::doAction(const Action &action)
-{
-    // User can confirm tool change to continue
-    if (action.type() == Action::Type::Resume || action.type() == Action::Type::CycleStart) {
-        if (m_changeState == ToolChangeState::WaitingForUserConfirmation) {
-            qDebug() << "[Behavior][ToolChange] User confirmed tool change.";
-            returnToWorkPosition();
-            return true;
-        }
-    }
-
-    return AbstractStateBehavior::doAction(action);
-}
-
 void ToolChangeBehavior::moveToSafePosition()
 {
     m_changeState = ToolChangeState::MovingToSafePosition;
@@ -127,8 +130,17 @@ void ToolChangeBehavior::waitForUserConfirmation()
     m_changeState = ToolChangeState::WaitingForUserConfirmation;
     qDebug() << "[Behavior][ToolChange] Waiting for user to change tool and confirm.";
 
-    // Emit signal or show dialog for user confirmation
-    // User should press "Resume" or "Cycle Start" to continue
+    PromptSpec spec;
+    spec.promptId = "toolchange.confirm";
+    spec.title = QString("Tool change — T%1").arg(m_toolNumber);
+    spec.message = QString("Insert tool T%1 and confirm to continue.").arg(m_toolNumber);
+    spec.context = {{"toolNumber", m_toolNumber}};
+    spec.choices = {
+        {"confirm", "Confirm", /*destructive=*/false, /*isDefault=*/true},
+        {"abort", "Abort", /*destructive=*/true, /*isDefault=*/false},
+    };
+
+    emit transition(this, new UserPromptBehavior(spec), TransitionKind::Suspend);
 }
 
 void ToolChangeBehavior::returnToWorkPosition()
@@ -156,8 +168,11 @@ void ToolChangeBehavior::complete()
 
     emit stateEvent("toolChangeCompleted", {{"toolNumber", m_toolNumber}});
 
-    // Return to previous state (usually RunningBehavior) or IdleBehavior
-    if (m_previousType == Type::Running) {
+    // Return to the parent. For program-driven tool changes the parent is
+    // always RunningBehavior on the suspended stack — m_previousType can't
+    // be relied on here because it's overwritten by intermediate states
+    // (e.g. the UserPromptBehavior that just resumed us).
+    if (m_source == ToolChangeSource::Program) {
         emit resumePrevious();
     } else {
         emit transition(this, new IdleBehavior());

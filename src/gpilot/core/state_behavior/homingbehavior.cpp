@@ -54,18 +54,7 @@ AbstractStateBehavior::Result HomingBehavior::onCommandResponse(QString command,
 {
     qDebug() << "[Behavior][Homing] Command Response:" << command << response;
     if (command == "$H") {
-        if (response.contains("error")) {
-            qDebug() << "[Behavior][Homing] Homing error";
-            // Error occurred during homing command
-            emit error(this, "Homing failed - " + response);
-
-            // Return to previous state or idle state
-            if (m_previousType.has_value()) {
-                emit resumePrevious();
-            } else {
-                emit transition(this, new IdleBehavior(this));
-            }
-        } else if (!response.isEmpty() && !m_homingCompleted) {
+        if (cmdStatus.ok) {
             qDebug() << "[Behavior][Homing] Homing command finished";
             // Got a response but it's not an error
             // Homing might be in progress or just finished
@@ -77,6 +66,17 @@ AbstractStateBehavior::Result HomingBehavior::onCommandResponse(QString command,
             // qDebug() << "[Behavior][Homing] Test" << fullResponse;
 
             emit transition(this, new IdleBehavior(this));
+        } else if (!response.isEmpty() && !m_homingCompleted) {
+            qDebug() << "[Behavior][Homing] Homing error";
+            // Error occurred during homing command
+            emit error(this, "Homing failed - " + response);
+
+            // Return to previous state or idle state
+            if (m_previousType.has_value()) {
+                emit resumePrevious();
+            } else {
+                emit transition(this, new IdleBehavior(this));
+            }
         }
 
         return Result::Ok;

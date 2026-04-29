@@ -439,6 +439,20 @@ void Communicator::onStateRequestsResume()
     m_sbManager.requestResume();
 }
 
+void Communicator::respondToPrompt(const QString &promptId, const QString &choiceId)
+{
+    AbstractStateBehavior *sb = m_sbManager.current();
+    if (!sb) {
+        qWarning() << "[Communicator] respondToPrompt with no active behavior";
+
+        return;
+    }
+    sb->respondToPrompt(promptId, choiceId);
+    // The behavior may have requested resumePrevious() — drive the state
+    // machine immediately so the UI doesn't wait for the 1s fallback timer.
+    processStateBehaviorTransition();
+}
+
 void Communicator::onStateError(AbstractStateBehavior *sb, QString message)
 {
     qDebug() << "[Communicator] State error: " << message;

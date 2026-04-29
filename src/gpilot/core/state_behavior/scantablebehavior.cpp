@@ -6,9 +6,11 @@
 #include "probingbehavior.h"
 #include "alarmbehavior.h"
 #include "idlebehavior.h"
-#include "scantableerrorbehavior.h"
+#include "userpromptbehavior.h"
 #include "core/communicator/communicator.h"
 #include <cmath>
+
+using namespace std::chrono_literals;
 
 ScanTableBehavior::ScanTableBehavior(Heightmap *heightmap, QPointF startPos, Heightmap::ScanMode scanMode, int moveFeedRate, QObject *parent)
     : AbstractStateBehavior{parent}
@@ -31,20 +33,27 @@ AbstractStateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *comm
 {
     m_communicator->startQueryingMachineState();
 
-    // Resumed from ScanTableErrorBehavior — user chose "Resume".
-    //  - Probe stage: tip is at the failed Z; retry just the probe with a
-    //    pre-retract so we lift off before re-entering the material.
-    //  - Move stage:  tip is safely airborne; redo GoTo.
-    if (ctx.previousType == Type::ScanTableError) {
-        qDebug() << "[Behavior][ScanTable] Resumed from ScanTableError, retrying point" << m_currentPoint
-                 << "stage:" << (m_phase == Stage::Probing ? "Probing" : "MovingToPoint");
-        log("Resumed after error, retrying current point", {"ScanTable"});
-        if (m_phase == Stage::Probing) {
-            m_retractBeforeNextProbe = true;
-            startProbeAtCurrentPoint();
-        } else {
-            processCurrentPoint();
+    // Resumed from a UserPromptBehavior raised earlier by raiseScanErrorPrompt.
+    if (ctx.previousType == Type::UserPrompt) {
+        const QString choiceId = ctx.data.value("choiceId").toString();
+        const QVariantMap promptCtx = ctx.data.value("promptContext").toMap();
+        const int alarmCode = promptCtx.value("alarmCode").toInt();
+
+        qDebug() << "[Behavior][ScanTable] Resumed from UserPrompt: choice=" << choiceId
+                 << "stage:" << (m_phase == Stage::Probing ? "Probing" : "MovingToPoint")
+                 << "alarmCode:" << alarmCode;
+
+        if (choiceId == "abort") {
+            finishScanning(false, "User cancelled after error");
+
+            return Result::Ok;
         }
+
+        // "resume" — kick off the recovery coroutine. It will unlock the
+        // controller when needed and then re-enter processCurrentPoint() /
+        // startProbeAtCurrentPoint() based on m_phase.
+        log("Resuming scan after user confirmation", {"ScanTable"});
+        m_recoveryTask = recoverFromError(alarmCode);
 
         return Result::Ok;
     }
@@ -74,17 +83,14 @@ AbstractStateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *comm
     } else if (m_phase == Stage::MovingToPoint) {
         // ── Returned from GoToBehavior ──────────────────────────────────────
 
-        // GoTo delegated an alarm — suspend into ScanTableError. User decides
+        // GoTo delegated an alarm — suspend into a UserPrompt. User decides
         // whether to Resume (which unlocks and retries) or Cancel.
         if (ctx.data.value("alarmOccurred").toBool()) {
             int code = ctx.data.value("alarmCode").toInt();
             QPointF pt = m_grid[m_currentPoint];
             qWarning() << "[Behavior][ScanTable] Alarm" << code << "while moving to point" << pt;
             log(QString("Alarm %1 during move").arg(code), {"ScanTable", "Error"});
-            emit transition(this,
-                            new ScanTableErrorBehavior(QString("Alarm %1 during move").arg(code),
-                                                       ScanTableErrorBehavior::FailedStage::Move, pt, code),
-                            TransitionKind::Suspend);
+            raiseScanErrorPrompt(QString("Alarm %1 during move").arg(code), "move", pt, code);
 
             return Result::Ok;
         }
@@ -98,9 +104,7 @@ AbstractStateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *comm
             qWarning() << "[Behavior][ScanTable] Move to point" << pt << "failed:" << reason;
             log(QString("Move to point (%1,%2) failed: %3")
                     .arg(pt.x(), 0, 'f', 3).arg(pt.y(), 0, 'f', 3).arg(reason), {"ScanTable", "Error"});
-            emit transition(this,
-                            new ScanTableErrorBehavior(reason, ScanTableErrorBehavior::FailedStage::Move, pt),
-                            TransitionKind::Suspend);
+            raiseScanErrorPrompt(reason, "move", pt, /*alarmCode=*/0);
 
             return Result::Ok;
         }
@@ -110,17 +114,14 @@ AbstractStateBehavior::Result ScanTableBehavior::doOnEntry(CommunicatorApi *comm
     } else if (m_phase == Stage::Probing) {
         // ── Returned from ProbingBehavior ───────────────────────────────────
 
-        // Probe delegated an alarm — suspend into ScanTableError so user can
+        // Probe delegated an alarm — suspend into a UserPrompt so user can
         // decide: Resume (unlock + retract + re-probe) or Cancel.
         if (ctx.data.value("alarmOccurred").toBool()) {
             int code = ctx.data.value("alarmCode").toInt();
             QPointF pt = m_grid[m_currentPoint];
             qWarning() << "[Behavior][ScanTable] Alarm" << code << "during probe at point" << m_currentPoint;
             log(QString("Alarm %1 during probe").arg(code), {"ScanTable", "Error"});
-            emit transition(this,
-                            new ScanTableErrorBehavior(QString("Alarm %1 during probe").arg(code),
-                                                       ScanTableErrorBehavior::FailedStage::Probe, pt, code),
-                            TransitionKind::Suspend);
+            raiseScanErrorPrompt(QString("Alarm %1 during probe").arg(code), "probe", pt, code);
 
             return Result::Ok;
         }
@@ -226,11 +227,99 @@ void ScanTableBehavior::finishScanning(bool success, const QString &reason)
         log(QString("Table scan completed: %1/%2 points measured")
                 .arg(m_scannedPoints).arg(m_grid.size()), {"ScanTable"});
         emit stateEvent("scanCompleted", {});
-    } else {
-        qWarning() << "[Behavior][ScanTable] Scan aborted:" << reason;
-        log(QString("Table scan aborted: %1").arg(reason), {"ScanTable", "Error"});
-        emit stateEvent("scanFailed", {{"reason", reason}});
+
+        emit transition(this, new IdleBehavior());
+
+        return;
+    }
+
+    qWarning() << "[Behavior][ScanTable] Scan aborted:" << reason;
+    log(QString("Table scan aborted: %1").arg(reason), {"ScanTable", "Error"});
+    emit stateEvent("scanFailed", {{"reason", reason}});
+
+    // The failure may have been caused by an unlatched controller alarm
+    // (probe-fail, hard limit, etc.). Going straight to Idle would hide that —
+    // route into AlarmBehavior so the user has to acknowledge / unlock.
+    if (m_communicator->machineState() == MachineState::Alarm) {
+        const int code = m_communicator->lastAlarmCode();
+        qDebug() << "[Behavior][ScanTable] Machine is in Alarm (code" << code
+                 << ") — routing to AlarmBehavior instead of Idle";
+        emit transition(this, new AlarmBehavior(code));
+
+        return;
     }
 
     emit transition(this, new IdleBehavior());
+}
+
+void ScanTableBehavior::raiseScanErrorPrompt(const QString &reason, const QString &stage,
+                                              std::optional<QPointF> failedPoint, int alarmCode)
+{
+    PromptSpec spec;
+    spec.promptId = QString("scan.%1-failed").arg(stage);
+    spec.title = QString("Scan paused — %1").arg(stage);
+    spec.message = reason;
+    spec.context = {
+        {"stage", stage},
+        {"alarmCode", alarmCode},
+        {"reason", reason},
+        {"point", failedPoint.value_or(QPointF(0, 0))},
+    };
+    spec.choices = {
+        {"resume", "Resume", /*destructive=*/false, /*isDefault=*/true},
+        {"abort", "Abort", /*destructive=*/true, /*isDefault=*/false},
+    };
+
+    emit stateEvent("scanPaused", {
+        {"reason", reason},
+        {"stage", stage},
+        {"alarmCode", alarmCode},
+    });
+
+    emit transition(this, new UserPromptBehavior(spec), TransitionKind::Suspend);
+}
+
+QCoro::Task<void> ScanTableBehavior::recoverFromError(int alarmCode)
+{
+    if (alarmCode != 0) {
+        log("Unlocking ($X)", {"ScanTable"});
+        auto r = co_await sendAndAwait("$X", 500ms);
+        if (!r) {
+            log("Unlock command timed out — re-prompting", {"ScanTable", "Error"});
+            raiseScanErrorPrompt("Unlock timed out", m_phase == Stage::Probing ? "probe" : "move",
+                                 std::nullopt, alarmCode);
+
+            co_return;
+        }
+        auto idle = co_await awaitMachineState(
+            [](MachineState s) { return s == MachineState::Idle; },
+            1s
+        );
+        if (!idle) {
+            log("Machine did not reach Idle within 1s — re-prompting",
+                {"ScanTable", "Error"});
+            raiseScanErrorPrompt("Machine did not become Idle",
+                                 m_phase == Stage::Probing ? "probe" : "move",
+                                 std::nullopt, alarmCode);
+
+            co_return;
+        }
+        log("Unlock succeeded", {"ScanTable"});
+    } else if (m_communicator->machineState() != MachineState::Idle) {
+        log(QString("Machine not Idle (%1) — re-prompting")
+                .arg(static_cast<int>(m_communicator->machineState())),
+            {"ScanTable", "Error"});
+        raiseScanErrorPrompt("Machine not Idle",
+                             m_phase == Stage::Probing ? "probe" : "move",
+                             std::nullopt, /*alarmCode=*/0);
+
+        co_return;
+    }
+
+    if (m_phase == Stage::Probing) {
+        m_retractBeforeNextProbe = true;
+        startProbeAtCurrentPoint();
+    } else {
+        processCurrentPoint();
+    }
 }

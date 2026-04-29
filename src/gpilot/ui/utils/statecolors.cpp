@@ -34,11 +34,11 @@ StateColorGroup colorGroupForState(AbstractStateBehavior::Type type)
         case AbstractStateBehavior::Type::Pause:
         case AbstractStateBehavior::Type::ToolChange:
         case AbstractStateBehavior::Type::ExternalProcess:
+        case AbstractStateBehavior::Type::UserPrompt:
             return StateColorGroup::Attention;
 
         case AbstractStateBehavior::Type::Alarm:
         case AbstractStateBehavior::Type::Error:
-        case AbstractStateBehavior::Type::ScanTableError:
             return StateColorGroup::Critical;
     }
 

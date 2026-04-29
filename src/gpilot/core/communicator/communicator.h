@@ -80,6 +80,11 @@ class Communicator : public QObject
 
         AbstractStateBehavior* stateBehavior() const { return m_sbManager.current(); }
         StateBehaviorManager* stateBehaviorManager() { return &m_sbManager; }
+
+        // Forwards a UI-supplied response to the active behavior. Routed via
+        // the StateBehaviorManager so the UI doesn't have to know whether the
+        // answering behavior is the current one or a UserPromptBehavior on top.
+        void respondToPrompt(const QString &promptId, const QString &choiceId);
     private:
         AbstractConnection *m_connection = nullptr;
         Configuration *m_configuration;
@@ -193,6 +198,10 @@ class Communicator : public QObject
         void aborted();
         void transferCompleted();
         void log(QString message);
+
+        // Forwarded from the active behavior. UI is expected to display the
+        // prompt and call respondToPrompt() with the user's choice id.
+        void userPromptRequested(PromptSpec spec);
 };
 
 class CommunicatorApi : public QObject

@@ -50,6 +50,13 @@ class RunningBehavior : public AbstractStateBehavior
         GCode &m_program;
         CommandScanner m_commandScanner;
         int m_lastLookAheadIndex = -1;
+
+        // Set when pause() was triggered by a failing command response.
+        // onMachineStateChanged uses this to choose between PauseBehavior
+        // (plain pause) and UserPromptBehavior (continue / abort prompt).
+        QString m_errorCommand;
+        QString m_errorDescription;
+        int m_errorCode = 0;
         void sendStreamerCommandsUntilBufferIsFull();
         void checkNextCommand();
         void pause();
