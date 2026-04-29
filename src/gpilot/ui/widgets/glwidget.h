@@ -74,7 +74,9 @@ public:
     void setBackTopView();
     void toggleProjectionType();
     void toggleRotationCube();
+    void setRotationCubeVisible(bool visible);
     void toggleLight();
+    void setLightEnabled(bool enabled);
     void setViewMode(ViewMode mode);
     void set2DView();
     void setFps(int fps);

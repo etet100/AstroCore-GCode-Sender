@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>384</height>
+    <height>428</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -215,13 +215,19 @@
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_tool.png</normaloff>:/images/visualizer_tool.png</iconset>
+          <normaloff>:/images/visualizer/visualizer_tool.svg</normaloff>:/images/visualizer/visualizer_tool.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -285,13 +291,16 @@
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
+          <normaloff>:/images/visualizer/visualizer_heightmap_apply.svg</normaloff>:/images/visualizer/visualizer_heightmap_apply.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -559,6 +568,9 @@
           <height>24</height>
          </size>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
         </property>
@@ -596,6 +608,9 @@
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -673,6 +688,12 @@
           <height>24</height>
          </size>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
         </property>
@@ -703,13 +724,16 @@
         </property>
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
-          <normaloff>:/images/visualizer_heightmap.png</normaloff>:/images/visualizer_heightmap.png</iconset>
+          <normaloff>:/images/visualizer/visualizer_heightmap.svg</normaloff>:/images/visualizer/visualizer_heightmap.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -749,6 +773,12 @@
           <height>24</height>
          </size>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
         </property>
@@ -777,6 +807,9 @@
         <property name="icon">
          <iconset resource="../../../resources/images.qrc">
           <normaloff>:/images/visualizer/visualizer_extremes.svg</normaloff>:/images/visualizer/visualizer_extremes.svg</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -810,6 +843,12 @@
          <iconset resource="../../../resources/images.qrc">
           <normaloff>:/images/visualizer/visualizer_gcode.svg</normaloff>:/images/visualizer/visualizer_gcode.svg</iconset>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
         <property name="imagePadding" stdset="0">
          <number>-2</number>
         </property>
@@ -841,6 +880,12 @@
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -876,6 +921,9 @@
           <width>24</width>
           <height>24</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <property name="invertedDartThemeIconColors" stdset="0">
          <bool>true</bool>
@@ -941,9 +989,9 @@
   </connection>
   <connection>
    <sender>cmdToggleHeightmap</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>heightmapClicked()</slot>
+   <slot>heightmapClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
@@ -957,9 +1005,9 @@
   </connection>
   <connection>
    <sender>cmdToggleCube</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>rotationCubeClicked()</slot>
+   <slot>rotationCubeClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>9</x>
@@ -1069,9 +1117,9 @@
   </connection>
   <connection>
    <sender>cmdToggleTool</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleToolClicked()</slot>
+   <slot>toggleToolClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>23</x>
@@ -1085,9 +1133,9 @@
   </connection>
   <connection>
    <sender>cmdToggleHeightmapMarkers</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>heightmapMarkersClicked()</slot>
+   <slot>heightmapMarkersClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
@@ -1101,9 +1149,9 @@
   </connection>
   <connection>
    <sender>cmdToggleOrigin</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleOriginClicked()</slot>
+   <slot>toggleOriginClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>8</x>
@@ -1117,9 +1165,9 @@
   </connection>
   <connection>
    <sender>cmdToggleLight</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleLightClicked()</slot>
+   <slot>toggleLightClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>73</x>
@@ -1133,9 +1181,9 @@
   </connection>
   <connection>
    <sender>cmdToggleBoundingBox</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleBoundingBoxClicked()</slot>
+   <slot>toggleBoundingBoxClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>19</x>
@@ -1149,9 +1197,9 @@
   </connection>
   <connection>
    <sender>cmdToggleToolpath</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleToolpathClicked()</slot>
+   <slot>toggleToolpathClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>54</x>
@@ -1165,9 +1213,9 @@
   </connection>
   <connection>
    <sender>cmdToggleGrid</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleGridClicked()</slot>
+   <slot>toggleGridClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>54</x>
@@ -1181,9 +1229,9 @@
   </connection>
   <connection>
    <sender>cmdToggleHeightmapPreview</sender>
-   <signal>clicked()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>partMainVisualizer</receiver>
-   <slot>toggleHeightmapPreviewClicked()</slot>
+   <slot>toggleHeightmapPreviewClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>19</x>
@@ -1202,18 +1250,18 @@
   <slot>frontClicked()</slot>
   <slot>leftClicked()</slot>
   <slot>isometricClicked()</slot>
-  <slot>rotationCubeClicked()</slot>
-  <slot>heightmapClicked()</slot>
+  <slot>rotationCubeClicked(bool)</slot>
+  <slot>heightmapClicked(bool)</slot>
   <slot>toggleProjectionClicked()</slot>
   <slot>rightClicked()</slot>
   <slot>_2dClicked()</slot>
-  <slot>toggleToolClicked()</slot>
-  <slot>heightmapMarkersClicked()</slot>
-  <slot>toggleOriginClicked()</slot>
-  <slot>toggleLightClicked()</slot>
-  <slot>toggleBoundingBoxClicked()</slot>
-  <slot>toggleToolpathClicked()</slot>
-  <slot>toggleHeightmapPreviewClicked()</slot>
-  <slot>toggleGridClicked()</slot>
+  <slot>toggleToolClicked(bool)</slot>
+  <slot>heightmapMarkersClicked(bool)</slot>
+  <slot>toggleOriginClicked(bool)</slot>
+  <slot>toggleLightClicked(bool)</slot>
+  <slot>toggleBoundingBoxClicked(bool)</slot>
+  <slot>toggleToolpathClicked(bool)</slot>
+  <slot>toggleHeightmapPreviewClicked(bool)</slot>
+  <slot>toggleGridClicked(bool)</slot>
  </slots>
 </ui>

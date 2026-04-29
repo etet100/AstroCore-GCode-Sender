@@ -20,8 +20,18 @@ PartMainVisualizer::PartMainVisualizer(QWidget* parent) : QWidget(parent)
     ui->setupUi(this);
 
     m_codeDrawer = new GcodeDrawer();
-    m_boundingBoxDrawer.setVisible(false);
-    m_lightSourceDrawer.setVisible(false);
+
+    m_toolDrawer.setVisible(ui->cmdToggleTool->isChecked());
+    m_originDrawer.setVisible(ui->cmdToggleOrigin->isChecked());
+    m_boundingBoxDrawer.setVisible(ui->cmdToggleBoundingBox->isChecked());
+    m_tableSurfaceDrawer.setVisible(ui->cmdToggleGrid->isChecked());
+    m_codeDrawer->setVisible(ui->cmdToggleToolpath->isChecked());
+    m_codeDrawer->setHeightmapPreview(ui->cmdToggleHeightmapPreview->isChecked());
+    m_heightmapGridDrawer.setVisible(ui->cmdToggleHeightmap->isChecked());
+    m_heightmapGridDrawer.billboardDrawable()->setVisible(ui->cmdToggleHeightmapMarkers->isChecked());
+    m_lightSourceDrawer.setVisible(ui->cmdToggleLight->isChecked());
+    ui->visualizer->setRotationCubeVisible(ui->cmdToggleCube->isChecked());
+    ui->visualizer->setLightEnabled(ui->cmdToggleLight->isChecked());
 
     connect(ui->visualizer, &GLContainer::cursorPosChanged, this, &PartMainVisualizer::updateCursorDrawer);
 
@@ -380,31 +390,28 @@ void PartMainVisualizer::isometricClicked()
     ui->visualizer->setIsometricView();
 }
 
-void PartMainVisualizer::rotationCubeClicked()
+void PartMainVisualizer::rotationCubeClicked(bool checked)
 {
-    ui->visualizer->toggleRotationCube();
+    ui->visualizer->setRotationCubeVisible(checked);
 }
 
-void PartMainVisualizer::heightmapClicked()
+void PartMainVisualizer::heightmapClicked(bool checked)
 {
-    m_heightmapGridDrawer.toggleVisible();
-    if (m_heightmapGridDrawer.visible()) {
+    m_heightmapGridDrawer.setVisible(checked);
+    if (checked) {
         updateBillboardsScreenPositions();
     }
     updateDefaultDrawerVisibility();
 }
 
-void PartMainVisualizer::heightmapMarkersClicked()
+void PartMainVisualizer::heightmapMarkersClicked(bool checked)
 {
-    if (!m_heightmapGridDrawer.visible()) {
-        // show grid too
-        m_heightmapGridDrawer.toggleVisible();
+    if (checked && !m_heightmapGridDrawer.visible()) {
+        ui->cmdToggleHeightmap->setChecked(true);
+    }
+    m_heightmapGridDrawer.billboardDrawable()->setVisible(checked);
+    if (checked) {
         updateBillboardsScreenPositions();
-    } else {
-        m_heightmapGridDrawer.billboardDrawable()->toggleVisible();
-        if (m_heightmapGridDrawer.billboardDrawable()->visible()) {
-            updateBillboardsScreenPositions();
-        }
     }
 }
 
@@ -413,9 +420,9 @@ void PartMainVisualizer::toggleProjectionClicked()
     ui->visualizer->toggleProjectionType();
 }
 
-void PartMainVisualizer::toggleOriginClicked()
+void PartMainVisualizer::toggleOriginClicked(bool checked)
 {
-    m_originDrawer.toggleVisible();
+    m_originDrawer.setVisible(checked);
 }
 
 void PartMainVisualizer::fitClicked()
@@ -828,33 +835,33 @@ void PartMainVisualizer::updateBillboardsScreenPositions()
     );
 }
 
-void PartMainVisualizer::toggleToolClicked()
+void PartMainVisualizer::toggleToolClicked(bool checked)
 {
-    m_toolDrawer.toggleVisible();
+    m_toolDrawer.setVisible(checked);
 }
 
-void PartMainVisualizer::toggleLightClicked()
+void PartMainVisualizer::toggleLightClicked(bool checked)
 {
-    ui->visualizer->toggleLight();
-    m_lightSourceDrawer.toggleVisible();
+    ui->visualizer->setLightEnabled(checked);
+    m_lightSourceDrawer.setVisible(checked);
 }
 
-void PartMainVisualizer::toggleBoundingBoxClicked()
+void PartMainVisualizer::toggleBoundingBoxClicked(bool checked)
 {
-    m_boundingBoxDrawer.toggleVisible();
+    m_boundingBoxDrawer.setVisible(checked);
 }
 
-void PartMainVisualizer::toggleToolpathClicked()
+void PartMainVisualizer::toggleToolpathClicked(bool checked)
 {
-    m_codeDrawer->toggleVisible();
+    m_codeDrawer->setVisible(checked);
 }
 
-void PartMainVisualizer::toggleHeightmapPreviewClicked()
+void PartMainVisualizer::toggleHeightmapPreviewClicked(bool checked)
 {
-    m_codeDrawer->toggleHeightmapPreview();
+    m_codeDrawer->setHeightmapPreview(checked);
 }
 
-void PartMainVisualizer::toggleGridClicked()
+void PartMainVisualizer::toggleGridClicked(bool checked)
 {
-    m_tableSurfaceDrawer.toggleVisible();
+    m_tableSurfaceDrawer.setVisible(checked);
 }

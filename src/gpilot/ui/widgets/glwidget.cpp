@@ -523,9 +523,19 @@ void GLWidget::toggleRotationCube()
     m_rotationCube = !m_rotationCube;
 }
 
+void GLWidget::setRotationCubeVisible(bool visible)
+{
+    m_rotationCube = visible;
+}
+
 void GLWidget::toggleLight()
 {
     m_light = !m_light;
+}
+
+void GLWidget::setLightEnabled(bool enabled)
+{
+    m_light = enabled;
 }
 
 void GLWidget::setIsometricView()

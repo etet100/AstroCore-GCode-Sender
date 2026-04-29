@@ -120,21 +120,21 @@ class PartMainVisualizer : public QWidget
         void leftClicked();
         void rightClicked();
         void isometricClicked();
-        void rotationCubeClicked();
-        void heightmapClicked();
-        void heightmapMarkersClicked();
+        void rotationCubeClicked(bool checked);
+        void heightmapClicked(bool checked);
+        void heightmapMarkersClicked(bool checked);
         void toggleProjectionClicked();
-        void toggleOriginClicked();
+        void toggleOriginClicked(bool checked);
         void fitClicked();
         void _2dClicked();
         void showButtonInfo(bool hovered);
         void updateBillboardsScreenPositions();
-        void toggleToolClicked();
-        void toggleLightClicked();
-        void toggleBoundingBoxClicked();
-        void toggleToolpathClicked();
-        void toggleHeightmapPreviewClicked();
-        void toggleGridClicked();
+        void toggleToolClicked(bool checked);
+        void toggleLightClicked(bool checked);
+        void toggleBoundingBoxClicked(bool checked);
+        void toggleToolpathClicked(bool checked);
+        void toggleHeightmapPreviewClicked(bool checked);
+        void toggleGridClicked(bool checked);
 
     private:
         Ui::partMainVisualizer* ui;
