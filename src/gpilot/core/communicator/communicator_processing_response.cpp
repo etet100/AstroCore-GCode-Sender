@@ -3,6 +3,13 @@
 #include "core/globals.h"
 #include "core/communicator/communicator.h"
 #include "core/machine/modalstateparser.h"
+#include "core/gcode/parser/gcodepreprocessorutils.h"
+#include "core/machine/physicalmachineconfigurationparser.h"
+#include "statusreportprocessor.h"
+#include <QMessageBox>
+#include <QThread>
+#include <QCoreApplication>
+#include <QRegularExpression>
 
 static bool dataIsStartupMessage(const QString& data)
 {
@@ -13,13 +20,6 @@ static bool dataIsStartupMessage(const QString& data)
 
     return re.match(data).hasMatch();
 }
-#include "core/gcode/parser/gcodepreprocessorutils.h"
-#include "core/machine/physicalmachineconfigurationparser.h"
-#include "statusreportprocessor.h"
-#include <QMessageBox>
-#include <QThread>
-#include <QCoreApplication>
-#include <QRegularExpression>
 
 void Communicator::onConnectionLineReceived(QString data)
 {
@@ -85,7 +85,7 @@ void Communicator::onConnectionLineReceived(QString data)
         }
     }
 
-    if (!m_commandBuffer->isEmpty() && !dataIsFloating(data)
+    if (!m_commandBuffer->isEmpty() && !dataIsStartupMessage(data)
         && !(m_commandBuffer->commands()[0].commandLine != "[CTRL+X]" && dataIsStartupMessage(data)))
     {
         if (m_commandBuffer->processResponse(data)) {
@@ -827,8 +827,29 @@ void Communicator::processUnhandledResponse(QString data)
         this->processWelcomeMessageDetected(data);
     }
 
-    // @TODO do we want to log it here?
-    //m_form->partConsole().append(data);
+    if (data.startsWith("error")) {
+        QString errorMessage;
+
+        if (data == "error") {
+            errorMessage = "Error";
+        } else if (data.startsWith("error:")) {
+            bool ok = false;
+            int code = data.mid(6).toInt(&ok);
+            // if (ok && AbstractStateBehavior::ERRORS.contains(code)) {
+            //     errorMessage = QString("Error: %1 (%2)").arg(code).arg(AbstractStateBehavior::ERRORS.value(code));
+            // } else
+            if (ok) {
+                errorMessage = QString("Error: %1").arg(code);
+            } else {
+                errorMessage = data;
+            }
+        } else {
+            errorMessage = data;
+        }
+
+        qWarning() << "[Communicator][Error]" << errorMessage;
+        emit log(errorMessage);
+    }
 }
 
 void Communicator::processWelcomeMessageDetected(QString message)
@@ -860,17 +881,13 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
 void Communicator::processMessage(QString data)
 {
-    qDebug() << "[Communicator][Msg] Received:" << data;
-    // static QRegularExpression msg("\\[MSG:([^\\]]+)\\]");
-    // if (msg.indexIn(data) != -1) {
-    //     QString message = msg.cap(1);
-    //     if (message.contains("Enabled")) {
-    //         m_statusReceived = true;
-    //         startUpdatingState();
-    //     } else if (message.contains("Disabled")) {
-    //         stopUpdatingState();
-    //     }
-    // }
+    static QRegularExpression re("^\\[MSG:(.+)\\]$");
+    QRegularExpressionMatch match = re.match(data);
+
+    QString message = match.hasMatch() ? match.captured(1) : data;
+
+    qDebug() << "[Communicator][Msg]" << message;
+    emit log("Msg: " + message);
 }
 
 void Communicator::processAlarm(QString data)
