@@ -397,44 +397,44 @@ void FrmMain::initializeProgramPanel()
     ui->program->initialize(&program(), &heightmap());
     ui->program->setupFileSendMenu(this, SLOT(onActSendFromLineTriggered()));
 
-    connect(&program(), &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
-        Q_UNUSED(fromLine);
-        Q_UNUSED(toLine);
+    // connect(&program(), &GCode::linesUpdated, this, [this](int fromLine, int toLine) {
+    //     Q_UNUSED(fromLine);
+    //     Q_UNUSED(toLine);
 
-        if (!ui->program->isAutoScroll()) {
-            return;
-        }
+    //     if (!ui->program->isAutoScroll()) {
+    //         return;
+    //     }
 
-        // int tableIndex = ui->program->getCurrentModelFilteredIndex(program().commandIndex());
-        // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
+    //     // int tableIndex = ui->program->getCurrentModelFilteredIndex(program().commandIndex());
+    //     // ui->program->scrollToCurrentIndex(ui->program->currentModelIndex(tableIndex, 1));
 
-        GCodeViewParser *parser = &viewParser();
-        QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
-        QList<LineSegment>& list = parser->getLineSegmentList();
-        QList<int> indexes;
+    //     GCodeViewParser *parser = &viewParser();
+    //     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
+    //     QList<LineSegment>& list = parser->getLineSegmentList();
+    //     QList<int> indexes;
 
-        for (int i = fromLine; i <= toLine; i++) {
-            GCodeItem &item = program()[i];
-            // int j = item.commandNumber;
-            // if (j != -1) {
-            //     foreach (int l, lineIndexes.at(j)) {
-            //         if (item.state == GCodeItem::Sent) {
-            //             list[l].setIsHightlight(true);
-            //             list[l].setDrawn(false);
-            //             indexes.append(l);
-            //         } else if (item.state == GCodeItem::Processed) {
-            //             list[l].setIsHightlight(false);
-            //             list[l].setDrawn(true);
-            //             indexes.append(l);
-            //         }
-            //     }
-            // }
-        }
+    //     for (int i = fromLine; i <= toLine; i++) {
+    //         // GCodeItem &item = program()[i];
+    //         // int j = item.commandNumber;
+    //         // if (j != -1) {
+    //         //     foreach (int l, lineIndexes.at(j)) {
+    //         //         if (item.state == GCodeItem::Sent) {
+    //         //             list[l].setIsHightlight(true);
+    //         //             list[l].setDrawn(false);
+    //         //             indexes.append(l);
+    //         //         } else if (item.state == GCodeItem::Processed) {
+    //         //             list[l].setIsHightlight(false);
+    //         //             list[l].setDrawn(true);
+    //         //             indexes.append(l);
+    //         //         }
+    //         //     }
+    //         // }
+    //     }
 
-        if (!indexes.isEmpty()) {
-            ui->visualizer->updateCodeDrawer(indexes);
-        }
-    });
+    //     if (!indexes.isEmpty()) {
+    //         ui->visualizer->updateCodeDrawer(indexes);
+    //     }
+    // });
     connect(&program(), &GCode::lastSentCommandChanged, this, [this](int index) {
         ui->program->scrollToIndex(index);
     });
