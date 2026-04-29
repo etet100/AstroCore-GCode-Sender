@@ -59,7 +59,7 @@ contains(QT_CONFIG, opengles.) {
     target.path = /home/pi
 }
 
-TARGET = GPilot
+TARGET = AstroCore
 TEMPLATE = app
 
 RC_ICONS = ui/images/gpilot.ico

@@ -99,6 +99,7 @@ FrmMain::FrmMain(QWidget *parent) :
     initializeProgramPanel();
     initializeHeightmapPanel();
     initializeOverridesPanel();
+    initializeMacrosPanel();
 
     // Drag&drop placeholders
     ui->fraDropDevice->setVisible(false);
@@ -282,6 +283,14 @@ void FrmMain::initializeJogPanel()
     });
     connect(ui->grpJog, &QGroupBox::toggled, this, &FrmMain::jogGroupToggled);
     // chkKeyboardControl was removed from the UI; keyboardControlToggled() is dead code
+}
+
+void FrmMain::initializeMacrosPanel()
+{
+    connect(ui->grpMacros, &QGroupBox::toggled, this, [this](bool checked) {
+        updateLayouts();
+        ui->macros->setVisible(checked);
+    });
 }
 
 void FrmMain::initializeControlPanel()

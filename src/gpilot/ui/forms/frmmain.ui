@@ -527,7 +527,7 @@ QGroupBox::title {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
-             <widget class="PartMainMacros" name="jog" native="true"/>
+             <widget class="PartMainMacros" name="macros" native="true"/>
             </item>
            </layout>
           </widget>

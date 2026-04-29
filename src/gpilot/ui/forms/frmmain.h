@@ -319,6 +319,7 @@ private:
     void initializeHeightmapPanel();
     void initializeOverridesPanel();
     void initializeVisualizerPanel();
+    void initializeMacrosPanel();
     void initializeVirtualSettingsPanel();
     void initializeDockCorners();
     void connectWindowTitleUpdater();

@@ -52,6 +52,7 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
             qWarning() << "[FrmMain] Central widget dock is visible";
         }
         requestedConfig->dock->setProperty("cw", true);
+
         return;
     }
 
