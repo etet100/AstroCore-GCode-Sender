@@ -12,8 +12,8 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"recentHeightmaps", QStringList{"map1.txt", "map2.txt", "map3.txt"}},
     {"autoScrollGCode", true},
     {"lastFileOpenDir", ""},
-    {"lockWindows", false},
-    {"lockPanels", false},
+    {"lockWindows", true},
+    {"lockPanels", true},
     // -1 is a special value to indicate that the window should be centered
     // -1 is a special value to indicate that the window should be maximized
     {"mainFormGeometry", QVariantMap({{"x", 0}, {"y", 0}, {"width", -1}, {"height", -1}})},
