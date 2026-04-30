@@ -1,15 +1,6 @@
 #include "partmainjog.h"
 #include "ui_partmainjog.h"
-
-void PartMainJog::updateControls()
-{
-    // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
-    // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
-    // ui->cboJogStep->setEnabled(!ui->chkKeyboardControl->isChecked());
-    // ui->cboJogFeed->setEnabled(!ui->chkKeyboardControl->isChecked());
-    // //ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
-    // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
-}
+#include "core/state_behavior/abstractstatebehavior.h"
 
 PartMainJog::PartMainJog(QWidget *parent)
     : QWidget(parent)
@@ -49,6 +40,18 @@ PartMainJog::PartMainJog(QWidget *parent)
     if (ui->jogParameters->handlesContinuous()) {
         ui->chkContinuous->setVisible(false);
     }
+}
+
+void PartMainJog::updateControlsState(const UiState& state)
+{
+    // ui->jog->setEnabled(sb->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::GoTo, AbstractStateBehavior::Type::Jogging));
+    // ui->cboJogStep->setEditable(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogFeed->setEditable(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogStep->setEnabled(!ui->chkKeyboardControl->isChecked());
+    // ui->cboJogFeed->setEnabled(!ui->chkKeyboardControl->isChecked());
+    // //ui->cboJogStep->setStyleSheet(QString("font-size: %1").arg(m_configuration.uiModule().fontSize()));
+    // ui->cboJogFeed->setStyleSheet(ui->cboJogStep->styleSheet());
+    setEnabled(state.sb->canExecute(Action::Type::Jog));
 }
 
 void PartMainJog::configurationUpdated()

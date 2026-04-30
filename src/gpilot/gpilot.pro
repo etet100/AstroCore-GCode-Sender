@@ -472,6 +472,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/utils/shortcutsmanager.h \
     ui/utils/statecolors.h \
     ui/utils/uipermissions.h \
+    ui/utils/uistate.h \
     ui/utils/syntaxhighlighter.h \
     ui/utils/thememanager.h \
     ui/utils/windowstaskbar.h \

@@ -52,6 +52,7 @@
 #include "core/utils/timer.h"
 #include "core/core.h"
 #include "core/state_behavior/userpromptspec.h"
+#include "ui/utils/uistate.h"
 
 namespace Ui {
 class frmMain;
@@ -284,7 +285,9 @@ private:
     void newHeightmap();
 
     // Ui
-    void updateControlsState();
+    UiState currentUiState() const;
+    void updateControlsState(const UiState& state);
+    void updateControlsState() { updateControlsState(currentUiState()); }
     void updateLayouts();
     void updateRecentFilesMenus();
     void updateJogTitle();
@@ -324,6 +327,7 @@ private:
     void initializeVirtualSettingsPanel();
     void initializeDockCorners();
     void connectWindowTitleUpdater();
+    void connectFilesManagerToUpdateControls();
 
     void initializeConnection(ConfigurationConnection::ConnectionMode mode);
     void initializeDockTitles();

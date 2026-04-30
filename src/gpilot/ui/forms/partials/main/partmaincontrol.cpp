@@ -78,18 +78,9 @@ void PartMainControl::disable()
 
 }
 
-void PartMainControl::updateControlsState(bool portOpened, bool process)
+void PartMainControl::updateControlsState(const UiState& state)
 {
-    // ui->cmdCheck->setEnabled(portOpened && !process);
-    // ui->cmdHome->setEnabled(!process);
-    // ui->cmdCheck->setEnabled(!process);
-    // ui->cmdUnlock->setEnabled(!process);
-    // //ui->cmdSpindle->setEnabled(!process);
-    // ui->cmdSleep->setEnabled(!process);
-}
-
-void PartMainControl::updateControlsState(AbstractStateBehavior *sb)
-{
+    AbstractStateBehavior *sb = state.sb;
     // TODO: replace with sb->canExecute(Action::CheckMode) once Action::CheckMode is added
     ui->cmdCheck->setEnabled(sb->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::CheckMode));
     ui->cmdCheck->setChecked(sb->is(AbstractStateBehavior::Type::CheckMode));
@@ -97,9 +88,12 @@ void PartMainControl::updateControlsState(AbstractStateBehavior *sb)
         QSignalBlocker blocker(ui->cmdHold);
         ui->cmdHold->setChecked(sb->is(AbstractStateBehavior::Type::Hold));
     }
+    ui->cmdHome->setEnabled(sb->canExecute(Action::Type::Home));
     ui->cmdProbe->setEnabled(sb->canExecute(Action::Type::Probe));
     ui->cmdZeroZ->setEnabled(sb->canExecute(Action::Type::ZeroZ));
     ui->cmdZeroXY->setEnabled(sb->canExecute(Action::Type::ZeroXY));
+    ui->cmdUnlock->setEnabled(sb->canExecute(Action::Type::Unlock));
+    ui->cmdReset->setEnabled(sb->canExecute(Action::Type::Reset));
     bool scanPrompt = false;
     if (sb->is(AbstractStateBehavior::Type::UserPrompt)) {
         auto *prompt = static_cast<UserPromptBehavior*>(sb);

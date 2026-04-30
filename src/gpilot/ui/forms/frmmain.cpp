@@ -108,6 +108,7 @@ FrmMain::FrmMain(QWidget *parent) :
     ui->fraDropUser->setVisible(false);
 
     connectWindowTitleUpdater();
+    connectFilesManagerToUpdateControls();
 
     // Initialize OpenAI key
     if (ConfigurationAI::instance().openAIKey() != "") {
@@ -529,6 +530,17 @@ void FrmMain::initializeLogMenu()
             qWarning() << "[FrmMain] No log window available to show";
             QMessageBox::warning(this, tr("No log window"), tr("Log window is disabled"));
         }
+    });
+}
+
+void FrmMain::connectFilesManagerToUpdateControls()
+{
+    FilesManager& fm = FilesManager::instance();
+    connect(&fm, &FilesManager::gcodeFileStateChanged, this, [this](bool, const QString&, bool) {
+        updateControlsState(currentUiState());
+    });
+    connect(&fm, &FilesManager::heightmapFileStateChanged, this, [this](bool, const QString&, bool) {
+        updateControlsState(currentUiState());
     });
 }
 
@@ -1826,9 +1838,10 @@ void FrmMain::onMachineStateChanged(MachineState state)
 {
     ui->state->setState(state);
 
-    ui->control->updateControlsState(communicator()->stateBehavior());
+    ui->control->updateControlsState(currentUiState());
 
     // ui->spindle->...
+
     // ui->cmdSpindle->setEnabled(state == DeviceHold0 || ((communicator()->senderState() != SenderTransferring) &&                                                        (communicator()->senderState() != SenderStopping)));
 }
 
@@ -1950,7 +1963,8 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
         ThemeManager::instance().dark() ? "black" : "white"
     );
     ui->console->appendSystem(QString("State: %1").arg(sb->description()));
-    updateControlsState();
+    FilesManager& fm = FilesManager::instance();
+    updateControlsState({ sb, { fm.gcodeOpened(), fm.heightmapOpened() } });
 
     // Auto-dismiss the prompt dialog when the user-prompt state goes away
     // (e.g. user resolved the prompt via a side-channel like the toolbar
@@ -3014,10 +3028,23 @@ void FrmMain::newHeightmap()
     updateControlsState();
 }
 
-void FrmMain::updateControlsState()
+UiState FrmMain::currentUiState() const
+{
+    FilesManager& fm = FilesManager::instance();
+
+    return {
+        Core::instance().communicator()->stateBehavior(),
+        {
+         fm.gcodeOpened(),
+         fm.heightmapOpened()
+        },
+    };
+}
+
+void FrmMain::updateControlsState(const UiState& state)
 {
     bool portOpened = connection() && connection()->isConnected();
-    AbstractStateBehavior *sb = communicator()->stateBehavior();
+    AbstractStateBehavior *sb = state.sb;
     bool running = sb->is(AbstractStateBehavior::Type::Running);
     bool paused = sb->is(AbstractStateBehavior::Type::Pause) || sb->is(AbstractStateBehavior::Type::ToolChange);
     bool idle = sb->is(AbstractStateBehavior::Type::Idle);
@@ -3026,12 +3053,12 @@ void FrmMain::updateControlsState()
     // ui->control->setEnabled(portOpened);
     ui->spindle->setEnabled(portOpened);
     // TODO: add Action::Jog to ToolChangeBehavior::availableActions(), then simplify to sb->canExecute(Action::Jog)
-    ui->jog->setEnabled(sb->isOneOf(AbstractStateBehavior::Type::Idle, AbstractStateBehavior::Type::GoTo, AbstractStateBehavior::Type::Jogging));
 
     ui->console->setEnabled(portOpened && !m_configuration.joggingModule().keyboardControl());
     // ui->cmdCommandSend->setEnabled(portOpened);
 
-    ui->control->updateControlsState(sb);
+    ui->control->updateControlsState(state);
+    ui->jog->updateControlsState(state);
 
     //ui->spindle->...
     // ui->cmdSpindle->setEnabled(!running);
@@ -3039,9 +3066,10 @@ void FrmMain::updateControlsState()
     bool canOpenFile = UiPermissions::isAllowed(UiPermission::OpenFile, sb->type());
     ui->actFileNew->setEnabled(idle);
     ui->actFileOpen->setEnabled(canOpenFile);
-    ui->program->setOpenButtonEnabled(canOpenFile);
-    ui->program->setResetButtonEnabled(idle && !program().empty());
-    ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !program().empty());
+    // ui->program->setOpenButtonEnabled(canOpenFile);
+    // ui->program->setResetButtonEnabled(idle && !program().empty());
+    // ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !program().empty());
+    ui->program->updateControlsState(state);
     // switch (senderState) {
     //     case SenderState::Pausing:
     //     case SenderState::Pausing2:
@@ -3109,10 +3137,7 @@ void FrmMain::updateControlsState()
 
     ui->program->setSendButtonText(m_heightmapMode ? tr("Probe") : tr("Send"));
 
-    ui->heightmap->updateControlsState(
-        !program().empty(),
-        m_heightmapMode
-    );
+    ui->heightmap->updateControlsState(state);
 
     ui->actFileSaveTransformedAs->setVisible(ui->heightmap->useMap());
 

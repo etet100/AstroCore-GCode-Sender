@@ -4,6 +4,7 @@
 #include "core/config/module/configurationjogging.h"
 #include "core/globals.h"
 #include <QWidget>
+#include "ui/utils/uistate.h"
 
 namespace Ui {
 class partMainJog;
@@ -17,12 +18,12 @@ public:
     explicit PartMainJog(QWidget *parent = nullptr);
     void initialize(ConfigurationJogging &configurationJogging);
     ~PartMainJog();
-
     JoggingVector jogVector() const { return m_jogVector; };
     void storeAndResetKeyboardControl();
     void setKeyboardControl(bool value);
     void configurationUpdated();
     void restoreKeyboardControl();
+    void updateControlsState(const UiState &state);
 
 private:
     Ui::partMainJog *ui;
@@ -30,7 +31,6 @@ private:
     bool m_storedKeyboardControl = false;
     ConfigurationJogging *m_configurationJogging;
     JoggingVector m_jogVector;
-    void updateControls();
     void stopJogging();
     void stopJoggingIfContinuous();
 

@@ -8,6 +8,7 @@
 #include <QWidget>
 #include "core/heightmap/configurationheightmap.h"
 #include "core/heightmap/interpolator/abstractheightmapinterpolator.h"
+#include "ui/utils/uistate.h"
 
 namespace Ui {
 class partMainHeightmap;
@@ -28,7 +29,7 @@ class PartMainHeightmap : public QWidget
         void setGridUpdateEnabled();
         void resetOpenFile();
         void resetUseHeighmap();
-        void updateControlsState(bool mainState, bool heightmapMode);
+        void updateControlsState(const UiState& state);
         void setOpenFile(QString filePath);
         QRectF areaRectFromTextboxes();
         void setHeightmapAreaRect(QRectF area);

@@ -9,6 +9,8 @@
 #include "ui/tables/gcodetablemodel.h"
 #include "ui/tables/heightmaptablemodel.h"
 #include "ui/tables/gcodeitemdelegate.h"
+#include "core/state_behavior/abstractstatebehavior.h"
+#include "ui/utils/uistate.h"
 
 class GCode;
 class Heightmap;
@@ -69,12 +71,13 @@ class PartMainProgram : public QWidget
         QByteArray saveHeaderState() const;
         void restoreHeaderState(const QByteArray& state);
 
-        void setFileButtonsEnabled(bool open, bool reset, bool send, bool pause, bool abort);
-        void setOpenButtonEnabled(bool enabled);
-        void setResetButtonEnabled(bool enabled);
-        void setSendButtonEnabled(bool enabled);
-        void setAbortButtonEnabled(bool enabled);
-        void setPauseButtonEnabled(bool enabled);
+        // void setFileButtonsEnabled(bool open, bool reset, bool send, bool pause, bool abort);
+        // void setOpenButtonEnabled(bool enabled);
+        // void setResetButtonEnabled(bool enabled);
+        // void setSendButtonEnabled(bool enabled);
+        // void setAbortButtonEnabled(bool enabled);
+        // void setPauseButtonEnabled(bool enabled);
+        void updateControlsState(const UiState& state);
         void setPauseButtonText(const QString& text);
         void setPauseButtonChecked(bool checked);
         void setPauseButtonFocus();

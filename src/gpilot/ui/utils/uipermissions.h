@@ -11,7 +11,11 @@ enum class UiPermission {
     EditGCode,
     OpenFile,
     CloseFile,
+    ResetFile,
     ChangeSettings,
+    Probe,
+    ScanTable,
+    SendFile,
 };
 
 namespace UiPermissions {
@@ -24,6 +28,7 @@ static const PSet All = { P::EditGCode, P::OpenFile, P::CloseFile, P::ChangeSett
 
 // States not listed here have no restrictions.
 static const QHash<T, PSet> forbidden {
+    { T::Alarm,     { P::SendFile } },
     { T::Running,   All },
     { T::Homing,    All },
     { T::ScanTable, All },

@@ -7,6 +7,7 @@
 
 #include "core/globals.h"
 #include "core/state_behavior/abstractstatebehavior.h"
+#include "ui/utils/uistate.h"
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
@@ -24,8 +25,7 @@ public:
     ~PartMainControl();
     void enable();
     void disable();
-    void updateControlsState(bool portOpened, bool process);
-    void updateControlsState(AbstractStateBehavior *sb);
+    void updateControlsState(const UiState& state);
     bool hold();
     void setFlood(bool);
     void initialize();

@@ -132,11 +132,10 @@ void PartMainHeightmap::resetUseHeighmap()
     ui->chkUseHeightmap->setChecked(false);
 }
 
-void PartMainHeightmap::updateControlsState(bool mainState, bool heightmapMode)
+void PartMainHeightmap::updateControlsState(const UiState& state)
 {
-    //setEnabled(mainState);
-    ui->cmdHeightMapMode->setEnabled(!ui->txtHeightMapName->text().isEmpty());
-    ui->chkUseHeightmap->setEnabled(!heightmapMode && !ui->txtHeightMapName->text().isEmpty());
+    ui->cmdHeightMapMode->setEnabled(state.files.heightmapOpened);
+    ui->chkUseHeightmap->setEnabled(!heightmapMode() && state.files.heightmapOpened);
 }
 
 void PartMainHeightmap::setOpenFile(QString filePath)

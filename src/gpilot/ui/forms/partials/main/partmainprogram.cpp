@@ -12,6 +12,7 @@
 #include "core/heightmap/heightmap.h"
 #include "ui/tables/heightmapitemdelegate.h"
 #include "ui/utils/thememanager.h"
+#include "ui/utils/uipermissions.h"
 
 PartMainProgram::PartMainProgram(QWidget* parent)
     : QWidget(parent)
@@ -77,10 +78,8 @@ void PartMainProgram::setupUi()
             ui->btnProgram->setChecked(true);
             return;
         }
-        // updateGroupsFromUI();
         ui->btnHeightmap->setChecked(false);
-        // m_dark = true;
-        // updateUIFromGroups();
+        ui->panProgram->setVisible(true);
         showProgramTable();
     });
     connect(ui->btnHeightmap, &QPushButton::clicked, this, [this]() {
@@ -90,10 +89,8 @@ void PartMainProgram::setupUi()
             ui->btnHeightmap->setChecked(true);
             return;
         }
-        // updateGroupsFromUI();
         ui->btnProgram->setChecked(false);
-        // m_dark = false;
-        // updateUIFromGroups();
+        ui->panProgram->setVisible(false);
         showHeightmapTable();
     });
 
@@ -248,20 +245,37 @@ void PartMainProgram::restoreHeaderState(const QByteArray& state)
     ui->tblProgram->horizontalHeader()->restoreState(state);
 }
 
-void PartMainProgram::setFileButtonsEnabled(bool open, bool reset, bool send, bool pause, bool abort)
+void PartMainProgram::updateControlsState(const UiState& state)
 {
-    ui->cmdFileOpen->setEnabled(open);
-    ui->cmdFileReset->setEnabled(reset);
-    ui->cmdFileSend->setEnabled(send);
-    ui->cmdFilePauseResume->setEnabled(pause);
-    ui->cmdFileAbort->setEnabled(abort);
+    // ui->program->setOpenButtonEnabled(canOpenFile);
+    // ui->program->setResetButtonEnabled(idle && !program().empty());
+    // ui->program->setSendButtonEnabled(sb->canExecute(Action::Type::Run) && !program().empty());
+    const auto t = state.sb->type();
+    ui->cmdFileOpen->setEnabled(UiPermissions::isAllowed(UiPermission::OpenFile, t));
+    ui->cmdFileReset->setEnabled(
+        state.files.gcodeOpened &&
+        state.sb->is(AbstractStateBehavior::Type::Idle)
+    );
+    ui->cmdFileSend->setEnabled(
+        state.files.gcodeOpened &&
+        state.sb->is(AbstractStateBehavior::Type::Idle)
+    );
 }
 
-void PartMainProgram::setOpenButtonEnabled(bool enabled) { ui->cmdFileOpen->setEnabled(enabled); }
-void PartMainProgram::setResetButtonEnabled(bool enabled) { ui->cmdFileReset->setEnabled(enabled); }
-void PartMainProgram::setSendButtonEnabled(bool enabled) { ui->cmdFileSend->setEnabled(enabled); }
-void PartMainProgram::setAbortButtonEnabled(bool enabled) { ui->cmdFileAbort->setEnabled(enabled); }
-void PartMainProgram::setPauseButtonEnabled(bool enabled) { ui->cmdFilePauseResume->setEnabled(enabled); }
+// void PartMainProgram::setFileButtonsEnabled(bool open, bool reset, bool send, bool pause, bool abort)
+// {
+//     ui->cmdFileOpen->setEnabled(open);
+//     ui->cmdFileReset->setEnabled(reset);
+//     ui->cmdFileSend->setEnabled(send);
+//     ui->cmdFilePauseResume->setEnabled(pause);
+//     ui->cmdFileAbort->setEnabled(abort);
+// }
+
+// void PartMainProgram::setOpenButtonEnabled(bool enabled) { ui->cmdFileOpen->setEnabled(enabled); }
+// void PartMainProgram::setResetButtonEnabled(bool enabled) { ui->cmdFileReset->setEnabled(enabled); }
+// void PartMainProgram::setSendButtonEnabled(bool enabled) { ui->cmdFileSend->setEnabled(enabled); }
+// void PartMainProgram::setAbortButtonEnabled(bool enabled) { ui->cmdFileAbort->setEnabled(enabled); }
+// void PartMainProgram::setPauseButtonEnabled(bool enabled) { ui->cmdFilePauseResume->setEnabled(enabled); }
 
 void PartMainProgram::setPauseButtonText(const QString& text)
 {
