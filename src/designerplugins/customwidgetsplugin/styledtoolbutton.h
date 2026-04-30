@@ -53,6 +53,9 @@ public:
     int menuIndicatorMargin() const;
     void setMenuIndicatorMargin(int margin);
 
+    bool invertedDartThemeIconColors() const;
+    void setInvertedDartThemeIconColors(bool inverted);
+
     QMenu *buttonMenu() const;
     void setButtonMenu(QMenu *menu);
 

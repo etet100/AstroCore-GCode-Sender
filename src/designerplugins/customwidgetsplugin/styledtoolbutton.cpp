@@ -337,6 +337,17 @@ void StyledToolButton::setMenuIndicatorMargin(int margin)
     update();
 }
 
+bool StyledToolButton::invertedDartThemeIconColors() const
+{
+    return m_invertedDartThemeIconColors;
+}
+
+void StyledToolButton::setInvertedDartThemeIconColors(bool inverted)
+{
+    m_invertedDartThemeIconColors = inverted;
+    update();
+}
+
 QMenu *StyledToolButton::buttonMenu() const
 {
     return m_menu;
