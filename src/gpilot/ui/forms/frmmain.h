@@ -320,6 +320,7 @@ private:
     void initializeOverridesPanel();
     void initializeVisualizerPanel();
     void initializeMacrosPanel();
+    void initializeCoordinatesPanel();
     void initializeVirtualSettingsPanel();
     void initializeDockCorners();
     void connectWindowTitleUpdater();

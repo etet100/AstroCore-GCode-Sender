@@ -191,6 +191,7 @@ SOURCES += main.cpp\
     ui/forms/modals/dlgeditprogram.cpp \
     ui/forms/partials/main/partmainconsole.cpp \
     ui/forms/partials/main/partmaincontrol.cpp \
+    ui/forms/partials/main/partmaincoordinates.cpp \
     ui/forms/partials/main/partmainheightmap.cpp \
     ui/forms/partials/main/partmainjog.cpp \
     ui/forms/partials/main/partmainjogparameters.cpp \
@@ -395,6 +396,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/modals/dlgeditprogram.h \
     ui/forms/partials/main/partmainconsole.h \
     ui/forms/partials/main/partmaincontrol.h \
+    ui/forms/partials/main/partmaincoordinates.h \
     ui/forms/partials/main/partmainheightmap.h \
     ui/forms/partials/main/partmainjog.h \
     ui/forms/partials/main/partmainjogparameters.h \
@@ -501,6 +503,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/modals/dlgeditprogram.ui \
     ui/forms/partials/main/partmainconsole.ui \
     ui/forms/partials/main/partmaincontrol.ui \
+    ui/forms/partials/main/partmaincoordinates.ui \
     ui/forms/partials/main/partmainheightmap.ui \
     ui/forms/partials/main/partmainjog.ui \
     ui/forms/partials/main/partmainjogparameters.ui \

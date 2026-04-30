@@ -100,6 +100,7 @@ FrmMain::FrmMain(QWidget *parent) :
     initializeHeightmapPanel();
     initializeOverridesPanel();
     initializeMacrosPanel();
+    initializeCoordinatesPanel();
 
     // Drag&drop placeholders
     ui->fraDropDevice->setVisible(false);
@@ -290,6 +291,14 @@ void FrmMain::initializeMacrosPanel()
     connect(ui->grpMacros, &QGroupBox::toggled, this, [this](bool checked) {
         updateLayouts();
         ui->macros->setVisible(checked);
+    });
+}
+
+void FrmMain::initializeCoordinatesPanel()
+{
+    connect(ui->grpCoordinates, &QGroupBox::toggled, this, [this](bool checked) {
+        updateLayouts();
+        ui->coordinates->setVisible(checked);
     });
 }
 

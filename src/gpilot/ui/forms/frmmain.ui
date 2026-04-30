@@ -390,7 +390,7 @@ QGroupBox::title {
         <property name="acceptDrops">
          <bool>true</bool>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,0,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,0,0,0,0,0">
          <property name="sizeConstraint">
           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
          </property>
@@ -421,6 +421,18 @@ QGroupBox::title {
             <bool>false</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
             <item>
              <widget class="PartMainStateLcd" name="state" native="true">
               <property name="minimumSize">
@@ -430,6 +442,33 @@ QGroupBox::title {
                </size>
               </property>
              </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="grpCoordinates">
+           <property name="title">
+            <string>Coordinates</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
+            <item>
+             <widget class="PartMainCoordinates" name="coordinates" native="true"/>
             </item>
            </layout>
           </widget>
@@ -462,6 +501,18 @@ QGroupBox::title {
             <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
             <item>
              <widget class="PartMainControl" name="control" native="true">
               <property name="minimumSize">
@@ -490,6 +541,18 @@ QGroupBox::title {
             <bool>false</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_14">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
             <item>
              <widget class="PartMainSpindle" name="spindle" native="true"/>
             </item>
@@ -508,6 +571,18 @@ QGroupBox::title {
             <bool>false</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_11">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
             <item>
              <widget class="PartMainJog" name="jog" native="true"/>
             </item>
@@ -526,6 +601,18 @@ QGroupBox::title {
             <bool>false</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_11">
+            <property name="leftMargin">
+             <number>7</number>
+            </property>
+            <property name="topMargin">
+             <number>7</number>
+            </property>
+            <property name="rightMargin">
+             <number>7</number>
+            </property>
+            <property name="bottomMargin">
+             <number>7</number>
+            </property>
             <item>
              <widget class="PartMainMacros" name="macros" native="true"/>
             </item>
@@ -1322,6 +1409,12 @@ QGroupBox::title {
    <class>PartMainHeightmap</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/main/partmainheightmap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PartMainCoordinates</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/main/partmaincoordinates.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
