@@ -53,7 +53,7 @@ class PartMainVisualizer : public QWidget
 
         void setParserState(QString state);
         void setPinState(QString state);
-        void setSpeedState(QString state);
+        void setSpeedState(int feedRate, int spindleSpeed);
 
         void close();
 

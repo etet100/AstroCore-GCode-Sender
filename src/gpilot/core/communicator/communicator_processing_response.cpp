@@ -458,35 +458,37 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
     }
 
     // Process GCore parser state
-    if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {
-        // @TODO what is this ; for? is it '; ok'?
-        m_lastParserState = response.left(response.indexOf("; "));
-
-        auto modal = ModalStateParser::parse(m_lastParserState);
+    // if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {
+        auto modal = ModalStateParser::parse(response);
         if (modal) {
             m_deviceContext.setModalState(*modal);
-        }
+            emit log(modal->toString());
 
-        // Update status in visualizer window
-        emit parserStateReceived(m_lastParserState);
+            // Update status in visualizer window
+            emit parserStateReceived(modal->raw);
 
-        // Store parser status
-        if ((m_senderState == SenderState::Transferring) || (m_senderState == SenderState::Stopping)) {
-            storeParserState();
-        }
+            // Store parser status
+            if ((m_senderState == SenderState::Transferring) || (m_senderState == SenderState::Stopping)) {
+                storeParserState();
+            }
 
-        // Spindle speed
-        // @TODO what is the difference between this and processFeedSpindleSpeed??
-        static QRegularExpression rx(".*S([\\d\\.]+)");
+            if (modal->spindleSpeed != -1) {
+                emit spindleSpeedReceived(modal->spindleSpeed);
+            }
 
-        match = rx.match(response);
-        if (match.hasMatch()) {
-            double spindleSpeed = match.captured(1).toDouble();
-            emit spindleSpeedReceived(spindleSpeed);
+            // Spindle speed
+            // @TODO what is the difference between this and processFeedSpindleSpeed??
+            // static QRegularExpression rx(".*S([\\d\\.]+)");
+
+            // match = rx.match(response);
+            // if (match.hasMatch()) {
+            //     double spindleSpeed = match.captured(1).toDouble();
+            //     emit spindleSpeedReceived(spindleSpeed);
+            // }
         }
 
         m_updateParserState = true;
-    }
+    // }
 }
 
 // processCommandResponse was moved to CommandBuffer::processResponse()

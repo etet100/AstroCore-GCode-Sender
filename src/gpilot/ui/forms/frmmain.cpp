@@ -1878,7 +1878,7 @@ void FrmMain::onPinStateReceived(PinState state)
 
 void FrmMain::onFeedSpindleSpeedReceived(int feedRate, int spindleSpeed)
 {
-    ui->visualizer->setSpeedState((QString(tr("F/S: %1 / %2")).arg(feedRate, spindleSpeed)));
+    ui->visualizer->setSpeedState(feedRate, spindleSpeed);
 }
 
 void FrmMain::onSpindleSpeedReceived(int spindleSpeed)

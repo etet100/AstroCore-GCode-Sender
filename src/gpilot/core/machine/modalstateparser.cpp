@@ -6,14 +6,15 @@
 
 std::optional<ModalState> ModalStateParser::parse(const QString &line)
 {
-    if (!line.startsWith('[') || !line.endsWith(']')) {
+    if (!line.startsWith("[GC:") || !line.endsWith(']')) {
         return std::nullopt;
     }
 
-    const QString inner = line.mid(1, line.length() - 2);
+    const QString inner = line.mid(4, line.length() - 5);
     const QStringList tokens = inner.split(' ', Qt::SkipEmptyParts);
 
     ModalState state;
+    state.raw = inner;
 
     for (const QString &token : tokens) {
         if (token.startsWith('G')) {
@@ -54,4 +55,22 @@ std::optional<ModalState> ModalStateParser::parse(const QString &line)
     }
 
     return state;
+}
+
+QString ModalState::toString() const
+{
+    QString sep = "————————————";
+    QString result;
+    result += sep + "\n";
+    result += QString("Coord: %1\n").arg(coordinateSystem);
+    result += QString("Plane: %1\n").arg(workPlane);
+    result += QString("Units: %1\n").arg(units == "G20" ? "inches" : units == "G21" ? "mm" : units);
+    result += QString("Motion: %1\n").arg(motionMode == "G90" ? "absolute" : motionMode == "G91" ? "relative" : motionMode);
+    result += QString("Feed mode: %1\n").arg(feedMode);
+    result += QString("Feed: %1\n").arg(feedRate);
+    result += QString("Spindle: %1\n").arg(spindleMode == "M3" ? "CW" : spindleMode == "M4" ? "CCW" : spindleMode == "M5" ? "off" : spindleMode);
+    result += QString("Speed: %1\n").arg(spindleSpeed);
+    result += sep;
+
+    return result;
 }

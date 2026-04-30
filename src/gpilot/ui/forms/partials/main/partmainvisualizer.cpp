@@ -579,9 +579,9 @@ void PartMainVisualizer::setPinState(QString state)
     ui->visualizer->setPinState(state);
 }
 
-void PartMainVisualizer::setSpeedState(QString state)
+void PartMainVisualizer::setSpeedState(int feedRate, int spindleSpeed)
 {
-    ui->visualizer->setSpeedState(state);
+    ui->visualizer->setSpeedState(QString("F/S: %1 / %2").arg(feedRate).arg(spindleSpeed));
 }
 
 bool PartMainVisualizer::isIgnoreZ() const

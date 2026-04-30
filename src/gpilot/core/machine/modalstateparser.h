@@ -21,8 +21,12 @@ struct ModalState {
     // Spindle mode (M3 = CW, M4 = CCW, M5 = off)
     QString spindleMode;
 
-    int feedRate = 0;
-    int spindleSpeed = 0;
+    int feedRate = -1;
+    int spindleSpeed = -1;
+
+    QString raw;
+
+    QString toString() const;
 };
 
 // Parses a modal state line like [G54 G17 G21 G90 G94 M5 M9 T0 F0 S0].
