@@ -10,7 +10,7 @@
 //   1. Queries current machine state (?).
 //   2. If the machine is actively running an external process (Run/Jog/Check),
 //      transitions immediately to ExternalProcessBehavior.
-//   3. Otherwise queries device settings ($$) and coordinate offsets ($#).
+//   3. Otherwise queries device settings ($$), gcode state ($G), and coordinate offsets ($#).
 //   4. Transitions to the appropriate behavior based on the initial machine state.
 class HandshakeBehavior : public AbstractStateBehavior
 {
@@ -33,6 +33,7 @@ private:
     enum Stage {
         QueryingState,
         QueryingSettings,
+        QueryingGcodeState,
         QueryingOffsets,
         Completed
     };

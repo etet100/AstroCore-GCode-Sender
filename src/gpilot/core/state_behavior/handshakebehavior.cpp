@@ -65,18 +65,29 @@ AbstractStateBehavior::Result HandshakeBehavior::onCommandResponse(
 
     // Retry on EEPROM-not-ready error before main handling.
     if (!cmdStatus.ok && cmdStatus.errorCode == GRBL_ERROR_EEPROM_READ_FAIL) {
-        if (command == "$$" || command == "$#") {
+        if (command == "$$" || command == "$G" || command == "$#") {
             qDebug() << "[Behavior][Handshake] EEPROM not ready for" << command << "— requeuing.";
 
             return Result::ReturnCommandToQueue;
         }
     }
 
+    // Responses for all commands are handled in Communicator callback, do not handle it here.
+
     if (command == "$$") {
-        if (cmdStatus.ok) {
-            m_communicator->processDeviceConfiguration(fullResponse);
-        } else {
+        if (!cmdStatus.ok) {
             qDebug() << "[Behavior][Handshake] Failed to receive device settings (error" << cmdStatus.errorCode << "). Continuing.";
+        }
+
+        m_communicator->sendCommand(CommandSource::System, "$G", TABLE_INDEX_UTIL1);
+        m_stage = QueryingGcodeState;
+
+        return Result::Ok;
+    }
+
+    if (command == "$G") {
+        if (!cmdStatus.ok) {
+            qDebug() << "[Behavior][Handshake] Failed to receive gcode parser state (error" << cmdStatus.errorCode << "). Continuing.";
         }
 
         m_communicator->sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1);
@@ -86,9 +97,7 @@ AbstractStateBehavior::Result HandshakeBehavior::onCommandResponse(
     }
 
     if (command == "$#") {
-        if (cmdStatus.ok) {
-            m_communicator->processOffsetsVars(fullResponse);
-        } else {
+        if (!cmdStatus.ok) {
             qDebug() << "[Behavior][Handshake] Failed to receive coordinate offsets (error" << cmdStatus.errorCode << "). Continuing.";
         }
 

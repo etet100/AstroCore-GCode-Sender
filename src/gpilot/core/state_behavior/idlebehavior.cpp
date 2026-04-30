@@ -35,25 +35,6 @@ AbstractStateBehavior::Result IdleBehavior::onCommandResponse(QString command, C
 
     qDebug() << "[Behavior][Idle] Command Response:" << command << response;
 
-    if (command == "$G") {
-        m_communicator->processGCodeParserState(commandAttributes, response);
-
-        return Result::Ok;
-    }
-
-    if (command == "$$") {
-        if (!cmdStatus.ok) {
-            qDebug() << "[Behavior][Idle] Error receiving device configuration.";
-
-            return Result::Ok;
-        }
-
-        qDebug() << "[Behavior][Idle] Processing device configuration.";
-        m_communicator->processDeviceConfiguration(fullResponse);
-
-        return Result::Ok;
-    }
-
     return Result::Unhandled;
 }
 

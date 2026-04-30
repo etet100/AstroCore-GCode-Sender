@@ -69,12 +69,17 @@ Communicator::Communicator(
         const QString& data,
         const QStringList& lines
     ) -> bool {
-        // Store current coordinate system
+        // Store device configuration and state from query responses
+        if (command == "$$" && status.ok) {
+            processDeviceConfiguration(lines);
+        }
+
         if (command == "$G" && status.ok) {
-            auto modal = ModalStateParser::parse(lines[0]);
-            if (modal) {
-                qDebug() << "[Communicator] Detected coordinate system: " << modal->coordinateSystem;
-            }
+            processGCodeParserState(attrs, lines[0]);
+        }
+
+        if (command == "$#" && status.ok) {
+            processOffsetsVars(lines);
         }
 
         if (attrs.source == CommandSource::Communicator) {
