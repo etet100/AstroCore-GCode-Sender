@@ -72,7 +72,7 @@ void ThemeManager::setScale(int scale, bool force)
 
     m_scale = scale;
     m_fontSize = fontSize;
-    emit scaleChanged(scale);
+    emit scaleChanged(scale, scaleF());
     emit fontSizeChanged(m_fontSize);
 }
 

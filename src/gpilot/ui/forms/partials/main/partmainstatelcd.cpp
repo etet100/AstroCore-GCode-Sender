@@ -20,6 +20,8 @@ PartMainStateLcd::PartMainStateLcd(QWidget *parent)
     initializeColorsAndCaptions();
     setWorkCoordinates(QVector3D(0, 0, 0));
     setMachineCoordinates(QVector3D(0, 0, 0));
+    setWorkCoordinatesEnabled(false);
+    setMachineCoordinatesEnabled(false);
     setConnectionState(false);
 
     int fontId = QFontDatabase::addApplicationFont(":/fonts/Patopian1986.ttf");
@@ -126,6 +128,7 @@ void PartMainStateLcd::setWorkCoordinates(QVector3D pos)
     ui->txtWX->setText(formatPos(pos.x()));
     ui->txtWY->setText(formatPos(pos.y()));
     ui->txtWZ->setText(formatPos(pos.z()));
+    setWorkCoordinatesEnabled(true);
 }
 
 void PartMainStateLcd::setMachineCoordinates(QVector3D pos)
@@ -133,6 +136,23 @@ void PartMainStateLcd::setMachineCoordinates(QVector3D pos)
     ui->txtMX->setText(formatPos(pos.x()));
     ui->txtMY->setText(formatPos(pos.y()));
     ui->txtMZ->setText(formatPos(pos.z()));
+    setMachineCoordinatesEnabled(true);
+}
+
+void PartMainStateLcd::setWorkCoordinatesEnabled(bool enabled)
+{
+    ui->labelWork->setEnabled(enabled);
+    ui->txtWX->setEnabled(enabled);
+    ui->txtWY->setEnabled(enabled);
+    ui->txtWZ->setEnabled(enabled);
+}
+
+void PartMainStateLcd::setMachineCoordinatesEnabled(bool enabled)
+{
+    ui->labelMachine->setEnabled(enabled);
+    ui->txtMX->setEnabled(enabled);
+    ui->txtMY->setEnabled(enabled);
+    ui->txtMZ->setEnabled(enabled);
 }
 
 void PartMainStateLcd::setUnits(Units units)

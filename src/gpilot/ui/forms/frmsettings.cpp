@@ -91,8 +91,7 @@ FrmSettings::FrmSettings(QWidget *parent, Configuration &configuration) :
     connect(ui->jogging, &PartSettingsJogging::validityChanged, this, &FrmSettings::onWidgetValidity);
     //connect(ui->visualizer, &partSettingsVisualizer::validityChanged, this, &FrmSettings::onWidgetValidity);)
 
-    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](float scale){
-        Q_UNUSED(scale)
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](){
         ThemeManager::instance().processQssTemplate(ui->scrollAreaWidgetContents);
     });
 }

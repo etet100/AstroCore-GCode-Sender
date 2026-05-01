@@ -202,6 +202,13 @@ class Communicator : public QObject
         // Forwarded from the active behavior. UI is expected to display the
         // prompt and call respondToPrompt() with the user's choice id.
         void userPromptRequested(PromptSpec spec);
+
+        // Emitted when MachineCoordinateCache offset values are refreshed
+        // (response to $#). UI should re-read the cache via positionTracker().
+        void coordinatesCacheChanged();
+
+        // Emitted when modal state is parsed (response to $G).
+        void modalStateChanged(ModalState state);
 };
 
 class CommunicatorApi : public QObject

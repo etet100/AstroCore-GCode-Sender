@@ -464,6 +464,8 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
             m_deviceContext.setModalState(*modal);
             emit log(modal->toString());
 
+            emit modalStateChanged(*modal);
+
             // Update status in visualizer window
             emit parserStateReceived(modal->raw);
 
@@ -911,4 +913,6 @@ void Communicator::processAlarm(QString data)
 void Communicator::processOffsetsVars(QStringList response)
 {
     m_posTracker->processOffsetsVars(response);
+
+    emit coordinatesCacheChanged();
 }

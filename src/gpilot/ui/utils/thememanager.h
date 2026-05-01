@@ -30,7 +30,7 @@ public:
 
 signals:
     void themeChanged(bool dark);
-    void scaleChanged(float scale);
+    void scaleChanged(int scale, float scaleF);
     void fontSizeChanged(int size);
 
 private:

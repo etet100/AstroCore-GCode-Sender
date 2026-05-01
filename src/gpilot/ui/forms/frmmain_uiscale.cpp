@@ -43,7 +43,7 @@ void FrmMain::initializeUiScaleMenu()
     QShortcut* shortcutReset = new QShortcut(QKeySequence("Ctrl+0"), this);
     connect(shortcutReset, &QShortcut::activated, this, &FrmMain::resetUiScale);
 
-    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](double scale){
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](int scale, float scaleF){
         UiConfigs::instance().ui().setUiScale(scale);
         updateUiScaleMenu();
     });

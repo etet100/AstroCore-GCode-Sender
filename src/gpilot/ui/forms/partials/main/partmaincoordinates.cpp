@@ -7,8 +7,9 @@
 #include <QPushButton>
 #include <QHeaderView>
 #include "styledtoolbutton.h"
+#include "ui/utils/thememanager.h"
 
-static const QStringList CS_NAMES = {"G54", "G55", "G56", "G57", "G58", "G59"};
+static const QStringList CS_NAMES = {"G54", "G55", "G56", "G57", "G58", "G59", "G92"};
 
 PartMainCoordinates::PartMainCoordinates(QWidget *parent)
     : QWidget(parent)
@@ -29,6 +30,12 @@ void PartMainCoordinates::setupTable()
     ui->tableCoordinates->setColumnCount(5);
     ui->tableCoordinates->setHorizontalHeaderLabels({"CS", "X", "Y", "Z", ""});
     ui->tableCoordinates->verticalHeader()->setVisible(false);
+    ui->tableCoordinates->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableCoordinates->verticalHeader()->setDefaultSectionSize(22);
+    connect(&ThemeManager::instance(), &ThemeManager::scaleChanged, this, [this](int scale, float scaleF) {
+        Q_UNUSED(scale)
+        ui->tableCoordinates->verticalHeader()->setDefaultSectionSize(22 * scaleF);
+    });
     ui->tableCoordinates->setSelectionMode(QAbstractItemView::NoSelection);
     ui->tableCoordinates->setEditTriggers(QAbstractItemView::NoEditTriggers);
 

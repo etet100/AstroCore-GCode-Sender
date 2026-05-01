@@ -243,6 +243,12 @@ void FrmMain::initializeCommunicator()
     connect(communicator(), &Communicator::connectionStateChanged, this, [this](ConnectionState state) {
         ui->state->setConnectionState(state == ConnectionState::Connected);
     });
+    connect(communicator(), &Communicator::coordinatesCacheChanged, this, [this]() {
+        ui->coordinates->updateFromCache(communicator()->positionTracker()->coordinateCache());
+    });
+    connect(communicator(), &Communicator::modalStateChanged, this, [this](ModalState state) {
+        ui->coordinates->setActiveRow(state.coordinateSystem);
+    });
 }
 
 void FrmMain::setLogFormWindow(FrmLog *logForm)
@@ -300,6 +306,9 @@ void FrmMain::initializeCoordinatesPanel()
     connect(ui->grpCoordinates, &QGroupBox::toggled, this, [this](bool checked) {
         updateLayouts();
         ui->coordinates->setVisible(checked);
+    });
+    connect(ui->coordinates, &PartMainCoordinates::coordinateSystemSelected, this, [this](const QString &cs) {
+        communicator()->sendCommand(CommandSource::GeneralUI, cs, TABLE_INDEX_UI);
     });
 }
 
