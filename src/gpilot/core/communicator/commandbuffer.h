@@ -88,5 +88,7 @@ private:
     QString m_responseAccumulator;
     QStringList m_responseLines;
 
+    bool m_draining = false;
+
     void drainQueue();
 };

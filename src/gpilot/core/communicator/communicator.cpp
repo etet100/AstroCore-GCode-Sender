@@ -53,8 +53,11 @@ Communicator::Communicator(
 
     m_commandScanner = new CommandScanner(this);
     // Re-query work offsets ($#) and modal state ($G) after any command that may have changed them.
-    // QueuedConnection avoids re-entering sendCommand() mid-call.
-    connect(m_commandScanner, &CommandScanner::workOffsetCommandDetected, this, [this]() {
+    // Triggered on AfterResponse so we only refresh once the controller has actually applied the change.
+    connect(m_commandScanner, &CommandScanner::workOffsetCommandDetected, this, [this](CommandScanner::Stage stage) {
+        if (stage != CommandScanner::Stage::AfterResponse) {
+            return;
+        }
         sendCommand(CommandSource::Communicator, "$#", TABLE_INDEX_UTIL1, true);
         sendCommand(CommandSource::Communicator, "$G", TABLE_INDEX_UTIL1, true);
     }, Qt::QueuedConnection);
@@ -81,6 +84,10 @@ Communicator::Communicator(
 
         if (command == "$#" && status.ok) {
             processOffsetsVars(lines);
+        }
+
+        if (status.ok) {
+            m_commandScanner->scan(command, CommandScanner::Stage::AfterResponse);
         }
 
         if (attrs.source == CommandSource::Communicator) {
@@ -211,7 +218,7 @@ SendCommandResult Communicator::sendCommand(
     //     }
     // }
 
-    m_commandScanner->scan(commandLine);
+    m_commandScanner->scan(commandLine, CommandScanner::Stage::BeforeSend);
 
     return m_commandBuffer->enqueue(source, commandLine, tableIndex, wait, callback);
 }

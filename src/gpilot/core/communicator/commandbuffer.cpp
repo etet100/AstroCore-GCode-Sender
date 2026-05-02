@@ -58,6 +58,13 @@ SendCommandResult CommandBuffer::enqueue(
     if (wait || willOverflow(commandLine)) {
         m_queue.append(CommandQueue(source, commandLine, tableIndex, callback));
 
+        // If no command is in-flight, no response will arrive to trigger drainQueue() —
+        // we'd dead-lock. Try draining now; the reentrancy guard in drainQueue()
+        // protects against loops if this enqueue itself originated from a drain.
+        if (m_commands.isEmpty()) {
+            drainQueue();
+        }
+
         return SendCommandResult::Status::Queue;
     }
 
@@ -183,10 +190,9 @@ void CommandBuffer::drainQueue()
 
     // Guard against re-entrance (drainQueue can be triggered recursively
     // when the queued command sender calls back into enqueue).
-    static bool draining = false;
-    if (draining) return;
+    if (m_draining) return;
 
-    draining = true;
+    m_draining = true;
 
     while (!m_queue.isEmpty()) {
         CommandQueue queued = m_queue.takeFirst();
@@ -209,5 +215,5 @@ void CommandBuffer::drainQueue()
         }
     }
 
-    draining = false;
+    m_draining = false;
 }

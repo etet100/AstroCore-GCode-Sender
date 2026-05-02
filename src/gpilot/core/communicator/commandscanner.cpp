@@ -63,13 +63,13 @@ CommandScanner::CommandType CommandScanner::classify(const QString& commandLine)
     return CommandType::None;
 }
 
-void CommandScanner::scan(const QString& commandLine)
+void CommandScanner::scan(const QString& commandLine, Stage stage)
 {
     switch (classify(commandLine)) {
-        case CommandType::WorkOffset: emit workOffsetCommandDetected(); break;
-        case CommandType::Homing:     emit homingCommandDetected();     break;
-        case CommandType::Pause:      emit pauseCommandDetected();      break;
-        case CommandType::ToolChange: emit toolChangeCommandDetected(); break;
+        case CommandType::WorkOffset: emit workOffsetCommandDetected(stage); break;
+        case CommandType::Homing:     emit homingCommandDetected(stage);     break;
+        case CommandType::Pause:      emit pauseCommandDetected(stage);      break;
+        case CommandType::ToolChange: emit toolChangeCommandDetected(stage); break;
         case CommandType::None:       break;
     }
 }
