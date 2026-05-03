@@ -9,7 +9,6 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QCoreApplication>
-#include <QRegularExpression>
 
 static bool dataIsStartupMessage(const QString& data)
 {
@@ -101,74 +100,6 @@ void Communicator::onConnectionLineReceived(QString data)
     processStateBehaviorTransition();
 }
 
-void Communicator::processFeedSpindleSpeed(QString line)
-{
-    static QRegularExpression fs("([^,]*),([^,^|^>]*)");
-
-    QRegularExpressionMatch match = fs.match(line);
-    if (match.hasMatch()) {
-        emit feedSpindleSpeedReceived(match.captured(1).toInt(), match.captured(2).toInt());
-    }
-}
-
-void Communicator::processBuffersStatus(QString line)
-{
-    //Bf:15,128
-    static QRegularExpression fs(R"((\d*),(\d*))");
-
-    QRegularExpressionMatch match = fs.match(line);
-    if (match.hasMatch()) {
-        emit buffersStatusReceived(match.captured(1).toInt(), match.captured(2).toInt());
-    }
-}
-
-void Communicator::processOverrides(QString line)
-{
-    static QRegularExpression ov("([^,]*),([^,]*),([^,^>^|]*)");
-
-    QRegularExpressionMatch match = ov.match(line);
-    if (match.hasMatch())
-    {
-        int feedOverride = match.captured(1).toInt();
-        int spindleOverride = match.captured(3).toInt();
-        int rapidOverride = match.captured(2).toInt();
-
-        emit overridesReceived(feedOverride, spindleOverride, rapidOverride);
-
-        // Process spindle state
-        // static QRegularExpression as("A:([^,^>^|]+)");
-
-        // match = as.match(line);
-        // if (match.hasMatch()) {
-        //     QString q = match.captured(1);
-        //     m_spindleCW = q.contains("S");
-        //     if (q.contains("S") || q.contains("C")) {
-        //         emit spindleStateReceived(true);
-        //         // to spindleStateReceived handler
-        //         // m_timerToolAnimation.start(25, this);
-        //         // ui->cmdSpindle->setChecked(true);
-        //     } else {
-        //         emit spindleStateReceived(false);
-        //         // to spindleStateReceived handler
-        //         // m_timerToolAnimation.stop();
-        //         // ui->cmdSpindle->setChecked(false);
-        //     }
-        //     emit floodStateReceived(q.contains("F"));
-
-        //     if (!pinState.isEmpty()) pinState.append(" / ");
-        //     pinState.append(QString(tr("AS: %1")).arg(match.captured(1)));
-        // } else {
-        //     emit spindleStateReceived(false);
-        //     // to spindleStateReceived handler
-        //     // m_timerToolAnimation.stop();
-        //     // ui->cmdSpindle->setChecked(false);
-        // }
-        //ui->glwVisualizer->setPinState(pinState);
-
-    }
-}
-
-
 void Communicator::processStatus(QString line)
 {
     //qDebug() << "[Communicator] Processing status line:" << line;
@@ -176,7 +107,6 @@ void Communicator::processStatus(QString line)
     // MachineState state = MachineState::Unknown;
     // Remove < and >, split by |
     // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>
-    QStringList sections(line.mid(1, line.length() - 2).split("|"));
     m_statusReceived = true;
 
     static StatusReportProcessor statusProcessor;
@@ -185,54 +115,52 @@ void Communicator::processStatus(QString line)
         return;
     }
 
-    emit machineStatusReportReceived(*report);
+    processMachineState(report->state);
 
-    // processMachinePosition()
-    // // Update machine coordinates
-    // static QRegularExpression mpx("MPos:([^,]*),([^,]*),([^,^>^|]*)");
+    // WCO is sent only occasionally (every few status messages) — fall back to the sticky
+    // value cached in PositionTracker. Then derive whichever of MPos/WPos was missing.
+    const QVector3D wco = report->hasWorkOffset ? report->workOffset
+                                                : m_posTracker->workOffset();
 
-    // QRegularExpressionMatch match = mpx.match(line);
-    // if (match.hasMatch()) {
-    //     QVector3D newPos(
-    //         match.captured(1).toDouble(),
-    //         match.captured(2).toDouble(),
-    //         match.captured(3).toDouble()
-    //     );
-    //     if (newPos != m_machinePos) {
-    //         m_machinePos = newPos;
-    //         m_storedVars.setCoords("M", newPos);
-    //         emit machinePosChanged(newPos);
-    //     }
-    // }
-
-    processMachineState(sections.takeFirst());
-
-    for (QString &section : sections) {
-        line = section;
-        if (line.startsWith("MPos:")) {
-            m_posTracker->processMachinePosition(line.remove(0, 5));
-        } else if (line.startsWith("WPos:")) {
-            m_posTracker->processWorkPosition(line.remove(0, 5));
-        } else if (line.startsWith("WCO:")) {
-            m_posTracker->processWorkOffset(line.remove(0, 4));
-        } else if (line.startsWith("Ov:")) {
-            processOverrides(line.remove(0, 3));
-        } else if (line.startsWith("FS:")) {
-            processFeedSpindleSpeed(line.remove(0, 3));
-        } else if (line.startsWith("Bf:")) {
-            processBuffersStatus(line.remove(0, 3));
-        } else if (line.startsWith("Pn:")) {
-            processPinsState(line.remove(0, 3));
-        } else if (line.startsWith("A:")) {
-            processSpindleState(line.remove(0, 2));
-        } else if (line.startsWith("H:")) {
-            // processHoldState(line.remove(0, 2));
-            // qDebug() << "[Communicator] Unhandled status section:" << line;
-        } else {
-            qDebug() << "[Communicator] Unhandled status section:" << line;
-        }
+    if (report->hasMachinePos && !report->hasWorkPos) {
+        report->workPos = report->machinePos - wco;
+        report->hasWorkPos = true;
+    } else if (report->hasWorkPos && !report->hasMachinePos) {
+        report->machinePos = report->workPos + wco;
+        report->hasMachinePos = true;
+    }
+    if (!report->hasWorkOffset && (report->hasMachinePos || report->hasWorkPos)) {
+        report->workOffset = wco;
+        report->hasWorkOffset = true;
     }
 
+    if (report->hasMachinePos) {
+        m_posTracker->processMachinePosition(report->machinePos);
+    }
+    if (report->hasWorkOffset) {
+        m_posTracker->processWorkOffset(report->workOffset);
+    }
+
+    if (report->hasOverrides) {
+        emit overridesReceived(report->feedOverride, report->spindleOverride, report->rapidOverride);
+    }
+    if (report->hasFeedSpindleSpeed) {
+        emit feedSpindleSpeedReceived(report->feedRate, report->spindleSpeed);
+    }
+    if (report->hasBufferStatus) {
+        emit buffersStatusReceived(report->bufferAvailable, report->bufferSize);
+    }
+    if (report->hasPinStates) {
+        emit pinStateReceived(report->pinStates);
+        qDebug() << "[Communicator] Pin state:" << report->pinStates.toString();
+    }
+    if (report->hasAccessoryState) {
+        m_spindleCW = report->spindleCW;
+        emit spindleStateReceived(report->spindleEnabled);
+        emit floodStateReceived(report->floodEnabled);
+    }
+
+    emit machineStatusReportReceived(*report);
     emit workPosChanged(m_posTracker->workPos());
 
     m_posTracker->processNewToolPosition(
@@ -244,54 +172,17 @@ void Communicator::processStatus(QString line)
     emit statusReceived(line);
 }
 
-// X, Y, Z, A, B,: X, Y, or Z-axis limit pins are triggered.
-// P: Probe pin is triggered.
-// D: Door pin is triggered.
-// H: Feed Hold pin is triggered.
-// R: Safety Door/Reset pin is triggered.
-// S: Cycle Start pin is triggered.
-void Communicator::processPinsState(QString line)
+void Communicator::processMachineState(MachineState state)
 {
-    static QRegularExpression pn("Pn:([^|^>]*)");
-
-    QRegularExpressionMatch match = pn.match(line);
-    if (match.hasMatch()) {
-        PinState pinState = PinState::parse(match.captured(1));
-
-        emit pinStateReceived(pinState);
-
-        qDebug() << "[Communicator] Pin state:" << pinState.toString();
-    }
-}
-
-void Communicator::processSpindleState(QString line)
-{
-    QString q = line;
-    m_spindleCW = q.contains("S");
-    if (q.contains("S") || q.contains("C")) {
-        emit spindleStateReceived(true);
-        // to spindleStateReceived handler
-        // m_timerToolAnimation.start(25, this);
-        // ui->cmdSpindle->setChecked(true);
-    } else {
-        emit spindleStateReceived(false);
-        // to spindleStateReceived handler
-        // m_timerToolAnimation.stop();
-        // ui->cmdSpindle->setChecked(false);
-    }
-    emit floodStateReceived(q.contains("F"));
-}
-
-void Communicator::processMachineState(QString stateStr)
-{
-    static QString lastStateStr = "";
-    if (stateStr != lastStateStr) {
-        qDebug() << "[Communicator][Status][Change] Machine state changed:" << stateStr;
-        lastStateStr = stateStr;
+    static MachineState lastState = MachineState::Unknown;
+    if (state != lastState) {
+        qDebug() << "[Communicator][Status][Change] Machine state changed:"
+                 << m_machineStateDictionary.value(state, "Unknown");
+        lastState = state;
     }
 
-    MachineState state = m_machineStateDictionary.key(stateStr, MachineState::Unknown);
-    qDebug() << "[Communicator][MachineState] Machine state:" << stateStr;
+    qDebug() << "[Communicator][MachineState] Machine state:"
+             << m_machineStateDictionary.value(state, "Unknown");
 
     // Update status
     AbstractStateBehavior* sb = m_sbManager.current();
@@ -450,12 +341,12 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
     // [OPT:VL,15,128]
 
     // Restore absolute/relative coordinate system after jog
-    if (commandAttributes.tableIndex == TABLE_INDEX_UTIL1) {
-        // @TODO how to handle keyboard control?? not like this!
-        // if (ui->chkKeyboardControl->isChecked()) m_form->absoluteCoordinates() = response.contains("G90");
-        // else if (response.contains("G90")) sendCommand(CommandSource::System, "G90", COMMAND_TI_UI);
-        if (response.contains("G90")) sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
-    }
+    // if (commandAttributes.tableIndex == TABLE_INDEX_UTIL1) {
+    //     // @TODO how to handle keyboard control?? not like this!
+    //     // if (ui->chkKeyboardControl->isChecked()) m_form->absoluteCoordinates() = response.contains("G90");
+    //     // else if (response.contains("G90")) sendCommand(CommandSource::System, "G90", COMMAND_TI_UI);
+    //     // if (response.contains("G90")) sendCommand(CommandSource::System, "G90", TABLE_INDEX_UI);
+    // }
 
     // Process GCore parser state
     // if (commandAttributes.tableIndex == TABLE_INDEX_UTIL2) {

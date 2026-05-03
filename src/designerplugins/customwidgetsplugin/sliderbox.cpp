@@ -5,9 +5,11 @@ SliderBox::SliderBox(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SliderBox)
 {
-    ui->setupUi(this);    
+    ui->setupUi(this);
 
     ui->chkTitle->setVisible(false);
+    ui->chkTitle->setShowText(false);
+    ui->lblTitle->setVisible(true);
 
     this->setCheckable(true);
     this->setRatio(1);
@@ -69,12 +71,11 @@ void SliderBox::setCheckable(bool checkable)
     m_isCheckable = checkable;
 
     ui->chkTitle->setVisible(checkable);
-    ui->lblTitle->setVisible(!checkable);
 }
 
 bool SliderBox::isChecked()
 {
-    return ui->chkTitle->isChecked();
+    return ui->chkTitle->checked();
 }
 
 void SliderBox::setChecked(bool checked)
@@ -94,7 +95,7 @@ void SliderBox::setRatio(int ratio)
 
 void SliderBox::click()
 {
-    ui->chkTitle->click();
+    ui->chkTitle->setChecked(!ui->chkTitle->checked());
 }
 
 void SliderBox::on_txtValue_editingFinished()
@@ -150,12 +151,11 @@ void SliderBox::setSuffix(QString suffix)
 
 QString SliderBox::title()
 {
-    return ui->chkTitle->text();
+    return ui->lblTitle->text();
 }
 
 void SliderBox::setTitle(QString title)
 {
-    ui->chkTitle->setText(title);
     ui->lblTitle->setText(title);
 }
 
@@ -172,7 +172,7 @@ void SliderBox::setMinimum(int minimum)
     ui->sliValue->setMinimum(minimum / m_ratio);
 }
 
-void SliderBox::on_chkTitle_toggled(bool checked)
+void SliderBox::on_chkTitle_stateChanged(bool checked)
 {
     emit toggled(checked);
 }

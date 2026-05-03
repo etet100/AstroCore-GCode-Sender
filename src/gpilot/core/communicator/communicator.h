@@ -137,12 +137,7 @@ class Communicator : public QObject
         void processUnhandledResponse(QString data);
         void processMessage(QString data);
         void processAlarm(QString data);
-        void processFeedSpindleSpeed(QString line);
-        void processBuffersStatus(QString line);
-        void processOverrides(QString line);
-        void processMachineState(QString state);
-        void processPinsState(QString line);
-        void processSpindleState(QString line);
+        void processMachineState(MachineState state);
         void processWelcomeMessageDetected(QString message);
         void storeParserState();
         void restoreParserState();

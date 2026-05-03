@@ -24,11 +24,45 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {
     if (state == MachineState::Idle) {
+        const bool bufferStillBusy = !m_communicator->isCommandBufferEmpty()
+                                  || !m_communicator->isQueueEmpty();
+
+        // Pausing and Aborting flows have their own exit paths (UserPrompt /
+        // explicit abort). Don't interfere with them on a stray Idle.
+        const bool isControlledStop = (m_stage == Stage::Pausing
+                                    || m_stage == Stage::Aborting);
+
+        // Buffer still has unacknowledged commands. Defer the transition; the
+        // remaining ok/error replies are picked up in onResponseProcessed,
+        // which finishes the move once everything drains.
+        if (bufferStillBusy && !isControlledStop) {
+            if (m_stage != Stage::Draining) {
+                qDebug() << "[Behavior][Running] Idle observed but command buffer not drained"
+                         << "— waiting for remaining responses (stage was"
+                         << static_cast<int>(m_stage) << ")";
+                m_stage = Stage::Draining;
+            }
+
+            return;
+        }
+
+        // Buffer is empty, but the program may still have commands (status
+        // timer can race ahead through a fast Run -> Idle cycle right after
+        // resume from a UserPrompt, especially with short tail commands).
+        // Resume streaming instead of ending the program prematurely.
+        if (!isControlledStop && m_program.hasMoreCommands()) {
+            qDebug() << "[Behavior][Running] Idle observed with more program commands — resuming stream";
+            m_stage = Stage::Running;
+            sendStreamerCommandsUntilBufferIsFull();
+
+            return;
+        }
+
         if (m_stage == Stage::Aborting) {
             qDebug() << "[Behavior][Running] Abort completed, transitioning to Idle";
         } else if (m_stage == Stage::Running) {
             qWarning() << "[Behavior][Running] Unexpected transition to Idle state while running";
-        } else if (m_stage == Stage::NoMoreCommands) {
+        } else if (m_stage == Stage::NoMoreCommands || m_stage == Stage::Draining) {
             qDebug() << "[Behavior][Running] Program finished, transitioning to Idle";
         }
 
@@ -43,10 +77,15 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
             spec.title = "Command error";
             spec.message = QString("Command \"%1\" failed: %2.")
                                .arg(m_errorCommand, m_errorDescription);
+            if (m_subsequentErrorCount > 0) {
+                spec.message += QString(" %1 more command(s) failed while pausing — Continue skips past all of them.")
+                                    .arg(m_subsequentErrorCount);
+            }
             spec.context = {
                 {"command", m_errorCommand},
                 {"errorCode", m_errorCode},
                 {"reason", m_errorDescription},
+                {"subsequentErrors", m_subsequentErrorCount},
             };
             spec.choices = {
                 {"continue", "Continue", /*destructive=*/false, /*isDefault=*/false},
@@ -82,6 +121,15 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
     assert(commandAttributes.tableIndex >= 0);
     m_program.setCommandResponse(commandAttributes.tableIndex, cmdStatus.ok, enrichErrorMessage(response));
 
+    // Errors that arrive after we already initiated a pause — surfaced in the
+    // prompt so the user sees the full damage, not only the first failure.
+    if (!cmdStatus.ok && m_stage == Stage::Pausing && !m_errorDescription.isEmpty()) {
+        ++m_subsequentErrorCount;
+        qDebug() << "[Behavior][Running][Resp] Additional error during pause"
+                 << cmdStatus.errorCode << "for" << command
+                 << "— total extra:" << m_subsequentErrorCount;
+    }
+
     if (!cmdStatus.ok && m_stage == Stage::Running) {
         if (m_configuration->senderModule().ignoreErrorResponses()) {
             qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
@@ -96,7 +144,19 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
         m_errorCommand = command;
         m_errorDescription = enrichErrorMessage(response);
         m_errorCode = cmdStatus.errorCode;
+        m_subsequentErrorCount = 0;
         pause();
+
+        // The status-query timer can race past the Run state between two
+        // consecutive error-driven pauses, so m_machineState may already be
+        // Hold from before — onMachineStateChanged would not fire on its own
+        // because the state didn't actually change. Drive it manually here so
+        // the user prompt still appears after a fresh error.
+        const MachineState now = m_communicator->machineState();
+        if (now == MachineState::Hold0 || now == MachineState::Hold1) {
+            qDebug() << "[Behavior][Running][Resp] Machine already in Hold — firing prompt directly";
+            onMachineStateChanged(now);
+        }
 
         return Result::Ok;
     }
@@ -118,6 +178,33 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
     }
 
     return Result::Ok;
+}
+
+void RunningBehavior::onResponseProcessed()
+{
+    // Hook fires after every response (including Communicator-owned $#/$G).
+    // We only act when parked in Stage::Draining — i.e. Idle was observed with
+    // a non-empty buffer and we deferred the transition.
+    if (m_stage != Stage::Draining) {
+        return;
+    }
+    if (!m_communicator->isCommandBufferEmpty() || !m_communicator->isQueueEmpty()) {
+        return;
+    }
+
+    if (m_program.hasMoreCommands()) {
+        // Buffer drained, but the program isn't done. Idle was observed
+        // mid-program (timer race). Resume streaming.
+        qDebug() << "[Behavior][Running] Buffer drained with more program commands — resuming stream";
+        m_stage = Stage::Running;
+        sendStreamerCommandsUntilBufferIsFull();
+
+        return;
+    }
+
+    qDebug() << "[Behavior][Running] Buffer drained, transitioning to Idle";
+    Core::instance().timer().stopExecution();
+    emit transition(this, new IdleBehavior());
 }
 
 void RunningBehavior::onAlarm(int code)
@@ -180,26 +267,18 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
             m_errorCommand.clear();
             m_errorDescription.clear();
             m_errorCode = 0;
+            m_subsequentErrorCount = 0;
 
             Core::instance().timer().resumeExecution();
 
-            // Machine is in Hold — send Cycle Start and wait for Run state before filling buffer
-            m_stage = Stage::Resuming;
+            // Send Cycle Start and immediately treat ourselves as Running.
+            // We don't gate streaming on observing Run via the status timer:
+            // GRBL accepts new commands into the planner while still in Hold,
+            // and short tail-of-program scripts (e.g. M5 + M30) can land back
+            // in Idle before the status timer ever catches Run, which would
+            // otherwise leave us parked in a Resuming stage.
+            m_stage = Stage::Running;
             m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
-            waitForStateResponse([this](MachineState state) {
-                switch (state) {
-                    case MachineState::Run:
-                        qDebug() << "[Behavior][Running] Detected Run state";
-                        m_stage = Stage::Running;
-                        sendStreamerCommandsUntilBufferIsFull();
-                        break;
-
-                    case MachineState::Unknown:
-                        qDebug() << "[Behavior][Running] Timeout waiting for Run state";
-                        m_stage = Stage::Unknown;
-                        break;
-                }
-            }, MachineState::Run, 500);
         }
     } else {
         Core::instance().timer().startExecution();
@@ -210,8 +289,7 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
 
     // Nothing got sent or queued — the machine will not move and the usual
     // Run -> Idle transition in onMachineStateChanged will never fire.
-    if (m_stage != Stage::Resuming
-        && m_communicator->bufferLength() == 0
+    if (m_communicator->bufferLength() == 0
         && m_communicator->isQueueEmpty()) {
         qDebug() << "[Behavior][Running] Nothing queued on entry, transitioning to Idle";
         emit transition(this, new IdleBehavior());

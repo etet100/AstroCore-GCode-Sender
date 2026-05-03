@@ -14,10 +14,14 @@ class RunningBehavior : public AbstractStateBehavior
     public:
         enum class Stage {
             Unknown,
-            Resuming,
             Running,
             Pausing,
             NoMoreCommands,
+            // Idle has been observed but the command buffer still holds
+            // unacknowledged commands. We wait for the remaining ok/error
+            // responses before transitioning to IdleBehavior, so the program
+            // table gets fully marked.
+            Draining,
             Aborting,
         };
 
@@ -33,6 +37,7 @@ class RunningBehavior : public AbstractStateBehavior
         }
         void onMachineStateChanged(MachineState state) override;
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
+        void onResponseProcessed() override;
         void onAlarm(int code) override;
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         // Running-specific methods
@@ -57,6 +62,11 @@ class RunningBehavior : public AbstractStateBehavior
         QString m_errorCommand;
         QString m_errorDescription;
         int m_errorCode = 0;
+        // Counts additional errors that arrived after the first one triggered
+        // the pause — GRBL parses ahead of us, so by the time we react to the
+        // first error there can be more already in flight. Surfaced in the
+        // prompt so the user knows the full extent of the failure.
+        int m_subsequentErrorCount = 0;
         void sendStreamerCommandsUntilBufferIsFull();
         void checkNextCommand();
         void pause();

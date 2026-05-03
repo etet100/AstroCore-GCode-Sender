@@ -1,7 +1,6 @@
 #include "positiontracker.h"
 #include "communicator.h"
 #include "core/machine/physicalmachineconfiguration.h"
-#include <QRegularExpression>
 #include <QDebug>
 #include <cassert>
 
@@ -41,65 +40,33 @@ void PositionTracker::restoreOffsets(PhysicalMachineConfiguration* config)
     );
 }
 
-void PositionTracker::processMachinePosition(const QString& line)
+void PositionTracker::processMachinePosition(const QVector3D& pos)
 {
-    static QRegularExpression re("([^,]*),([^,]*),([^,>|]*)");
-
-    QRegularExpressionMatch match = re.match(line);
-    if (match.hasMatch()) {
-        QVector3D newPos(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-        if (newPos != m_machinePos) {
-            m_machinePos = newPos;
-            emit machinePosChanged(newPos);
-        }
+    if (pos != m_machinePos) {
+        m_machinePos = pos;
+        emit machinePosChanged(pos);
     }
 }
 
 // WPos is absolute — compute offset relative to machine pos.
-void PositionTracker::processWorkPosition(const QString& line)
+void PositionTracker::processWorkPosition(const QVector3D& pos)
 {
-    static QRegularExpression re("([^,]*),([^,]*),([^,>|]*)");
-
-    QRegularExpressionMatch match = re.match(line);
-    if (match.hasMatch()) {
-        QVector3D workPos(
-            match.captured(1).toDouble(),
-            match.captured(2).toDouble(),
-            match.captured(3).toDouble()
-        );
-
-        QVector3D workOffset(
-            m_machinePos.x() - workPos.x(),
-            m_machinePos.y() - workPos.y(),
-            m_machinePos.z() - workPos.z()
-        );
-
-        if (workOffset != m_workOffset) {
-            m_workOffset = workOffset;
-        }
-    }
-}
-
-// WCO is the raw work coordinate offset from the machine.
-void PositionTracker::processWorkOffset(const QString& line)
-{
-    static QRegularExpression re("([^,]*),([^,]*),([^,>|]*)");
-
-    QRegularExpressionMatch match = re.match(line);
-    if (!match.hasMatch()) return;
-
     QVector3D workOffset(
-        match.captured(1).toDouble(),
-        match.captured(2).toDouble(),
-        match.captured(3).toDouble()
+        m_machinePos.x() - pos.x(),
+        m_machinePos.y() - pos.y(),
+        m_machinePos.z() - pos.z()
     );
 
     if (workOffset != m_workOffset) {
         m_workOffset = workOffset;
+    }
+}
+
+// WCO is the raw work coordinate offset from the machine.
+void PositionTracker::processWorkOffset(const QVector3D& offset)
+{
+    if (offset != m_workOffset) {
+        m_workOffset = offset;
         m_coordCache.setCoords("W", m_workOffset);
     }
 }

@@ -30,10 +30,10 @@ public:
     // Sends G53/G92 commands to restore pre-reset position.
     void restoreOffsets(PhysicalMachineConfiguration* config);
 
-    // Called from processStatus for each status report section.
-    void processMachinePosition(const QString& line);
-    void processWorkPosition(const QString& line);
-    void processWorkOffset(const QString& line);
+    // Called from processStatus with already-parsed values from MachineStatusReport.
+    void processMachinePosition(const QVector3D& pos);
+    void processWorkPosition(const QVector3D& pos);
+    void processWorkOffset(const QVector3D& offset);
 
     // Called after all status sections are processed.
     void processNewToolPosition(bool isCheckMode, bool isLastCommandProcessed);

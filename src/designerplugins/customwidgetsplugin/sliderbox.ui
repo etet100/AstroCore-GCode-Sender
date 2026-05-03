@@ -29,11 +29,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="0,0,1">
      <item>
-      <widget class="QCheckBox" name="chkTitle">
-       <property name="text">
-        <string>Title:</string>
-       </property>
-      </widget>
+      <widget class="XSwitchButton" name="chkTitle"/>
      </item>
      <item>
       <widget class="QLabel" name="lblTitle">
@@ -86,6 +82,11 @@
    <class>Slider</class>
    <extends>QSlider</extends>
    <header>slider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>XSwitchButton</class>
+   <extends>QWidget</extends>
+   <header>xswitchbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

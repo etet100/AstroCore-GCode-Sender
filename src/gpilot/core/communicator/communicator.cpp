@@ -173,6 +173,14 @@ void Communicator::onCommandBufferCompleted(
 
     emit commandResponseReceived(attributes);
     emit responseReceived(attributes.commandLine, attributes.tableIndex, attributes.response);
+
+    // Notify the active behavior even for responses that were not routed through
+    // onCommandResponse (source == Communicator). Lets behaviors react to buffer
+    // drain unconditionally — needed e.g. by RunningBehavior to finish a deferred
+    // transition to Idle after the trailing $#/$G responses.
+    if (m_sbManager.hasCurrent()) {
+        m_sbManager.current()->onResponseProcessed();
+    }
 }
 
 /**

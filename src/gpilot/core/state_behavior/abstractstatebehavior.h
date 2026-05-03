@@ -155,6 +155,12 @@ class AbstractStateBehavior : public QObject
         virtual Result onCommandResponse(QString command, CommandAttributes commandAttributes,
                                          CmdStatus cmdStatus, QString response, QStringList fullResponse);
 
+        // Called after every command response is fully processed, including responses
+        // for commands originated by the Communicator itself (e.g. $#, $G), which are
+        // not routed through onCommandResponse. Behaviors can override to react when
+        // the buffer drains regardless of who sent the last command.
+        virtual void onResponseProcessed() {}
+
         virtual void onConnectionStateChanged(ConnectionState state) {
             Q_UNUSED(state);
         }

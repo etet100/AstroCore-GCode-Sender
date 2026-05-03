@@ -416,12 +416,12 @@ void XSwitchButton::setChecked(bool checked)
     if (m_checked != checked) {
         m_checked = checked;
         update();
+        statChanged();
     }
 
 #ifdef ENABLE_LOADING
     stopLoading();
 #endif
-    statChanged();
 }
 
 #ifdef ENABLE_LOADING

@@ -70,7 +70,7 @@ private slots:
     void on_txtValue_editingFinished();
     void on_sliValue_actionTriggered(int action);
     void on_sliValue_valueChanged(int value);
-    void on_chkTitle_toggled(bool checked);
+    void on_chkTitle_stateChanged(bool checked);
 
 private:
     Ui::SliderBox *ui;
