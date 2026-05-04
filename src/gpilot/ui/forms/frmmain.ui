@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/images.qrc">
-    <normaloff>:/images/gpilot_icon.png</normaloff>:/images/gpilot_icon.png</iconset>
+    <normaloff>:/images/astrocore_icon.png</normaloff>:/images/astrocore_icon.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">

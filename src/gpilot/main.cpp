@@ -1,4 +1,4 @@
-// This file is a part of "Candle" application.
+// This file is a part of "AstroCore" application.
 // Copyright 2015-2021 Hayrullin Denis Ravilevich
 // Copyright 2024 BTS
 
@@ -57,7 +57,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &, const QString & 
     }
 
     if (logToFile) {
-        QFile outFile("GPilot.log");
+        QFile outFile("AstroCore.log");
         outFile.open(QIODevice::WriteOnly | QIODevice::Append);
         QTextStream ts(&outFile);
         ts << txt << Qt::endl;
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
     QApplication app(argc, argv);
-    app.setApplicationDisplayName("G-Pilot");
-    app.setOrganizationName("G-Pilot");
+    app.setApplicationDisplayName("AstroCore");
+    app.setOrganizationName("AstroCore");
 
     QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
 
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption logToFileOption(QStringList{"l", "log-to-file"}, "Log debug info to `GPilot.log`.");
+    QCommandLineOption logToFileOption(QStringList{"l", "log-to-file"}, "Log debug info to `AstroCore.log`.");
     parser.addOption(logToFileOption);
 
     QCommandLineOption trimLogOption(QStringList{"t", "trim-log"}, "Trim existing log file on start.");
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(logToFileOption)) {
         if (parser.isSet(trimLogOption)) {
-            QFile::remove("GPilot.log");
+            QFile::remove("AstroCore.log");
         }
 
         logToFile = true;

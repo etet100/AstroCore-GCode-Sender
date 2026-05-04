@@ -45,7 +45,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">image: url(:/images/gpilot_256.png);</string>
+        <string notr="true">image: url(:/images/astrocore_256.png);</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::Shape::StyledPanel</enum>

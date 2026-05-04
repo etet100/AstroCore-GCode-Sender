@@ -62,7 +62,7 @@ contains(QT_CONFIG, opengles.) {
 TARGET = AstroCore
 TEMPLATE = app
 
-RC_ICONS = ui/images/gpilot.ico
+RC_ICONS = ui/images/astrocore.ico
 
 DEFINES += sNan=\"65536\"
 
