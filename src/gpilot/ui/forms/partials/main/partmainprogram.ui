@@ -146,19 +146,9 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QCheckBox" name="chkAutoScrollGCode">
+           <widget class="QPushButton" name="btnViewOptions">
             <property name="text">
-             <string>Auto scroll</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="chkShowComments">
-            <property name="text">
-             <string>Comments</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+             <string>View</string>
             </property>
            </widget>
           </item>

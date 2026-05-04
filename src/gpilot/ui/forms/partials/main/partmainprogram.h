@@ -14,6 +14,7 @@
 
 class GCode;
 class Heightmap;
+class QAction;
 
 namespace Ui {
 class PartMainProgram;
@@ -136,6 +137,8 @@ class PartMainProgram : public QWidget
     private:
         Ui::PartMainProgram* ui;
         QMenu* m_tableMenu;
+        QAction* m_actionAutoScroll = nullptr;
+        QAction* m_actionShowComments = nullptr;
 
         struct SelRange {
             int from;

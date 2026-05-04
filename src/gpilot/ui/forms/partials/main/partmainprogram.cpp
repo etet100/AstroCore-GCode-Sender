@@ -51,8 +51,18 @@ void PartMainProgram::setupUi()
     connect(ui->tblProgram, &QWidget::customContextMenuRequested, this, &PartMainProgram::onTableContextMenuRequested);
     ui->tblProgram->installEventFilter(this);
 
-    connect(ui->chkShowComments, &QCheckBox::checkStateChanged, this, [this](int state) {
-        m_programModel.setCommentsVisible(state);
+    auto* viewMenu = new QMenu(this);
+    m_actionAutoScroll = viewMenu->addAction(tr("Auto scroll"));
+    m_actionAutoScroll->setCheckable(true);
+    m_actionShowComments = viewMenu->addAction(tr("Comments"));
+    m_actionShowComments->setCheckable(true);
+    m_actionShowComments->setChecked(true);
+
+    connect(m_actionShowComments, &QAction::toggled, this, [this](bool checked) {
+        m_programModel.setCommentsVisible(checked);
+    });
+    connect(ui->btnViewOptions, &QPushButton::clicked, this, [this, viewMenu]() {
+        viewMenu->popup(ui->btnViewOptions->mapToGlobal(QPoint(0, ui->btnViewOptions->height())));
     });
 
     // Debounce filter input so every keystroke does not trigger a full
@@ -145,12 +155,12 @@ void PartMainProgram::refreshHeightmapSections()
 
 void PartMainProgram::setAutoScroll(bool enabled)
 {
-    ui->chkAutoScrollGCode->setChecked(enabled);
+    m_actionAutoScroll->setChecked(enabled);
 }
 
 bool PartMainProgram::isAutoScroll() const
 {
-    return ui->chkAutoScrollGCode->isChecked();
+    return m_actionAutoScroll->isChecked();
 }
 
 void PartMainProgram::setHeightMapVisible(bool visible)
