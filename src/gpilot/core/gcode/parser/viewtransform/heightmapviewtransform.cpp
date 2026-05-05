@@ -2,10 +2,7 @@
 // Copyright 2026 BTS
 
 #include "heightmapviewtransform.h"
-#include "core/heightmap/interpolator/heightmapbicubicinterpolator.h"
-#include "core/heightmap/interpolator/heightmapbilinearinterpolator.h"
-#include "core/heightmap/interpolator/heightmaplinearinterpolator.h"
-#include "core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h"
+#include "core/heightmap/interpolator/heightmapinterpolatorfactory.h"
 #include <QtMath>
 
 void HeightmapViewTransform::updateInterpolator()
@@ -16,23 +13,7 @@ void HeightmapViewTransform::updateInterpolator()
         return;
     }
 
-    switch (m_heightmap->interpolationMode()) {
-        case Heightmap::InterpolationMode::Bicubic:
-            m_interpolator = new HeightmapBicubicInterpolator(m_heightmap);
-            break;
-        case Heightmap::InterpolationMode::Bilinear:
-            m_interpolator = new HeightmapBilinearInterpolator(m_heightmap);
-            break;
-        case Heightmap::InterpolationMode::Linear:
-            m_interpolator = new HeightmapLinearInterpolator(m_heightmap);
-            break;
-        case Heightmap::InterpolationMode::NearestNeighbour:
-            m_interpolator = new HeightmapNearestNeighbourInterpolator(m_heightmap);
-            break;
-        default:
-            m_interpolator = new HeightmapBicubicInterpolator(m_heightmap);
-            break;
-    }
+    m_interpolator = HeightmapInterpolatorFactory::create(m_heightmap);
     m_interpolatorMode = m_heightmap->interpolationMode();
 }
 
