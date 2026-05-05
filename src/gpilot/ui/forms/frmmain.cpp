@@ -41,7 +41,6 @@
 #include "modules/ai/configurationai.h"
 #include "modules/camera/camera.h"
 #include "ui/config/uiconfigs.h"
-#include "core/heightmap/configurationheightmap.h"
 #include "core/macro/macrocompiler.h"
 #include "ui_frmmain.h"
 #include "ui/widgets/widgetmimedata.h"
@@ -59,6 +58,7 @@
 #include "core/gcode/converter/shakinggcode.h"
 #include "core/gcode/converter/applyheightmap.h"
 #include "core/gcode/converter/stripcomments.h"
+#include "core/heightmap/configurationheightmap.h"
 #include "core/heightmap/loader/heightmaploader.h"
 #include "core/heightmap/exporter/heightmapexporter.h"
 #include "core/utils/filesmanager.h"
@@ -67,9 +67,6 @@
 #include "core/state_behavior/runningbehavior.h"
 #include "core/state_behavior/userpromptbehavior.h"
 #include "ui/utils/uipermissions.h"
-// #include "core/state_behavior/joggingbehavior.h"
-// #include "core/state_behavior/gotobehavior.h"
-// #include "core/state_behavior/reconnectingbehavior.h"
 
 #define FILE_FILTER_TEXT "G-Code files (*.nc *.ncc *.ngc *.tap *.gc *.gcode *.txt)"
 
