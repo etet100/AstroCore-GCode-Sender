@@ -91,13 +91,9 @@ public:
     explicit FrmMain(QWidget *parent = 0);
     ~FrmMain();
 
-    void initializeCommunicator();
     void setLogFormWindow(FrmLog* logForm);
 
 signals:
-    void responseReceived(QString command, int tableIndex, QString response);
-    void statusReceived(QString status);
-    void senderStateChanged(int state);
     void settingsAboutToLoad();
     void settingsLoaded();
     void settingsAboutToSave();
@@ -106,7 +102,6 @@ signals:
     void settingsAccepted();
     void settingsRejected();
     void settingsSetToDefault();
-    void pluginsLoaded();
 
 private slots:
     void fileNew();
@@ -311,6 +306,7 @@ private:
     static bool actionLessThan(const QAction *a1, const QAction *a2);
     static bool actionTextLessThan(const QAction *a1, const QAction *a2);
 
+    void initializeCommunicator();
     void initializeLogMenu();
     void initializeConsolePanel();
     void initializeJogPanel();
@@ -327,7 +323,6 @@ private:
     void initializeDockCorners();
     void connectWindowTitleUpdater();
     void connectFilesManagerToUpdateControls();
-
     void initializeConnection(ConfigurationConnection::ConnectionMode mode);
     void initializeDockTitles();
     void initializeVisualizer();
