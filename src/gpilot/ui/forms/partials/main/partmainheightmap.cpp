@@ -85,19 +85,16 @@ void PartMainHeightmap::applyHeightmapConfiguration(ConfigurationHeightmap &conf
     ui->txtAreaHeight->setValue(configurationHeightmap.areaY2() - configurationHeightmap.areaY1());
     ui->txtAreaX2->setValue(configurationHeightmap.areaY2());
     ui->txtAreaY2->setValue(configurationHeightmap.areaY2());
-    ui->chkShowArea->setChecked(configurationHeightmap.areaShow());
 
     ui->txtGridX->setValue(configurationHeightmap.gridX());
     ui->txtGridY->setValue(configurationHeightmap.gridY());
     ui->txtGridZTop->setValue(configurationHeightmap.gridZTop());
     ui->txtGridZBottom->setValue(configurationHeightmap.gridZBottom());
     ui->txtProbeFeed->setValue(configurationHeightmap.probeFeed());
-    ui->chkShowProbeGrid->setChecked(configurationHeightmap.gridShow());
 
     ui->txtInterpolationStepX->setValue(configurationHeightmap.interpolationStepX());
     ui->txtInterpolationStepY->setValue(configurationHeightmap.interpolationStepY());
     ui->cboInterpolationMode->setCurrentIndex(configurationHeightmap.interpolationType());
-    ui->chkShowInterpolation->setChecked(configurationHeightmap.interpolationShow());
 }
 
 bool PartMainHeightmap::heightmapMode()
