@@ -52,7 +52,6 @@ class Communicator : public QObject
 
         bool setConnection(AbstractConnection *, bool force);
         bool startReconnecting(AbstractConnection *connection);
-        AbstractStateBehavior *sb() const;
         // bool openConnection();
         AbstractConnection* connection();
         // void stopUpdatingState();

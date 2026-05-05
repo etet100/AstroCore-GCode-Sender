@@ -345,16 +345,10 @@ bool Communicator::startReconnecting(AbstractConnection *connection)
     return execute(new ReconnectingBehavior(connection));
 }
 
-AbstractStateBehavior *Communicator::sb() const
-{
-    return m_sbManager.current();
-}
-
 AbstractConnection *Communicator::connection()
 {
     return m_connection;
 }
-
 
 void Communicator::setSenderStateAndEmitSignal(SenderState state)
 {

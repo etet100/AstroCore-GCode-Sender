@@ -121,7 +121,7 @@ Core::ConsoleCommandResult Core::tryHandleInternalCommand(const QString& command
         return ConsoleCommandResult::stop();
     }
 
-    AbstractStateBehavior* sb = m_communicator->sb();
+    AbstractStateBehavior* sb = m_communicator->stateBehavior();
     if (head == "start")      { sb->action(Action::Run);        return ConsoleCommandResult::stop(); }
     if (head == "pause")      { sb->action(Action::Pause);      return ConsoleCommandResult::stop(); }
     if (head == "resume")     { sb->action(Action::Resume);     return ConsoleCommandResult::stop(); }

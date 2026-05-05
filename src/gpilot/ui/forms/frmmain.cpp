@@ -278,7 +278,7 @@ void FrmMain::initializeJogPanel()
     connect(ui->jog, &PartMainJog::jog, this, [this](JoggindDir dir, QVector3D vector) {
         if (dir != JoggindDir::None) {
             ConfigurationJogging& jogging = m_configuration.joggingModule();
-            communicator()->sb()->action(JoggingAction(
+            communicator()->stateBehavior()->action(JoggingAction(
                 vector,
                 jogging.step(),
                 jogging.continuous(),
@@ -371,10 +371,10 @@ void FrmMain::initializeControlPanel()
 void FrmMain::initializeStatePanel()
 {
     connect(ui->state, &AbstractPartMainState::connectClicked, this, [this]() {
-        communicator()->sb()->action(Action::Connect);
+        communicator()->stateBehavior()->action(Action::Connect);
     });
     connect(ui->state, &AbstractPartMainState::disconnectClicked, this, [this]() {
-        communicator()->sb()->action(Action::Disconnect);
+        communicator()->stateBehavior()->action(Action::Disconnect);
     });
     connect(ui->grpState, &QGroupBox::toggled, this, [this](bool checked) {
         updateLayouts();
@@ -604,7 +604,7 @@ void FrmMain::initializeVisualizerPanel()
             return;
         }
 
-        communicator()->sb()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
+        communicator()->stateBehavior()->action(GoToAction(pos, m_configuration.joggingModule().feed()));
     });
     connect(ui->dockVisualizer, &QDockWidget::visibilityChanged, this, &FrmMain::visualizerVisibilityChanged);
 }
@@ -1191,7 +1191,7 @@ void FrmMain::onFileOpen(QString filePath)
 
 void FrmMain::onFileSend()
 {
-    communicator()->sb()->action(RunAction(program()));
+    communicator()->stateBehavior()->action(RunAction(program()));
 
 #ifdef WINDOWS
     m_taskBar.setProgress(0, program().count() - 1);
