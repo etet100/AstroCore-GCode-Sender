@@ -17,7 +17,8 @@ Configuration::Configuration()
     m_connection(),
     m_parser(),
     m_machine(),
-    m_jogging()
+    m_jogging(),
+    m_macros()
 {
     // Core modules are owned by Configuration — register them immediately so
     // they are included in the first load/save pass.
@@ -26,6 +27,7 @@ Configuration::Configuration()
     registerModule(&m_parser);
     registerModule(&m_machine);
     registerModule(&m_jogging);
+    registerModule(&m_macros);
 }
 
 bool Configuration::init(const QString& appPath, const QString& configType)

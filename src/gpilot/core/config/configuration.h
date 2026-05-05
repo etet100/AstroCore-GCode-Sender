@@ -7,6 +7,7 @@
 #include "module/configurationparser.h"
 #include "module/configurationmachine.h"
 #include "module/configurationjogging.h"
+#include "module/configurationmacros.h"
 #include "persistence/abstractpersister.h"
 #include "persistence/abstractprovider.h"
 #include <QObject>
@@ -49,6 +50,7 @@ class Configuration : public QObject
         ConfigurationParser& parserModule() { return m_parser; };
         ConfigurationMachine& machineModule() { return m_machine; };
         ConfigurationJogging& joggingModule() { return m_jogging; };
+        ConfigurationMacros& macrosModule() { return m_macros; };
 
     private:
         QString m_language;
@@ -60,6 +62,7 @@ class Configuration : public QObject
         ConfigurationParser m_parser;
         ConfigurationMachine m_machine;
         ConfigurationJogging m_jogging;
+        ConfigurationMacros m_macros;
 
         AbstractPersister* m_persister = nullptr;
         AbstractProvider* m_provider = nullptr;

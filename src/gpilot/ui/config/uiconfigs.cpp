@@ -15,5 +15,4 @@ void UiConfigs::registerAll(Configuration& cfg)
     cfg.registerModule(&m_ui);
     cfg.registerModule(&m_console);
     cfg.registerModule(&m_visualizer);
-    cfg.registerModule(&m_macros);
 }

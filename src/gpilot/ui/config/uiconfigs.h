@@ -7,7 +7,6 @@
 #include "configurationui.h"
 #include "configurationconsole.h"
 #include "configurationvisualizer.h"
-#include "core/config/module/configurationmacros.h"
 
 class Configuration;
 
@@ -25,7 +24,6 @@ class UiConfigs
         ConfigurationUI& ui() { return m_ui; }
         ConfigurationConsole& console() { return m_console; }
         ConfigurationVisualizer& visualizer() { return m_visualizer; }
-        ConfigurationMacros& macros() { return m_macros; }
 
     private:
         UiConfigs() = default;
@@ -35,7 +33,6 @@ class UiConfigs
         ConfigurationUI m_ui;
         ConfigurationConsole m_console;
         ConfigurationVisualizer m_visualizer;
-        ConfigurationMacros m_macros;
 };
 
 #endif // UICONFIGS_H
