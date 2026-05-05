@@ -684,34 +684,34 @@ void PartMainVisualizer::updateToolTracking(QVector3D toolPosition, int processe
 {
     m_toolDrawer.setToolPosition(m_ignoreZ ? QVector3D(toolPosition.x(), toolPosition.y(), 0) : toolPosition);
 
-    GCodeViewParser *parser = m_codeDrawer->viewParser();
-    bool toolOntoolpath = false;
+    // GCodeViewParser *parser = m_codeDrawer->viewParser();
+    // bool toolOntoolpath = false;
 
-    QList<int> drawnLines;
-    QList<LineSegment>& list = parser->getLineSegmentList();
+    // QList<int> drawnLines;
+    // QList<LineSegment>& list = parser->getLineSegmentList();
 
-    for (
-        int i = m_lastDrawnLineIndex;
-        i < list.count() && list[i].getLineNumber() <= (processedLineIndex + 1);
-        i++
-    ) {
-        if (list[i].contains(toolPosition)) {
-            toolOntoolpath = true;
-            m_lastDrawnLineIndex = i;
-            break;
-        }
-        drawnLines << i;
-    }
+    // for (
+    //     int i = m_lastDrawnLineIndex;
+    //     i < list.count() && list[i].getLineNumber() <= (processedLineIndex + 1);
+    //     i++
+    // ) {
+    //     if (list[i].contains(toolPosition)) {
+    //         toolOntoolpath = true;
+    //         m_lastDrawnLineIndex = i;
+    //         break;
+    //     }
+    //     drawnLines << i;
+    // }
 
-    if (toolOntoolpath) {
-        foreach (int i, drawnLines) {
-            list[i].setDrawn(true);
-        }
-        if (!drawnLines.isEmpty()) {
-            m_codeDrawer->update(drawnLines);
-            ui->visualizer->update();
-        }
-    }
+    // if (toolOntoolpath) {
+    //     foreach (int i, drawnLines) {
+    //         list[i].setDrawn(true);
+    //     }
+    //     if (!drawnLines.isEmpty()) {
+    //         m_codeDrawer->update(drawnLines);
+    //         ui->visualizer->update();
+    //     }
+    // }
 }
 
 QRectF PartMainVisualizer::getCodeDrawerBounds() const
