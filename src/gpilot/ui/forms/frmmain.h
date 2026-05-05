@@ -98,7 +98,6 @@ signals:
     void responseReceived(QString command, int tableIndex, QString response);
     void statusReceived(QString status);
     void senderStateChanged(int state);
-    void machineStateChanged(int state);
     void settingsAboutToLoad();
     void settingsLoaded();
     void settingsAboutToSave();

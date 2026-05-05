@@ -3105,11 +3105,6 @@ void FrmMain::updateControlsState(const UiState& state)
         QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked |
         QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
 
-    if (!portOpened) {
-        ui->state->setStatusText(tr("Not connected"), "palette(button)", "palette(text)");
-        emit machineStateChanged(-1);
-    }
-
     if (!running) {
         ui->jog->restoreKeyboardControl();
     }
