@@ -1,8 +1,8 @@
 #include "partmainmacros.h"
 #include "ui_partmainmacros.h"
-#include "ui/utils/flowlayout.h"
 // #include "xswitchbuttonwithlabel.h"
 #include "ui/widgets/macrowidget.h"
+#include <QToolButton>
 
 PartMainMacros::PartMainMacros(QWidget* parent)
     : QWidget(parent)
@@ -10,27 +10,40 @@ PartMainMacros::PartMainMacros(QWidget* parent)
 {
     ui->setupUi(this);
 
-    FlowLayout *flowLayout = new FlowLayout();
-    flowLayout->setContentsMargins(0, 1, 0, 1);
-    flowLayout->setSpacing(2);
+    m_flowLayout = new FlowLayout();
+    m_flowLayout->setContentsMargins(0, 1, 0, 1);
+    m_flowLayout->setSpacing(2);
 
-    QStringList macroNames = {"B.pause", "A.pause", "B.tool change", "A.tool change", "Macro 1", "Macro 2", "Macro 3", "Macro 4", "Macro 5"};
-
-    for (auto &name : macroNames) {
-        // XSwitchButtonWithLabel *btn = new XSwitchButtonWithLabel(this);
-        // btn->setText("<html><body>" + name + " <a href=\"a\" style=\"text-decoration: underline;\"><font size=\"-2\">(edit)</font></a><font size=\"-2\">(run)</font></a></body></html>");
-        // connect(btn, &XSwitchButtonWithLabel::linkActivated, this, [this, name](const QString &link) {
-        //     qDebug() << "Edit macro" << name << link;
-        // });
-        MacroWidget *btn = new MacroWidget(this);
-        btn->setName(name);
-        flowLayout->addWidget(btn);
-    }
-
-    setLayout(flowLayout);
+    setLayout(m_flowLayout);
 }
 
 PartMainMacros::~PartMainMacros()
 {
     delete ui;
+}
+
+void PartMainMacros::updateMacros(const Macros& macros)
+{
+    while (m_flowLayout->count() > 0) {
+        QLayoutItem *item = m_flowLayout->takeAt(0);
+        delete item->widget();
+        delete item;
+    }
+
+    for (int i = 0; i < macros.size(); ++i) {
+        MacroWidget *btn = new MacroWidget(this);
+        btn->setId(i);
+        btn->setName(macros.at(i).name);
+        connect(btn, &MacroWidget::runClicked, this, &PartMainMacros::runMacro);
+        connect(btn, &MacroWidget::editClicked, this, &PartMainMacros::editMacro);
+        m_flowLayout->addWidget(btn);
+    }
+
+    QToolButton *btnNew = new QToolButton(this);
+    btnNew->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    btnNew->setText(tr("Add"));
+    btnNew->setIcon(QIcon(":/images/settings.svg"));
+    btnNew->setIconSize(QSize(16, 16));
+    connect(btnNew, &QToolButton::clicked, this, &PartMainMacros::newMacroRequested);
+    m_flowLayout->addWidget(btnNew);
 }

@@ -235,6 +235,7 @@ SOURCES += main.cpp\
     core/gcode/exporter/gcodeexporter.cpp \
     core/gcode/loader/abstractgcodeloader.cpp \
     core/gcode/loader/gcodethreadedloader.cpp \
+    core/macro/macros.cpp \
     core/heightmap/heightmap.cpp \
     modules/camera/camera.cpp \
     # module/camera/qvideoframeconversionhelper.cpp \
@@ -443,6 +444,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/gcode/loader/abstractgcodeloader.h \
     core/gcode/loader/gcodethreadedloader.h \
     core/globals.h \
+    core/macro/macros.h \
     core/heightmap/heightmap.h \
     modules/camera/camera.h \
     # module/camera/qvideoframeconversionhelper.h \

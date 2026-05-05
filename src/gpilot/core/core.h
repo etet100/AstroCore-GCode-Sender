@@ -103,6 +103,8 @@ class Core : public QObject
             static ConsoleCommandResult forwardAs(QString s) { return {Action::Forward, std::move(s)}; }
         };
 
+        void reloadMacros();
+
         ConsoleCommandResult tryHandleInternalCommand(const QString& command);
         ConsoleCommandResult tryHandleMacro(const QString& command);
         ConsoleCommandResult tryHandleScanned(const QString& command);

@@ -42,6 +42,7 @@
 #include "modules/camera/camera.h"
 #include "ui/config/uiconfigs.h"
 #include "core/heightmap/configurationheightmap.h"
+#include "core/macro/macrocompiler.h"
 #include "ui_frmmain.h"
 #include "ui/widgets/widgetmimedata.h"
 #include "ui/widgets/dockabletitle.h"
@@ -300,6 +301,35 @@ void FrmMain::initializeMacrosPanel()
         updateLayouts();
         ui->macros->setVisible(checked);
     });
+    connect(ui->macros, &PartMainMacros::runMacro, this, [this](int id) {
+        const Macros& macros = Core::instance().macros();
+        if (id >= macros.size()) {
+            return;
+        }
+        const Macro& macro = macros.at(id);
+        communicator()->stateBehavior()->action(RunMacroAction(MacroCompiler::build(macro)));
+        qDebug() << "[FrmMain][Macro] Running macro:" << macro.name;
+    });
+    connect(ui->macros, &PartMainMacros::editMacro, this, [this](int id) {
+        qDebug() << "[FrmMain][Macro] Edit, id:" << id;
+        Macros& macros = Core::instance().macros();
+        if (id >= macros.size()) {
+            return;
+        }
+        Macro& macro = macros.at(id);
+        DlgEditProgram dlg(this);
+        dlg.setProgramText(macro.content);
+        if (dlg.exec() == QDialog::Accepted) {
+            macro.content = dlg.programText();
+        }
+    });
+    connect(ui->macros, &PartMainMacros::newMacroRequested, this, [this]() {
+        qDebug() << "[FrmMain][Macro] New requested";
+    });
+    connect(&Core::instance().macros(), &Macros::updated, this, [this]() {
+        ui->macros->updateMacros(Core::instance().macros());
+    });
+    ui->macros->updateMacros(Core::instance().macros());
 }
 
 void FrmMain::initializeCoordinatesPanel()
@@ -1974,7 +2004,7 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
     FilesManager& fm = FilesManager::instance();
     updateControlsState({ sb, { fm.gcodeOpened(), fm.heightmapOpened() } });
 
-    if (auto *r = qobject_cast<RunningBehavior*>(sb)) {
+    if (auto *r = dynamic_cast<RunningBehavior*>(sb)) {
         bindActiveProgram(&r->program());
     } else {
         bindActiveProgram(&program());

@@ -15,6 +15,8 @@ Core::Core()
     : QObject(nullptr),
       m_timeEstimator(m_timer)
 {
+    connect(&m_configuration.macrosModule(), &ConfigurationMacros::changed,
+            this, &Core::reloadMacros);
 }
 
 Core::~Core()
@@ -188,4 +190,20 @@ void Core::clearRecentFiles(bool heightmapMode)
     }
     m_configuration.save();
     emit recentFilesChanged();
+}
+
+void Core::reloadMacros()
+{
+    m_macros.beginUpdate();
+    m_macros.clear();
+    int id = 0;
+    for (const MacroItem& item : m_configuration.macrosModule().macros()) {
+        Macro macro;
+        macro.name = item.name;
+        macro.enabled = item.enabled;
+        macro.content = item.content;
+        macro.type = static_cast<MacroType>(item.type);
+        m_macros.append(macro);
+    }
+    m_macros.endUpdate();
 }
