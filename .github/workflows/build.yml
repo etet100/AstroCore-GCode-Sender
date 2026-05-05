@@ -222,7 +222,7 @@ jobs:
         shell: cmd
         run: |
           cd build\gpilot
-          windeployqt gpilot.exe
+          windeployqt AstroCore.exe
           for /R .. %%f in (*.dll) do copy /Y "%%f" .
           del /S /Q *.o
           del /S /Q *.cpp
