@@ -340,7 +340,7 @@ void FrmMain::initializeControlPanel()
                 return;
             }
         }
-        communicator()->stateBehavior()->action(ScanTableAction(&heightmap()));
+        communicator()->stateBehavior()->action(ScanTableAction(&heightmap(), ConfigurationHeightmap::instance().probeFeed()));
     });
     connect(ui->control, &PartMainControl::probe, this, [this](ProbeMode mode) {
         ProbeAction::ProbeParameters params;
@@ -2309,7 +2309,6 @@ void FrmMain::onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax 
     hm.beginUpdate();
     hm.setGridSize(gridSize);
     hm.setZBottomTop({ zMinMax.min, zMinMax.max });
-    hm.setProbeFeed(probeFeed);
     hm.setInterpolationStepSize(QSizeF(interpolationStep.width(), interpolationStep.height()));
     hm.endUpdate();
 
@@ -3232,7 +3231,7 @@ bool FrmMain::updateHeightmapGrid()
 
         int lastRow = ui->program->probeModelRowCount() - 1;
         ui->program->setProbeModelData(lastRow, 1, QString("G21G90F%1G0Z%2").
-                        arg(heightmap().probeFeed()).arg(heightmap().zBottomTop().top));
+                        arg(ConfigurationHeightmap::instance().probeFeed()).arg(heightmap().zBottomTop().top));
         ui->program->setProbeModelData(lastRow, 1, QString("G0X0Y0"));
         ui->program->setProbeModelData(lastRow, 1, QString("G38.2Z%1")
                              .arg(heightmap().zBottomTop().bottom));

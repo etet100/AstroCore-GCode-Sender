@@ -12,12 +12,13 @@
 
 using namespace std::chrono_literals;
 
-ScanTableBehavior::ScanTableBehavior(Heightmap *heightmap, QPointF startPos, Heightmap::ScanMode scanMode, int moveFeedRate, QObject *parent)
+ScanTableBehavior::ScanTableBehavior(Heightmap *heightmap, QPointF startPos, Heightmap::ScanMode scanMode, int moveFeedRate, int probeFeed, QObject *parent)
     : AbstractStateBehavior{parent}
     , m_heightmap(heightmap)
     , m_startPos(startPos)
     , m_scanMode(scanMode)
     , m_moveFeedRate(moveFeedRate)
+    , m_probeFeed(probeFeed)
 {}
 
 QString ScanTableBehavior::description()
@@ -202,8 +203,8 @@ void ScanTableBehavior::startProbeAtCurrentPoint()
     ProbingBehavior::ProbeParameters params;
     auto bt = m_heightmap->zBottomTop();
 
-    params.fastFeedRate = m_heightmap->probeFeed();
-    params.slowFeedRate = std::max(10.0, m_heightmap->probeFeed() / 4.0);
+    params.fastFeedRate = m_probeFeed;
+    params.slowFeedRate = std::max(10.0, m_probeFeed / 4.0);
     params.maxDistance = (std::isnan(bt.bottom) || std::isnan(bt.top))
                                  ? 10.0
                                  : std::abs(bt.top - bt.bottom) + 2.0;

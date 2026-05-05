@@ -59,12 +59,14 @@ class Action
 class ScanTableAction : public Action
 {
     public:
-        explicit ScanTableAction(Heightmap* heightmap)
-            : Action(Action::Type::ScanTable), m_heightmap(heightmap) {}
+        explicit ScanTableAction(Heightmap* heightmap, int probeFeed = 100)
+            : Action(Action::Type::ScanTable), m_heightmap(heightmap), m_probeFeed(probeFeed) {}
         Heightmap* heightmap() const { return m_heightmap; }
+        int probeFeed() const { return m_probeFeed; }
 
     private:
         Heightmap* m_heightmap;
+        int m_probeFeed;
 };
 
 class RunAction : public Action

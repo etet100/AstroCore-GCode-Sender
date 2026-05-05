@@ -4,6 +4,7 @@
 
 #include "partmainheightmap.h"
 #include "ui_partmainheightmap.h"
+#include "core/heightmap/configurationheightmap.h"
 #include <QPushButton>
 
 PartMainHeightmap::PartMainHeightmap(QWidget *parent)
@@ -177,7 +178,7 @@ void PartMainHeightmap::setHeightmap(Heightmap* heightmap)
     ui->txtGridY->setValue(heightmap->gridHeight());
     ui->txtGridZBottom->setValue(heightmap->zBottomTop().bottom);
     ui->txtGridZTop->setValue(heightmap->zBottomTop().top);
-    ui->txtProbeFeed->setValue(heightmap->probeFeed());
+    ui->txtProbeFeed->setValue(ConfigurationHeightmap::instance().probeFeed());
     ui->txtInterpolationStepX->setValue(heightmap->interpolationStepSize().width());
     ui->txtInterpolationStepY->setValue(heightmap->interpolationStepSize().height());
     ui->cboInterpolationMode->setCurrentIndex(static_cast<int>(heightmap->interpolationMode()));

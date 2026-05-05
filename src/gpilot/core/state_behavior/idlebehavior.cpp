@@ -114,7 +114,7 @@ bool IdleBehavior::doAction(const Action &action)
                 const ScanTableAction* scanTableAction = dynamic_cast<const ScanTableAction*>(&action);
                 if (scanTableAction) {
                     qDebug() << "[Behavior][Idle] Action: ScanTable";
-                    emit transition(this, new ScanTableBehavior(scanTableAction->heightmap()));
+                    emit transition(this, new ScanTableBehavior(scanTableAction->heightmap(), QPointF(0, 0), Heightmap::ScanMode::Rows, 1000, scanTableAction->probeFeed()));
                 } else {
                     qWarning() << "[Behavior][Idle] ScanTable action cast failed — ScanTableAction expected";
                 }

@@ -140,15 +140,6 @@ void Heightmap::setGridSize(QSize size)
     notifyChanged();
 }
 
-void Heightmap::setProbeFeed(int probeFeed)
-{
-    if (probeFeed == m_probeFeed) {
-        return;
-    }
-    m_probeFeed = probeFeed;
-    notifyChanged();
-}
-
 void Heightmap::setZBottomTop(BottomTop zBottomTop)
 {
     if (zBottomTop.bottom == m_zBottomTop.bottom && zBottomTop.top == m_zBottomTop.top) {

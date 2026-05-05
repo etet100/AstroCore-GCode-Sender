@@ -27,6 +27,7 @@ public:
         QPointF startPos = QPointF(0, 0),
         Heightmap::ScanMode scanMode = Heightmap::ScanMode::Rows,
         int moveFeedRate = 1000,
+        int probeFeed = 100,
         QObject *parent = nullptr
     );
 
@@ -52,6 +53,7 @@ private:
     QPointF              m_startPos;
     Heightmap::ScanMode  m_scanMode;
     int                  m_moveFeedRate;
+    int                  m_probeFeed;
 
     QList<QPointF>  m_grid;
     int             m_currentPoint = 0;

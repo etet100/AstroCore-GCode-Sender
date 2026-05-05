@@ -70,8 +70,6 @@ class Heightmap : public QObject
         MinMax valuesMinMax() const { return m_valuesMinMax; }
         BottomTop zBottomTop() const { return m_zBottomTop; }
         void setZBottomTop(BottomTop zBottomTop);
-        int probeFeed() const { return m_probeFeed; }
-        void setProbeFeed(int probeFeed);
         QPair<int, int> gridIndices(const QPointF& pt_mm) const;
         QList<QPointF> probePoints(QPointF currentPos, ScanMode mode) const;
         double& at(int x, int y);
@@ -107,7 +105,6 @@ class Heightmap : public QObject
         // QRectF m_mapArea;
         BottomTop m_zBottomTop = {NAN, NAN};
         MinMax m_valuesMinMax = {NAN, NAN};
-        int m_probeFeed = 100;
         // array m_size.x * m_size.y
         // row-major order: rows -> cols = [height][width]
         QList<double> m_data;
