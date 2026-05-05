@@ -18,8 +18,20 @@ RunningBehavior::RunningBehavior(GCode &program, QObject *parent)
     : AbstractStateBehavior{parent}
     , m_feedOverride(100)
     , m_spindleOverride(100)
+    , m_ownedProgram(nullptr)
     , m_program(program)
 {}
+
+RunningBehavior::RunningBehavior(std::unique_ptr<GCode> ownedProgram, QObject *parent)
+    : AbstractStateBehavior{parent}
+    , m_feedOverride(100)
+    , m_spindleOverride(100)
+    , m_ownedProgram(std::move(ownedProgram))
+    // m_ownedProgram is declared above m_program, so dereferencing it here is safe.
+    , m_program(*m_ownedProgram)
+{
+    assert(m_ownedProgram && "RunningBehavior: owned GCode must not be null");
+}
 
 void RunningBehavior::onMachineStateChanged(MachineState state)
 {

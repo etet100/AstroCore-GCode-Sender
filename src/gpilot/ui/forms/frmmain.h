@@ -16,6 +16,7 @@
 #include <QProgressDialog>
 #include <QGroupBox>
 #include <QPointer>
+#include <QPointer>
 #include <QMessageBox>
 #include <exception>
 #ifdef WINDOWS
@@ -271,6 +272,9 @@ private:
     // void loadLines(QList<std::string> data);
     void applyLoaderGCode(GCodeLoaderData *data);
     void applyUpdaterGCode(GCodeLoaderData *data);
+
+    void bindActiveProgram(GCode *target);
+    QPointer<GCode> m_activeProgram;
     bool saveChanges(bool heightmapMode);
     void testConverter(int converterIndex = 0);
     // void clearTable();

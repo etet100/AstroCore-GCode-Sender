@@ -63,6 +63,7 @@
 #include "core/utils/filesmanager.h"
 #include "modules/ai/openaimanager.h"
 #include "core/state_behavior/action.h"
+#include "core/state_behavior/runningbehavior.h"
 #include "core/state_behavior/userpromptbehavior.h"
 #include "ui/utils/uipermissions.h"
 // #include "core/state_behavior/joggingbehavior.h"
@@ -454,9 +455,7 @@ void FrmMain::initializeProgramPanel()
     //         ui->visualizer->updateCodeDrawer(indexes);
     //     }
     // });
-    connect(&program(), &GCode::lastSentCommandChanged, this, [this](int index) {
-        ui->program->scrollToIndex(index);
-    });
+    bindActiveProgram(&program());
 
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         Core::instance().clearRecentFiles(m_heightmapMode);
@@ -1975,6 +1974,12 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
     FilesManager& fm = FilesManager::instance();
     updateControlsState({ sb, { fm.gcodeOpened(), fm.heightmapOpened() } });
 
+    if (auto *r = qobject_cast<RunningBehavior*>(sb)) {
+        bindActiveProgram(&r->program());
+    } else {
+        bindActiveProgram(&program());
+    }
+
     // Auto-dismiss the prompt dialog when the user-prompt state goes away
     // (e.g. user resolved the prompt via a side-channel like the toolbar
     // resume button, or another behavior took over via Reset).
@@ -1982,6 +1987,26 @@ void FrmMain::updateOnStateBehaviorChanged(AbstractStateBehavior *sb)
         m_userPromptBox->reject();
         m_userPromptBox = nullptr;
         m_activeUserPromptId.clear();
+    }
+}
+
+void FrmMain::bindActiveProgram(GCode *target)
+{
+    if (m_activeProgram == target) {
+        return;
+    }
+
+    if (m_activeProgram) {
+        disconnect(m_activeProgram.data(), &GCode::lastSentCommandChanged, this, nullptr);
+    }
+
+    ui->program->setProgram(target);
+    m_activeProgram = target;
+
+    if (target) {
+        connect(target, &GCode::lastSentCommandChanged, this, [this](int index) {
+            ui->program->scrollToIndex(index);
+        });
     }
 }
 

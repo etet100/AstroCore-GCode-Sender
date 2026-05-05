@@ -5,6 +5,7 @@
 #ifndef RUNNINGBEHAVIOR_H
 #define RUNNINGBEHAVIOR_H
 
+#include <memory>
 #include "abstractstatebehavior.h"
 #include "core/gcode/gcode.h"
 #include "core/communicator/commandscanner.h"
@@ -26,6 +27,9 @@ class RunningBehavior : public AbstractStateBehavior
         };
 
         explicit RunningBehavior(GCode &program, QObject *parent = nullptr);
+        // Owning variant used for macros — the GCode lifetime matches this behavior's.
+        explicit RunningBehavior(std::unique_ptr<GCode> ownedProgram, QObject *parent = nullptr);
+        GCode &program() const { return m_program; }
         QString description() override { return "Running"; }
         Type type() const override { return Type::Running; }
         QSet<Action::Type> availableActions() const override {
@@ -52,6 +56,7 @@ class RunningBehavior : public AbstractStateBehavior
         Stage m_stage;
         int m_feedOverride;
         int m_spindleOverride;
+        std::unique_ptr<GCode> m_ownedProgram;
         GCode &m_program;
         CommandScanner m_commandScanner;
         int m_lastLookAheadIndex = -1;

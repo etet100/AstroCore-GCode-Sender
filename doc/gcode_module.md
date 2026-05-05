@@ -158,6 +158,39 @@ work:
    which is why the rebind in step 1 must happen **before** the append.
 3. Recalculate time estimation, refresh visualizer, `updateControlsState`.
 
+### Macro execution — owning `RunningBehavior`
+
+A macro is a small, user-triggered G-code program that runs **instead of** the
+main program for a short time. It is implemented as a second
+`RunningBehavior` with its own per-run `GCode`:
+
+- The action `RunMacroAction` (`core/state_behavior/action.h`) carries the
+  freshly built `GCode*`. Ownership is transferred to the consuming behavior
+  via `takeMacro()`.
+- `IdleBehavior` accepts `RunMacro` only — macros can only start from Idle.
+- `RunningBehavior` has an owning constructor that takes
+  `std::unique_ptr<GCode>` and stores it in `m_ownedProgram`. Streaming,
+  pause and abort logic are unchanged because they all go through
+  `m_program`, which references either the external main `GCode` or the
+  owned macro `GCode`.
+- When the macro ends (naturally, aborted, or due to an error) the
+  `RunningBehavior` transitions to `IdleBehavior` like any other run; the
+  state-behavior garbage collector deletes it together with the owned macro
+  `GCode`.
+
+Front-end binding (`FrmMain::bindActiveProgram`) listens to
+`StateBehaviorManager::stateBehaviorChanged` and points the program table
+model at `RunningBehavior::program()` whenever a `RunningBehavior` is active.
+Once the run ends and the state changes to `IdleBehavior`, the binding goes
+back to the main `program()`. The 3-D visualizer is intentionally **not**
+swapped — the main program's tool-path stays on screen while the macro runs.
+
+This design avoids the `insertOverlay()` mechanism (which inlines macro lines
+into the main `GCode` with `overlayId > 0`); overlays remain useful for
+in-program tool-change inserts, while user-triggered macros use the owned
+`RunningBehavior` path so the main program's `commandIndex` and table state
+are left completely untouched.
+
 ---
 
 ## GCodeFilterView  (`gcode/gcodefilterview.h`)

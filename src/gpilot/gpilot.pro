@@ -113,6 +113,7 @@ SOURCES += main.cpp\
     core/config/module/configurationmacros.cpp \
     core/heightmap/configurationheightmap.cpp \
     core/heightmap/interpolator/heightmapinterpolatorfactory.cpp \
+    core/macro/macrocompiler.cpp \
     modules/ai/configurationai.cpp \
     modules/pendant/configurationpendant.cpp \
     ui/config/configurationconsole.cpp \
@@ -310,6 +311,9 @@ HEADERS  += ui/forms/frmmain.h \
     core/config/module/configurationmacros.h \
     core/heightmap/configurationheightmap.h \
     core/heightmap/interpolator/heightmapinterpolatorfactory.h \
+    core/macro/macro.h \
+    core/macro/macros.h \
+    core/macro/macrocompiler.h \
     modules/ai/configurationai.h \
     modules/pendant/configurationpendant.h \
     ui/config/configurationconsole.h \

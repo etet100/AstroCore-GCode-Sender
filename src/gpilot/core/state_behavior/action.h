@@ -9,6 +9,7 @@
 #include <QString>
 #include <QPointF>
 #include <QVector3D>
+#include <utility>
 #include "core/gcode/gcode.h"
 #include "core/heightmap/heightmap.h"
 
@@ -38,6 +39,7 @@ class Action
             Disconnect,
             CheckMode,
             ScanTable,
+            RunMacro,
         };
 
         Action(Type type);
@@ -79,6 +81,19 @@ class RunAction : public Action
 
     private:
         GCode &m_program;
+};
+
+class RunMacroAction : public Action
+{
+    public:
+        explicit RunMacroAction(GCode *macro)
+            : Action(Action::Type::RunMacro)
+            , m_macro(macro) {}
+        // Transfers ownership of the macro GCode to the caller.
+        GCode *takeMacro() const { return std::exchange(m_macro, nullptr); }
+
+    private:
+        mutable GCode *m_macro;
 };
 
 class SaveMachineConfigurationParamAction : public Action

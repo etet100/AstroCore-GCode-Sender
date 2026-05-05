@@ -31,4 +31,5 @@ const QMap<int, QString> Action::NAMES = {
     {Disconnect, "Disconnect"},
     {CheckMode, "Check Mode"},
     {ScanTable, "Scan Table"},
+    {RunMacro, "Run Macro"},
 };

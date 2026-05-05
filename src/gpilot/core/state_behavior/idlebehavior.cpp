@@ -59,6 +59,20 @@ bool IdleBehavior::doAction(const Action &action)
             }
             return true;
 
+        case Action::Type::RunMacro:
+            {
+                const auto &macroAction = static_cast<const RunMacroAction&>(action);
+                qDebug() << "[Behavior][Idle] Action: RunMacro";
+                std::unique_ptr<GCode> owned(macroAction.takeMacro());
+                if (!owned) {
+                    qWarning() << "[Behavior][Idle] RunMacro action carried a null GCode — ignoring";
+
+                    return true;
+                }
+                emit transition(this, new RunningBehavior(std::move(owned)));
+            }
+            return true;
+
         case Action::Type::Jog:
             {
                 JoggingAction joggingAction = static_cast<const JoggingAction&>(action);
