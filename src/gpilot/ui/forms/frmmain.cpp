@@ -315,9 +315,10 @@ void FrmMain::initializeMacrosPanel()
         }
         Macro& macro = macros.at(id);
         DlgEditProgram dlg(this);
-        dlg.setProgramText(macro.content);
+        dlg.setMacro(macro);
         if (dlg.exec() == QDialog::Accepted) {
-            macro.content = dlg.programText();
+            dlg.updateMacro(macro);
+            macros.notifyUpdated();
         }
     });
     connect(ui->macros, &PartMainMacros::newMacroRequested, this, [this]() {

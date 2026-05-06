@@ -32,11 +32,12 @@ public:
     void beginUpdate();
     void endUpdate();
 
+    void notifyUpdated();
+
 signals:
     void updated();
 
 private:
-    void notifyUpdated();
 
     QList<Macro> m_list;
     bool m_multUpdates = false;

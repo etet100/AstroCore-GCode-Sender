@@ -6,11 +6,27 @@
 #include <QJsonObject>
 #include "modules/ai/openaimanager.h"
 
+static QString macroTypeToString(MacroType type)
+{
+    switch (type) {
+        case MacroType::ProgramStart:     return "Program Start";
+        case MacroType::ProgramEnd:       return "Program End";
+        case MacroType::BeforePause:      return "Before Pause";
+        case MacroType::AfterPause:       return "After Pause";
+        case MacroType::BeforeToolChange: return "Before Tool Change";
+        case MacroType::AfterToolChange:  return "After Tool Change";
+        case MacroType::Custom:           return "Custom";
+    }
+    return {};
+}
+
 DlgEditProgram::DlgEditProgram(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DlgEditProgram)
 {
     ui->setupUi(this);
+    ui->widget->hide();
+    setWindowTitle("Edit Program");
 
     ui->buttonBox->button(QDialogButtonBox::Reset)->setText("Annotate with AI");
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton* button) {
@@ -65,4 +81,21 @@ QString DlgEditProgram::programText() const
 void DlgEditProgram::setProgramText(const QString &text)
 {
     ui->txtProgram->setPlainText(text);
+}
+
+void DlgEditProgram::setMacro(const Macro& macro)
+{
+    ui->widget->show();
+    ui->lblType->setText(macroTypeToString(macro.type));
+    ui->txtName->setText(macro.name);
+    ui->chkEnabled->setChecked(macro.enabled);
+    ui->txtProgram->setPlainText(macro.content);
+    setWindowTitle("Edit Macro");
+}
+
+void DlgEditProgram::updateMacro(Macro& macro) const
+{
+    macro.name = ui->txtName->text();
+    macro.enabled = ui->chkEnabled->isChecked();
+    macro.content = ui->txtProgram->toPlainText();
 }
