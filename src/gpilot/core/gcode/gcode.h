@@ -168,7 +168,11 @@ class GCode : public QObject
 
         QString name() const { return m_name; }
         GCodeType type() const { return m_type; }
-        void setName(const QString &name) { m_name = name; }
+        void setName(const QString &name) {
+            if (m_name == name) return;
+            m_name = name;
+            emit nameChanged(m_name);
+        }
         void setType(GCodeType type) { m_type = type; }
 
         // Response storage. Kept in a sparse hash indexed by position to avoid
@@ -210,6 +214,7 @@ class GCode : public QObject
         void loaded();
         // Emitted when execution enters or leaves an overlay (overlayId 0 = main program)
         void activeOverlayChanged(int overlayId);
+        void nameChanged(const QString &name);
 
     private slots:
         void onLinesUpdatedTimer();

@@ -274,6 +274,8 @@ private:
     void applyUpdaterGCode(GCodeLoaderData *data);
 
     void bindActiveProgram(GCode *target);
+    void updateProgramTitle();
+    bool programIsCentralWidget() const;
     QPointer<GCode> m_activeProgram;
     bool saveChanges(bool heightmapMode);
     void testConverter(int converterIndex = 0);

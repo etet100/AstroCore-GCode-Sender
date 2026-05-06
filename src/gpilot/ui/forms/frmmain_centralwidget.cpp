@@ -82,6 +82,11 @@ void FrmMain::switchCentralWidget(CentralWidgetConfig* requestedConfig)
     ui->centralWidget->layout()->addWidget(requestedConfig->widget);
     ui->centralWidgetTitle->setTitle(requestedConfig->title);
 
+    // For the program widget the title is dynamic (program name, type, view).
+    if (requestedConfig->widget == ui->program) {
+        updateProgramTitle();
+    }
+
     UiConfigs::instance().ui().setCentralWidget(requestedConfig->name);
     const QSignalBlocker blocker(requestedConfig->action);
     requestedConfig->action->setChecked(true);

@@ -485,6 +485,9 @@ void FrmMain::initializeProgramPanel()
     // });
     bindActiveProgram(&program());
 
+    connect(ui->program, &PartMainProgram::viewChanged, this,
+            [this](PartMainProgram::View) { updateProgramTitle(); });
+
     connect(ui->program, &PartMainProgram::clearRecentFiles, this, [this]() {
         Core::instance().clearRecentFiles(m_heightmapMode);
     });
@@ -2023,7 +2026,7 @@ void FrmMain::bindActiveProgram(GCode *target)
     }
 
     if (m_activeProgram) {
-        disconnect(m_activeProgram.data(), &GCode::lastSentCommandChanged, this, nullptr);
+        disconnect(m_activeProgram.data(), nullptr, this, nullptr);
     }
 
     ui->program->setProgram(target);
@@ -2033,6 +2036,42 @@ void FrmMain::bindActiveProgram(GCode *target)
         connect(target, &GCode::lastSentCommandChanged, this, [this](int index) {
             ui->program->scrollToIndex(index);
         });
+        connect(target, &GCode::nameChanged, this, [this] {
+            updateProgramTitle();
+        });
+    }
+
+    updateProgramTitle();
+}
+
+bool FrmMain::programIsCentralWidget() const
+{
+    return ui->program->parentWidget() == ui->centralWidget;
+}
+
+void FrmMain::updateProgramTitle()
+{
+    QString title;
+
+    if (ui->program->view() == PartMainProgram::View::Heightmap) {
+        title = tr("Heightmap");
+    } else {
+        const GCode *p = m_activeProgram;
+        if (p && p->type() == GCodeType::Macro) {
+            title = tr("Program - macro `%1`").arg(p->name());
+        } else if (p && p->type() == GCodeType::MainProgram && !p->name().isEmpty()) {
+            title = tr("Program - main `%1`").arg(p->name());
+        } else {
+            title = tr("Program - main");
+        }
+    }
+
+    // Dock path: DockableTitle reacts to windowTitleChanged automatically.
+    ui->dockProgram->setWindowTitle(title);
+
+    // Central widget path: refresh the centralWidgetTitle label too.
+    if (programIsCentralWidget()) {
+        ui->centralWidgetTitle->setTitle(title);
     }
 }
 
