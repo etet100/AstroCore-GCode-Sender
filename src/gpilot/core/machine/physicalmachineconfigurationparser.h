@@ -9,11 +9,13 @@
 class PhysicalMachineConfigurationParser
 {
     public:
-        PhysicalMachineConfigurationParser(ConfigurationMachine &configuration);
-        const PhysicalMachineConfiguration parse(QStringList rawData);
+        PhysicalMachineConfigurationParser() = delete;
+
+        static void setConfiguration(ConfigurationMachine *configuration);
+        static const PhysicalMachineConfiguration parse(QStringList rawData);
 
     private:
-        ConfigurationMachine &m_configuration;
+        static ConfigurationMachine *s_configuration;
 };
 
 #endif // PHYSICALMACHINECONFIGURATIONPARSER_H

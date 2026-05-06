@@ -11,7 +11,7 @@
 class HeightmapLoader
 {
     public:
-        HeightmapLoader();
+        HeightmapLoader() = delete;
 
         static void loadFromFile(const QString fileName, Heightmap& out);
 

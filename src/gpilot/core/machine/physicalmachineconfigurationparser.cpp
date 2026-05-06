@@ -1,13 +1,18 @@
 #include "physicalmachineconfigurationparser.h"
 #include <QRegularExpression>
+#include <QtGlobal>
 
-PhysicalMachineConfigurationParser::PhysicalMachineConfigurationParser(ConfigurationMachine &configuration)
-    : m_configuration(configuration)
+ConfigurationMachine *PhysicalMachineConfigurationParser::s_configuration = nullptr;
+
+void PhysicalMachineConfigurationParser::setConfiguration(ConfigurationMachine *configuration)
 {
+    s_configuration = configuration;
 }
 
 const PhysicalMachineConfiguration PhysicalMachineConfigurationParser::parse(QStringList rawData)
 {
+    Q_ASSERT(s_configuration != nullptr);
+
     static QRegularExpression gs("^\\$(\\d+)\\=([^;]+)$");
 
     QMap<int, double> rawMachineConfiguration;
@@ -26,5 +31,5 @@ const PhysicalMachineConfiguration PhysicalMachineConfigurationParser::parse(QSt
     //     m_configuration
     // );
 
-    return PhysicalMachineConfiguration(rawMachineConfiguration, m_configuration);
+    return PhysicalMachineConfiguration(rawMachineConfiguration, *s_configuration);
 }

@@ -109,8 +109,7 @@ void Communicator::processStatus(QString line)
     // <Run|MPos:-10.780,-9.740,3.000|Bf:0,932|DTG:-20.215,-18.260,0.000|FS:673,1000|WCO:0.000,0.000,0.000>
     m_statusReceived = true;
 
-    static StatusReportProcessor statusProcessor;
-    auto report = statusProcessor.parse(line);
+    auto report = StatusReportProcessor::parse(line);
     if (!report) {
         return;
     }
@@ -268,8 +267,8 @@ void Communicator::processMachineState(MachineState state)
 
 void Communicator::processDeviceConfiguration(QStringList response)
 {
-    PhysicalMachineConfigurationParser configurationParser(m_configuration->machineModule());
-    m_deviceContext.setPhysicalConfig(configurationParser.parse(response));
+    PhysicalMachineConfigurationParser::setConfiguration(&m_configuration->machineModule());
+    m_deviceContext.setPhysicalConfig(PhysicalMachineConfigurationParser::parse(response));
 
     emit machineConfigurationReceived(m_deviceContext.physicalConfig());
 

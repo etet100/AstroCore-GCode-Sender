@@ -1210,8 +1210,7 @@ void FrmMain::onFileOpen(QString filePath)
 
         Core::instance().addRecentHeightmap(filePath);
 
-        HeightmapLoader loader;
-        loader.loadFromFile(filePath, heightmap());
+        HeightmapLoader::loadFromFile(filePath, heightmap());
     }
 }
 
@@ -1773,8 +1772,7 @@ void FrmMain::onLoadHeightmapRequested()
 
     if (filePath != "") {
         Core::instance().addRecentHeightmap(filePath);
-        HeightmapLoader loader;
-        loader.loadFromFile(filePath, heightmap());
+        HeightmapLoader::loadFromFile(filePath, heightmap());
 
         // If using heightmap
         if (ui->heightmap->useMap() && !m_heightmapMode) {
@@ -2225,8 +2223,7 @@ void FrmMain::onActRecentFileTriggered()
             if (!saveHeightmapChanges()) {
                 return;
             }
-            HeightmapLoader loader;
-            loader.loadFromFile(filePath, heightmap());
+            HeightmapLoader::loadFromFile(filePath, heightmap());
         }
     }
 }

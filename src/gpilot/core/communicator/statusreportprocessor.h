@@ -5,34 +5,31 @@
 #ifndef STATUSREPORTPROCESSOR_H
 #define STATUSREPORTPROCESSOR_H
 
-#include <QObject>
 #include <QString>
 #include <QMap>
 #include <optional>
 #include "machinestatus.h"
 #include "core/globals.h"
 
-class StatusReportProcessor : public QObject
+class StatusReportProcessor
 {
-    Q_OBJECT
+    public:
+        StatusReportProcessor() = delete;
 
-public:
-    explicit StatusReportProcessor(QObject *parent = nullptr);
+        static std::optional<MachineStatusReport> parse(const QString &statusLine);
 
-    std::optional<MachineStatusReport> parse(const QString &statusLine);
+    private:
+        static void parseMachineState(const QString &stateStr, MachineStatusReport &status);
+        static void parseMachinePosition(const QString &line, MachineStatusReport &status);
+        static void parseWorkPosition(const QString &line, MachineStatusReport &status);
+        static void parseWorkOffset(const QString &line, MachineStatusReport &status);
+        static void parseOverrides(const QString &line, MachineStatusReport &status);
+        static void parseFeedSpindleSpeed(const QString &line, MachineStatusReport &status);
+        static void parseBuffersStatus(const QString &line, MachineStatusReport &status);
+        static void parsePinsState(const QString &line, MachineStatusReport &status);
+        static void parseAccessoryState(const QString &line, MachineStatusReport &status);
 
-private:
-    void parseMachineState(const QString &stateStr, MachineStatusReport &status);
-    void parseMachinePosition(const QString &line, MachineStatusReport &status);
-    void parseWorkPosition(const QString &line, MachineStatusReport &status);
-    void parseWorkOffset(const QString &line, MachineStatusReport &status);
-    void parseOverrides(const QString &line, MachineStatusReport &status);
-    void parseFeedSpindleSpeed(const QString &line, MachineStatusReport &status);
-    void parseBuffersStatus(const QString &line, MachineStatusReport &status);
-    void parsePinsState(const QString &line, MachineStatusReport &status);
-    void parseAccessoryState(const QString &line, MachineStatusReport &status);
-
-    QMap<QString, MachineState> m_machineStateDictionary;
+        static const QMap<QString, MachineState> s_machineStateDictionary;
 };
 
 #endif // STATUSREPORTPROCESSOR_H

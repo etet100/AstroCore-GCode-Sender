@@ -6,8 +6,6 @@
 #include <QFile>
 #include <QTextStream>
 
-HeightmapLoader::HeightmapLoader() {}
-
 void HeightmapLoader::loadFromFile(const QString fileName, Heightmap& out)
 {
     QFile file(fileName);

@@ -6,28 +6,24 @@
 #include <QRegularExpression>
 #include <QDebug>
 
-StatusReportProcessor::StatusReportProcessor(QObject *parent)
-    : QObject(parent)
-{
-    m_machineStateDictionary = {
-        {"Idle", MachineState::Idle},
-        {"Run", MachineState::Run},
-        {"Hold", MachineState::Hold0},
-        {"Hold:0", MachineState::Hold0},
-        {"Hold:1", MachineState::Hold1},
-        {"Jog", MachineState::Jog},
-        {"Alarm", MachineState::Alarm},
-        {"Door", MachineState::Door0},
-        {"Door:0", MachineState::Door0},
-        {"Door:1", MachineState::Door1},
-        {"Door:2", MachineState::Door2},
-        {"Door:3", MachineState::Door3},
-        {"Check", MachineState::Check},
-        {"Home", MachineState::Home},
-        {"Sleep", MachineState::Sleep},
-        {"Queue", MachineState::Queue}
-    };
-}
+const QMap<QString, MachineState> StatusReportProcessor::s_machineStateDictionary = {
+    {"Idle", MachineState::Idle},
+    {"Run", MachineState::Run},
+    {"Hold", MachineState::Hold0},
+    {"Hold:0", MachineState::Hold0},
+    {"Hold:1", MachineState::Hold1},
+    {"Jog", MachineState::Jog},
+    {"Alarm", MachineState::Alarm},
+    {"Door", MachineState::Door0},
+    {"Door:0", MachineState::Door0},
+    {"Door:1", MachineState::Door1},
+    {"Door:2", MachineState::Door2},
+    {"Door:3", MachineState::Door3},
+    {"Check", MachineState::Check},
+    {"Home", MachineState::Home},
+    {"Sleep", MachineState::Sleep},
+    {"Queue", MachineState::Queue}
+};
 
 std::optional<MachineStatusReport> StatusReportProcessor::parse(const QString &statusLine)
 {
@@ -84,7 +80,7 @@ std::optional<MachineStatusReport> StatusReportProcessor::parse(const QString &s
 
 void StatusReportProcessor::parseMachineState(const QString &stateStr, MachineStatusReport &status)
 {
-    status.state = m_machineStateDictionary.value(stateStr, MachineState::Unknown);
+    status.state = s_machineStateDictionary.value(stateStr, MachineState::Unknown);
 }
 
 void StatusReportProcessor::parseMachinePosition(const QString &line, MachineStatusReport &status)
