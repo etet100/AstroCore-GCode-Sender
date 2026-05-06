@@ -53,15 +53,15 @@ class PartMainHeightmap : public QWidget
         void extremesRequired();
         void areaChanged(QRectF area);
         void showVisualizationChanged(PartMainHeightmap::VisualizationDrawers drawers);
-        void newHeightmapRequested();
-        void loadHeightmapRequested();
+        void newClicked();
         void useHeightmapToggled(bool checked);
         void heightmapModeToggled(bool checked);
         void interpolationModeChanged(Heightmap::InterpolationMode mode);
         void gridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep);
+        void openClicked();
 
     private slots:
-        void requestNewHeightmap();
+        // void newClicked();
         void onAreaChanged();
         void onGridParametersChanged();
 

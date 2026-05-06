@@ -39,7 +39,8 @@ PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     connect(ui->chkUseHeightmap, &QCheckBox::toggled, this, &PartMainHeightmap::useHeightmapToggled);
     connect(ui->cmdHeightMapMode, &QPushButton::toggled, this, &PartMainHeightmap::heightmapModeToggled);
     connect(ui->cmdAreaFromGCode, &QPushButton::clicked, this, &PartMainHeightmap::extremesRequired);
-    connect(ui->cmdNew, &QPushButton::clicked, this, &PartMainHeightmap::requestNewHeightmap);
+    connect(ui->cmdNew, &QPushButton::clicked, this, &PartMainHeightmap::newClicked);
+    connect(ui->cmdOpen, &QPushButton::clicked, this, &PartMainHeightmap::openClicked);
 
     connect(ui->txtGridX, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
     connect(ui->txtGridY, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
@@ -209,12 +210,12 @@ void PartMainHeightmap::emitGridParametersChanged()
     );
 }
 
-void PartMainHeightmap::requestNewHeightmap()
-{
-    ui->cmdHeightMapMode->setChecked(true);
+// void PartMainHeightmap::newClicked()
+// {
+//     ui->cmdHeightMapMode->setChecked(true);
 
-    emit newHeightmapRequested();
-}
+//     emit newClicked();
+// }
 
 void PartMainHeightmap::onAreaChanged()
 {

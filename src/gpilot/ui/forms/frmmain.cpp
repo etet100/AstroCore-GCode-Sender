@@ -517,8 +517,8 @@ void FrmMain::initializeHeightmapPanel()
     connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
         ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
     });
-    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::newHeightmap);
-    connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
+    connect(ui->heightmap, &PartMainHeightmap::newClicked, this, &FrmMain::newHeightmap);
+    connect(ui->heightmap, &PartMainHeightmap::openClicked, this, &FrmMain::openHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
     connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
     connect(ui->heightmap, &PartMainHeightmap::showVisualizationChanged, this, [this](PartMainHeightmap::VisualizationDrawers drawers) {
