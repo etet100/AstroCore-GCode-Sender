@@ -517,7 +517,7 @@ void FrmMain::initializeHeightmapPanel()
     connect(ui->heightmap, &PartMainHeightmap::extremesRequired, this, [this]() {
         ui->heightmap->setHeightmapAreaRect(ui->visualizer->getCodeDrawerBounds());
     });
-    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::fileNew);
+    connect(ui->heightmap, &PartMainHeightmap::newHeightmapRequested, this, &FrmMain::newHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::loadHeightmapRequested, this, &FrmMain::onLoadHeightmapRequested);
     connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
     connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
@@ -722,7 +722,7 @@ void FrmMain::initializeEventFilter()
 
 void FrmMain::initializeMainMenu()
 {
-    connect(ui->actFileNew, &QAction::triggered, this, &FrmMain::fileNew);
+    connect(ui->actFileNew, &QAction::triggered, this, &FrmMain::newProgram);
     connect(ui->actFileOpen, &QAction::triggered, this, &FrmMain::fileOpen);
     connect(ui->actFileSave, &QAction::triggered, this, &FrmMain::fileSave);
     connect(ui->actFileSaveAs, &QAction::triggered, this, &FrmMain::fileSaveAs);
@@ -796,7 +796,7 @@ void FrmMain::closeEvent(QCloseEvent *ce)
     bool mode = m_heightmapMode;
     m_heightmapMode = false;
 
-    if (!saveChanges(false) || !saveChanges(true)) {
+    if (!saveProgramChanges() || !saveHeightmapChanges()) {
         ce->ignore();
         m_heightmapMode = mode;
         return;
@@ -889,7 +889,9 @@ void FrmMain::dropEvent(QDropEvent *de)
     QString fileName = de->mimeData()->urls().at(0).toLocalFile();
 
     if (!m_heightmapMode) {
-        if (!saveChanges(false)) return;
+        if (!saveProgramChanges()) {
+            return;
+        }
 
         // Load dropped g-code file
         if (!fileName.isEmpty()) {
@@ -903,7 +905,9 @@ void FrmMain::dropEvent(QDropEvent *de)
             //loadFile(de->mimeData()->text().split("\n"));
         }
     } else {
-        if (!saveChanges(true)) return;
+        if (!saveHeightmapChanges()) {
+            return;
+        }
 
         // Load dropped heightmap file
         Core::instance().addRecentHeightmap(fileName);
@@ -938,17 +942,6 @@ QMenu *FrmMain::createPopupMenu()
     }
 
     return menu;
-}
-
-void FrmMain::fileNew()
-{
-    if (!saveChanges(m_heightmapMode)) return;
-
-    if (!m_heightmapMode) {
-        newFile();
-    } else {
-        newHeightmap();
-    }
 }
 
 void FrmMain::fileOpen()
@@ -1184,7 +1177,9 @@ void FrmMain::viewCentralVisualizerToggled(bool checked)
 void FrmMain::onFileOpen(QString filePath)
 {
     if (!m_heightmapMode) {
-        if (!saveChanges(false)) return;
+        if (!saveProgramChanges()) {
+            return;
+        }
 
         if (filePath.isEmpty()) {
             filePath = QFileDialog::getOpenFileName(this, tr("Open Heightmap"), lastUsedDirectory(),
@@ -1200,7 +1195,9 @@ void FrmMain::onFileOpen(QString filePath)
 
         loadFile(filePath);
     } else {
-        if (!saveChanges(true)) return;
+        if (!saveHeightmapChanges()) {
+            return;
+        }
 
         if (filePath.isEmpty()) {
             QString filePath = QFileDialog::getOpenFileName(this, tr("Open G-Code"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
@@ -1768,7 +1765,7 @@ void FrmMain::heightmapModeToggled(bool checked)
 
 void FrmMain::onLoadHeightmapRequested()
 {
-    if (!saveChanges(true)) {
+    if (!saveHeightmapChanges()) {
         return;
     }
 
@@ -2219,10 +2216,15 @@ void FrmMain::onActRecentFileTriggered()
     QString filePath = action->text();
 
     if (action != NULL) {
-        if (!saveChanges(m_heightmapMode)) return;
         if (!m_heightmapMode) {
+            if (!saveProgramChanges()) {
+                return;
+            }
             loadFile(filePath);
         } else {
+            if (!saveHeightmapChanges()) {
+                return;
+            }
             HeightmapLoader loader;
             loader.loadFromFile(filePath, heightmap());
         }
@@ -3029,33 +3031,50 @@ void FrmMain::testConverter(int converterIndex)
     updateParser();
 }
 
-bool FrmMain::saveChanges(bool heightMapMode)
+bool FrmMain::saveProgramChanges()
 {
     FilesManager& fm = FilesManager::instance();
-
-    if (!heightMapMode && fm.gcodeModified()) {
-        int res = QMessageBox::warning(this, this->windowTitle(), tr("G-code program file was changed. Save?"),
-                                       QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        if (res == QMessageBox::Cancel) return false;
-        else if (res == QMessageBox::Yes) fileSave();
-
-        fm.setGcodeModified(false);
+    if (!fm.gcodeModified()) {
+        return true;
     }
 
-    if (heightMapMode && fm.heightmapModified()) {
-        int res = QMessageBox::warning(this, this->windowTitle(), tr("Heightmap file was changed. Save?"),
-                                       QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        if (res == QMessageBox::Cancel) return false;
-        else if (res == QMessageBox::Yes) {
-            m_heightmapMode = true;
-            fileSave();
-            m_heightmapMode = heightMapMode;
-            updateRecentFilesMenus(); // Restore g-code files recent menu
-        }
-
-        fm.setHeightmapModified(false);
+    int res = QMessageBox::warning(this, this->windowTitle(),
+                                   tr("G-code program file was changed. Save?"),
+                                   QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    if (res == QMessageBox::Cancel) {
+        return false;
+    }
+    if (res == QMessageBox::Yes) {
+        fileSave();
     }
 
+    fm.setGcodeModified(false);
+    return true;
+}
+
+bool FrmMain::saveHeightmapChanges()
+{
+    FilesManager& fm = FilesManager::instance();
+    if (!fm.heightmapModified()) {
+        return true;
+    }
+
+    int res = QMessageBox::warning(this, this->windowTitle(),
+                                   tr("Heightmap file was changed. Save?"),
+                                   QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    if (res == QMessageBox::Cancel) {
+        return false;
+    }
+    if (res == QMessageBox::Yes) {
+        // fileSave() reads m_heightmapMode to pick the exporter; force it for the duration of the save.
+        bool prevMode = m_heightmapMode;
+        m_heightmapMode = true;
+        fileSave();
+        m_heightmapMode = prevMode;
+        updateRecentFilesMenus();
+    }
+
+    fm.setHeightmapModified(false);
     return true;
 }
 
@@ -3080,8 +3099,12 @@ void FrmMain::resetHeightmap()
 // 4. Zresetować estymację czasu
 // ...
 // 7.
-void FrmMain::newFile()
+void FrmMain::newProgram()
 {
+    if (!saveProgramChanges()) {
+        return;
+    }
+
     ui->program->close();
     ui->visualizer->close();
 
@@ -3112,6 +3135,10 @@ void FrmMain::newFile()
 
 void FrmMain::newHeightmap()
 {
+    if (!saveHeightmapChanges()) {
+        return;
+    }
+
     ui->program->clearHeightmapModel();
     onFileReset();
     ui->heightmap->setOpenFile(tr("Untitled"));

@@ -53,6 +53,7 @@ void Heightmap::assign(QSize size, QPointF startPos, QSizeF stepSize, Interpolat
     updateEndPos();
     updateMinMax();
     endUpdate();
+    markAsNotModified();
 }
 
 void Heightmap::setInterpolationMode(InterpolationMode mode)
@@ -89,11 +90,17 @@ bool Heightmap::isInside(QPointF ptMm) const
 
 void Heightmap::notifyChanged()
 {
+    m_modified = true;
     if (m_updateDepth > 0) {
         m_pendingChange = true;
         return;
     }
     emit changed();
+}
+
+void Heightmap::markAsNotModified()
+{
+    m_modified = false;
 }
 
 void Heightmap::beginUpdate()

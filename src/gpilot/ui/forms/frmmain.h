@@ -105,7 +105,8 @@ signals:
     void settingsSetToDefault();
 
 private slots:
-    void fileNew();
+    void newProgram();
+    void newHeightmap();
     void fileOpen();
     void fileSave();
     void fileSaveAs();
@@ -277,12 +278,11 @@ private:
     void updateProgramTitle();
     bool programIsCentralWidget() const;
     QPointer<GCode> m_activeProgram;
-    bool saveChanges(bool heightmapMode);
+    bool saveProgramChanges();
+    bool saveHeightmapChanges();
     void testConverter(int converterIndex = 0);
     // void clearTable();
     void resetHeightmap();
-    void newFile();
-    void newHeightmap();
 
     // Ui
     UiState currentUiState() const;

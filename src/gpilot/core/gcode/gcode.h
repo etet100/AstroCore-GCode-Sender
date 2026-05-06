@@ -206,6 +206,7 @@ class GCode : public QObject
         void updateHash();
         QString calculateHash() const;
         bool isModified() const;
+        void markAsNotModified();
 
     signals:
         void progressChanged(int progress);

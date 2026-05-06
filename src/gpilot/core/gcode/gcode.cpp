@@ -153,6 +153,11 @@ bool GCode::isModified() const
     return m_contentHash != calculateHash();
 }
 
+void GCode::markAsNotModified()
+{
+    m_contentHash = calculateHash();
+}
+
 void GCode::setCommandSent()
 {
     GCodeItem& item = m_data[m_commandIndex];

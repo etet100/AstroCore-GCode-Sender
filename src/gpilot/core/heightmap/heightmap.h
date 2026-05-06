@@ -86,10 +86,11 @@ class Heightmap : public QObject
 
         void minMax(double value);
 
-        // Suppress changed() signal until endUpdate() is called. Nested calls are counted.
         void beginUpdate();
-        // Resume signal emission; emits changed() once if anything changed inside the block.
         void endUpdate();
+
+        bool isModified() const { return m_modified; }
+        void markAsNotModified();
 
     signals:
         void changed();
@@ -110,6 +111,7 @@ class Heightmap : public QObject
         QList<double> m_data;
         int m_updateDepth = 0;
         bool m_pendingChange = false;
+        bool m_modified = false;
         void notifyChanged();
         void setSize(QSize size);
         void updateEndPos();
