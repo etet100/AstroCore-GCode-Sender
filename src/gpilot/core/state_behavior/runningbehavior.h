@@ -43,6 +43,7 @@ class RunningBehavior : public AbstractStateBehavior
         Result onCommandResponse(QString command, CommandAttributes commandAttributes, CmdStatus cmdStatus, QString response, QStringList fullResponse) override;
         void onResponseProcessed() override;
         void onAlarm(int code) override;
+        void onConnectionStateChanged(ConnectionState state) override;
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         // Running-specific methods
         void handleFeedOverride(int percentage);

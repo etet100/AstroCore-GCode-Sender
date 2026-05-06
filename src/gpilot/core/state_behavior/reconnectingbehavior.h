@@ -17,6 +17,10 @@ class ReconnectingBehavior : public AbstractStateBehavior
         QString description() override { return "Reconnecting"; }
         Type type() const override { return Type::Reconnecting; }
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
+        // Disconnected events during reconnection are expected — the polling
+        // timer in doOnEntry drives the lifecycle. Don't fall through to the
+        // base default that would transition to DisconnectingBehavior.
+        void onConnectionStateChanged(ConnectionState state) override { Q_UNUSED(state); }
 
     protected:
         QString name() const override { return "Reconnecting"; }

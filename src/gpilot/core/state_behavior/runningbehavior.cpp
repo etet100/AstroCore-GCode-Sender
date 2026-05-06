@@ -8,6 +8,7 @@
 #include "idlebehavior.h"
 #include "pausebehavior.h"
 #include "alarmbehavior.h"
+#include "disconnectingbehavior.h"
 #include "toolchangebehavior.h"
 #include "userpromptbehavior.h"
 #include "core/communicator/communicator.h"
@@ -223,6 +224,29 @@ void RunningBehavior::onAlarm(int code)
 {
     Core::instance().timer().stopExecution();
     emit transition(this, new AlarmBehavior(code));
+}
+
+void RunningBehavior::onConnectionStateChanged(ConnectionState state)
+{
+    if (state != ConnectionState::Disconnected) {
+        return;
+    }
+
+    qDebug() << "[Behavior][Running] Connection lost, aborting program";
+
+    Core::instance().timer().stopExecution();
+
+    // Mark every still-unacknowledged program command as aborted so the program
+    // table reflects what actually happened — those commands will never get a
+    // response now that the controller is gone.
+    for (auto &cmd : m_communicator->commandBuffer()->commands()) {
+        if (cmd.tableIndex >= 0) {
+            m_program.setCommandAborted(cmd.tableIndex);
+        }
+    }
+    m_communicator->clearCommandsAndQueue();
+
+    emit transition(this, new DisconnectingBehavior());
 }
 
 void RunningBehavior::doOnMachineState(MachineState state)

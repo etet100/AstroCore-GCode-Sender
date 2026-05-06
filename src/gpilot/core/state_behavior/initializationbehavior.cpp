@@ -31,14 +31,6 @@ void InitializationBehavior::onMachineStateChanged(MachineState state)
 //     // This could be used to transition to other behaviors based on command responses
 // }
 
-void InitializationBehavior::onConnectionStateChanged(ConnectionState state)
-{
-    if (state == ConnectionState::Disconnected) {
-        // Handle disconnection if necessary
-        emit transition(this, new AlarmBehavior()); // Example: transition to alarm on disconnect
-    }
-}
-
 AbstractStateBehavior::Result InitializationBehavior::doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx)
 {
     qDebug() << "[Behavior][Initialization] Entry";

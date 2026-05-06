@@ -161,9 +161,14 @@ class AbstractStateBehavior : public QObject
         // the buffer drains regardless of who sent the last command.
         virtual void onResponseProcessed() {}
 
-        virtual void onConnectionStateChanged(ConnectionState state) {
-            Q_UNUSED(state);
-        }
+        // Default: on Disconnected, transitions to DisconnectingBehavior so the
+        // base onExit() can run its standard cleanup (stops state polling, kills
+        // timers, clears scheduled callbacks, fires asyncCompleted to wake any
+        // co_awaiting coroutine). States that manage the connection lifecycle
+        // themselves (Connecting, Reconnecting, Disconnecting) override to keep
+        // their own logic. States with extra teardown (e.g. Running) override
+        // to clean up their own bookkeeping before transitioning.
+        virtual void onConnectionStateChanged(ConnectionState state);
 
         // Registers a callback to fire when the machine reaches targetState (Unknown = any state).
         // If milliseconds > 0, fires callback(MachineState::Unknown) on timeout.

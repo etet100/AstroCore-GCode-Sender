@@ -13,7 +13,6 @@ class InitializationBehavior : public AbstractStateBehavior
         Type type() const override { return Type::Initialization; }
         void onMachineStateChanged(MachineState state) override;
         // bool onCommandResponse(QString command, QString response, QStringList fullResponse) override;
-        void onConnectionStateChanged(ConnectionState state) override;
         Result doOnEntry(CommunicatorApi *communicator, const EntryContext &ctx) override;
         Result doOnExit(AbstractStateBehavior *next) override;
 

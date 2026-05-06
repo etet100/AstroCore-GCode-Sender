@@ -93,6 +93,10 @@ private slots:
     void onDisconnected();
     void onControlDisconnected();
     void onReadyRead();
+#ifdef VIRTUAL_SIMULATOR_PROCESS
+    void onProcessFinished(int exitCode, QProcess::ExitStatus status);
+    void onProcessErrorOccurred(QProcess::ProcessError error);
+#endif
 };
 
 #endif // VIRTUALCONNECTION_H

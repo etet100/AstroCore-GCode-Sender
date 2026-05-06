@@ -237,6 +237,14 @@ void AbstractStateBehavior::onMachineStateChanged(MachineState state)
     emit machineStateChangedSignal(state);
 }
 
+void AbstractStateBehavior::onConnectionStateChanged(ConnectionState state)
+{
+    if (state == ConnectionState::Disconnected) {
+        qDebug() << QString("[%1] Connection lost, transitioning to Disconnecting").arg(name());
+        emit transition(this, new DisconnectingBehavior());
+    }
+}
+
 AbstractStateBehavior::Result AbstractStateBehavior::onCommandResponse(QString command, CommandAttributes commandAttributes,
                                                         CmdStatus cmdStatus, QString response,
                                                         QStringList fullResponse)

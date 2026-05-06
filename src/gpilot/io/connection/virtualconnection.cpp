@@ -180,12 +180,16 @@ void VirtualConnection::startProcess()
              << "type:" << simulatorType();
 
     m_process = new QProcess(this);
+    connect(m_process, &QProcess::finished, this, &VirtualConnection::onProcessFinished);
+    connect(m_process, &QProcess::errorOccurred, this, &VirtualConnection::onProcessErrorOccurred);
+
     m_process->start(exePath, {m_server->serverName(), simulatorType()});
 
     if (!m_process->waitForStarted(3000)) {
         qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
                    << "Failed to start simulator process:" << m_process->errorString();
-        delete m_process;
+        m_process->disconnect(this);
+        m_process->deleteLater();
         m_process = nullptr;
         setState(ConnectionState::Disconnected);
     }
@@ -197,12 +201,42 @@ void VirtualConnection::killProcess()
         return;
     }
 
-    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Killing simulator process...";
+    // Disconnect signals first to avoid re-entering cleanup() via onProcessFinished().
+    m_process->disconnect(this);
 
-    m_process->kill();
-    m_process->waitForFinished(2000);
-    delete m_process;
+    if (m_process->state() != QProcess::NotRunning) {
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Killing simulator process...";
+        m_process->kill();
+        if (!m_process->waitForFinished(2000)) {
+            qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+                       << "Simulator process did not terminate within timeout.";
+        }
+    } else {
+        qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName)) << "Simulator process already stopped.";
+    }
+
+    m_process->deleteLater();
     m_process = nullptr;
+}
+
+void VirtualConnection::onProcessFinished(int exitCode, QProcess::ExitStatus status)
+{
+    qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+             << "Simulator process finished. exitCode:" << exitCode
+             << "status:" << (status == QProcess::NormalExit ? "NormalExit" : "CrashExit");
+
+    cleanup();
+}
+
+void VirtualConnection::onProcessErrorOccurred(QProcess::ProcessError error)
+{
+    qWarning() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
+               << "Simulator process error:" << error
+               << (m_process ? m_process->errorString() : QString());
+
+    if (error == QProcess::Crashed || error == QProcess::FailedToStart) {
+        cleanup();
+    }
 }
 
 #endif // VIRTUAL_SIMULATOR_PROCESS
