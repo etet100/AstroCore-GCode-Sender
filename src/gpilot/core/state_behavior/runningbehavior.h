@@ -51,6 +51,7 @@ class RunningBehavior : public AbstractStateBehavior
     protected:
         QString name() const override { return "Running"; }
         bool doAction(const Action &action) override;
+        void doOnMachineState(MachineState state) override;
 
     private:
         Stage m_stage;

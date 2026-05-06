@@ -225,6 +225,40 @@ void RunningBehavior::onAlarm(int code)
     emit transition(this, new AlarmBehavior(code));
 }
 
+void RunningBehavior::doOnMachineState(MachineState state)
+{
+    // Fallback for the missed-Run race: a very short program (e.g. M5 + M30)
+    // can complete fast enough that the device transitions Idle -> Run -> Idle
+    // entirely between two status polls. Then onMachineStateChanged never
+    // fires (polled state matches the cached one), and we'd stay parked in
+    // NoMoreCommands forever.
+    //
+    // doOnMachineState fires on every poll, so it catches this case. We only
+    // act when onMachineStateChanged would NOT have fired — m_machineState is
+    // updated AFTER this hook, so a match here means no change was detected.
+
+    if (state != MachineState::Idle) {
+        return;
+    }
+    if (m_stage != Stage::NoMoreCommands) {
+        return;
+    }
+    if (state != m_communicator->machineState()) {
+        // State actually changed — onMachineStateChanged handled it.
+        return;
+    }
+    if (!m_communicator->isCommandBufferEmpty() || !m_communicator->isQueueEmpty()) {
+        return;
+    }
+    if (m_program.hasMoreCommands()) {
+        return;
+    }
+
+    qDebug() << "[Behavior][Running] Polled Idle without state change (missed Run pulse), transitioning to Idle";
+    Core::instance().timer().stopExecution();
+    emit transition(this, new IdleBehavior());
+}
+
 bool RunningBehavior::doAction(const Action &action)
 {
     if (action.type() == Action::Type::Pause && m_stage == Stage::Running) {
