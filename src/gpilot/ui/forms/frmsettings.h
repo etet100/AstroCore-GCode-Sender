@@ -10,7 +10,7 @@
 #include <QListWidgetItem>
 #include <QSettings>
 #include <QGroupBox>
-#include <QVector3D
+#include <QVector3D>
 #include "core/config/configuration.h"
 #include "utils/validators.h"
 #include "colorpicker.h"

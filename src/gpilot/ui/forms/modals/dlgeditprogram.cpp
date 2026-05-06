@@ -96,6 +96,6 @@ void DlgEditProgram::setMacro(const Macro& macro)
 void DlgEditProgram::updateMacro(Macro& macro) const
 {
     macro.name = ui->txtName->text();
-    macro.enabled = ui->chkEnabled->isChecked();
+    macro.enabled = ui->chkEnabled->checked();
     macro.content = ui->txtProgram->toPlainText();
 }
