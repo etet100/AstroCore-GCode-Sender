@@ -25,6 +25,9 @@ class PartMainProgram : public QWidget
     Q_OBJECT
 
     public:
+        enum class View { Program, Heightmap };
+
+    public:
         explicit PartMainProgram(QWidget* parent = nullptr);
         ~PartMainProgram();
 
@@ -65,6 +68,8 @@ class PartMainProgram : public QWidget
         // void clearProgramHeightmapModel();
         // void clearHeightmapModel();
         // void setProgramCommentsVisible(bool visible);
+
+        View view() const;
 
         void setAutoScroll(bool enabled);
         bool isAutoScroll() const;
@@ -115,6 +120,7 @@ class PartMainProgram : public QWidget
         void deleteLinesRequested(int from, int to);
         // void modelDataChanged(QModelIndex i1, QModelIndex i2);
         void heightmapDataChangedByUser();
+        void viewChanged(PartMainProgram::View view);
 
     protected:
         bool eventFilter(QObject *obj, QEvent *event) override;
@@ -137,6 +143,7 @@ class PartMainProgram : public QWidget
     private:
         Ui::PartMainProgram* ui;
         QMenu* m_tableMenu;
+        View m_view = View::Program;
         QAction* m_actionAutoScroll = nullptr;
         QAction* m_actionShowComments = nullptr;
 

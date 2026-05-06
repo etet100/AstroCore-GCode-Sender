@@ -74,6 +74,8 @@ struct OverlayInfo {
     int count;          // number of commands in this overlay
 };
 
+enum class GCodeType { MainProgram, Macro };
+
 class GCode : public QObject
 {
     Q_OBJECT
@@ -164,6 +166,11 @@ class GCode : public QObject
         bool isOverlayItem(int index) const;
         int mainCount() const;
 
+        QString name() const { return m_name; }
+        GCodeType type() const { return m_type; }
+        void setName(const QString &name) { m_name = name; }
+        void setType(GCodeType type) { m_type = type; }
+
         // Response storage. Kept in a sparse hash indexed by position to avoid
         // paying a QString header per item. "ok" responses are not stored;
         // they are inferred from the Processed state. Only error/custom
@@ -173,6 +180,8 @@ class GCode : public QObject
         void clearResponses();
 
     private:
+        QString m_name;
+        GCodeType m_type = GCodeType::MainProgram;
         int m_commandIndex;
         int m_processedCommandIndex;
         bool m_iterationStarted = false;

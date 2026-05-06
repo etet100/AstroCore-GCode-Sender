@@ -6,6 +6,7 @@
 #include "core/gcode/parser/gcodeparser.h"
 #include "core/gcode/parser/gcodeviewparser.h"
 #include <QDebug>
+#include <QFileInfo>
 #include <QTextStream>
 
 static GCodeItemGroup groupFromSegment(const PointSegment *ps, bool isComment)
@@ -47,6 +48,8 @@ void GCodeLoader::loadFromFile(const QString &fileName)
     parser.reservePoints(estimatedLines);
 
     GCode* gcode = new GCode();
+    gcode->setType(GCodeType::MainProgram);
+    gcode->setName(QFileInfo(fileName).baseName());
     gcode->reserve(estimatedLines);
 
     QTextStream stream(&file);
@@ -117,6 +120,7 @@ std::optional<GCodeLoaderData> GCodeLoader::loadFromLines(const QStringList &lin
     parser.reservePoints(size);
 
     GCode* gcode = new GCode();
+    gcode->setType(GCodeType::MainProgram);
     gcode->reserve(size);
 
     int lastPercentage = -1;

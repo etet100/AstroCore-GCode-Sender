@@ -91,6 +91,8 @@ void PartMainProgram::setupUi()
         ui->btnHeightmap->setChecked(false);
         ui->panProgram->setVisible(true);
         showProgramTable();
+        m_view = View::Program;
+        emit viewChanged(View::Program);
     });
     connect(ui->btnHeightmap, &QPushButton::clicked, this, [this]() {
         //don't allow unchecking
@@ -102,6 +104,8 @@ void PartMainProgram::setupUi()
         ui->btnProgram->setChecked(false);
         ui->panProgram->setVisible(false);
         showHeightmapTable();
+        m_view = View::Heightmap;
+        emit viewChanged(View::Heightmap);
     });
 
     setHeightMapVisible(false);
@@ -161,6 +165,11 @@ void PartMainProgram::setAutoScroll(bool enabled)
 bool PartMainProgram::isAutoScroll() const
 {
     return m_actionAutoScroll->isChecked();
+}
+
+PartMainProgram::View PartMainProgram::view() const
+{
+    return m_view;
 }
 
 void PartMainProgram::setHeightMapVisible(bool visible)

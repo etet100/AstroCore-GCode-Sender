@@ -4,7 +4,10 @@
 
 GCode *MacroCompiler::build(const Macro &macro)
 {
-    return build(macro.content);
+    GCode *gcode = build(macro.content);
+    gcode->setName(macro.name);
+    gcode->setType(GCodeType::Macro);
+    return gcode;
 }
 
 GCode *MacroCompiler::build(const QString &content)

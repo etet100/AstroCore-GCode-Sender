@@ -1177,8 +1177,6 @@ void FrmMain::viewCentralVisualizerToggled(bool checked)
     centralWidgetActionTriggered(checked);
 }
 
-
-
 void FrmMain::onFileOpen(QString filePath)
 {
     if (!m_heightmapMode) {
