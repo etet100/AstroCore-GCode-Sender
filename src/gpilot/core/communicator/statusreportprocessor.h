@@ -8,7 +8,7 @@
 #include <QString>
 #include <QMap>
 #include <optional>
-#include "machinestatus.h"
+#include "core/machine/machinestatus.h"
 #include "core/globals.h"
 
 class StatusReportProcessor

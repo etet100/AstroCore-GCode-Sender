@@ -10,7 +10,6 @@
 #include "positiontracker.h"
 #include "core/state_behavior/abstractstatebehavior.h"
 #include "statebehaviormanager.h"
-#include "machinestatus.h"
 #include "overrides.h"
 #include "commandbuffer.h"
 #include "commandscanner.h"
@@ -56,7 +55,7 @@ class Communicator : public QObject
         AbstractConnection* connection();
         // void stopUpdatingState();
         // void startUpdatingState(int interval = -1);
-        const MachineState& machineState() const { return m_machineState; }
+        MachineState machineState() const { return m_deviceContext.machineState(); }
         DeviceContext& deviceContext() { return m_deviceContext; }
         const DeviceContext& deviceContext() const { return m_deviceContext; }
         void setMachineType(MachineType type) { m_deviceContext.setMachineType(type); }
@@ -88,8 +87,6 @@ class Communicator : public QObject
         CommandScanner *m_commandScanner = nullptr;
         CommunicatorApi *m_comApi;
 
-        // States
-        MachineState m_machineState;
         StateBehaviorManager m_sbManager;
 
         QTimer m_startTime;
@@ -121,7 +118,6 @@ class Communicator : public QObject
         int m_lastAlarmCode = 0;
 
         bool execute(AbstractStateBehavior *statebehavior, bool force = false);
-        void setMachineStateAndEmitSignal(MachineState);
         void processOffsetsVars(QStringList response);
         static bool dataIsFloating(QString data);
         void processStatus(QString line);

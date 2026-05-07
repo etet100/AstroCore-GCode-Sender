@@ -296,7 +296,6 @@ HEADERS  += ui/forms/frmmain.h \
     core/communicator/commandscanner.h \
     core/communicator/positiontracker.h \
     core/communicator/overrides.h \
-    core/communicator/machinestatus.h \
     core/communicator/statebehaviorgarbagecollector.h \
     core/communicator/statebehaviormanager.h \
     core/communicator/statusreportprocessor.h \
@@ -349,6 +348,7 @@ HEADERS  += ui/forms/frmmain.h \
     core/heightmap/interpolator/heightmapnearestneighbourinterpolator.h \
     core/heightmap/loader/heightmaploader.h \
     core/machine/devicecontext.h \
+    core/machine/machinestatus.h \
     core/machine/physicalmachineconfiguration.h \
     core/machine/physicalmachineconfigurationparser.h \
     core/machine/modalstateparser.h \

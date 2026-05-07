@@ -151,9 +151,8 @@ void Communicator::deinit()
 
 void Communicator::resetStateVariables()
 {
-    m_machineState = MachineState::Unknown;
-    if (m_posTracker) m_posTracker->reset();
     m_deviceContext.reset();
+    if (m_posTracker) m_posTracker->reset();
 }
 
 // Called by CommandBuffer after a command response is fully processed.
@@ -346,14 +345,6 @@ bool Communicator::startReconnecting(AbstractConnection *connection)
 AbstractConnection *Communicator::connection()
 {
     return m_connection;
-}
-
-void Communicator::setMachineStateAndEmitSignal(MachineState state)
-{
-    if (m_machineState != state) {
-        m_machineState = state;
-        emit machineStateChanged(state);
-    }
 }
 
 bool Communicator::isMachineConfigurationReady() const

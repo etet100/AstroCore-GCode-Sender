@@ -159,11 +159,13 @@ void Communicator::processStatus(QString line)
         emit floodStateReceived(report->floodEnabled);
     }
 
+    m_deviceContext.setLastStatusReport(*report);
+
     emit machineStatusReportReceived(*report);
     emit workPosChanged(m_posTracker->workPos());
 
     m_posTracker->processNewToolPosition(
-        m_machineState == MachineState::Check,
+        m_deviceContext.machineState() == MachineState::Check,
         true
     );
 
@@ -185,9 +187,9 @@ void Communicator::processMachineState(MachineState state)
 
     // Update status
     AbstractStateBehavior* sb = m_sbManager.current();
-    if (state != m_machineState) {
-        // emit deviceStateChanged(state);
+    if (state != m_deviceContext.machineState()) {
         sb->onMachineStateChanged(state);
+        emit machineStateChanged(state);
     }
     sb->onMachineState(state);
 
@@ -254,8 +256,6 @@ void Communicator::processMachineState(MachineState state)
     //     }
     // }
 
-    // Store device state
-    setMachineStateAndEmitSignal(state);
 }
 
 void Communicator::processDeviceConfiguration(QStringList response)
@@ -738,8 +738,6 @@ void Communicator::processWelcomeMessageDetected(QString message)
 {
     return;
     emit welcomeMessageReceived(message);
-
-    setMachineStateAndEmitSignal(MachineState::Unknown);
 
     // m_streamer->reset();
     //m_form->fileCommandIndex() = 0;
