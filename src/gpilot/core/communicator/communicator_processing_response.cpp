@@ -209,13 +209,6 @@ void Communicator::processMachineState(MachineState state)
     //     ui->glwVisualizer->setSpendTime(time.addMSecs(elapsed));
     // }
 
-    // Test for job complete
-    if ((m_senderState == SenderState::Stopping) &&
-        ((state == MachineState::Idle && m_machineState == MachineState::Run) || state == MachineState::Check))
-    {
-        completeTransfer();
-    }
-
     // Abort
     static double x = sNan;
     static double y = sNan;
@@ -358,11 +351,6 @@ void Communicator::processGCodeParserState(CommandAttributes commandAttributes, 
 
             // Update status in visualizer window
             emit parserStateReceived(modal->raw);
-
-            // Store parser status
-            if ((m_senderState == SenderState::Transferring) || (m_senderState == SenderState::Stopping)) {
-                storeParserState();
-            }
 
             if (modal->spindleSpeed != -1) {
                 emit spindleSpeedReceived(modal->spindleSpeed);
@@ -751,7 +739,6 @@ void Communicator::processWelcomeMessageDetected(QString message)
     return;
     emit welcomeMessageReceived(message);
 
-    setSenderStateAndEmitSignal(SenderState::Stopped);
     setMachineStateAndEmitSignal(MachineState::Unknown);
 
     // m_streamer->reset();
@@ -767,9 +754,6 @@ void Communicator::processWelcomeMessageDetected(QString message)
 
     // sendCommand(CommandSource::System, "$$", TABLE_INDEX_UTIL1);
     // sendCommand(CommandSource::System, "$#", TABLE_INDEX_UTIL1, true);
-
-    // @TODO moved to senderStateReceived handler, is it too soon??
-    // m_form->updateControlsState();
 
 }
 

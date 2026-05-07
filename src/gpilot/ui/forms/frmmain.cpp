@@ -207,7 +207,6 @@ void FrmMain::initializeCommunicator()
         ui->state->setMachineStateReport(report.toMarkdown());
     });
     connect(communicator(), &Communicator::machineStateChanged, this, &FrmMain::onMachineStateChanged);
-    connect(communicator(), &Communicator::senderStateReceived, this, &FrmMain::onSenderStateReceived);
     connect(communicator(), SIGNAL(spindleStateReceived(bool)), this, SLOT(onSpindleStateReceived(bool)));
     connect(communicator(), &Communicator::floodStateReceived, this, &FrmMain::onFloodStateReceived);
     connect(communicator(), &Communicator::commandSent, this, &FrmMain::onCommandSent);
@@ -1890,13 +1889,6 @@ void FrmMain::onMachineStateReceived(MachineState state)
     if (communicator()->stateBehavior()->is(AbstractStateBehavior::Type::Running)) {
         ui->visualizer->setTimeEstimation(timeEstimator());
     }
-
-    updateControlsState();
-}
-
-void FrmMain::onSenderStateReceived(SenderState state)
-{
-    Q_UNUSED(state);
 
     updateControlsState();
 }

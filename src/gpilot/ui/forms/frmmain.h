@@ -149,7 +149,6 @@ private slots:
     void onWorkPosChanged(QVector3D pos);
     void onMachineStateChanged(MachineState state);
     void onMachineStateReceived(MachineState state);
-    void onSenderStateReceived(SenderState state);
     void onSpindleStateReceived(bool state);
     void onFloodStateReceived(bool state);
     void onParserStateReceived(QString state);

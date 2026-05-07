@@ -135,7 +135,6 @@ Communicator::Communicator(
     connect(&m_stateBehaviorTransitionTimer, &QTimer::timeout, this, &Communicator::processStateBehaviorTransition);
     m_stateBehaviorTransitionTimer.start(1000);
 
-    setSenderStateAndEmitSignal(SenderState::Stopped);
 }
 
 Communicator::~Communicator()
@@ -153,7 +152,6 @@ void Communicator::deinit()
 void Communicator::resetStateVariables()
 {
     m_machineState = MachineState::Unknown;
-    m_senderState = SenderState::Unknown;
     if (m_posTracker) m_posTracker->reset();
     m_deviceContext.reset();
 }
@@ -350,16 +348,6 @@ AbstractConnection *Communicator::connection()
     return m_connection;
 }
 
-void Communicator::setSenderStateAndEmitSignal(SenderState state)
-{
-    if (m_senderState != state) {
-        m_senderState = state;
-        emit senderStateChanged(state);
-    }
-
-    emit senderStateReceived(state);
-}
-
 void Communicator::setMachineStateAndEmitSignal(MachineState state)
 {
     if (m_machineState != state) {
@@ -371,11 +359,6 @@ void Communicator::setMachineStateAndEmitSignal(MachineState state)
 bool Communicator::isMachineConfigurationReady() const
 {
     return m_deviceContext.hasPhysicalConfig();
-}
-
-bool Communicator::isSenderState(SenderState state) const
-{
-    return m_senderState == state;
 }
 
 // void Communicator::probe()
@@ -412,7 +395,6 @@ void Communicator::restoreParserState()
 
 void Communicator::completeTransfer()
 {
-    setSenderStateAndEmitSignal(SenderState::Stopped);
     m_storedParserState.clear();
 
     if (m_configuration->senderModule().useProgramEndCommands())
@@ -496,4 +478,3 @@ void Communicator::stopQueryingMachineState()
         m_queryMachineStateTimer = nullptr;
     }
 }
-

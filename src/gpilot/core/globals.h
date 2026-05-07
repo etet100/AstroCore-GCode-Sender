@@ -222,17 +222,6 @@ enum class JoggindDir {
 
 typedef QVector3D JoggingVector;
 
-enum class SenderState {
-    Unknown = -1,
-    Transferring = 0,
-    Pausing = 1,
-    Paused = 2,
-    Stopping = 3,
-    Stopped = 4,
-    ChangingTool = 5,
-    Pausing2 = 6
-};
-
 enum class MachineState : int {
     Unknown = 0,
     Idle = 1,

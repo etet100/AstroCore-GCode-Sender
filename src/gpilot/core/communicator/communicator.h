@@ -56,7 +56,6 @@ class Communicator : public QObject
         AbstractConnection* connection();
         // void stopUpdatingState();
         // void startUpdatingState(int interval = -1);
-        const SenderState& senderState() const { return m_senderState; }
         const MachineState& machineState() const { return m_machineState; }
         DeviceContext& deviceContext() { return m_deviceContext; }
         const DeviceContext& deviceContext() const { return m_deviceContext; }
@@ -65,11 +64,6 @@ class Communicator : public QObject
         PositionTracker* positionTracker() { return m_posTracker; }
         // void sendStreamerCommandsUntilBufferIsFull();
         bool isMachineConfigurationReady() const;
-        bool isSenderState(SenderState state) const;
-        template<typename... Args>
-        bool isSenderState(SenderState state, Args... args) const {
-            return isSenderState(state) || isSenderState(args...);
-        }
 
         Overrides* overrides() { return m_overrides; }
         CommandBuffer* commandBuffer() { return m_commandBuffer; }
@@ -95,7 +89,6 @@ class Communicator : public QObject
         CommunicatorApi *m_comApi;
 
         // States
-        SenderState m_senderState;
         MachineState m_machineState;
         StateBehaviorManager m_sbManager;
 
@@ -128,7 +121,6 @@ class Communicator : public QObject
         int m_lastAlarmCode = 0;
 
         bool execute(AbstractStateBehavior *statebehavior, bool force = false);
-        void setSenderStateAndEmitSignal(SenderState);
         void setMachineStateAndEmitSignal(MachineState);
         void processOffsetsVars(QStringList response);
         static bool dataIsFloating(QString data);
@@ -165,8 +157,6 @@ class Communicator : public QObject
         void connectionStateChanged(ConnectionState state);
         void alarm(int code);
         void welcomeMessageReceived(QString message);
-        void senderStateReceived(SenderState state);
-        void senderStateChanged(SenderState state);
         void machineStateChanged(MachineState state);
         void machineStatusReportReceived(MachineStatusReport report);
         void machineConfigurationReceived(PhysicalMachineConfiguration configuration);
