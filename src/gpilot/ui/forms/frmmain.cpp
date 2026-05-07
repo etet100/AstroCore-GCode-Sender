@@ -1225,7 +1225,7 @@ void FrmMain::onFileSend()
 
 void FrmMain::onFilePause(bool checked)
 {
-    static SenderState s;
+    // static SenderState s;
 
     // if (checked) {
     //     //PAUSE
