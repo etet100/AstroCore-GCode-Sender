@@ -518,6 +518,7 @@ void FrmMain::initializeHeightmapPanel()
     });
     connect(ui->heightmap, &PartMainHeightmap::newClicked, this, &FrmMain::newHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::openClicked, this, &FrmMain::openHeightmap);
+    connect(ui->heightmap, &PartMainHeightmap::saveClicked, this, &FrmMain::saveHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
     connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
     connect(ui->heightmap, &PartMainHeightmap::showVisualizationChanged, this, [this](PartMainHeightmap::VisualizationDrawers drawers) {
@@ -1057,13 +1058,22 @@ void FrmMain::openHeightmap()
 
 void FrmMain::saveHeightmap()
 {
-    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
-    if (fileName.isEmpty()) {
-        return;
+    FilesManager& fm = FilesManager::instance();
+    QString fileName = fm.heightmapFilePath();
+
+    if (fm.heightmapOpened()) {
+        fileName = QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
+        if (fileName.isEmpty()) {
+            return;
+        }
     }
 
     try {
         HeightmapExporter::exportToFile(heightmap(), fileName);
+        fm.setHeightmapFilePath(fileName);
+        fm.setHeightmapModified(false);
+        heightmap.markAsNotModified();
+        ui->heightmap->setOpenFile(fileName.mid(fileName.lastIndexOf("/") + 1));
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
         return;

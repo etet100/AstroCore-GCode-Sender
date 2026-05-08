@@ -41,6 +41,7 @@ PartMainHeightmap::PartMainHeightmap(QWidget *parent)
     connect(ui->cmdAreaFromGCode, &QPushButton::clicked, this, &PartMainHeightmap::extremesRequired);
     connect(ui->cmdNew, &QPushButton::clicked, this, &PartMainHeightmap::newClicked);
     connect(ui->cmdOpen, &QPushButton::clicked, this, &PartMainHeightmap::openClicked);
+    connect(ui->cmdSave, &QPushButton::clicked, this, &PartMainHeightmap::saveClicked);
 
     connect(ui->txtGridX, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
     connect(ui->txtGridY, &QDoubleSpinBox::valueChanged, this, &PartMainHeightmap::emitGridParametersChanged);
