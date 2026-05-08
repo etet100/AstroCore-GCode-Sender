@@ -203,72 +203,85 @@ AstroCore includes a custom log browser window that allows you to view and filte
 Application states:
 -------------------
 
-The diagram below shows the possible states of the application. Transitions between states are triggered by events such as changing the state of the machine, clicking buttons, etc.
+Each state is managed by a dedicated behavior class in [src/gpilot/core/state_behavior/](src/gpilot/core/state_behavior/). The state machine itself is managed by `StateBehaviorManager`.
+
+There are two kinds of transitions:
+- **Replace** — current state is destroyed and a new one starts.
+- **Suspend [S]** — current state is paused and pushed to a stack; the new state runs on top. When it finishes, the previous state is restored.
 
 ```mermaid
 stateDiagram-v2
-%% Nodes
-    Idle
-    Running
-    Pausing
-    Paused
-    Resuming
-    Stopping
-    Stopped
-    Running
-    Run
-    Halted
-    Jogging
-    JoggingWaitingForIdle
-    Halted
-    Error
-    SoftReset
-    ChangingTool
-    [AnyState]
+    direction TB
 
-    state Pause {
-        Pausing --> Paused
-    }
+    [*] --> Initialization
 
-    state Jog {
-        Jogging --> JoggingWaitingForIdle
-        JoggingWaitingForIdle --> Jogging
-    }
+    Initialization --> Connecting : connect action
 
-%% Edge connections between nodes
-    [*] --> Connecting
-    Connecting --> Connected
-    Connecting --> ConnectingError
-    ConnectingError --> Connecting : wait 3s
-    Connected --> Idle : if SoftReset enabled
-    Connected --> SoftReset : if SoftReset disabled
-    SoftReset --> Idle
-    Idle --> Run : run clicked
-    Run --> Running
-    Running --> Pausing : use pause or g-code
-    Running --> Stopping
-    Running --> Halted
-    Running --> ChangingTool
-    ChangingTool --> Stopping
-    ChangingTool --> Running
-    Paused --> Resuming : "on resume" g-code
-    Paused --> Running
-    Paused --> Stopping : stop clicked
-    Halted --> Running
-    Halted --> Stopping
-    Idle --> Homing : home clicked
-    Homing --> Idle
-    Resuming --> Running
-    Stopping --> Stopped
-    Stopped --> Idle
-    Idle --> Jog
-    Jog --> Idle
+    Connecting --> Reset : connected, resetAfterConnecting=true
+    Connecting --> Handshake : connected, resetAfterConnecting=false
+    Connecting --> Connecting : retry after 2s
 
-    [AnyState] --> Error: If error
-    Error --> [*] : Error
+    Reset --> Handshake : startup message received
+    Reset --> Alarm : alarm during reset
+    Reset --> Error : timeout
 
-    [AnyState] --> Disconnected
-    Disconnected --> [*] : Connecting
+    Handshake --> Idle : machine Idle/Home/Sleep
+    Handshake --> Alarm : machine Alarm
+    Handshake --> CheckMode : machine Check
+    Handshake --> ExternalProcess : machine Run/Jog/Hold
+
+    ExternalProcess --> Idle : machine becomes Idle
+    ExternalProcess --> Alarm : alarm
+
+    Idle --> Running : run action
+    Idle --> Homing : home [S]
+    Idle --> Jogging : jog [S]
+    Idle --> GoTo : goto [S]
+    Idle --> Probing : probe [S]
+    Idle --> ScanTable : scan table
+    Idle --> CheckMode : check mode
+    Idle --> Disconnecting : disconnect
+    Idle --> Alarm : alarm
+
+    Running --> Idle : program complete
+    Running --> Pause : pause action [S]
+    Running --> UserPrompt : error + machine hold [S]
+    Running --> ToolChange : M6 detected [S]
+    Running --> Alarm : alarm
+    Running --> Disconnecting : disconnected
+
+    Pause --> Running : resume / machine runs again
+    Pause --> Idle : machine becomes idle
+    Pause --> Alarm : alarm
+
+    ToolChange --> Running : tool change complete
+    UserPrompt --> Running : user responds
+
+    Homing --> Idle : homing complete
+    Homing --> Alarm : alarm
+
+    Jogging --> Idle : complete / abort
+    Jogging --> Alarm : alarm
+
+    GoTo --> Idle : move complete
+    GoTo --> Alarm : alarm
+    GoTo --> Error : failure
+
+    Probing --> Idle : probe complete
+    Probing --> Alarm : alarm
+
+    ScanTable --> Idle : scan complete / abort
+    ScanTable --> UserPrompt : error during scan [S]
+
+    CheckMode --> Idle : exit check mode
+    CheckMode --> Alarm : alarm
+
+    Alarm --> Idle : unlock action
+
+    Disconnecting --> Initialization : disconnected
+    Reconnecting --> Handshake : reconnected
+
+    Error --> [*]
 ```
 
 Configurations:
