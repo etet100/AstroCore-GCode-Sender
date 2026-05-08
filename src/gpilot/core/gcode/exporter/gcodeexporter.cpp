@@ -3,9 +3,9 @@
 // Copyright 2024 BTS
 
 #include "gcodeexporter.h"
-#include <QIODevice>
-#include <QTextStream>
 #include <QFile>
+#include <QTextStream>
+#include <stdexcept>
 
 GCodeExporter::GCodeExporter()
 {
@@ -14,13 +14,14 @@ GCodeExporter::GCodeExporter()
 void GCodeExporter::exportToFile(GCode &gcode, const QString fileName)
 {
     QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        //        QMessageBox::critical(this, this->windowTitle(), tr("Can't open file:\n") + fileName);
-        return;
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        throw std::runtime_error("Cannot open file for writing");
     }
 
-    QTextStream stream(&file);
+    QTextStream out(&file);
+    for (int i = 0; i < gcode.count(); i++) {
+        out << gcode[i].line << "\n";
+    }
 
     file.close();
 }
