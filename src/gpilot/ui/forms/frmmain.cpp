@@ -518,7 +518,6 @@ void FrmMain::initializeHeightmapPanel()
     });
     connect(ui->heightmap, &PartMainHeightmap::newClicked, this, &FrmMain::newHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::openClicked, this, &FrmMain::openHeightmap);
-    connect(ui->heightmap, &PartMainHeightmap::saveClicked, this, &FrmMain::saveHeightmap);
     connect(ui->heightmap, &PartMainHeightmap::useHeightmapToggled, this, &FrmMain::useHeightmapToggled);
     connect(ui->heightmap, &PartMainHeightmap::heightmapModeToggled, this, &FrmMain::heightmapModeToggled);
     connect(ui->heightmap, &PartMainHeightmap::showVisualizationChanged, this, [this](PartMainHeightmap::VisualizationDrawers drawers) {
@@ -955,22 +954,15 @@ void FrmMain::fileSave()
     if (!m_heightmapMode) {
         // G-code saving
         if (fm.gcodeOpened()) fileSaveAs(); else {
-            try {
-                GCodeExporter exporter;
-                exporter.exportToFile(program(), fm.gcodeFilePath());
-                fm.setGcodeModified(false);
-            } catch (std::runtime_error &err) {
-                QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
-            }
+            GCodeExporter exporter;
+            exporter.exportToFile(program(), fm.gcodeFilePath());
+            fm.setGcodeModified(false);
         }
     } else {
         // Height map saving
         if (fm.heightmapOpened()) fileSaveAs(); else {
-            try {
-                HeightmapExporter::exportToFile(heightmap(), fm.heightmapFilePath());
-            } catch (std::runtime_error &err) {
-                QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
-            }
+            HeightmapExporter exporter;
+            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
         }
     }
 }
@@ -983,13 +975,8 @@ void FrmMain::fileSaveAs()
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT));
 
         if (!fileName.isEmpty()) {
-            try {
-                GCodeExporter exporter;
-                exporter.exportToFile(program(), fileName);
-            } catch (std::runtime_error &err) {
-                QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
-                return;
-            }
+            GCodeExporter exporter;
+            exporter.exportToFile(program(), fm.gcodeFilePath());
 
             fm.setGcodeFilePath(fileName);
             fm.setGcodeModified(false);
@@ -1002,12 +989,8 @@ void FrmMain::fileSaveAs()
         QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
 
         if (!fileName.isEmpty()) {
-            try {
-                HeightmapExporter::exportToFile(heightmap(), fileName);
-            } catch (std::runtime_error &err) {
-                QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
-                return;
-            }
+            HeightmapExporter exporter;
+            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
 
             fm.setHeightmapFilePath(fileName);
             fm.setHeightmapModified(false);
@@ -1026,12 +1009,8 @@ void FrmMain::fileSaveTransformedAs()
     QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT)));
 
     if (!fileName.isEmpty()) {
-        try {
-            GCodeExporter exporter;
-            exporter.exportToFile(program(), fileName);
-        } catch (std::runtime_error &err) {
-            QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
-        }
+        GCodeExporter exporter;
+        exporter.exportToFile(program(), fileName);
     }
 }
 
@@ -1058,22 +1037,13 @@ void FrmMain::openHeightmap()
 
 void FrmMain::saveHeightmap()
 {
-    FilesManager& fm = FilesManager::instance();
-    QString fileName = fm.heightmapFilePath();
-
-    if (fm.heightmapOpened()) {
-        fileName = QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
-        if (fileName.isEmpty()) {
-            return;
-        }
+    QString fileName = (QFileDialog::getSaveFileName(this, tr("Save heightmap as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
+    if (fileName.isEmpty()) {
+        return;
     }
 
     try {
         HeightmapExporter::exportToFile(heightmap(), fileName);
-        fm.setHeightmapFilePath(fileName);
-        fm.setHeightmapModified(false);
-        heightmap.markAsNotModified();
-        ui->heightmap->setOpenFile(fileName.mid(fileName.lastIndexOf("/") + 1));
     } catch (std::runtime_error &err) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to save heightmap: %1").arg(err.what()));
         return;
@@ -1255,7 +1225,7 @@ void FrmMain::onFileSend()
 
 void FrmMain::onFilePause(bool checked)
 {
-    // static SenderState s;
+    //  static SenderState s;
 
     // if (checked) {
     //     //PAUSE
