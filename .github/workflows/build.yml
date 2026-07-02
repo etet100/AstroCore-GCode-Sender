@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    # experimental jobs (macOS) may fail without breaking the whole workflow
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       matrix:
         include:
@@ -20,6 +22,9 @@ jobs:
             config: debug
           - os: ubuntu-latest
             config: release
+          - os: macos-latest
+            config: debug
+            experimental: true
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -38,9 +43,9 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.8.1"
-          host: ${{ matrix.os == 'windows-latest' && 'windows' || 'linux' }}
+          host: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'mac' || 'linux' }}
           target: "desktop"
-          arch: ${{ matrix.os == 'windows-latest' && 'win64_mingw' || 'linux_gcc_64' }}
+          arch: ${{ matrix.os == 'windows-latest' && 'win64_mingw' || matrix.os == 'macos-latest' && 'clang_64' || 'linux_gcc_64' }}
           tools: ${{ matrix.os == 'windows-latest' && 'tools_mingw1310 tools_ifw' || '' }}
           modules: ${{ matrix.os == 'windows-latest' && 'qtmultimedia qtserialport qtimageformats qtshadertools' || 'qtmultimedia qtserialport qtimageformats qtshadertools' }}
           cache: true
@@ -80,7 +85,7 @@ jobs:
       - name: Build PropertyEditor
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -94,14 +99,14 @@ jobs:
             cd build/vendor/PropertyEditor
             qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
             make -f Makefile qmake_all
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Build uCNC
         if: matrix.os == 'windows-latest'
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -115,14 +120,14 @@ jobs:
             cd build/vendor/uCNC
             qmake ../../../src/vendor/uCNC/uCNC.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             make -f Makefile qmake_all
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Build grblHal
         if: matrix.os == 'windows-latest'
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -136,14 +141,14 @@ jobs:
             cd build/vendor/grblHal
             qmake ../../../src/vendor/grblHal/grblHal.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler" "QMAKE_CFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers" "QMAKE_CXXFLAGS+=-Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-missing-field-initializers"
             make -f Makefile qmake_all
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Build FluidNC
         if: matrix.os == 'windows-latest'
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -157,13 +162,13 @@ jobs:
             cd build/vendor/FluidNC
             qmake ../../../src/vendor/FluidNC/FluidNC.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
             make -f Makefile qmake_all
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Build designerplugins
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -175,7 +180,7 @@ jobs:
             mkdir -p build/designerplugins
             cd build/designerplugins
             qmake ../../src/designerplugins/designerplugins.pro -r
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Build qCoro
@@ -192,7 +197,7 @@ jobs:
           else
             cd src/vendor/qcoro/
             cmake -B build -S . -DQCORO_WITH_QTWEBSOCKETS=OFF -DBUILD_TESTING=OFF -DQCORO_BUILD_EXAMPLES=OFF
-            cmake --build build -- -j$(nproc)
+            cmake --build build -- -j$(getconf _NPROCESSORS_ONLN)
             cmake --install build --prefix install
             cd ../../..
             mkdir -p build/vendor/qcoro
@@ -202,7 +207,7 @@ jobs:
       - name: Build AstroCore
         shell: bash
         env:
-          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || 'linux-g++' }}
+          QMAKESPEC: ${{ matrix.os == 'windows-latest' && 'win32-g++' || matrix.os == 'macos-latest' && 'macx-clang' || 'linux-g++' }}
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
@@ -216,7 +221,7 @@ jobs:
             cd build/gpilot
             qmake ../../src/gpilot/gpilot.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             make -f Makefile qmake_all
-            make -j$(nproc)
+            make -j$(getconf _NPROCESSORS_ONLN)
           fi
 
       - name: Create complete package
