@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AstroCore
+Comment=CNC G-code sender
+Exec=AstroCore
+Icon=astrocore
+Categories=Utility;Engineering;
+Terminal=false
