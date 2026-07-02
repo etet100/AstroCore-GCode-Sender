@@ -579,7 +579,8 @@ LIBS += -L. -lgpilot-customwidgets
 
 #LIBS += C:/Projekty/Qt/Candle/src/vendor/build/uCNC-Debug
 
-LIBS += -luuid
+# macOS has no separate libuuid (uuid functions live in libSystem)
+!macx: LIBS += -luuid
 win32 {
     LIBS += -lole32 -loleaut32  -luser32 -lshell32
     LIBS += -L../vendor/uCNC -luCNC

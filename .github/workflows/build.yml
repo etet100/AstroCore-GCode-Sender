@@ -50,6 +50,22 @@ jobs:
           modules: ${{ matrix.os == 'windows-latest' && 'qtmultimedia qtserialport qtimageformats qtshadertools' || 'qtmultimedia qtserialport qtimageformats qtshadertools' }}
           cache: true
 
+      - name: Patch Qt qyieldcpu.h for new Xcode toolchain
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          # Qt < 6.11.1 calls __yield(), which new Xcode toolchains no longer declare.
+          # Same fix as the official Qt patch: use the clang builtin instead.
+          # Remove this step after upgrading Qt to 6.11.1+.
+          HEADER=$(find -L "$QT_ROOT_DIR" -name qyieldcpu.h -print -quit)
+          if [ -n "$HEADER" ]; then
+            sed -i '' 's/__yield();/__builtin_arm_yield();/' "$HEADER"
+            grep -n "__builtin_arm_yield" "$HEADER"
+          else
+            echo "qyieldcpu.h not found - Qt layout changed?"
+            exit 1
+          fi
+
       - name: Verify Qt installation
         shell: bash
         run: |
