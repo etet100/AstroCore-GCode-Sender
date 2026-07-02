@@ -25,6 +25,9 @@ jobs:
           - os: macos-latest
             config: debug
             experimental: true
+          - os: macos-latest
+            config: release
+            experimental: true
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -278,7 +281,7 @@ jobs:
           xcopy build\gpilot\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
           xcopy data\fluidnc\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
           xcopy data\gcode\* installer\packages\com.astrocore.examples.gcode\data\gcode-examples\ /E /I /H /Y
-          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCoreInstaller-${{ matrix.config }}.exe
+          binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCore-windows-x64-${{ matrix.config }}-setup.exe
 
       - name: Package build artifacts
         if: matrix.os == 'windows-latest'
@@ -288,16 +291,16 @@ jobs:
           mkdir artifacts
           for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
           dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCorePortable-${{ matrix.config }}.zip
+          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCore-windows-x64-${{ matrix.config }}-portable.zip
 
       - name: Upload build artifacts
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: astrocore-${{ matrix.config }}-artifacts
+          name: astrocore-windows-${{ matrix.config }}-artifacts
           path: |
-            AstroCorePortable-${{ matrix.config }}.zip
-            AstroCoreInstaller-${{ matrix.config }}.exe
+            AstroCore-windows-x64-${{ matrix.config }}-portable.zip
+            AstroCore-windows-x64-${{ matrix.config }}-setup.exe
 
       - name: Create AppImage
         if: matrix.os == 'ubuntu-latest'
@@ -318,7 +321,7 @@ jobs:
           export QMAKE=$(which qmake)
           export APPIMAGE_EXTRACT_AND_RUN=1
           export EXTRA_QT_PLUGINS="multimedia"
-          export LDAI_OUTPUT="AstroCore-${{ matrix.config }}-x86_64.AppImage"
+          export LDAI_OUTPUT="AstroCore-linux-x86_64-${{ matrix.config }}.AppImage"
 
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
             --executable build/gpilot/AstroCore \
@@ -332,7 +335,50 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: astrocore-linux-${{ matrix.config }}-artifacts
-          path: AstroCore-${{ matrix.config }}-x86_64.AppImage
+          path: AstroCore-linux-x86_64-${{ matrix.config }}.AppImage
+
+      - name: Create DMG package
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          cd build/gpilot
+          echo "== app dependencies before deploy =="
+          otool -L AstroCore.app/Contents/MacOS/AstroCore
+
+          # bundle libraries built in this workflow (macdeployqt only handles Qt)
+          mkdir -p AstroCore.app/Contents/Frameworks
+          for lib in libgpilot-customwidgets*.dylib ../vendor/qcoro/install/lib/libQCoro6Core*.dylib; do
+            [ -e "$lib" ] && cp -a "$lib" AstroCore.app/Contents/Frameworks/
+          done
+
+          # repoint the app at the bundled copies, whatever path was recorded at link time
+          for name in gpilot-customwidgets QCoro6Core; do
+            REF=$(otool -L AstroCore.app/Contents/MacOS/AstroCore | awk -v n="$name" '$1 ~ n {print $1; exit}')
+            if [ -n "$REF" ]; then
+              BASE=$(basename "$REF")
+              install_name_tool -change "$REF" "@executable_path/../Frameworks/$BASE" AstroCore.app/Contents/MacOS/AstroCore
+              echo "repointed: $REF -> @executable_path/../Frameworks/$BASE"
+            fi
+          done
+
+          # -executable makes macdeployqt fix Qt references inside bundled dylibs too
+          EXTRA_ARGS=""
+          for f in AstroCore.app/Contents/Frameworks/*.dylib; do
+            [ -e "$f" ] && EXTRA_ARGS="$EXTRA_ARGS -executable=$f"
+          done
+          macdeployqt AstroCore.app -dmg $EXTRA_ARGS
+
+          echo "== app dependencies after deploy =="
+          otool -L AstroCore.app/Contents/MacOS/AstroCore
+
+          mv AstroCore.dmg ../../AstroCore-macos-arm64-${{ matrix.config }}.dmg
+
+      - name: Upload build artifacts (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: astrocore-macos-${{ matrix.config }}-artifacts
+          path: AstroCore-macos-arm64-${{ matrix.config }}.dmg
 
   release:
     needs: build
@@ -357,21 +403,27 @@ jobs:
 
             ## Available Builds
 
-            **Debug Build:**
-            - AstroCorePortable-debug.zip - Portable debug version
-            - AstroCoreInstaller-debug.exe - Debug installer
+            Each platform comes in a **release** and a **debug** variant.
 
-            **Release Build:**
-            - AstroCorePortable-release.zip - Portable release version
-            - AstroCoreInstaller-release.exe - Release installer
+            **Windows (x64):**
+            - AstroCore-windows-x64-release-portable.zip - portable version
+            - AstroCore-windows-x64-release-setup.exe - offline installer
 
-            **Linux (AppImage):**
-            - AstroCore-debug-x86_64.AppImage - Debug build
-            - AstroCore-release-x86_64.AppImage - Release build
+            **Linux (x86_64):**
+            - AstroCore-linux-x86_64-release.AppImage - portable AppImage
+
+            **macOS (Apple Silicon, experimental):**
+            - AstroCore-macos-arm64-release.dmg - disk image
+
+            macOS builds are not signed. To run: right-click the app and choose
+            "Open", or remove the quarantine flag with
+            `xattr -dr com.apple.quarantine AstroCore.app`.
           files: |
-            artifacts/astrocore-debug-artifacts/AstroCorePortable-debug.zip
-            artifacts/astrocore-debug-artifacts/AstroCoreInstaller-debug.exe
-            artifacts/astrocore-release-artifacts/AstroCorePortable-release.zip
-            artifacts/astrocore-release-artifacts/AstroCoreInstaller-release.exe
-            artifacts/astrocore-linux-debug-artifacts/AstroCore-debug-x86_64.AppImage
-            artifacts/astrocore-linux-release-artifacts/AstroCore-release-x86_64.AppImage
+            artifacts/astrocore-windows-debug-artifacts/AstroCore-windows-x64-debug-portable.zip
+            artifacts/astrocore-windows-debug-artifacts/AstroCore-windows-x64-debug-setup.exe
+            artifacts/astrocore-windows-release-artifacts/AstroCore-windows-x64-release-portable.zip
+            artifacts/astrocore-windows-release-artifacts/AstroCore-windows-x64-release-setup.exe
+            artifacts/astrocore-linux-debug-artifacts/AstroCore-linux-x86_64-debug.AppImage
+            artifacts/astrocore-linux-release-artifacts/AstroCore-linux-x86_64-release.AppImage
+            artifacts/astrocore-macos-debug-artifacts/AstroCore-macos-arm64-debug.dmg
+            artifacts/astrocore-macos-release-artifacts/AstroCore-macos-arm64-release.dmg
