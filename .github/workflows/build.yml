@@ -50,7 +50,7 @@ jobs:
           modules: ${{ matrix.os == 'windows-latest' && 'qtmultimedia qtserialport qtimageformats qtshadertools' || 'qtmultimedia qtserialport qtimageformats qtshadertools' }}
           cache: true
 
-      - name: Patch Qt qyieldcpu.h for new Xcode toolchain
+      - name: Patch Qt for new Xcode toolchain
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
@@ -65,6 +65,12 @@ jobs:
             echo "qyieldcpu.h not found - Qt layout changed?"
             exit 1
           fi
+
+          # The AGL framework was removed from new macOS SDKs, but the qmake
+          # mkspec still links it for QT += opengl. Drop it.
+          MAC_CONF="$QT_ROOT_DIR/mkspecs/common/mac.conf"
+          sed -i '' 's/ -framework AGL//' "$MAC_CONF"
+          grep -n "QMAKE_LIBS_OPENGL" "$MAC_CONF"
 
       - name: Verify Qt installation
         shell: bash
