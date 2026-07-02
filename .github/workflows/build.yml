@@ -18,6 +18,8 @@ jobs:
             config: release
           - os: ubuntu-latest
             config: debug
+          - os: ubuntu-latest
+            config: release
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -90,7 +92,7 @@ jobs:
           else
             mkdir -p build/vendor/PropertyEditor
             cd build/vendor/PropertyEditor
-            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro "CONFIG+=debug" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
+            qmake ../../../src/vendor/PropertyEditor/PropertyEditor.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "CONFIG-=qml_debug" "CONFIG-=qtquickcompiler"
             make -f Makefile qmake_all
             make -j$(nproc)
           fi
@@ -263,6 +265,41 @@ jobs:
             AstroCorePortable-${{ matrix.config }}.zip
             AstroCoreInstaller-${{ matrix.config }}.exe
 
+      - name: Create AppImage
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-cursor0
+
+          curl -fLO https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          curl -fLO https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+
+          # icon file name must match "Icon=astrocore" in the .desktop file
+          cp src/gpilot/ui/images/astrocore_256.png astrocore.png
+
+          # let linuxdeploy resolve libs built in this workflow (customwidgets, qcoro)
+          export LD_LIBRARY_PATH="$PWD/build/gpilot:$PWD/build/vendor/qcoro/install/lib:$PWD/src/vendor/qcoro/install/lib:${LD_LIBRARY_PATH:-}"
+          export QMAKE=$(which qmake)
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          export EXTRA_QT_PLUGINS="multimedia"
+          export LDAI_OUTPUT="AstroCore-${{ matrix.config }}-x86_64.AppImage"
+
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --executable build/gpilot/AstroCore \
+            --desktop-file installer/linux/AstroCore.desktop \
+            --icon-file astrocore.png \
+            --plugin qt \
+            --output appimage
+
+      - name: Upload build artifacts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: astrocore-linux-${{ matrix.config }}-artifacts
+          path: AstroCore-${{ matrix.config }}-x86_64.AppImage
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -293,8 +330,14 @@ jobs:
             **Release Build:**
             - AstroCorePortable-release.zip - Portable release version
             - AstroCoreInstaller-release.exe - Release installer
+
+            **Linux (AppImage):**
+            - AstroCore-debug-x86_64.AppImage - Debug build
+            - AstroCore-release-x86_64.AppImage - Release build
           files: |
             artifacts/astrocore-debug-artifacts/AstroCorePortable-debug.zip
             artifacts/astrocore-debug-artifacts/AstroCoreInstaller-debug.exe
             artifacts/astrocore-release-artifacts/AstroCorePortable-release.zip
             artifacts/astrocore-release-artifacts/AstroCoreInstaller-release.exe
+            artifacts/astrocore-linux-debug-artifacts/AstroCore-debug-x86_64.AppImage
+            artifacts/astrocore-linux-release-artifacts/AstroCore-release-x86_64.AppImage
