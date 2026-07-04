@@ -314,6 +314,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxcb-cursor0
 
+          # Qt 6.11 linux binaries are built on RHEL 9, where the TIFF plugin
+          # links libtiff.so.5. Ubuntu 24.04 ships only libtiff.so.6, so
+          # linuxdeploy cannot resolve the dependency. The app does not load
+          # TIFF images - drop the plugin instead of bundling an old libtiff.
+          rm -f "$QT_ROOT_DIR/plugins/imageformats/libqtiff.so"
+
           curl -fLO https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           curl -fLO https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
