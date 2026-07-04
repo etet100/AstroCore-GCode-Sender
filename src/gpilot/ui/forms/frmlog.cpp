@@ -578,7 +578,7 @@ bool FrmLog::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == ui->treeCategories->viewport() && event->type() == QEvent::MouseButtonPress) {
         auto* me = static_cast<QMouseEvent*>(event);
-        QModelIndex idx = ui->treeCategories->indexAt(me->pos());
+        QModelIndex idx = ui->treeCategories->indexAt(me->position().toPoint());
         if (idx.isValid() && idx.column() == 1) {
             m_categoriesModel->setCtrlModifier(me->modifiers() & Qt::ControlModifier);
         }

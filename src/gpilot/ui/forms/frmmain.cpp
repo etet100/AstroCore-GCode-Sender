@@ -3454,7 +3454,7 @@ bool FrmMain::eventFilter(QObject *obj, QEvent *event)
                 if (obj != mouseDownObject) break;
 
                 QMouseEvent *e = static_cast<QMouseEvent*>(event);
-                int d = (e->pos() - mousePressPos).manhattanLength();
+                int d = (e->position().toPoint() - mousePressPos).manhattanLength();
 
                 if (e->buttons() & Qt::LeftButton && d > QApplication::startDragDistance()) {
                     QDrag *drag = new QDrag(this);

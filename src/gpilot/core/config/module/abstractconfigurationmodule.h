@@ -28,6 +28,10 @@ class AbstractConfigurationModule : public QObject
             bool operator!=(const AbstractConfigurationModule::MinMax& other) const {
                 return min != other.min || max != other.max;
             }
+
+            bool operator==(const AbstractConfigurationModule::MinMax& other) const {
+                return min == other.min && max == other.max;
+            }
         };
 
         struct MinMaxDouble {

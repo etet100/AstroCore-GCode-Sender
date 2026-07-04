@@ -8,7 +8,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
 
 ## Build requirements
 
-- Qt 6.8 with LLVM/Clang compiler (recommended) or MinGW/GCC 64-bit
+- Qt 6.11 with LLVM/Clang compiler (recommended) or MinGW/GCC 64-bit
 - MSVC compiler is not officially supported and may not work correctly
 
 > Note: CMake files in the repository are not maintained. The supported build system is QMake (`gpilot.pro`).
@@ -38,7 +38,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
 
 1. Add Qt bin directory to the PATH:
    ```
-   set PATH=C:\Qt\6.8.1\llvm-mingw_64\bin;%PATH%
+   set PATH=C:\Qt\6.11.1\llvm-mingw_64\bin;%PATH%
    ```
 2. Run qmake to generate Makefile:
    ```

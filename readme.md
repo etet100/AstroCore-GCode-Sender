@@ -84,7 +84,7 @@ Usefull links:
 
 Build requirements:
 -------------------
-Qt 6.8 with LLVM/Clang compiler (recommended) or MinGW/GCC 64bit compiler.
+Qt 6.11 with LLVM/Clang compiler (recommended) or MinGW/GCC 64bit compiler.
 MSVC compiler is not officially supported and may not work correctly.
 
 **Note:** The project uses QMake build system (gpilot.pro). CMake files (CMakeLists.txt) exist in the repository but are not maintained and may not work correctly.
@@ -382,7 +382,7 @@ How to build (Windows/Linux, Qt, MinGW/LLVM)
 4. Build with qmake from command line:
     - Add Qt bin directory to your PATH:
       ```
-      set PATH=C:\Qt\6.8.1\llvm-mingw_64\bin;%PATH%
+      set PATH=C:\Qt\6.11.1\llvm-mingw_64\bin;%PATH%
       ```
     - Run qmake to generate Makefile:
       ```

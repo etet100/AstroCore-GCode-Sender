@@ -161,7 +161,7 @@ void QToolButtonWithMenu::paintEvent(QPaintEvent *)
 
 void QToolButtonWithMenu::mousePressEvent(QMouseEvent *e)
 {
-    if (e->button() == Qt::LeftButton && isMenuIndicatorClick(e->pos())) {
+    if (e->button() == Qt::LeftButton && isMenuIndicatorClick(e->position().toPoint())) {
         m_menuIndicatorPressed = true;
         e->accept();
 
@@ -176,7 +176,7 @@ void QToolButtonWithMenu::mouseReleaseEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton && m_menuIndicatorPressed) {
         m_menuIndicatorPressed = false;
-        if (isMenuIndicatorClick(e->pos())) {
+        if (isMenuIndicatorClick(e->position().toPoint())) {
             showButtonMenu();
         }
         e->accept();
@@ -190,7 +190,7 @@ void QToolButtonWithMenu::mouseReleaseEvent(QMouseEvent *e)
 
 void QToolButtonWithMenu::mouseMoveEvent(QMouseEvent *e)
 {
-    bool hovered = isMenuIndicatorClick(e->pos());
+    bool hovered = isMenuIndicatorClick(e->position().toPoint());
     if (hovered != m_menuIndicatorHovered) {
         m_menuIndicatorHovered = hovered;
         setCursor(hovered ? Qt::ArrowCursor : Qt::PointingHandCursor);

@@ -1095,7 +1095,7 @@ void GLWidget::paintEvent(QPaintEvent *pe) {
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
 
     // Block rotation cube clicks in 2D mode or when cube is hidden
     if (m_rotationCube && pos.x() < 100 && pos.y() < 100 && m_mode != ViewMode::View2D) {
@@ -1162,7 +1162,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         }
     }
 
-    m_lastPos = event->pos();
+    m_lastPos = event->position().toPoint();
     m_xLastRot = m_xRot;
     m_yLastRot = m_yRot;
 }
@@ -1228,7 +1228,7 @@ QPointF GLWidget::calcPositionOnXYPlane(QPoint mouseClickPosition)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
 
     m_bottomSurfaceCursorPos = calcPositionOnXYPlane(pos);
     if (!qIsNaN(m_bottomSurfaceCursorPos.x())) {
@@ -1345,18 +1345,18 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         }
     }
 
-    emit mouseMoved(event->pos());
+    emit mouseMoved(event->position().toPoint());
 }
 
 void GLWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        QPointF cursorPos = calcPositionOnXYPlane(event->pos());
+        QPointF cursorPos = calcPositionOnXYPlane(event->position().toPoint());
         if (!qIsNaN(cursorPos.x()) && !qIsNaN(cursorPos.y())) {
             emit goToCursor(cursorPos);
         }
 
-        emit mouseDoubleClicked(event->pos());
+        emit mouseDoubleClicked(event->position().toPoint());
     }
 }
 

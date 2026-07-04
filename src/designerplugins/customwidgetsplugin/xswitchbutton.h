@@ -44,10 +44,10 @@ private:
     void updateFixedSizeFromFont();
 
 protected:
-    void resizeEvent(QResizeEvent *ev);
-    void paintEvent(QPaintEvent *ev);
-    void mousePressEvent(QMouseEvent *ev);
-    void changeEvent(QEvent *ev);
+    void resizeEvent(QResizeEvent *ev) override;
+    void paintEvent(QPaintEvent *ev) override;
+    void mousePressEvent(QMouseEvent *ev) override;
+    void changeEvent(QEvent *ev) override;
     void statChanged();
 
 private:

@@ -39,13 +39,13 @@ jobs:
         shell: bash
         run: |
           python -m pip install aqtinstall
-          aqt list-qt linux desktop --arch 6.8.1
-          aqt list-qt linux desktop --modules 6.8.1 linux_gcc_64
+          aqt list-qt linux desktop --arch 6.11.1
+          aqt list-qt linux desktop --modules 6.11.1 linux_gcc_64
 
-      - name: Install Qt 6.8.1
+      - name: Install Qt 6.11.1
         uses: jurplel/install-qt-action@v4
         with:
-          version: "6.8.1"
+          version: "6.11.1"
           host: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'mac' || 'linux' }}
           target: "desktop"
           arch: ${{ matrix.os == 'windows-latest' && 'win64_mingw' || matrix.os == 'macos-latest' && 'clang_64' || 'linux_gcc_64' }}

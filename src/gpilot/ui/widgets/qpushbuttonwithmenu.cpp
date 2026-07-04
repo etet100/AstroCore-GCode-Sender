@@ -22,7 +22,7 @@ QMenu *QPushButtonWithMenu::menu() const
 
 void QPushButtonWithMenu::mousePressEvent(QMouseEvent *e)
 {
-    if (!isOnArrow(e->pos())) {
+    if (!isOnArrow(e->position().toPoint())) {
         emit clicked();
 
         return;

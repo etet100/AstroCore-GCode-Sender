@@ -167,7 +167,7 @@ CubeClickableFace CubeDrawer::faceAtPos(QPoint pos)
 
 CubeClickableFace CubeDrawer::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
 
     CubeClickableFace lastFace = CubeClickableFace::None;
     m_faceAtCursor = faceAtPos(pos);

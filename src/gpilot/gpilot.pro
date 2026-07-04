@@ -1,10 +1,10 @@
 lessThan(QT_MAJOR_VERSION, 6) {
     message("Cannot use Qt $${QT_VERSION}")
-    error("Use Qt 6.8 or newer")
+    error("Use Qt 6.11 or newer")
 }
-equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8) {
+equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 11) {
     message("Cannot use Qt $${QT_VERSION}")
-    error("Use Qt 6.8 or newer")
+    error("Use Qt 6.11 or newer")
 }
 
 include(../vendor/qcoro/install/mkspecs/modules/qt_QCoroCore.pri)

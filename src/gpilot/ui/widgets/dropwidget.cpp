@@ -67,7 +67,7 @@ void DropWidget::dragMoveEvent(QDragMoveEvent *dme)
         QFrame *f = findChild<QFrame*>(QString(), Qt::FindDirectChildrenOnly);
 
         if (f) {
-            int y = dme->pos().y();
+            int y = dme->position().toPoint().y();
             QList<QGroupBox*> bl = findChildren<QGroupBox*>(QString(), Qt::FindDirectChildrenOnly);
 
             QList<int> yl;
