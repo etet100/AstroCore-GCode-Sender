@@ -37,7 +37,7 @@ class BoundingBoxDrawer : public QObject, public ShaderDrawable
         bool updateData(GLPalette &palette) override;
         void setViewParser(GCodeViewParser* viewParser);
         void setZoom(double zoom);
-        void setVisible(bool visible);
+        void setVisible(bool visible) override;
         void toggleVisible();
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
 

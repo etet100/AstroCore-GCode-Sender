@@ -44,7 +44,7 @@ class HeightMapGridDrawer : public ShaderDrawable
         explicit HeightMapGridDrawer();
         void setModel(Heightmap& model);
         BillboardDrawable* billboardDrawable() { return &m_billboardDrawable; }
-        void setVisible(bool visible);
+        void setVisible(bool visible) override;
         void toggleVisible();
         void setInterpolationMode(Heightmap::InterpolationMode mode);
 

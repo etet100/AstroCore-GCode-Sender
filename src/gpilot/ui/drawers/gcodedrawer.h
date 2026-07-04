@@ -36,7 +36,7 @@ public:
     explicit GcodeDrawer();
     ProgramType programType() override { return ProgramType::GCode; };
 
-    void update();
+    void update() override;
     void update(QList<int> indexes);
     bool updateData(GLPalette &palette) override;
 

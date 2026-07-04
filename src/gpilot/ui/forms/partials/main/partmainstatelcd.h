@@ -27,7 +27,7 @@ public:
     void setStatusText(QString status, QColor bgColor, QColor fgColor) override;
     void setConnectionName(QString name);
     void setConnectionState(bool connected);
-    void setMachineStateReport(QString report);
+    void setMachineStateReport(QString report) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

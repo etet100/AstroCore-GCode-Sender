@@ -11,7 +11,7 @@ public:
 
     void setZoom(double);
     OriginBillboardDrawer &billboardDrawable() { return m_billboardDrawable; }
-    void setVisible(bool visible);
+    void setVisible(bool visible) override;
     void toggleVisible();
 
 protected:

@@ -29,7 +29,7 @@ class DisconnectingBehavior : public AbstractStateBehavior
         bool doAction(const Action &action) override;
 
     private slots:
-        void onConnectionStateChanged(ConnectionState state);
+        void onConnectionStateChanged(ConnectionState state) override;
 
     private:
         int m_disconnectionTimeoutId = 0;
