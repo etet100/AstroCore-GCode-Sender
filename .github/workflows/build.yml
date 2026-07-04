@@ -58,34 +58,34 @@ jobs:
           modules: ${{ matrix.os == 'windows-latest' && 'qtmultimedia qtserialport qtimageformats qtshadertools' || 'qtmultimedia qtserialport qtimageformats qtshadertools' }}
           cache: true
 
-      - name: Patch Qt for new Xcode toolchain
-        if: matrix.os == 'macos-latest'
-        shell: bash
-        run: |
-          # Qt < 6.11.1 calls __yield(), which new Xcode toolchains no longer declare.
-          # Same fix as the official Qt patch: use the clang builtin instead.
-          # Remove this step after upgrading Qt to 6.11.1+.
-          HEADER=$(find -L "$QT_ROOT_DIR" -name qyieldcpu.h -print -quit)
-          if [ -n "$HEADER" ]; then
-            sed -i '' 's/__yield();/__builtin_arm_yield();/' "$HEADER"
-            grep -n "__builtin_arm_yield" "$HEADER"
-          else
-            echo "qyieldcpu.h not found - Qt layout changed?"
-            exit 1
-          fi
+      # - name: Patch Qt for new Xcode toolchain
+      #   if: matrix.os == 'macos-latest'
+      #   shell: bash
+      #   run: |
+      #     # Qt < 6.11.1 calls __yield(), which new Xcode toolchains no longer declare.
+      #     # Same fix as the official Qt patch: use the clang builtin instead.
+      #     # Remove this step after upgrading Qt to 6.11.1+.
+      #     HEADER=$(find -L "$QT_ROOT_DIR" -name qyieldcpu.h -print -quit)
+      #     if [ -n "$HEADER" ]; then
+      #       sed -i '' 's/__yield();/__builtin_arm_yield();/' "$HEADER"
+      #       grep -n "__builtin_arm_yield" "$HEADER"
+      #     else
+      #       echo "qyieldcpu.h not found - Qt layout changed?"
+      #       exit 1
+      #     fi
 
-          # The AGL framework was removed from new macOS SDKs, but Qt qmake
-          # files (mkspecs, module .pri, library .prl) still reference it.
-          # Strip it from every file qmake can read link flags from.
-          find -L "$QT_ROOT_DIR" \( -name '*.prl' -o -name '*.pri' -o -name '*.conf' \) -print0 \
-            | xargs -0 grep -l -- '-framework AGL' \
-            | while read -r f; do
-                sed -i '' 's/-framework AGL//g' "$f"
-                echo "patched: $f"
-              done
-          echo "Remaining AGL references (should be none):"
-          find -L "$QT_ROOT_DIR" \( -name '*.prl' -o -name '*.pri' -o -name '*.conf' \) -print0 \
-            | xargs -0 grep -l -- '-framework AGL' || echo "none"
+      #     # The AGL framework was removed from new macOS SDKs, but Qt qmake
+      #     # files (mkspecs, module .pri, library .prl) still reference it.
+      #     # Strip it from every file qmake can read link flags from.
+      #     find -L "$QT_ROOT_DIR" \( -name '*.prl' -o -name '*.pri' -o -name '*.conf' \) -print0 \
+      #       | xargs -0 grep -l -- '-framework AGL' \
+      #       | while read -r f; do
+      #           sed -i '' 's/-framework AGL//g' "$f"
+      #           echo "patched: $f"
+      #         done
+      #     echo "Remaining AGL references (should be none):"
+      #     find -L "$QT_ROOT_DIR" \( -name '*.prl' -o -name '*.pri' -o -name '*.conf' \) -print0 \
+      #       | xargs -0 grep -l -- '-framework AGL' || echo "none"
 
       - name: Verify Qt installation
         shell: bash
