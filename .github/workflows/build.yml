@@ -38,13 +38,18 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          python -m pip install aqtinstall
+          # aqtinstall 3.3.0 (latest on PyPI) does not know the new per-arch
+          # repo layout introduced with Qt 6.11; the fix is only on master.
+          # Switch back to the PyPI release once 3.4.0 is out.
+          python -m pip install git+https://github.com/miurahr/aqtinstall.git
           aqt list-qt linux desktop --arch 6.11.1
           aqt list-qt linux desktop --modules 6.11.1 linux_gcc_64
 
       - name: Install Qt 6.11.1
         uses: jurplel/install-qt-action@v4
         with:
+          # see comment above — remove aqtsource once aqtinstall 3.4.0 is released
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git"
           version: "6.11.1"
           host: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'mac' || 'linux' }}
           target: "desktop"
