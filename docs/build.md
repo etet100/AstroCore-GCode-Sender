@@ -11,7 +11,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
 - Qt 6.11 with LLVM/Clang compiler (recommended) or MinGW/GCC 64-bit
 - MSVC compiler is not officially supported and may not work correctly
 
-> Note: CMake files in the repository are not maintained. The supported build system is QMake (`gpilot.pro`).
+> Note: CMake files in the repository are not maintained. The supported build system is QMake (`astrocore.pro`).
 
 ## Build with Qt Creator (recommended)
 
@@ -21,7 +21,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
    cd AstroCore-GCode-Sender
    git submodule update --init --recursive
    ```
-2. Open `gpilot.pro` in Qt Creator.
+2. Open `astrocore.pro` in Qt Creator.
 3. Select Qt 6.x and LLVM/Clang (recommended) or MinGW 64-bit.
 4. (Optional) Enable multi-threaded compilation:
    - Projects → Build → Build Steps → Make → Make arguments
@@ -29,7 +29,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
 5. (Optional) Configure auto-copy of DLL files after build:
    - Projects → Build or Deploy Settings → Build Steps → Custom Process Step
    - Command: `python`
-   - Arguments: `copy_files.py %{ActiveProject:BuildConfig:Path} %{ActiveProject:BuildConfig:Path}\src\gpilot\`
+   - Arguments: `copy_files.py %{ActiveProject:BuildConfig:Path} %{ActiveProject:BuildConfig:Path}\src\astrocore\`
    - Working directory: `%{ActiveProject:ProjectDirectory}\scripts`
 6. Build the project (Ctrl+B).
 7. Executable and DLL files will appear in the `bin` folder.
@@ -42,7 +42,7 @@ This page describes how to build AstroCore from source and how to build Qt Creat
    ```
 2. Run qmake to generate Makefile:
    ```
-   qmake gpilot.pro
+   qmake astrocore.pro
    ```
 3. Build the project (LLVM/Clang or MinGW):
    ```

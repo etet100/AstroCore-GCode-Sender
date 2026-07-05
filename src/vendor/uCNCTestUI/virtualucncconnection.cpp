@@ -44,7 +44,7 @@ bool VirtualUCNCConnection::openConnection()
 
     m_server = new QLocalServer(this);
     connect(m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
-    m_server->listen("gpilotucnc");
+    m_server->listen("astrocoreucnc");
 
     WorkerThread* thread = new WorkerThread(m_server->serverName());
     thread->start();

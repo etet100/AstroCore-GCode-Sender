@@ -37,7 +37,7 @@ QString StyledToolButtonPlugin::name() const
 
 QString StyledToolButtonPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QIcon StyledToolButtonPlugin::icon() const

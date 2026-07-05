@@ -9,7 +9,7 @@
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("GPilot Log Viewer");
+    app.setApplicationName("AstroCore Log Viewer");
     app.setOrganizationName("G-Pilot");
 
     qDebug("Starting log viewer...");

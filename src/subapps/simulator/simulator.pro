@@ -1,10 +1,10 @@
 TEMPLATE = app
 CONFIG -= debug_and_release
 QT = core gui widgets network
-TARGET = gpilot-simulator
-DESTDIR = $$OUT_PWD/../../gpilot
+TARGET = astrocore-simulator
+DESTDIR = $$OUT_PWD/../../astrocore
 
-CONN = ../../gpilot/io/connection
+CONN = ../../astrocore/io/connection
 INCLUDEPATH += $$CONN
 
 SOURCES += \

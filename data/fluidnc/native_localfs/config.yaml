@@ -1,5 +1,5 @@
-name: "GPilot FLUIDNC Controller"
-board: "GPilot FLUIDNC Controller"
+name: "AstroCore FLUIDNC Controller"
+board: "AstroCore FLUIDNC Controller"
 
 stepping:
   engine: TIMED

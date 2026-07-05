@@ -82,15 +82,15 @@ bin
 src/scriptbindings/plugins/script
 
 #rc
-src/gpilot/Gpilot_resource.rc
+src/astrocore/AstroCore_resource.rc
 testing/gl/node_modules
 src/designerplugins/joystickplugin/SFML-2.6.1_/*
 *.o
 moc_*.cpp
 
 #forms
-# src/gpilot/ui/forms/*.py
-# src/gpilot/ui/forms/main/*.py
-# src/gpilot/ui/forms/settings/*.py
+# src/astrocore/ui/forms/*.py
+# src/astrocore/ui/forms/main/*.py
+# src/astrocore/ui/forms/settings/*.py
 part*.py
 frm*.py

@@ -37,7 +37,7 @@ QString SliderPlugin::name() const
 
 QString SliderPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QIcon SliderPlugin::icon() const

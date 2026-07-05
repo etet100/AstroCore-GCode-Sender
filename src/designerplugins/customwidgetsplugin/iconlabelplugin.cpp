@@ -38,7 +38,7 @@ QString IconLabelPlugin::name() const
 
 QString IconLabelPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QIcon IconLabelPlugin::icon() const

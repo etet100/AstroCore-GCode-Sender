@@ -2,7 +2,7 @@
 
 ## Overview
 
-The G-code module lives in `src/gpilot/core/gcode/`. It handles loading, parsing,
+The G-code module lives in `src/astrocore/core/gcode/`. It handles loading, parsing,
 rendering, and conversion of G-code files.
 
 ---

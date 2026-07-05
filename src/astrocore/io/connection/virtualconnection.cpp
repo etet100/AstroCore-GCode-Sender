@@ -172,7 +172,7 @@ void VirtualConnection::cleanupThread()
 void VirtualConnection::startProcess()
 {
     // The simulator exe lives next to the main application binary.
-    QString exePath = QCoreApplication::applicationDirPath() + "/gpilot-simulator.exe";
+    QString exePath = QCoreApplication::applicationDirPath() + "/astrocore-simulator.exe";
 
     qDebug() << qPrintable(QString("[IO][%1]").arg(m_deviceName))
              << "Launching simulator process:" << exePath

@@ -1,6 +1,6 @@
 AstroCore G-Code Sender
 -----------
-<img src="docs/screenshots/gpilot_big.jpg" width="200" height="200" align="right">
+<img src="docs/screenshots/astrocore_big.jpg" width="200" height="200" align="right">
 What AstroCore stands for?
 
 - **Astronaut's Core**: Like an astronaut at mission control, AstroCore puts you in the cockpit of your CNC machine with every gauge and button right at hand.
@@ -57,12 +57,12 @@ https://github.com/etet100/AstroCore-GCode-Sender/releases/latest
 
 Each release contains both **Debug** and **Release** versions:
 
-- **Debug Build** (`AstroCodePortable-debug.zip`, `AstroCodeInstaller-debug.exe`):
+- **Debug Build** (`AstroCorePortable-debug.zip`, `AstroCoreInstaller-debug.exe`):
   - Includes debugging symbols and additional logging
   - Larger file size but better for troubleshooting issues
   - Recommended for testing and reporting bugs
 
-- **Release Build** (`AstroCodePortable-release.zip`, `AstroCodeInstaller-release.exe`):
+- **Release Build** (`AstroCorePortable-release.zip`, `AstroCoreInstaller-release.exe`):
   - Optimized for performance with smaller file size
   - Recommended for normal usage
 
@@ -87,7 +87,7 @@ Build requirements:
 Qt 6.11 with LLVM/Clang compiler (recommended) or MinGW/GCC 64bit compiler.
 MSVC compiler is not officially supported and may not work correctly.
 
-**Note:** The project uses QMake build system (gpilot.pro). CMake files (CMakeLists.txt) exist in the repository but are not maintained and may not work correctly.
+**Note:** The project uses QMake build system (astrocore.pro). CMake files (CMakeLists.txt) exist in the repository but are not maintained and may not work correctly.
 
 Start with:
 
@@ -98,16 +98,16 @@ Command line options
 
 AstroCore supports several command line switches:
 
-- `-l` or `--log-to-file` – Enables logging debug info to AstroCode.log file.
-- `-t` or `--trim-log` – Clears AstroCode.log file at startup (use with log-to-file).
+- `-l` or `--log-to-file` – Enables logging debug info to AstroCore.log file.
+- `-t` or `--trim-log` – Clears AstroCore.log file at startup (use with log-to-file).
 - `-c` or `--config-type <type>` – Selects config file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
 - `-co` or `--console` - Opens AstroCore with console window (for debugging purposes). Windows only.
 - `-lw` or `--log-wnd` - Opens AstroCore with log browser window.
 
 Examples:
 
-  AstroCode.exe --log-to-file --trim-log --config-type json
-  AstroCode.exe --console
+  AstroCore.exe --log-to-file --trim-log --config-type json
+  AstroCore.exe --console
 
 You can combine options as needed. See main.cpp for details.
 
@@ -203,7 +203,7 @@ AstroCore includes a custom log browser window that allows you to view and filte
 Application states:
 -------------------
 
-Each state is managed by a dedicated behavior class in [src/gpilot/core/state_behavior/](src/gpilot/core/state_behavior/). The state machine itself is managed by `StateBehaviorManager`.
+Each state is managed by a dedicated behavior class in [src/astrocore/core/state_behavior/](src/astrocore/core/state_behavior/). The state machine itself is managed by `StateBehaviorManager`.
 
 There are two kinds of transitions:
 - **Replace** — current state is destroyed and a new one starts.
@@ -374,7 +374,7 @@ How to build (Windows/Linux, Qt, MinGW/LLVM)
     - Set auto-copy of DLL files after build:
       - Under Projects → Build Settings or Deploy Settings → Build Steps, add a Custom Process Step:
         - Command: `python`
-        - Arguments: `copy_files.py %{ActiveProject:BuildConfig:Path} %{ActiveProject:BuildConfig:Path}\src\gpilot\`
+        - Arguments: `copy_files.py %{ActiveProject:BuildConfig:Path} %{ActiveProject:BuildConfig:Path}\src\astrocore\`
         - Working directory: `%{ActiveProject:ProjectDirectory}\scripts`
     - Click Build (Ctrl+B).
     - The executable and DLL files will appear in the `bin` folder.
@@ -386,7 +386,7 @@ How to build (Windows/Linux, Qt, MinGW/LLVM)
       ```
     - Run qmake to generate Makefile:
       ```
-      qmake gpilot.pro
+      qmake astrocore.pro
       ```
     - Build the project:
       For LLVM/Clang (recommended) or MinGW:
@@ -413,7 +413,7 @@ AstroCore includes custom Qt Designer widgets that can be used in Qt Creator. Th
 ### Steps:
 
 1. Open the designer plugins project:
-   - In Qt Creator, open `src/designerplugins/designerplugins.pro` (not the main gpilot.pro)
+   - In Qt Creator, open `src/designerplugins/designerplugins.pro` (not the main astrocore.pro)
 
 2. Select the correct kit:
    - Use Qt 6.x with MSVC 2022 64-bit compiler (the same compiler used to build your Qt Creator)

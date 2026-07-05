@@ -25,7 +25,7 @@ static QThread* createWorkerThread(Simulator::Type type,
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("GPilot Simulator");
+    app.setApplicationName("AstroCore Simulator");
     app.setOrganizationName("G-Pilot");
 
     QCommandLineParser parser;
@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
     parser.addHelpOption();
 
     // Two launch modes:
-    // 1. By main app: gpilot-simulator <serverName> <type>
-    // 2. Standalone:  gpilot-simulator --type grbl
+    // 1. By main app: astrocore-simulator <serverName> <type>
+    // 2. Standalone:  astrocore-simulator --type grbl
     QCommandLineOption typeOption("type", "Simulator type (grbl, fluidnc, ucnc)", "type");
     parser.addOption(typeOption);
     parser.addPositionalArgument("server-name", "QLocalServer name", "[server-name]");
@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
     } else if (posArgs.size() == 1) {
         typeStr = posArgs[0];
     } else {
-        qCritical("Usage: gpilot-simulator --type <grbl|fluidnc|ucnc>");
-        qCritical("   or: gpilot-simulator <serverName> <type>");
+        qCritical("Usage: astrocore-simulator --type <grbl|fluidnc|ucnc>");
+        qCritical("   or: astrocore-simulator <serverName> <type>");
         return 1;
     }
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     QLocalServer* ownServer = nullptr;
     if (serverName.isEmpty()) {
         ownServer = new QLocalServer(&app);
-        QString name = "gpilot-simulator-" + Simulator::typeToString(type);
+        QString name = "astrocore-simulator-" + Simulator::typeToString(type);
         QLocalServer::removeServer(name);
         if (!ownServer->listen(name)) {
             qCritical("Failed to start local server '%s': %s",

@@ -1,4 +1,4 @@
-// This file is a part of "GPilot" application.
+// This file is a part of "AstroCore" application.
 // Copyright 2024-2026 BTS
 
 #ifndef TIMER_H

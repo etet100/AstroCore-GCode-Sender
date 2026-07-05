@@ -21,7 +21,7 @@ public:
 
 protected:
     QString deviceName() const override { return "GRBL"; }
-    QString serverPrefix() const override { return "gpilotgrbl_"; }
+    QString serverPrefix() const override { return "astrocoregrbl_"; }
 
 #ifndef VIRTUAL_SIMULATOR_PROCESS
     QThread* createWorkerThread(const QString& serverName) override;

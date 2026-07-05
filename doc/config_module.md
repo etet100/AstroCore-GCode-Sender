@@ -6,7 +6,7 @@ layers in G-Pilot.
 ## Layout
 
 ```
-src/gpilot/
+src/astrocore/
 ├── core/
 │   ├── config/
 │   │   ├── configuration.{h,cpp}     Registry + CORE module owner

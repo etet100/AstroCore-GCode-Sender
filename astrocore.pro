@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-SUBDIRS =   src/gpilot \
+SUBDIRS =   src/astrocore \
             src/designerplugins \
             src/vendor \
             src/subapps
@@ -11,10 +11,10 @@ OTHER_FILES += scripts/*.py
 # system(qmake src/candleplugins/candleplugins.pro)
 
 install_main.path = bin
-install_main.files += $$OUT_PWD/src/gpilot/GPilot.exe
+install_main.files += $$OUT_PWD/src/astrocore/AstroCore.exe
 
 install_translations.path = bin/translations
-install_translations.files = src/gpilot/translations/*
+install_translations.files = src/astrocore/translations/*
 
 install_license.path = bin
 install_license.files = LICENSE

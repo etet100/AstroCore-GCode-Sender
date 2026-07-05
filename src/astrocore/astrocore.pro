@@ -559,7 +559,7 @@ include(../vendor/phantomstyle/src/phantom/phantom.pri)
 include(../vendor/vedis.pri)
 include(../vendor/qcoro.pri)
 
-LIBS += -L. -lgpilot-customwidgets
+LIBS += -L. -lastrocore-customwidgets
 
 # qtPrepareTool(LRELEASE, lrelease)
 # for(tsfile, TRANSLATIONS) {

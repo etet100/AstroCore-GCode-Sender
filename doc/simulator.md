@@ -49,7 +49,7 @@ Two compile-time modes (`VIRTUAL_SIMULATOR_PROCESS` define):
 **Thread mode** (default): Creates a worker thread in-process.
 The main app creates a `QLocalServer`, the DLL connects back to it.
 
-**Process mode**: Launches `gpilot-simulator.exe` as a separate process.
+**Process mode**: Launches `astrocore-simulator.exe` as a separate process.
 Same socket protocol — the exe loads the DLL which connects back.
 
 ### Simulator subapp (`src/subapps/simulator/`)
@@ -58,10 +58,10 @@ Standalone Qt application. Two launch modes:
 
 ```
 # Launched by main app (process mode):
-gpilot-simulator.exe <serverName> <type>
+astrocore-simulator.exe <serverName> <type>
 
 # Standalone (creates own server):
-gpilot-simulator.exe --type grbl
+astrocore-simulator.exe --type grbl
 ```
 
 ## Communication Protocol

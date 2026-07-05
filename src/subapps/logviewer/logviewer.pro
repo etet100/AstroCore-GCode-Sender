@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG -= debug_and_release
 QT = core gui widgets network
 TARGET = logviewer
-DESTDIR = $$OUT_PWD/../../gpilot
+DESTDIR = $$OUT_PWD/../../astrocore
 
 include(../../vendor/vedis.pri)
 

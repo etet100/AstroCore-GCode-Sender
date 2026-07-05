@@ -45,7 +45,7 @@ The log browser allows you to:
 - Monitor application behavior and debug issues
 - Analyze events and troubleshoot problems
 
-The log browser is particularly useful when combined with the `--log-to-file` command line option, which saves all messages to a `GPilot.log` file for later analysis.
+The log browser is particularly useful when combined with the `--log-to-file` command line option, which saves all messages to a `AstroCore.log` file for later analysis.
 
 ## See also
 

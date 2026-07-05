@@ -3,8 +3,8 @@ CONFIG -= debug_and_release
 TEMPLATE = lib
 QT += widgets uiplugin multimedia multimediawidgets svg
 
-TARGET = gpilot-customwidgets
-QMAKE_FLAGS += -Wl,-soname,libgpilot-customwidgets.so
+TARGET = astrocore-customwidgets
+QMAKE_FLAGS += -Wl,-soname,libastrocore-customwidgets.so
 DEFINES += CUSTOMWIDGETS_EXPORT
 
 HEADERS +=  colorpicker.h \
@@ -62,5 +62,5 @@ include(../../vendor/QtValueSlider.pri)
 # INSTALLS += target
 
 !win32-msvc* {
-            DESTDIR = $$OUT_PWD/../../gpilot
+            DESTDIR = $$OUT_PWD/../../astrocore
 }

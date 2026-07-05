@@ -32,7 +32,7 @@ QString QtValueSliderPlugin::domXml() const
 
 QString QtValueSliderPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QString QtValueSliderPlugin::includeFile() const

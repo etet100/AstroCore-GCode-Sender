@@ -25,7 +25,7 @@
 //     function directly in that thread.
 //
 //   VIRTUAL_SIMULATOR_PROCESS:
-//     Launches gpilot-simulator.exe via QProcess.
+//     Launches astrocore-simulator.exe via QProcess.
 //     The exe receives two command-line arguments:
 //       1. serverName  — the QLocalServer name to connect to
 //       2. simulatorType — "grbl" | "fluidnc" | "ucnc"

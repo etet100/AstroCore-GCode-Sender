@@ -288,4 +288,4 @@ Where:
 
 - [Heightmap Format Specification](../readme.md#heightmap)
 - [Probing Behavior Documentation](probing_behavior_usage.md)
-- [Converter Architecture](../src/gpilot/core/gcode/converter/README.md)
+- [Converter Architecture](../src/astrocore/core/gcode/converter/README.md)

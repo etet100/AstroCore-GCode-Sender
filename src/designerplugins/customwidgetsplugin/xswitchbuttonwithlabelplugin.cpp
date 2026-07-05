@@ -41,7 +41,7 @@ QString XSwitchButtonWithLabelPlugin::domXml() const
 
 QString XSwitchButtonWithLabelPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QString XSwitchButtonWithLabelPlugin::includeFile() const

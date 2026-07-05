@@ -36,7 +36,7 @@ You can enable logging to file with command line options:
 G-Pilot.exe --log-to-file --trim-log
 ```
 
-This creates or clears a `GPilot.log` file at startup and writes debug information into it. When reporting a bug, you can attach this file to the issue.
+This creates or clears a `AstroCore.log` file at startup and writes debug information into it. When reporting a bug, you can attach this file to the issue.
 
 ## Questions and discussions
 

@@ -248,15 +248,15 @@ jobs:
           WINDOWS: ${{ matrix.os == 'windows-latest' && '1' || '' }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mkdir -p build/gpilot
-            cd build/gpilot
-            qmake ../../src/gpilot/gpilot.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            mkdir -p build/astrocore
+            cd build/astrocore
+            qmake ../../src/astrocore/astrocore.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
-            mkdir -p build/gpilot
-            cd build/gpilot
-            qmake ../../src/gpilot/gpilot.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            mkdir -p build/astrocore
+            cd build/astrocore
+            qmake ../../src/astrocore/astrocore.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
             make -f Makefile qmake_all
             make -j$(getconf _NPROCESSORS_ONLN)
           fi
@@ -265,7 +265,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          cd build\gpilot
+          cd build\astrocore
           windeployqt AstroCore.exe
           for /R .. %%f in (*.dll) do copy /Y "%%f" .
           del /S /Q *.o
@@ -283,7 +283,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          xcopy build\gpilot\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
+          xcopy build\astrocore\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
           xcopy data\fluidnc\* installer\packages\com.astrocore.app\data\ /E /I /H /Y
           xcopy data\gcode\* installer\packages\com.astrocore.examples.gcode\data\gcode-examples\ /E /I /H /Y
           binarycreator.exe --offline-only -c installer\config.xml -p installer\packages AstroCore-windows-x64-${{ matrix.config }}-setup.exe
@@ -294,9 +294,9 @@ jobs:
         run: |
           ls build
           mkdir artifacts
-          for /R build %%f in (*.dll) do copy /Y "%%f" build\gpilot\
-          dir build\gpilot / s
-          powershell Compress-Archive -Path build\gpilot\* -DestinationPath AstroCore-windows-x64-${{ matrix.config }}-portable.zip
+          for /R build %%f in (*.dll) do copy /Y "%%f" build\astrocore\
+          dir build\astrocore / s
+          powershell Compress-Archive -Path build\astrocore\* -DestinationPath AstroCore-windows-x64-${{ matrix.config }}-portable.zip
 
       - name: Upload build artifacts
         if: matrix.os == 'windows-latest'
@@ -325,17 +325,17 @@ jobs:
           chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
 
           # icon file name must match "Icon=astrocore" in the .desktop file
-          cp src/gpilot/ui/images/astrocore_256.png astrocore.png
+          cp src/astrocore/ui/images/astrocore_256.png astrocore.png
 
           # let linuxdeploy resolve libs built in this workflow (customwidgets, qcoro)
-          export LD_LIBRARY_PATH="$PWD/build/gpilot:$PWD/build/vendor/qcoro/install/lib:$PWD/src/vendor/qcoro/install/lib:${LD_LIBRARY_PATH:-}"
+          export LD_LIBRARY_PATH="$PWD/build/astrocore:$PWD/build/vendor/qcoro/install/lib:$PWD/src/vendor/qcoro/install/lib:${LD_LIBRARY_PATH:-}"
           export QMAKE=$(which qmake)
           export APPIMAGE_EXTRACT_AND_RUN=1
           export EXTRA_QT_PLUGINS="multimedia"
           export LDAI_OUTPUT="AstroCore-linux-x86_64-${{ matrix.config }}.AppImage"
 
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
-            --executable build/gpilot/AstroCore \
+            --executable build/astrocore/AstroCore \
             --desktop-file installer/linux/AstroCore.desktop \
             --icon-file astrocore.png \
             --plugin qt \
@@ -352,18 +352,18 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          cd build/gpilot
+          cd build/astrocore
           echo "== app dependencies before deploy =="
           otool -L AstroCore.app/Contents/MacOS/AstroCore
 
           # bundle libraries built in this workflow (macdeployqt only handles Qt)
           mkdir -p AstroCore.app/Contents/Frameworks
-          for lib in libgpilot-customwidgets*.dylib ../vendor/qcoro/install/lib/libQCoro6Core*.dylib; do
+          for lib in libastrocore-customwidgets*.dylib ../vendor/qcoro/install/lib/libQCoro6Core*.dylib; do
             [ -e "$lib" ] && cp -a "$lib" AstroCore.app/Contents/Frameworks/
           done
 
           # repoint the app at the bundled copies, whatever path was recorded at link time
-          for name in gpilot-customwidgets QCoro6Core; do
+          for name in astrocore-customwidgets QCoro6Core; do
             REF=$(otool -L AstroCore.app/Contents/MacOS/AstroCore | awk -v n="$name" '$1 ~ n {print $1; exit}')
             if [ -n "$REF" ]; then
               BASE=$(basename "$REF")

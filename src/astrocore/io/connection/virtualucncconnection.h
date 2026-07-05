@@ -21,7 +21,7 @@ public:
 
 protected:
     QString deviceName() const override { return "uCNC"; }
-    QString serverPrefix() const override { return "gpilotucnc_"; }
+    QString serverPrefix() const override { return "astrocoreucnc_"; }
 
 #ifndef VIRTUAL_SIMULATOR_PROCESS
     QThread* createWorkerThread(const QString& serverName) override;

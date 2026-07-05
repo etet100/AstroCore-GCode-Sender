@@ -37,7 +37,7 @@ QString ColorPickerPlugin::name() const
 
 QString ColorPickerPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QIcon ColorPickerPlugin::icon() const

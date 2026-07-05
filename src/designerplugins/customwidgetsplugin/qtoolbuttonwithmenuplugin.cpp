@@ -38,7 +38,7 @@ QString QToolButtonWithMenuPlugin::name() const
 
 QString QToolButtonWithMenuPlugin::group() const
 {
-    return QStringLiteral("GPilot widgets");
+    return QStringLiteral("AstroCore widgets");
 }
 
 QIcon QToolButtonWithMenuPlugin::icon() const

@@ -8,8 +8,8 @@ AstroCore supports several command line switches that control logging, configura
 
 ## Available options
 
-- `-l` or `--log-to-file` – Enable logging debug information to `GPilot.log` file.
-- `-t` or `--trim-log` – Clear `GPilot.log` file at startup (use together with log-to-file).
+- `-l` or `--log-to-file` – Enable logging debug information to `AstroCore.log` file.
+- `-t` or `--trim-log` – Clear `AstroCore.log` file at startup (use together with log-to-file).
 - `-c` or `--config-type <type>` – Select configuration file format. Available types: `ini`, `json`, `xml`. Default: `ini`.
 - `-co` or `--console` – Open AstroCore with a console window (for debugging). Windows only.
 - `-lw` or `--log-wnd` – Open AstroCore with log browser window.
