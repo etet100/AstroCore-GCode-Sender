@@ -21,6 +21,7 @@
 #include "ui/config/uiconfigs.h"
 #include "modules/ai/configurationai.h"
 #include "modules/pendant/configurationpendant.h"
+#include "modules/update/configurationupdate.h"
 #include "core/heightmap/configurationheightmap.h"
 #ifdef WINDOWS
 #include <windows.h>
@@ -188,6 +189,7 @@ int main(int argc, char *argv[])
     ConfigurationAI::registerWith(cfg);
     ConfigurationPendant::registerWith(cfg);
     ConfigurationHeightmap::registerWith(cfg);
+    ConfigurationUpdate::registerWith(cfg);
 
     if (!cfg.init(QCoreApplication::applicationDirPath(), parser.value(configTypeOption))) {
         return -1;

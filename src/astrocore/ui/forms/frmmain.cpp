@@ -9,6 +9,12 @@
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QMessageBox>
+#include <QDesktopServices>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QTextBrowser>
+#include <QDialogButtonBox>
 #include <QPushButton>
 #include <QAbstractButton>
 #include <QHash>
@@ -742,6 +748,10 @@ void FrmMain::initializeMainMenu()
     connect(ui->actTestConverterMovePath, &QAction::triggered, this, [this] { testConverter(9); });
     connect(ui->actTestConverterModifyFeedRate, &QAction::triggered, this, [this] { testConverter(10); });
     connect(ui->actAbout, &QAction::triggered, this, &FrmMain::aboutShow);
+    connect(ui->actCheckForUpdates, &QAction::triggered, this, &FrmMain::checkForUpdatesTriggered);
+    connect(&UpdateChecker::instance(), &UpdateChecker::updateAvailable, this, &FrmMain::onUpdateAvailable);
+    connect(&UpdateChecker::instance(), &UpdateChecker::noUpdateAvailable, this, &FrmMain::onNoUpdateAvailable);
+    connect(&UpdateChecker::instance(), &UpdateChecker::checkFailed, this, &FrmMain::onUpdateCheckFailed);
     connect(ui->actViewLockWindows, &QAction::toggled, this, &FrmMain::viewLockWindowsToggled);
     connect(ui->actViewDarkMode, &QAction::toggled, this, &FrmMain::viewDarkModeToggled);
     connect(ui->actViewCentralProgram, &QAction::toggled, this, &FrmMain::viewCentralProgramToggled);
@@ -773,6 +783,8 @@ void FrmMain::showEvent(QShowEvent *se)
     if (m_firstShow) {
         Utils::positionDialog(this, UiConfigs::instance().ui().mainFormGeometry(), UiConfigs::instance().ui().mainFormMaximized());
         m_firstShow = false;
+
+        UpdateChecker::instance().checkIfDue();
     }
 }
 
@@ -1143,6 +1155,72 @@ void FrmMain::aboutShow()
     FrmAbout *form = new FrmAbout(this);
     form->exec();
     form->deleteLater();
+}
+
+void FrmMain::checkForUpdatesTriggered()
+{
+    UpdateChecker::instance().checkNow(true);
+}
+
+void FrmMain::onUpdateAvailable(const UpdateChecker::ReleaseInfo& release, bool userInitiated)
+{
+    Q_UNUSED(userInitiated)
+
+    // A plain QDialog is freely resizable with the mouse, unlike QMessageBox,
+    // so long release notes can be read comfortably.
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Update available"));
+    dialog.setSizeGripEnabled(true);
+    dialog.resize(560, 420);
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    QLabel* header = new QLabel(tr("A new build is available: %1").arg(release.name), &dialog);
+    header->setWordWrap(true);
+    layout->addWidget(header);
+
+    if (!release.notes.isEmpty()) {
+        QTextBrowser* notes = new QTextBrowser(&dialog);
+        notes->setPlainText(release.notes);
+        layout->addWidget(notes, 1);
+    }
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(&dialog);
+    QPushButton* download = buttons->addButton(tr("Download"), QDialogButtonBox::AcceptRole);
+    QPushButton* skip = buttons->addButton(tr("Skip this version"), QDialogButtonBox::DestructiveRole);
+    buttons->addButton(tr("Later"), QDialogButtonBox::RejectRole);
+    download->setDefault(true);
+    layout->addWidget(buttons);
+
+    connect(download, &QPushButton::clicked, &dialog, [&dialog, release]() {
+        QDesktopServices::openUrl(QUrl(release.url));
+        dialog.accept();
+    });
+    connect(skip, &QPushButton::clicked, &dialog, [&dialog, release]() {
+        UpdateChecker::instance().skipBuild(release.buildId);
+        dialog.accept();
+    });
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    dialog.exec();
+}
+
+void FrmMain::onNoUpdateAvailable(bool userInitiated)
+{
+    if (!userInitiated) {
+        return;
+    }
+
+    QMessageBox::information(this, tr("Check for updates"), tr("You are running the latest version."));
+}
+
+void FrmMain::onUpdateCheckFailed(const QString& error, bool userInitiated)
+{
+    if (!userInitiated) {
+        return;
+    }
+
+    QMessageBox::warning(this, tr("Check for updates"), error);
 }
 
 void FrmMain::viewLockWindowsToggled(bool checked)

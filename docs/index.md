@@ -29,6 +29,7 @@ Supported functions:
 * Joystick/Joypad/Controller support.
 * Customizable interface.
 * uCNC/grblHAL/FluidNC virtual modes (cnc machine simulator).
+* Automatic checking for new releases.
 
 ## Documentation
 
@@ -40,6 +41,7 @@ Main documentation pages available in this folder:
 - [G-code editing](gcode-editing.md)
 - [Heightmap / Surface leveling](heightmap.md)
 - [Connection and virtual modes](connection-modes.md)
+- [Checking for updates](updates.md)
 - [Log browser](log-browser.md)
 - [Architecture overview](architecture.md)
 - [Application states](application-states.md)

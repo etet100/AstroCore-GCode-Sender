@@ -948,6 +948,7 @@ QGroupBox::title {
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actCheckForUpdates"/>
     <addaction name="actAbout"/>
     <addaction name="actDebug"/>
    </widget>
@@ -1050,6 +1051,11 @@ QGroupBox::title {
   <action name="actAbout">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actCheckForUpdates">
+   <property name="text">
+    <string>Check for &amp;updates...</string>
    </property>
   </action>
   <action name="actSpindleSpeedPlus">

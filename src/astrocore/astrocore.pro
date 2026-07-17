@@ -17,6 +17,12 @@ QT += multimedia multimediawidgets
 
 VERSION=1.0.0.0
 
+# Build identity injected by CI (GitHub Actions run id). 0 for local builds,
+# which disables scheduled update checks. See modules/update/updatechecker.cpp.
+!isEmpty(APP_BUILD_ID) {
+    DEFINES += APP_BUILD_ID=$$APP_BUILD_ID
+}
+
 # DEFINES += DEBUG_UCNC_COMMUNICATION=1
 # DEFINES += DEBUG_GRBL_COMMUNICATION=1
 # DEFINES += DEBUG_RAW_TCP_COMMUNICATION=1
@@ -116,6 +122,8 @@ SOURCES += main.cpp\
     core/macro/macrocompiler.cpp \
     modules/ai/configurationai.cpp \
     modules/pendant/configurationpendant.cpp \
+    modules/update/configurationupdate.cpp \
+    modules/update/updatechecker.cpp \
     ui/config/configurationconsole.cpp \
     ui/config/configurationui.cpp \
     ui/config/configurationvisualizer.cpp \
@@ -215,6 +223,7 @@ SOURCES += main.cpp\
     ui/forms/partials/settings/partsettingspendant.cpp \
     ui/forms/partials/settings/partsettingssender.cpp \
     ui/forms/partials/settings/partsettingsshortcuts.cpp \
+    ui/forms/partials/settings/partsettingsupdate.cpp \
     ui/forms/partials/settings/partsettingsvisualizer.cpp \
     ui/forms/frmgrblconfigurator.cpp \
     ui/forms/frmmain.cpp \
@@ -316,6 +325,8 @@ HEADERS  += ui/forms/frmmain.h \
     core/macro/macrocompiler.h \
     modules/ai/configurationai.h \
     modules/pendant/configurationpendant.h \
+    modules/update/configurationupdate.h \
+    modules/update/updatechecker.h \
     ui/config/configurationconsole.h \
     ui/config/configurationui.h \
     ui/config/configurationvisualizer.h \
@@ -426,6 +437,7 @@ HEADERS  += ui/forms/frmmain.h \
     ui/forms/partials/settings/partsettingspendant.h \
     ui/forms/partials/settings/partsettingssender.h \
     ui/forms/partials/settings/partsettingsshortcuts.h \
+    ui/forms/partials/settings/partsettingsupdate.h \
     ui/forms/partials/settings/partsettingsvisualizer.h \
     ui/forms/frmgrblconfigurator.h \
     ui/forms/frmsettings.h \
@@ -533,6 +545,7 @@ FORMS    += ui/forms/frmmain.ui \
     ui/forms/partials/settings/partsettingspendant.ui \
     ui/forms/partials/settings/partsettingssender.ui \
     ui/forms/partials/settings/partsettingsshortcuts.ui \
+    ui/forms/partials/settings/partsettingsupdate.ui \
     ui/forms/partials/settings/partsettingsvisualizer.ui \
     ui/forms/frmgrblconfigurator.ui \
     ui/forms/frmsettings.ui \

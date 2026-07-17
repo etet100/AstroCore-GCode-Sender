@@ -250,13 +250,13 @@ jobs:
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mkdir -p build/astrocore
             cd build/astrocore
-            qmake ../../src/astrocore/astrocore.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            qmake ../../src/astrocore/astrocore.pro -spec win32-g++ "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1" "APP_BUILD_ID=${{ github.run_id }}"
             mingw32-make.exe -f Makefile qmake_all
             mingw32-make -j12
           else
             mkdir -p build/astrocore
             cd build/astrocore
-            qmake ../../src/astrocore/astrocore.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1"
+            qmake ../../src/astrocore/astrocore.pro "${{ matrix.config == 'debug' && 'CONFIG+=debug' || 'CONFIG-=debug' }}" "DISABLE_BUILD_NUMBER_INCREMENT=1" "APP_BUILD_ID=${{ github.run_id }}"
             make -f Makefile qmake_all
             make -j$(getconf _NPROCESSORS_ONLN)
           fi

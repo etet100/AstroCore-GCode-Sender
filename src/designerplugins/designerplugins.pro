@@ -4,7 +4,7 @@ SUBDIRS = customwidgetsplugin
 
 # Qt Creator plugins path
 customwidgetsplugin.path = $$QTCREATOR_PLUGINS_PATH
-customwidgetsplugin.files = customwidgetsplugin/gpilot-customwidgets.dll
+customwidgetsplugin.files = customwidgetsplugin/astrocore-customwidgets.dll
 
 win32: {
     # SUBDIRS += joystickplugin

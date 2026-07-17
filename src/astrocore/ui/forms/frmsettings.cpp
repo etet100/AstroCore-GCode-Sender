@@ -9,6 +9,7 @@
 #include "ui/config/uiconfigs.h"
 #include "modules/ai/configurationai.h"
 #include "modules/pendant/configurationpendant.h"
+#include "modules/update/configurationupdate.h"
 #include "core/heightmap/configurationheightmap.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
@@ -223,6 +224,10 @@ void FrmSettings::initializeWidgets()
     ui->pendant->setHostIp(pendant.hostIp());
     ui->pendant->setPort(pendant.port());
     ui->pendant->setEnabled(pendant.enabled());
+
+    const ConfigurationUpdate &update = ConfigurationUpdate::instance();
+    ui->update->setCheckForUpdates(update.checkForUpdates());
+    ui->update->setCheckIntervalDays(update.checkIntervalDays());
 }
 
 void FrmSettings::applySettings()
@@ -346,6 +351,11 @@ void FrmSettings::applySettings()
     ConfigurationAI &ai = ConfigurationAI::instance();
     ai.m_openAIKey = ui->ai->openAIKey();
     ai.emitChanged();
+
+    ConfigurationUpdate &update = ConfigurationUpdate::instance();
+    update.m_checkForUpdates = ui->update->checkForUpdates();
+    update.m_checkIntervalDays = ui->update->checkIntervalDays();
+    update.emitChanged();
 }
 
 void FrmSettings::widgetValidity(QString widgetName, bool valid)

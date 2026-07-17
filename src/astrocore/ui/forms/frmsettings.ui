@@ -1517,6 +1517,18 @@
           </layout>
          </widget>
         </item>
+        <item>
+         <widget class="QGroupBox" name="grpUpdate">
+          <property name="title">
+           <string>Updates</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_16">
+           <item>
+            <widget class="PartSettingsUpdate" name="update" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -1619,6 +1631,12 @@
    <class>PartSettingsPendant</class>
    <extends>QWidget</extends>
    <header>ui/forms/partials/settings/partsettingspendant.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PartSettingsUpdate</class>
+   <extends>QWidget</extends>
+   <header>ui/forms/partials/settings/partsettingsupdate.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -46,6 +46,7 @@
 #include "styledtoolbutton.h"
 #include "ui/forms/frmsettings.h"
 #include "ui/forms/frmabout.h"
+#include "modules/update/updatechecker.h"
 #include "ui/widgets/dropwidget.h"
 #include "ui/utils/windowstaskbar.h"
 #include "ui/widgets/filedropoverlay.h"
@@ -116,6 +117,10 @@ private slots:
     void serviceConfigureGRBL();
     void serviceResetGRBLConfiguration();
     void aboutShow();
+    void checkForUpdatesTriggered();
+    void onUpdateAvailable(const UpdateChecker::ReleaseInfo& release, bool userInitiated);
+    void onNoUpdateAvailable(bool userInitiated);
+    void onUpdateCheckFailed(const QString& error, bool userInitiated);
     void viewLockWindowsToggled(bool checked);
     void viewDarkModeToggled(bool checked);
     void viewCentralProgramToggled(bool checked);
