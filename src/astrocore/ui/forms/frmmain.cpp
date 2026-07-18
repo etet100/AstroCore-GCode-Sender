@@ -768,7 +768,7 @@ bool FrmMain::nativeEvent(const QByteArray &eventType, void *message, qintptr *r
     MSG *msg = static_cast<MSG *>(message);
     if (msg->message == m_taskbarButtonCreatedMessageId) {
         m_taskBar.init();
-        m_taskBar.setProgress(20, 100);
+        m_taskBar.hide();
 
         return true;
     }

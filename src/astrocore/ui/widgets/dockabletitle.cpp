@@ -29,6 +29,11 @@ DockableTitle::DockableTitle(QWidget* parent)
             ui->btnClose->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetClosable);
             ui->btnFloating->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetFloatable);
         });
+
+        // setDockableLocked() runs before setTitleBarWidget(), so features() is already
+        // correct here but featuresChanged() never fired for this widget - sync manually.
+        ui->btnClose->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetClosable);
+        ui->btnFloating->setVisible(m_dockWidgetParent->features() & QDockWidget::DockWidgetFloatable);
     } else {
         // An exception for central widget title, no closing or detaching allowed
         ui->btnClose->hide();
