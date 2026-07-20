@@ -38,6 +38,7 @@ Main documentation pages available in this folder:
 - [About AstroCore](about.md)
 - [User interface](ui.md)
 - [Jogging](jogging.md)
+- [Camera](camera.md)
 - [G-code editing](gcode-editing.md)
 - [Heightmap / Surface leveling](heightmap.md)
 - [Connection and virtual modes](connection-modes.md)

@@ -48,6 +48,14 @@ You can also save the edited file at any time.
 
 ![gcode editor](docs/screenshots/screenshot_edit_gcode.png)
 
+## Camera
+
+AstroCore can show a live video feed from a connected camera (for example a USB webcam mounted on the machine). Right-click the camera view to pick a camera or disable it.
+
+A crosshair (target) can be drawn on top of the feed to mark the exact center of the view, which helps with precise tool positioning. Several styles are available (full cross, cross with gap, dot, circle with ticks) and the chosen style is remembered between sessions.
+
+![camera with crosshair](docs/screenshots/screenshot_camera_crosshair.png)
+
 ## Download & Install (prerelease)
 
 Automatic builds are available as a zip (portable) file and as an installer (created with Qt Installer Framework).
