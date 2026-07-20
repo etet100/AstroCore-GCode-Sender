@@ -31,6 +31,7 @@ private slots:
     void displayCameraError();
     void updateCameraDevice(QAction *action);
     void updateCameraActive(bool active);
+    void updateCrosshairStyle(QAction *action);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -39,12 +40,14 @@ protected:
 
 private:
     QActionGroup *videoDevicesGroup = nullptr;
+    QActionGroup *m_crosshairGroup = nullptr;
     QMediaDevices m_devices;
     QVideoSink m_videoSink;
     QScopedPointer<QCamera> m_camera;
     QMediaCaptureSession m_captureSession;
     QTimer m_resizeTimer;
     QMenu m_menu;
+    QMenu *m_crosshairMenu = nullptr;
     CameraFrameProcessor m_frameProcessor;
     int m_camerasCount = 0;
 
@@ -53,6 +56,8 @@ private:
     void findBestResolution(int, int);
     void showCameraDisabled();
     void disableCamera();
+    void buildCrosshairMenu();
+    void loadCrosshairStyle();
 };
 
 #endif

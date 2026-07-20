@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QtWidgets>
 #include <QImageCapture>
+#include "utils/cache.h"
 
 Camera::Camera(QWidget* parent) : QVideoWidget(parent), m_frameProcessor(this)
 {
@@ -27,6 +28,9 @@ Camera::Camera(QWidget* parent) : QVideoWidget(parent), m_frameProcessor(this)
     connect(&m_resizeTimer, &QTimer::timeout, this, [this](){
         findBestResolution(this->width(), this->height());
     });
+
+    buildCrosshairMenu();
+    loadCrosshairStyle();
 
     init();
 }
@@ -227,6 +231,11 @@ void Camera::updateCameras()
         m_menu.addAction(videoDeviceAction);
         m_camerasCount++;
     }
+
+    if (m_crosshairMenu != nullptr) {
+        m_menu.addSeparator();
+        m_menu.addMenu(m_crosshairMenu);
+    }
 }
 
 void Camera::findBestResolution(int w, int h)
@@ -260,5 +269,59 @@ void Camera::findBestResolution(int w, int h)
     if (bestFormat.isNull()) {
         qDebug() << "[Camera] Matching camera format not found!";
     }
+}
+
+void Camera::buildCrosshairMenu()
+{
+    using Style = CameraFrameProcessor::CrosshairStyle;
+
+    m_crosshairMenu = new QMenu(tr("Crosshair"), this);
+    m_crosshairGroup = new QActionGroup(this);
+    m_crosshairGroup->setExclusive(true);
+
+    const QList<QPair<QString, Style>> styles = {
+        { tr("None"), Style::None },
+        { tr("Cross"), Style::Cross },
+        { tr("Cross with gap"), Style::CrossGap },
+        { tr("Dot"), Style::Dot },
+        { tr("Circle with ticks"), Style::CircleTicks }
+    };
+
+    for (const auto &[label, style] : styles) {
+        QAction *action = new QAction(label, m_crosshairGroup);
+        action->setCheckable(true);
+        action->setData(static_cast<int>(style));
+        m_crosshairMenu->addAction(action);
+    }
+
+    connect(m_crosshairGroup, &QActionGroup::triggered, this, &Camera::updateCrosshairStyle);
+}
+
+void Camera::loadCrosshairStyle()
+{
+    using Style = CameraFrameProcessor::CrosshairStyle;
+
+    const int stored = Cache::instance().getInt("camera/crosshairStyle", static_cast<int>(Style::CrossGap));
+
+    m_frameProcessor.setCrosshairStyle(static_cast<Style>(stored));
+
+    for (QAction *action : m_crosshairGroup->actions()) {
+        if (action->data().toInt() == stored) {
+            action->setChecked(true);
+            break;
+        }
+    }
+}
+
+void Camera::updateCrosshairStyle(QAction *action)
+{
+    using Style = CameraFrameProcessor::CrosshairStyle;
+
+    const int value = action->data().toInt();
+
+    m_frameProcessor.setCrosshairStyle(static_cast<Style>(value));
+
+    Cache::instance().set("camera/crosshairStyle", value);
+    Cache::instance().flush();
 }
 
