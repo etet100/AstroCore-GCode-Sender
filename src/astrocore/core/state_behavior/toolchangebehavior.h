@@ -7,6 +7,7 @@
 
 #include "abstractstatebehavior.h"
 #include <QTimer>
+#include <functional>
 
 class ToolChangeBehavior : public AbstractStateBehavior
 {
@@ -50,6 +51,12 @@ class ToolChangeBehavior : public AbstractStateBehavior
         void waitForUserConfirmation();
         void returnToWorkPosition();
         void complete();
+
+        // Waits until the machine is Idle AND the command buffer/queue are
+        // drained, then runs onIdle(). onMachineStateChanged only fires on an
+        // actual state change, which a short or no-op move can skip entirely
+        // (Idle -> Idle between two status polls), so we poll for Idle instead.
+        void waitForIdle(std::function<void()> onIdle);
 
 };
 

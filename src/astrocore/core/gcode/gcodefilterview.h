@@ -70,6 +70,7 @@ signals:
 
 private slots:
     void onSourceLinesUpdated(int from, int to);
+    void onSourceStructureChanged();
 
 private:
     GCode* m_source = nullptr;

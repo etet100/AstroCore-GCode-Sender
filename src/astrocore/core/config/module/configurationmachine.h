@@ -40,7 +40,7 @@ class ConfigurationMachine : public AbstractConfigurationModule
         Q_ENUM(ReferencePositionDir);
 
         AbstractConfigurationModule::MinMax spindleSpeedRange() const { return m_spindleSpeedRange; }
-        double spindleSpeedRatio() const { return (m_spindleSpeedRange.max - m_spindleSpeedRange.min) / 100; }
+        double spindleSpeedRatio() const { return (m_spindleSpeedRange.max - m_spindleSpeedRange.min) / 100.0; }
         int spindleSpeed() const { return m_spindleSpeed; }
         void setSpindleSpeed(int spindleSpeed) { m_spindleSpeed = spindleSpeed; emit changed(); }
         AbstractConfigurationModule::MinMax laserPowerRange() const { return m_laserPowerRange; }

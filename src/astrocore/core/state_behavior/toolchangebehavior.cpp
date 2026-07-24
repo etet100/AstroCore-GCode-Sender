@@ -80,21 +80,9 @@ AbstractStateBehavior::Result ToolChangeBehavior::doOnExit(AbstractStateBehavior
 
 void ToolChangeBehavior::onMachineStateChanged(MachineState state)
 {
-    if (state == MachineState::Idle) {
-        // Handle state transitions based on current tool change state
-        switch (m_changeState) {
-            case ToolChangeState::MovingToSafePosition:
-                qDebug() << "[Behavior][ToolChange] Arrived at safe position.";
-                waitForUserConfirmation();
-                break;
-            case ToolChangeState::ReturningToWorkPosition:
-                qDebug() << "[Behavior][ToolChange] Returned to work position.";
-                complete();
-                break;
-            default:
-                break;
-        }
-    } else if (state == MachineState::Alarm) {
+    // Idle transitions are driven by waitForIdle() (poll-based), not here —
+    // see the comment on waitForIdle() for why the change signal is unreliable.
+    if (state == MachineState::Alarm) {
         emit transition(this, new AlarmBehavior());
     }
 }
@@ -123,6 +111,11 @@ void ToolChangeBehavior::moveToSafePosition()
         // Then move to tool change position (e.g., X0 Y0)
         // m_communicator->sendCommand(CommandSource::System, "G53 G0 X0 Y0", TABLE_INDEX_UI);
     }
+
+    waitForIdle([this]() {
+        qDebug() << "[Behavior][ToolChange] Arrived at safe position.";
+        waitForUserConfirmation();
+    });
 }
 
 void ToolChangeBehavior::waitForUserConfirmation()
@@ -159,6 +152,30 @@ void ToolChangeBehavior::returnToWorkPosition()
         // QString cmd = QString("G0 X%1 Y%2").arg(m_savedPosition.x()).arg(m_savedPosition.y());
         // m_communicator->sendCommand(CommandSource::System, cmd, TABLE_INDEX_UI);
     }
+
+    waitForIdle([this]() {
+        qDebug() << "[Behavior][ToolChange] Returned to work position.";
+        complete();
+    });
+}
+
+void ToolChangeBehavior::waitForIdle(std::function<void()> onIdle)
+{
+    if (!m_communicator) {
+        return;
+    }
+
+    waitForStateResponse([this, onIdle = std::move(onIdle)](MachineState) {
+        // Premature Idle: the move command is not fully acknowledged yet, so
+        // the machine has not actually started moving. Keep waiting.
+        if (!m_communicator->isCommandBufferEmpty() || !m_communicator->isQueueEmpty()) {
+            waitForIdle(onIdle);
+
+            return;
+        }
+
+        onIdle();
+    }, MachineState::Idle);
 }
 
 void ToolChangeBehavior::complete()

@@ -18,12 +18,14 @@ void GCodeFilterView::setSource(GCode* source)
 
     if (m_source) {
         disconnect(m_source, &GCode::linesUpdated, this, &GCodeFilterView::onSourceLinesUpdated);
+        disconnect(m_source, &GCode::structureChanged, this, &GCodeFilterView::onSourceStructureChanged);
     }
 
     m_source = source;
 
     if (m_source) {
         connect(m_source, &GCode::linesUpdated, this, &GCodeFilterView::onSourceLinesUpdated, Qt::UniqueConnection);
+        connect(m_source, &GCode::structureChanged, this, &GCodeFilterView::onSourceStructureChanged, Qt::UniqueConnection);
     }
 
     rebuild();
@@ -152,6 +154,13 @@ void GCodeFilterView::onSourceLinesUpdated(int from, int to)
         return;
     }
     emit rangeChanged(fromView, toView);
+}
+
+void GCodeFilterView::onSourceStructureChanged()
+{
+    // Line count changed, so the mapping and the view row count are stale.
+    // A full reset rebuilds the mapping and refreshes the attached model.
+    emitReset();
 }
 
 void GCodeFilterView::rebuild()

@@ -411,6 +411,38 @@ How to build (Windows/Linux, Qt, MinGW/LLVM)
 
 If you have build errors, check that all submodules are updated and you are using the correct Qt version.
 
+Running unit tests
+-------------------
+
+Unit tests live in the `tests/` directory. They use the **Qt Test** framework and
+qmake, and each suite compiles only the source files it needs into a small
+standalone executable — no full application build is required. Tests cover the
+pure-logic parts of the core layer (G-code model, GRBL status/probe/modal
+parsers, config modules and the config persistence providers).
+
+The easiest way to build and run everything is the runner script (from the
+project root, with the same Qt kit as the app):
+
+```
+pwsh tests/run.ps1
+```
+
+It puts the Qt kit on `PATH`, builds out-of-source into `build/tests/`, runs
+every suite and prints a green/red summary (non-zero exit on failure, so it
+works in CI). Use `-Filter gcode*` to run a subset or `-NoBuild` to skip the
+build. Override the kit with `-QtKit` / `-Toolchain` if your install differs.
+
+Alternatively, open `tests/tests.pro` in Qt Creator — the suites appear in the
+**Test Results** pane (`CONFIG += testcase`) — or build by hand:
+
+```
+qmake tests/tests.pro
+mingw32-make -j8
+mingw32-make check
+```
+
+See `tests/README.md` for details and how to add a new suite.
+
 Building Qt Creator Designer Plugins
 -------------------
 

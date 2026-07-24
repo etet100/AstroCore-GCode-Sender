@@ -102,6 +102,7 @@ void RunningBehavior::onMachineStateChanged(MachineState state)
             };
             spec.choices = {
                 {"continue", "Continue", /*destructive=*/false, /*isDefault=*/false},
+                {"ignore", "Ignore next errors", /*destructive=*/false, /*isDefault=*/false},
                 {"abort", "Abort", /*destructive=*/true, /*isDefault=*/true},
             };
             emit transition(this, new UserPromptBehavior(spec), TransitionKind::Suspend);
@@ -144,9 +145,10 @@ AbstractStateBehavior::Result RunningBehavior::onCommandResponse(QString command
     }
 
     if (!cmdStatus.ok && m_stage == Stage::Running) {
-        if (m_configuration->senderModule().ignoreErrorResponses()) {
+        if (m_configuration->senderModule().ignoreErrorResponses() || m_ignoreErrorsThisRun) {
             qWarning() << "[Behavior][Running][Resp] Command error" << cmdStatus.errorCode
-                       << "for" << command << "— ignoring (ignoreErrorResponses is set)";
+                       << "for" << command << "— ignoring"
+                       << (m_ignoreErrorsThisRun ? "(user chose ignore for this run)" : "(ignoreErrorResponses is set)");
             sendStreamerCommandsUntilBufferIsFull();
 
             return Result::Ok;
@@ -318,7 +320,7 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
     const bool resumingFromPrompt = (ctx.previousType == Type::UserPrompt);
     if (resumingFromPause || resumingFromPrompt) {
         const QString decision = resumingFromPrompt
-            ? ctx.data.value("choiceId").toString()           // "continue" | "abort"
+            ? ctx.data.value("choiceId").toString()           // "continue" | "ignore" | "abort"
             : ctx.data.value("action").toString();            // "resume"   | "abort"
 
         const bool abort = (decision == "abort");
@@ -326,6 +328,11 @@ AbstractStateBehavior::Result RunningBehavior::doOnEntry(CommunicatorApi *commun
         qDebug() << "[Behavior][Running] Resuming from"
                  << (resumingFromPrompt ? "UserPrompt" : "Pause")
                  << "decision:" << decision;
+
+        // Continue and silence further errors for the rest of this run.
+        if (decision == "ignore") {
+            m_ignoreErrorsThisRun = true;
+        }
 
         if (abort) {
             qDebug() << "[Behavior][Running] Previous behavior requested abort";
@@ -512,7 +519,17 @@ void RunningBehavior::instantAbort()
 
 void RunningBehavior::abort()
 {
-    qDebug() << "[Behavior][Running] Aborting — waiting for idle or alarm state";
+    qDebug() << "[Behavior][Running] Aborting — releasing hold, draining buffer, waiting for idle";
 
     m_stage = Stage::Aborting;
+
+    // Mark the not-yet-sent tail as aborted. Already-sent commands keep
+    // draining and get their own responses.
+    for (int i = m_program.commandIndex(); i < m_program.count(); ++i) {
+        m_program.setCommandAborted(i);
+    }
+
+    // Release the hold so the controller buffer drains to Idle. No reset —
+    // that would wipe device state. Harmless no-op if already running.
+    m_communicator->sendRealtimeCommand(GRBL_LIVE_CYCLE_START);
 }

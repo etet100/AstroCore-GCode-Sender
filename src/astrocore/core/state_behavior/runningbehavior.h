@@ -74,6 +74,9 @@ class RunningBehavior : public AbstractStateBehavior
         // first error there can be more already in flight. Surfaced in the
         // prompt so the user knows the full extent of the failure.
         int m_subsequentErrorCount = 0;
+        // Set when the user picks "Ignore next errors" in the error prompt.
+        // Skips the prompt for the rest of this run only (scoped to this behavior).
+        bool m_ignoreErrorsThisRun = false;
         void sendStreamerCommandsUntilBufferIsFull();
         void checkNextCommand();
         void pause();
