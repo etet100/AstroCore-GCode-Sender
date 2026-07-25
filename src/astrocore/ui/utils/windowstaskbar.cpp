@@ -30,10 +30,10 @@ void WindowsTaskbar::setProgress(int value, int total)
     }
 }
 
-void WindowsTaskbar::setPaused(bool)
+void WindowsTaskbar::setPaused(bool paused)
 {
     if (m_pTaskbar) {
-        m_pTaskbar->SetProgressState(hwnd(), TBPF_PAUSED);
+        m_pTaskbar->SetProgressState(hwnd(), paused ? TBPF_PAUSED : TBPF_NORMAL);
     }
 }
 

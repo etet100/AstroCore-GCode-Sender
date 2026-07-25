@@ -37,7 +37,7 @@ class PhysicalMachineConfiguration
     private:
         bool m_homingEnabled = false;
         int m_axisCount = 0;
-        Units m_units;
+        Units m_units = Units::Millimeters;
         bool m_softLimitsEnabled = false;
         bool m_hardLimitsEnabled = false;
         bool m_laserMode = false;

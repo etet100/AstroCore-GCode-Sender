@@ -41,7 +41,9 @@ AbstractStateBehavior::Result ReconnectingBehavior::doOnEntry(CommunicatorApi *c
         });
         m_timer->start();
 
-        return Result::WaitForAsyncResult;
+        // Ok, not WaitForAsyncResult: nothing emits asyncCompleted during entry, so
+        // waiting here would leave this behavior out of the state machine forever.
+        return Result::Ok;
     }
 
     qDebug() << "[Behavior][Reconnecting] Set new connection and go straight to ConnectingBehavior.";

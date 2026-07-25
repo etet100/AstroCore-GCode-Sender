@@ -56,21 +56,19 @@ bool JsonPersister::saveDocument()
     }
 }
 
-QJsonObject& JsonPersister::getOrCreateGroup(const QString& group)
+// Returns a copy of the group; callers write it back into m_rootObject.
+QJsonObject JsonPersister::groupObject(const QString& name) const
 {
-    if (!m_rootObject.contains(group) || !m_rootObject[group].isObject()) {
-        m_rootObject.insert(group, QJsonObject());
+    if (m_rootObject.contains(name) && m_rootObject[name].isObject()) {
+        return m_rootObject[name].toObject();
     }
 
-    static QJsonObject temp;
-    temp = m_rootObject[group].toObject();
-
-    return temp;
+    return QJsonObject();
 }
 
 bool JsonPersister::setInt(const QString group, const QString key, const int value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     groupObj[key] = value;
     m_rootObject[group] = groupObj;
 
@@ -79,7 +77,7 @@ bool JsonPersister::setInt(const QString group, const QString key, const int val
 
 bool JsonPersister::setString(const QString group, const QString key, const QString value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     groupObj[key] = value;
     m_rootObject[group] = groupObj;
     return true;
@@ -87,7 +85,7 @@ bool JsonPersister::setString(const QString group, const QString key, const QStr
 
 bool JsonPersister::setDouble(const QString group, const QString key, const double value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     groupObj[key] = value;
     m_rootObject[group] = groupObj;
 
@@ -96,7 +94,7 @@ bool JsonPersister::setDouble(const QString group, const QString key, const doub
 
 bool JsonPersister::setBool(const QString group, const QString key, const bool value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     groupObj[key] = value;
     m_rootObject[group] = groupObj;
     return true;
@@ -104,7 +102,7 @@ bool JsonPersister::setBool(const QString group, const QString key, const bool v
 
 bool JsonPersister::setStringList(const QString group, const QString key, const QStringList value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     QJsonArray array;
     for (const QString& item : value) {
         array.append(item);
@@ -116,7 +114,7 @@ bool JsonPersister::setStringList(const QString group, const QString key, const 
 
 bool JsonPersister::setVariantMap(const QString group, const QString key, const QVariantMap value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     QJsonObject obj;
     QMapIterator<QString, QVariant> it(value);
     while (it.hasNext()) {
@@ -130,7 +128,7 @@ bool JsonPersister::setVariantMap(const QString group, const QString key, const 
 
 bool JsonPersister::setVariantList(const QString group, const QString key, const QVariantList value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     QJsonArray array;
     for (const QVariant& item : value) {
         if (item.typeId() == QMetaType::QVariantMap) {
@@ -153,7 +151,7 @@ bool JsonPersister::setVariantList(const QString group, const QString key, const
 
 bool JsonPersister::setVariant(const QString group, const QString key, const QVariant value)
 {
-    QJsonObject& groupObj = getOrCreateGroup(group);
+    QJsonObject groupObj = groupObject(group);
     groupObj[key] = QJsonValue::fromVariant(value);
     m_rootObject[group] = groupObj;
     return true;

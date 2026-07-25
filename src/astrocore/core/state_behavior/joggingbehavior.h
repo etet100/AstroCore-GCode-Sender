@@ -86,7 +86,7 @@ class JoggingBehavior : public AbstractStateBehavior
         QVector3D m_joggingVector;
         int m_feedRate;
         int m_feedRateZ;
-        double m_distance;
+        double m_distance = 0.0;
         bool m_continuous = false;
         bool m_isJogging = false;
         bool m_isJoggingState = false;

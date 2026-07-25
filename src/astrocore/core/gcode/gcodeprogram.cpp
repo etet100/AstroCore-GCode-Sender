@@ -68,6 +68,8 @@ void GCodeProgram::deleteLines(int from, int to)
         if (m_data[i].overlayId == 0) m_mainCount--;
     }
     m_data.remove(from, to - from + 1);
+    // Structural edit — index-based response keys are no longer valid.
+    m_responses.clear();
 }
 
 bool GCodeProgram::replace(int from, int to, const QList<GCodeItem>& items)
@@ -83,6 +85,7 @@ bool GCodeProgram::replace(int from, int to, const QList<GCodeItem>& items)
         m_data.insert(from + i, item);
         i++;
     }
+    m_responses.clear();
 
     return items.count() == (to - from + 1);
 }
@@ -91,6 +94,12 @@ QString GCodeProgram::linesAsText(int from, int to) const
 {
     if (to >= m_data.size()) {
         to = m_data.size() - 1;
+    }
+    if (from < 0) {
+        from = 0;
+    }
+    if (from > to) {
+        return QString();
     }
 
     QStringList lines;

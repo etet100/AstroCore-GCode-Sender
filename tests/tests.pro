@@ -7,6 +7,7 @@ SUBDIRS = \
     gcode \
     gcodeprogram \
     gcodecursor \
+    gcodepreprocessorutils \
     grblparsers \
     config \
     persistence

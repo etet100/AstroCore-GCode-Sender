@@ -46,7 +46,9 @@ void GCodeThreadedLoader::update(GCode* gcode)
 
 void GCodeThreadedLoader::cancel()
 {
-    m_thread->requestInterruption();
+    if (m_thread) {
+        m_thread->requestInterruption();
+    }
 }
 
 void GCodeThreadedLoader::deleteThread()

@@ -78,6 +78,7 @@ public:
     void toggleLight();
     void setLightEnabled(bool enabled);
     void setViewMode(ViewMode mode);
+    ViewMode viewMode() const { return m_mode; }
     void set2DView();
     void setFps(int fps);
     void setParserState(const QString &parserState);

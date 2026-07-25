@@ -26,18 +26,28 @@ void ComboBoxKey::setEditable(bool editable)
     QComboBox::setEditable(editable);
 }
 
+// Separators have empty text and must be skipped. The loops are bounded —
+// with a separator as the first / last item the old do-while never ended.
 void ComboBoxKey::setCurrentNext()
 {
-    do {
-        setCurrentIndex(qMin(currentIndex() + 1, count() - 1));
-    } while (currentText().isEmpty());
+    for (int index = currentIndex() + 1; index < count(); index++) {
+        if (!itemText(index).isEmpty()) {
+            setCurrentIndex(index);
+
+            return;
+        }
+    }
 }
 
 void ComboBoxKey::setCurrentPrevious()
 {
-    do {
-        setCurrentIndex(qMax(currentIndex() - 1, 0));
-    } while (currentText().isEmpty());
+    for (int index = currentIndex() - 1; index >= 0; index--) {
+        if (!itemText(index).isEmpty()) {
+            setCurrentIndex(index);
+
+            return;
+        }
+    }
 }
 
 void ComboBoxKey::setItems(QStringList items)

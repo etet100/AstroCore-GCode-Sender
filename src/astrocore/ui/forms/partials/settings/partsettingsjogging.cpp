@@ -18,13 +18,14 @@ PartSettingsJogging::PartSettingsJogging(QWidget *parent)
         QString text = sender->text();
         int pos = 0;
         auto state = m_commaSeparatedDoubleValidator.validate(text, pos);
-        QPalette pal = sender->palette();
         if (state == QValidator::Invalid) {
+            QPalette pal = sender->palette();
             pal.setColor(QPalette::Text, Qt::red);
+            sender->setPalette(pal);
         } else {
-            pal.setColor(QPalette::Text, nullptr);
+            // Back to the inherited palette; an invalid QColor would stay applied.
+            sender->setPalette(QPalette());
         }
-        sender->setPalette(pal);
         emit validityChanged("JoggingStepChoices", state != QValidator::Invalid);
     });
 
@@ -33,13 +34,14 @@ PartSettingsJogging::PartSettingsJogging(QWidget *parent)
         QString text = sender->text();
         int pos = 0;
         auto state = m_commaSeparatedIntValidator.validate(text, pos);
-        QPalette pal = sender->palette();
         if (state == QValidator::Invalid) {
+            QPalette pal = sender->palette();
             pal.setColor(QPalette::Text, Qt::red);
+            sender->setPalette(pal);
         } else {
-            pal.setColor(QPalette::Text, nullptr);
+            // Back to the inherited palette; an invalid QColor would stay applied.
+            sender->setPalette(QPalette());
         }
-        sender->setPalette(pal);
         emit validityChanged("JoggingFeedChoices", state != QValidator::Invalid);
     });
 }

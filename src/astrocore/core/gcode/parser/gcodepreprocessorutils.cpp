@@ -429,6 +429,7 @@ std::vector<std::string> GcodePreprocessorUtils::splitCommand(const QString &com
 
     QByteArray ba(command.toLatin1());
     const char *cmd = ba.constData();
+    const int bufSize = (int)sizeof(buf);
 
     for (int i = 0; i < ba.size(); i++) {
         char c = cmd[i];
@@ -439,9 +440,12 @@ std::vector<std::string> GcodePreprocessorUtils::splitCommand(const QString &com
             bufLen = 0;
             if (isLetter(c)) buf[bufLen++] = c;
         } else if (isDigit(c) || c == '.' || c == '-') {
-            buf[bufLen++] = c;
+            // Overlong tokens are truncated instead of overflowing the buffer.
+            if (bufLen < bufSize) buf[bufLen++] = c;
             readNumeric = true;
-        } else if (isLetter(c)) buf[bufLen++] = c;
+        } else if (isLetter(c)) {
+            if (bufLen < bufSize) buf[bufLen++] = c;
+        }
     }
 
     if (bufLen > 0) l.emplace_back(buf, bufLen);
@@ -473,6 +477,7 @@ std::vector<std::string> GcodePreprocessorUtils::splitCommand(const std::string 
     const char *c_ = command.c_str();
     char buf[32];
     int bufLen = 0;
+    const int bufSize = (int)sizeof(buf);
     std::vector<std::string> l;
 
     while (*c_) {
@@ -483,10 +488,11 @@ std::vector<std::string> GcodePreprocessorUtils::splitCommand(const std::string 
             bufLen = 0;
             if (isLetter(c)) buf[bufLen++] = c;
         } else if (isDigit(c) || c == '.' || c == '-') {
-            buf[bufLen++] = c;
+            // Overlong tokens are truncated instead of overflowing the buffer.
+            if (bufLen < bufSize) buf[bufLen++] = c;
             readNumeric = true;
         } else if (isLetter(c)) {
-            buf[bufLen++] = c;
+            if (bufLen < bufSize) buf[bufLen++] = c;
         }
     }
 
@@ -635,7 +641,7 @@ QList<QVector3D> GcodePreprocessorUtils::generatePointsAlongArcBDring(PointSegme
 
     // Calculate radius if necessary.
     if (radius == 0) {
-        radius = sqrt(pow((double)(start.x() - center.x()), 2.0) + pow((double)(end.y() - center.y()), 2.0));
+        radius = sqrt(pow((double)(start.x() - center.x()), 2.0) + pow((double)(start.y() - center.y()), 2.0));
     }
 
     double startAngle = getAngle(center, start);
@@ -659,8 +665,14 @@ QList<QVector3D> GcodePreprocessorUtils::generatePointsAlongArcBDring(PointSegme
         if (arcPrecision <= 0 && minArcLength > 0) {
             arcPrecision = minArcLength;
         }
+        if (arcPrecision <= 0) {
+            arcPrecision = 1;
+        }
         numPoints = (int)ceil(arcLength/arcPrecision);
     }
+
+    // At least one segment, otherwise the point generator divides by zero.
+    numPoints = qMax(1, numPoints);
 
     return generatePointsAlongArcBDring(plane, start, end, center, clockwise, radius, startAngle, sweep, numPoints);
 }

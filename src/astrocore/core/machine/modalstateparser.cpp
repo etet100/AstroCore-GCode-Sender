@@ -40,16 +40,17 @@ std::optional<ModalState> ModalStateParser::parse(const QString &line)
                 state.spindleMode = upper;
             }
         } else if (token.startsWith('F')) {
+            // Some firmwares report fractional values (F500.000), so parse as double.
             bool ok = false;
-            int value = token.mid(1).toInt(&ok);
+            double value = token.mid(1).toDouble(&ok);
             if (ok) {
-                state.feedRate = value;
+                state.feedRate = qRound(value);
             }
         } else if (token.startsWith('S')) {
             bool ok = false;
-            int value = token.mid(1).toInt(&ok);
+            double value = token.mid(1).toDouble(&ok);
             if (ok) {
-                state.spindleSpeed = value;
+                state.spindleSpeed = qRound(value);
             }
         }
     }

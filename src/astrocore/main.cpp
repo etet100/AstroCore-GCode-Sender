@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 
     QString baseTranslationFileName = translationsFolder + "qt_" + loc + ".qm";
 
-    if (QFile::exists(translationFileName)) {
+    if (QFile::exists(baseTranslationFileName)) {
         QTranslator* baseTranslator = new QTranslator();
         if (baseTranslator->load(baseTranslationFileName)) app.installTranslator(baseTranslator); else delete baseTranslator;
     }

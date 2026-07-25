@@ -2,6 +2,7 @@
 // Copyright 2025 BTS
 
 #include "feedrateconverter.h"
+#include "core/gcode/parser/gcodepreprocessorutils.h"
 #include <QRegularExpression>
 
 QString FeedRateConverter::parameterSchema()
@@ -50,6 +51,8 @@ QList<GCodeItem> FeedRateConverter::push(const GCodeItem &input)
 
     GCodeItem out = input;
     out.line.replace(match.capturedStart(), match.capturedLength(), newFeedRateStr);
+    // Keep parsed args in sync with the modified line for downstream stages.
+    out.args = GcodePreprocessorUtils::splitCommand(out.line);
 
     return { out };
 }
@@ -145,6 +148,8 @@ QList<GCodeItem> CoordinateOffsetConverter::push(const GCodeItem &input)
 
     GCodeItem out = input;
     out.line = line;
+    // Keep parsed args in sync with the modified line for downstream stages.
+    out.args = GcodePreprocessorUtils::splitCommand(out.line);
 
     return { out };
 }

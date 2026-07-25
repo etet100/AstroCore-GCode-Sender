@@ -43,7 +43,7 @@ class PauseBehavior : public AbstractStateBehavior
 
     private:
         PauseSource m_source;
-        PauseAction m_action;
+        PauseAction m_action = PauseAction::Resume;
         void resume();
         void abort();
 };

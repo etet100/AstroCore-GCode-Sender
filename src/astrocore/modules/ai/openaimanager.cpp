@@ -93,10 +93,13 @@ bool OpenAIManager::sendRequest(const QString &prompt, SuccessCallback onSuccess
             qDebug() << "[AI]" << parsedResponse;
 
             if (!parsedResponse.isEmpty()) {
-                onSuccess(parsedResponse);
-            } else {
-                QString error = "Failed to parse response";
+                if (onSuccess) {
+                    onSuccess(parsedResponse);
+                }
+            } else if (onError) {
                 onError("Failed to parse response");
+            } else {
+                emit errorOccurred("Failed to parse response");
             }
         } else {
             QString error = QString("Network error: %1").arg(reply->errorString());

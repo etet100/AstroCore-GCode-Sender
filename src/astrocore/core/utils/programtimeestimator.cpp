@@ -64,12 +64,10 @@ double ProgramTimeEstimator::calculateSegmentTime(LineSegment& segment,
         timeSeconds = (length / effectiveSpeed) * 60.0;
     }
 
-    // Add dwell time (G4 command)
+    // Add dwell time (G4 command). GRBL, uCNC and FluidNC all take P in seconds.
     double dwell = segment.getDwell();
     if (!qIsNaN(dwell) && dwell > 0) {
-        // Dwell is typically in seconds or milliseconds depending on controller
-        // Assuming it's in milliseconds (P parameter), convert to seconds
-        timeSeconds += dwell / 1000.0;
+        timeSeconds += dwell;
     }
 
     return timeSeconds;
@@ -114,15 +112,14 @@ void ProgramTimeEstimator::updateCorrectionFactor()
 
         // Smooth the correction factor to avoid jumps (exponential moving average)
         // This gives more weight to recent measurements while keeping history
-        static double smoothingFactor = 0.3; // 30% new data, 70% old data
-        static double lastCorrectionFactor = 1.0;
+        constexpr double smoothingFactor = 0.3; // 30% new data, 70% old data
 
         if (m_progressPercentage > 5.0) { // Start smoothing after 5% progress
             m_correctionFactor = smoothingFactor * m_correctionFactor +
-                                (1.0 - smoothingFactor) * lastCorrectionFactor;
+                                (1.0 - smoothingFactor) * m_lastCorrectionFactor;
         }
 
-        lastCorrectionFactor = m_correctionFactor;
+        m_lastCorrectionFactor = m_correctionFactor;
 
         // Clamp correction factor to reasonable bounds (0.5 to 2.0)
         m_correctionFactor = qBound(0.5, m_correctionFactor, 2.0);
@@ -134,6 +131,7 @@ void ProgramTimeEstimator::resetEstimation()
     m_lastCompletedSegmentIndex = -1;
     m_progressPercentage = 0.0;
     m_correctionFactor = 1.0;
+    m_lastCorrectionFactor = 1.0;
     m_completedEstimatedTime = 0.0;
     m_segmentEstimatedTimes.clear();
 }

@@ -35,12 +35,29 @@ Pendant::Pendant(Configuration &configuration, Communicator &communicator, QObje
 
         initialize();
     });
+
+    // Configuration is loaded before this object exists, so the changed()
+    // signal above never fires for the initial state — start right away.
+    if (ConfigurationPendant::instance().enabled()) {
+        initialize();
+    }
 }
 
 void Pendant::initialize()
 {
+    if (m_server != nullptr) {
+        return;
+    }
+
     m_server = new QTcpServer(this);
-    m_server->listen(QHostAddress::Any, ConfigurationPendant::instance().port());
+    if (!m_server->listen(QHostAddress::Any, ConfigurationPendant::instance().port())) {
+        qWarning() << "[Pendant] Cannot listen on port"
+                   << ConfigurationPendant::instance().port() << ":" << m_server->errorString();
+        m_server->deleteLater();
+        m_server = nullptr;
+
+        return;
+    }
 
     connect(m_server, &QTcpServer::newConnection, [this]() {
         qDebug() << "[Pendant] New pendant connection";
@@ -73,7 +90,9 @@ void Pendant::initialize()
                         if (
                             buffer[COMM_HEAD_START_1_POS] != COMM_START_BYTE_1 || buffer[COMM_HEAD_START_2_POS] != COMM_START_BYTE_2 ||
                             buffer[COMM_HEAD_VERSION_POS] != COMM_PACKET_VERSION ||
-                            buffer[COMM_HEAD_TYPE_POS] >= (uint8_t)CommPacketType::MAX || buffer[COMM_HEAD_SIZE_POS] > COMM_MAX_PACKET_SIZE
+                            buffer[COMM_HEAD_TYPE_POS] >= (uint8_t)CommPacketType::MAX || buffer[COMM_HEAD_SIZE_POS] > COMM_MAX_PACKET_SIZE ||
+                            // A packet shorter than header + footer would make the CRC check read out of bounds.
+                            buffer[COMM_HEAD_SIZE_POS] < (uint8_t)(sizeof(CommHeader) + sizeof(CommFooter))
                             ) {
                             buffer.skip(1);
                             continue;
@@ -169,20 +188,34 @@ void Pendant::initialize()
 
 void Pendant::deinitialize()
 {
-    if (m_socket == nullptr) {
-        return;
+    QTcpSocket *socket = m_socket;
+    if (socket != nullptr) {
+        socket->disconnectFromHost();
+        if (socket->state() != QAbstractSocket::UnconnectedState) {
+            socket->waitForDisconnected();
+        }
+        // The disconnected handler may have already cleared the member.
+        if (m_socket != nullptr) {
+            m_socket->deleteLater();
+            m_socket = nullptr;
+        }
     }
 
-    m_socket->disconnectFromHost();
-    if (m_socket->state() != QAbstractSocket::UnconnectedState) {
-     m_socket->waitForDisconnected();
+    // Without this the old server keeps the port bound and leaks on every
+    // configuration change.
+    if (m_server != nullptr) {
+        m_server->close();
+        m_server->deleteLater();
+        m_server = nullptr;
     }
-    m_socket->deleteLater();
-    m_socket = nullptr;
 }
 
 void Pendant::sendState()
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     StateMessage message;
     message.header.size = sizeof(StateMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::STATE);
@@ -200,6 +233,10 @@ void Pendant::sendState()
 void Pendant::sendWifiConfig(const QString &ssid, const QString &password)
 {
     qDebug() << "[Pendant] Sending wifi config";
+
+    if (m_socket == nullptr) {
+        return;
+    }
 
     if (ssid.length() >= COMM_SSID_PASSWORD_MAX_LEN || password.length() >= COMM_SSID_PASSWORD_MAX_LEN) {
         qWarning() << "[Pendant] SSID or password too long to send";
@@ -223,6 +260,10 @@ void Pendant::sendWifiConfig(const QString &ssid, const QString &password)
 
 void Pendant::sendStepSizeSelections()
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     StepSizeConfigMessage message;
     message.header.start = 0xAA55;
     message.header.size = sizeof(StepSizeConfigMessage);
@@ -241,6 +282,10 @@ void Pendant::sendStepSizeSelections()
 
 void Pendant::sendFeedRateSelections()
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     FeedRateConfigMessage message;
     message.header.size = sizeof(FeedRateConfigMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::FEED_RATE_CONFIG);
@@ -258,6 +303,10 @@ void Pendant::sendFeedRateSelections()
 
 void Pendant::sendStepSize(float value)
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     JoggingParamMessage message;
     message.header.size = sizeof(JoggingParamMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
@@ -271,6 +320,10 @@ void Pendant::sendStepSize(float value)
 
 void Pendant::sendFeedRate(float value)
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     JoggingParamMessage message;
     message.header.size = sizeof(JoggingParamMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
@@ -284,6 +337,10 @@ void Pendant::sendFeedRate(float value)
 
 void Pendant::sendFeedRateZ(float value)
 {
+    if (m_socket == nullptr) {
+        return;
+    }
+
     JoggingParamMessage message;
     message.header.size = sizeof(JoggingParamMessage);
     message.header.type = static_cast<uint8_t>(CommPacketType::JOGGING_PARAM);
@@ -313,16 +370,18 @@ bool Pendant::isConnectionTimedOut(qint64 timeoutMs) const
 
 void Pendant::handlePingMessage(const uint8_t* data, uint8_t size)
 {
-    PingMessage msg;
-    memcpy(&msg, data, size);
+    // size comes from the packet header — never copy more than the struct holds.
+    PingMessage msg{};
+    memcpy(&msg, data, qMin<size_t>(size, sizeof(msg)));
 
     this->updateLastMessageTime();
 }
 
 void Pendant::handleCmdMessage(const uint8_t* data, uint8_t size)
 {
-    CmdMessage msg;
-    memcpy(&msg, data, size);
+    // size comes from the packet header — never copy more than the struct holds.
+    CmdMessage msg{};
+    memcpy(&msg, data, qMin<size_t>(size, sizeof(msg)));
 
     qDebug() << "[Pendant] Received command:" << (int)msg.cmd;
     this->updateLastMessageTime();
@@ -330,8 +389,9 @@ void Pendant::handleCmdMessage(const uint8_t* data, uint8_t size)
 
 void Pendant::handleJoggingParamMessage(const uint8_t* data, uint8_t size)
 {
-    JoggingParamMessage msg;
-    memcpy(&msg, data, size);
+    // size comes from the packet header — never copy more than the struct holds.
+    JoggingParamMessage msg{};
+    memcpy(&msg, data, qMin<size_t>(size, sizeof(msg)));
 
     qDebug() << "[Pendant] Jogging param changed - Separate Z:" << (int) msg.param << msg.value;
     this->updateLastMessageTime();
@@ -339,8 +399,9 @@ void Pendant::handleJoggingParamMessage(const uint8_t* data, uint8_t size)
 
 void Pendant::handleJogMessage(const uint8_t* data, uint8_t size)
 {
-    JogMessage msg;
-    memcpy(&msg, data, size);
+    // size comes from the packet header — never copy more than the struct holds.
+    JogMessage msg{};
+    memcpy(&msg, data, qMin<size_t>(size, sizeof(msg)));
 
     qDebug() << "[Pendant] Jog - X:" << (int)msg.x << "Y:" << (int)msg.y << "Z:" << (int)msg.z;
     this->updateLastMessageTime();

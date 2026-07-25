@@ -265,12 +265,15 @@ PointSegment *GcodeParser::processCommand(const std::vector<std::string> &args)
     double spindleSpeed = GcodePreprocessorUtils::parseCoord(args, 'S');
     if (!qIsNaN(spindleSpeed)) m_state.lastSpindleSpeed = spindleSpeed;
 
-    // Handle P code
-    double dwell = GcodePreprocessorUtils::parseCoord(args, 'P');
-    if (!qIsNaN(dwell)) m_points.last()->setDwell(dwell);
-
     // handle G codes.
     gCodes = GcodePreprocessorUtils::parseCodes(args, 'G');
+
+    // Handle P code. P is a dwell only for G4 — on other commands (G10 L2 P1,
+    // canned cycles, ...) it means something else and must not become a dwell.
+    if (gCodes.contains(4.0f)) {
+        double dwell = GcodePreprocessorUtils::parseCoord(args, 'P');
+        if (!qIsNaN(dwell)) m_points.last()->setDwell(dwell);
+    }
 
     // handle multiple G codes, like `G00 G0 X-0.474 Y75.557`
     if (gCodes.size() > 1) {
@@ -418,6 +421,15 @@ void GcodeParser::expandCannedCycle(const QVector3D &position)
         double currentZ = m_state.cannedR;
         double targetZ = m_state.cannedZ;
         double peckIncrement = m_state.cannedQ > 0 ? m_state.cannedQ : (m_state.cannedR - m_state.cannedZ) / 5.0;
+
+        // R at or below Z (broken program) would make the peck loop never end.
+        if (peckIncrement <= 0) {
+            QVector3D zDepth(position.x(), position.y(), targetZ);
+            addLinearPointSegment(zDepth, false);
+            addLinearPointSegment(rPlane, true);
+
+            return;
+        }
 
         // Peck down in increments
         while (currentZ > targetZ + 0.001) { // small tolerance

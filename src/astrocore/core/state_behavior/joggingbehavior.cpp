@@ -206,8 +206,12 @@ void JoggingBehavior::startJogging()
         return;
     }
 
+    // Nothing to jog — stopJogging() would be a no-op here (m_isJogging is false),
+    // leaving this behavior active with no way out.
     if (m_joggingVector.length() == 0) {
-        stopJogging();
+        qWarning() << "[Behavior][Jogging] Empty jogging vector, returning to Idle";
+        emit transition(this, new IdleBehavior());
+
         return;
     }
 

@@ -379,7 +379,8 @@ GLuint GcodeDrawer::getSegmentColor(LineSegment& segment, GLPalette &palette)
     else if (segment.isHightlight()) return m_colorHighlightIndex > -1 ? m_colorHighlightIndex : getSegmentColorAndUpdateIndex(m_colorHighlightIndex, palette.color(m_colorHighlight));
     else if (segment.isFastTraverse()) return m_colorRapidMovementIndex > -1 ? m_colorRapidMovementIndex : getSegmentColorAndUpdateIndex(m_colorRapidMovementIndex, palette.color(m_colorRapidMovement));
     else if (segment.isZMovement()) return m_colorZMovementIndex > -1 ? m_colorZMovementIndex : getSegmentColorAndUpdateIndex(m_colorZMovementIndex, palette.color(m_colorZMovement));
-    else if (m_grayscaleSegments) {
+    // Equal bounds would divide by zero below.
+    else if (m_grayscaleSegments && m_grayscaleMax != m_grayscaleMin) {
         int grayscaleDiff = m_grayscaleMax - m_grayscaleMin;
         switch (m_grayscaleCode) {
         case GcodeDrawer::S:
@@ -399,7 +400,8 @@ GLuint GcodeDrawer::getSegmentColor(LineSegment& segment)
     else if (segment.isHightlight()) return m_colorHighlightIndex;
     else if (segment.isFastTraverse()) return m_colorRapidMovementIndex;
     else if (segment.isZMovement()) return m_colorZMovementIndex;
-    else if (m_grayscaleSegments) {
+    // Equal bounds would divide by zero below.
+    else if (m_grayscaleSegments && m_grayscaleMax != m_grayscaleMin) {
         int grayscaleDiff = m_grayscaleMax - m_grayscaleMin;
         switch (m_grayscaleCode) {
             case GcodeDrawer::S:
@@ -547,7 +549,7 @@ void GcodeDrawer::setColorHighlight(const QColor &colorHighlight)
 {
     m_colorHighlight = colorHighlight;
 }
-\
+
 void GcodeDrawer::setColorZMovement(const QColor &colorZMovement)
 {
     m_colorZMovement = colorZMovement;

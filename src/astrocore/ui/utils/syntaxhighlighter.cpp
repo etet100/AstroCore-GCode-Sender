@@ -270,12 +270,12 @@ void SyntaxHighlighter::highlightBlock(const QString &text)
 
 void SyntaxHighlighter::setColor(ElementType type, const QColor &color)
 {
+    // No break — one element type can have several rules (e.g. both comment styles).
     for (HighlightingRule &rule : m_rules)
     {
         if (rule.type == type)
         {
             rule.format.setForeground(color);
-            break;
         }
     }
 

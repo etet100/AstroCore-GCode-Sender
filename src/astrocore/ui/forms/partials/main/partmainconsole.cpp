@@ -50,8 +50,11 @@ void PartMainConsole::initialize(ConfigurationConsole &configurationConsole)
     m_configurationConsole = &configurationConsole;
 
     if (m_configurationConsole->commandAutoCompletion()) {
-        QCompleter completer = ui->cboCommand->completer();
-        completer.setCompletionMode(QCompleter::InlineCompletion);
+        // Was creating a new completer instead of configuring the existing one.
+        QCompleter *completer = ui->cboCommand->completer();
+        if (completer) {
+            completer->setCompletionMode(QCompleter::InlineCompletion);
+        }
     } else {
         ui->cboCommand->setCompleter(nullptr);
     }

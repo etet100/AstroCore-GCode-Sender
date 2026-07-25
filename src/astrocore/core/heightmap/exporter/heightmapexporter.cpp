@@ -27,7 +27,7 @@ void HeightmapExporter::exportToFile(const Heightmap& heightmap, const QString f
 
     QTextStream out(&file);
     out << "# g-pilot heightmap\n";
-    out << "version: 1";
+    out << "version: 1\n";
     out << "# params\n";
     out << "size: " << heightmap.gridWidth() << " " << heightmap.gridHeight() << "\n";
     out << "startPos: " << heightmap.startPos().x() << " " << heightmap.startPos().y() << "\n";

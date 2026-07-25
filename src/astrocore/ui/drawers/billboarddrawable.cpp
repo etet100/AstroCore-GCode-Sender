@@ -356,6 +356,12 @@ void BillboardDrawable::updateScreenPositions(const QMatrix4x4& viewMatrix, cons
         float pixelWidth = texRect.width();
         float pixelHeight = texRect.height();
         float maxDimension = qMax(pixelWidth, pixelHeight);
+        // No atlas entry yet (updateScreenPositions before rebuildAtlas) — without
+        // this the scale becomes infinite and the hit area covers the whole screen.
+        if (maxDimension <= 0.0f) {
+            continue;
+        }
+
         float scale = billboard.pixelSize / maxDimension;
 
         QVector2D billboardSize(pixelWidth * scale, pixelHeight * scale);

@@ -53,6 +53,7 @@ private:
 
     double m_progressPercentage;
     double m_correctionFactor;
+    double m_lastCorrectionFactor = 1.0; // previous value, used to smooth the factor
     double m_completedEstimatedTime; // sum of estimated time for completed segments
 
     double calculateSegmentTime(LineSegment& segment, int feedOverride, int rapidOverride);

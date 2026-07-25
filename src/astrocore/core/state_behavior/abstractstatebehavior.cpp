@@ -374,7 +374,10 @@ int AbstractStateBehavior::setTimeout(int milliseconds, std::function<void ()> c
     timer->setSingleShot(true);
     timer->setInterval(milliseconds);
     connect(timer, &QTimer::timeout, this, [this, id, callback]() {
-        m_timers.remove(id);
+        QTimer* fired = m_timers.take(id);
+        if (fired) {
+            fired->deleteLater();
+        }
         if (callback) {
             callback();
         }
@@ -419,7 +422,7 @@ bool AbstractStateBehavior::action(const Action &action)
         log(QString("[Behavior][%1] Action rejected: %2").arg(name()).arg(action.name()));
     }
 
-    return false;
+    return result;
 }
 
 bool AbstractStateBehavior::handleMachineConfigurationActions(const Action &action)

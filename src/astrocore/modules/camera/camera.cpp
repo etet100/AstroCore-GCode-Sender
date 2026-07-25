@@ -240,6 +240,10 @@ void Camera::updateCameras()
 
 void Camera::findBestResolution(int w, int h)
 {
+    if (m_camera.isNull()) {
+        return;
+    }
+
     QCameraFormat bestFormat;
     float bestScale = 1000.0;
 

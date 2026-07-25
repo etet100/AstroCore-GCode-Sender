@@ -615,7 +615,7 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
         return;
     }
 
-    int rowCurrent = qMin(currentRow, m_program->lastCommandIndex());
+    int rowCurrent = qMax(qMin(currentRow, m_program->lastCommandIndex()), 0);
     int rowPrevious = qMax(qMin(previousRow, m_program->lastCommandIndex()), 0);
 
     qDebug() << "[PartMainVisualizer] Updating toolpath highlighting from row"
@@ -646,7 +646,7 @@ void PartMainVisualizer::updateToolpathHighlighting(int currentRow, int previous
         if (linePrevious < lineCurrent) qSwap(linePrevious, lineCurrent);
 
         QList<int> indexes;
-        for (int i = lineCurrent + 1; i <= linePrevious; i++) {
+        for (int i = qMax(lineCurrent + 1, 0); i <= linePrevious && i < lineIndexes.count(); i++) {
             foreach (int l, lineIndexes.at(i)) {
                 list[l].setIsHightlight(rowCurrent > rowPrevious);
                 indexes.append(l);
@@ -733,6 +733,10 @@ void PartMainVisualizer::finalizeTransfer()
 {
     // Shadow last segment
     GCodeViewParser *parser = m_codeDrawer->viewParser();
+    if (parser == nullptr) {
+        return;
+    }
+
     QList<LineSegment>& list = parser->getLineSegmentList();
 
     if (m_lastDrawnLineIndex < list.count()) {
@@ -795,10 +799,14 @@ PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int li
     SegmentInfo info = {nullptr, nullptr, nullptr, nullptr};
 
     GCodeViewParser *parser = m_codeDrawer->viewParser();
+    if (parser == nullptr) {
+        return info;
+    }
+
     QList<LineSegment>& list = parser->getLineSegmentList();
     QVector<QList<int>> lineIndexes = parser->getLinesIndexes();
 
-    if (lineNumber == -1 || lineNumber >= lineIndexes.count()) {
+    if (lineNumber < 0 || lineNumber >= lineIndexes.count()) {
         return info;
     }
 
@@ -828,10 +836,13 @@ PartMainVisualizer::SegmentInfo PartMainVisualizer::getSegmentInfoForLine(int li
 
 void PartMainVisualizer::updateBillboardsScreenPositions()
 {
+    // The projection mode must be passed, otherwise hit test areas are computed
+    // with perspective math while the view is orthographic.
     m_heightmapGridDrawer.billboardDrawable()->updateScreenPositions(
         ui->visualizer->viewMatrix(),
         ui->visualizer->projectionMatrix(),
-        ui->visualizer->size()
+        ui->visualizer->size(),
+        ui->visualizer->viewMode() != GLWidget::ViewMode::Perspective
     );
 }
 

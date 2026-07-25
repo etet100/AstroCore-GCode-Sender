@@ -190,7 +190,13 @@ QStringList XmlProvider::getStringList(const QString group, const QString key, Q
     for (int i = 0; i < entries.size(); ++i) {
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key && entry.attribute("type") == "stringlist") {
-            return entry.text().split(",");
+            const QString text = entry.text();
+            // An empty entry must not become a list with one empty string.
+            if (text.isEmpty()) {
+                return QStringList();
+            }
+
+            return text.split(",");
         }
     }
 

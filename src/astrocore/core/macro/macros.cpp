@@ -22,6 +22,10 @@ void Macros::clear()
 
 void Macros::remove(int index)
 {
+    if (index < 0 || index >= m_list.size()) {
+        return;
+    }
+
     m_list.removeAt(index);
     notifyUpdated();
 }

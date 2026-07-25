@@ -29,7 +29,12 @@ void GCodeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         painter->fillRect(opt.rect, opt.palette.highlight());
     } else {
         GCodeItem::States state = (GCodeItem::States)index.data(Qt::UserRole + 2).toInt();
-        QColor backgroundColor = m_dark ? m_stateColorsDark[state] : m_stateColorsLight[state];
+        // value(), not operator[] — the maps are static and a missing state
+        // (e.g. EmptyLine) would insert an invalid color into them.
+        QColor backgroundColor = m_dark ? m_stateColorsDark.value(state) : m_stateColorsLight.value(state);
+        if (!backgroundColor.isValid()) {
+            backgroundColor = opt.palette.base().color();
+        }
         bool isCurrent = index.data(Qt::UserRole + 3).toBool();
         if (isCurrent) {
             backgroundColor = backgroundColor.darker(m_dark ? 150 : 120);

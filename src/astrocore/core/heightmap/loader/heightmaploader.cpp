@@ -65,6 +65,9 @@ QSize HeightmapLoader::parseSize(const QString &line)
     }
 
     QSize size(parts[0].toInt(), parts[1].toInt());
+    if (size.width() < 1 || size.height() < 1) {
+        throw std::runtime_error("Invalid heightmap size");
+    }
     if (size.width() > 1000 || size.height() > 1000) {
         throw std::runtime_error("Heightmap size too large");
     }
@@ -124,6 +127,9 @@ void HeightmapLoader::parseRowData(const QString &line, int row, const QSize &si
     }
 
     for (int col = 0; col < parts.size() && col < size.width(); ++col) {
-        data[row * size.width() + col] = parts[col].toDouble();
+        bool ok = false;
+        const double value = parts[col].toDouble(&ok);
+        // Not probed points are stored as "nan" — keep them NaN instead of 0.
+        data[row * size.width() + col] = ok ? value : qQNaN();
     }
 }

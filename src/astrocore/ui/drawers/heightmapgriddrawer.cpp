@@ -96,7 +96,11 @@ void HeightMapGridDrawer::generateTriangles(QSize gridSize, Heightmap::MinMax mi
         c.start = normal;
     };
 
+    // All points at the same height would divide by zero in the color mapping.
     double minMaxRange = minMax.max - minMax.min;
+    if (qFuzzyIsNull(minMaxRange)) {
+        minMaxRange = 1.0;
+    }
 
     for (int x = 0; x < gridSize.width() - 1; x++) {
         for (int y = 0; y < gridSize.height() - 1; y++) {

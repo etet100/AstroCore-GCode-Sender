@@ -42,7 +42,8 @@ DlgEditProgram::DlgEditProgram(QWidget* parent)
                     QJsonObject obj = QJsonDocument::fromJson(comment.toUtf8()).object();
                     int lineNumber = obj["l"].toInt(-1);
                     QString description = obj["d"].toString("").trimmed();
-                    if (lineNumber >= lines.size() || description.isEmpty()) {
+                    // -1 means the response had no line number at all.
+                    if (lineNumber < 0 || lineNumber >= lines.size() || description.isEmpty()) {
                         continue;
                     }
 

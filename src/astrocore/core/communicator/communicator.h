@@ -196,7 +196,7 @@ class CommunicatorApi : public QObject
     Q_OBJECT
 
     public:
-        CommunicatorApi(Communicator *communicator) : QObject(), m_communicator(communicator) {}
+        CommunicatorApi(Communicator *communicator) : QObject(communicator), m_communicator(communicator) {}
 
         AbstractConnection *connection() { return m_communicator->m_connection; }
         const MachineState& machineState() const { return m_communicator->machineState(); }

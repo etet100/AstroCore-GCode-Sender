@@ -272,8 +272,8 @@ typedef std::function<void(void *)> CommandCallback;
 
 struct CommandQueue {
     QString commandLine;
-    int tableIndex;
-    CommandSource source;
+    int tableIndex = TABLE_INDEX_UI;
+    CommandSource source = CommandSource::System;
     CommandCallback callback;
 
     CommandQueue() {
@@ -288,24 +288,16 @@ struct CommandQueue {
 };
 
 struct CommandAttributes : CommandQueue {
-    int length;
-    int commandIndex; // used for console
+    int length = 0;
+    int commandIndex = -1; // used for console
     QString command;
     QString response = "";
 
     CommandAttributes() : CommandQueue() {
     }
 
-    CommandAttributes(const CommandAttributes& other) : CommandQueue() {
-        CommandAttributes(other.source, other.commandIndex, other.tableIndex, other.commandLine);
-        source = other.source;
-        length = other.length;
-        commandIndex = other.commandIndex;
-        tableIndex = other.tableIndex;
-        commandLine = other.commandLine;
-        response = other.response;
-        callback = other.callback;
-    }
+    CommandAttributes(const CommandAttributes& other) = default;
+    CommandAttributes& operator=(const CommandAttributes& other) = default;
 
     CommandAttributes(CommandSource source, int commandIndex, int tableIndex, QString commandLine, CommandCallback callback = nullptr)
         : CommandQueue(source, commandLine, tableIndex, callback)

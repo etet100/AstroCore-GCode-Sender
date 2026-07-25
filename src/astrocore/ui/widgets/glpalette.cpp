@@ -47,7 +47,8 @@ GLuint GLPalette::add(float r, float g, float b, float a)
 
 GLuint GLPalette::add(const GLColor &color)
 {
-    return add(color.x(), color.y(), color.z());
+    // Alpha must be kept — the lookup key in color() includes it.
+    return add(color.x(), color.y(), color.z(), color.w());
 }
 
 int GLPalette::count()

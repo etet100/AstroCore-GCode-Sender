@@ -18,6 +18,7 @@
 #include <QColorDialog>
 #include <QStyledItemDelegate>
 #include <QPropertyAnimation>
+#include <QPointer>
 #include <QEasingCurve>
 #include <QKeySequenceEdit>
 #include <QKeyEvent>
@@ -207,7 +208,8 @@ void FrmSettings::initializeWidgets()
     ui->txtMaxTravelZ->setValue(machine.maxTravel().z());
 
     const ConfigurationUI &ui_ = UiConfigs::instance().ui();
-    ui->cboUIScale->setCurrentText(QString::number((int)ui_.uiScale() * 100) + "%");
+    // uiScale is stored in percent (80..140), the combo shows it as "100%".
+    ui->cboUIScale->setCurrentText(QString::number((int)ui_.uiScale()) + "%");
     ui->cboLanguage->setCurrentIndex(ui->cboLanguage->findData(ui_.language()));
     ui->chkDarkTheme->setChecked(ui_.darkTheme());
 
@@ -330,7 +332,8 @@ void FrmSettings::applySettings()
     machine.emitChanged();
 
     ConfigurationUI &ui_ = UiConfigs::instance().ui();
-    ui_.m_uiScale = ui->cboUIScale->currentText().toInt() / 100.0f;
+    // Combo text is "100%" — strip the sign and keep percent, as stored elsewhere.
+    ui_.m_uiScale = ui->cboUIScale->currentText().remove('%').trimmed().toInt();
     ui_.m_language = ui->cboLanguage->currentData().toString();
     ui_.m_darkMode = ui->chkDarkTheme->isChecked();
     ui_.emitChanged();
@@ -444,9 +447,11 @@ void FrmSettings::addCustomSettings(QGroupBox *box)
 
 void FrmSettings::scrollToCategory(int currentRow)
 {
-    static QPropertyAnimation *animation;
+    // QPointer: the animation deletes itself when stopped, so a raw pointer
+    // would dangle if the dialog closed mid-animation.
+    static QPointer<QPropertyAnimation> animation;
 
-    if (animation) {
+    if (!animation.isNull()) {
         animation->stop();
         animation = nullptr;
     }
@@ -455,8 +460,13 @@ void FrmSettings::scrollToCategory(int currentRow)
         return;
     }
 
+    QListWidgetItem *item = ui->listCategories->item(currentRow);
+    if (!item) {
+        return;
+    }
+
     // Scroll to selected groupbox
-    QGroupBox *box = this->findChild<QGroupBox*>(ui->listCategories->item(currentRow)->data(Qt::UserRole).toString());
+    QGroupBox *box = this->findChild<QGroupBox*>(item->data(Qt::UserRole).toString());
     if (!box) {
         return;
     }
@@ -468,7 +478,8 @@ void FrmSettings::scrollToCategory(int currentRow)
     animation->setEndValue(labelPos.y() - 5);
 
 
-    QObject::connect(animation, &QPropertyAnimation::finished, [this]() {
+    // 'this' as context: the dialog may be destroyed while the animation runs.
+    QObject::connect(animation, &QPropertyAnimation::finished, this, [this]() {
         animation = nullptr;
         m_animatingScrollBox = false;
     });

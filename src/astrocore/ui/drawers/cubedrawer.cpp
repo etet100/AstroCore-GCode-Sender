@@ -149,6 +149,11 @@ CubeClickableFace CubeDrawer::faceAtPos(QPoint pos)
     for (auto clickable : clickables) {
         Q_UNUSED(clickable)
 
+        // Clickable areas are built while drawing — nothing to hit test before that.
+        if (pi + 6 > m_points2d.size()) {
+            break;
+        }
+
         QPoint tr1[3] = { m_points2d[pi++], m_points2d[pi++], m_points2d[pi++] };
         QPoint tr2[3] = { m_points2d[pi++], m_points2d[pi++], m_points2d[pi++] };
 
@@ -169,10 +174,12 @@ CubeClickableFace CubeDrawer::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint pos = event->position().toPoint();
 
-    CubeClickableFace lastFace = CubeClickableFace::None;
+    // Compare with the previously hovered face, so leaving a face also clears
+    // the highlight (was comparing against a fresh None).
+    CubeClickableFace lastFace = m_faceAtCursor;
     m_faceAtCursor = faceAtPos(pos);
     if (m_faceAtCursor == lastFace) {
-        return lastFace;
+        return m_faceAtCursor;
     }
 
     for (auto &line : m_lines) {

@@ -52,6 +52,12 @@ void ThemeManager::setScale(int scale, bool force)
         return;
     }
 
+    if (!m_app) {
+        qWarning() << "[ThemeManager] QApplication not set";
+
+        return;
+    }
+
     if (scale < 80 || scale > 140) {
         qWarning() << "[ThemeManager] Scale" << scale << "% is out of supported range (80%-140%), using default 100%";
         scale = 100;
@@ -128,7 +134,7 @@ void ThemeManager::processQssTemplate(QWidget *widget)
         .replace("{2.5*font-size}", QString::number(2.5 * m_fontSize))
         .replace("{scale}", QString::number(scale()))
         .replace("{scale/2}", QString::number(scale() / 2.0))
-        .replace("{1.5*scale}", QString::number(scale() * 1.0))
+        .replace("{1.5*scale}", QString::number(scale() * 1.5))
         .replace("{2*scale}", QString::number(scale() * 2.0))
         .replace("{2.5*scale}", QString::number(scale() * 2.5));
 

@@ -9,7 +9,7 @@ const QMap<QString, QVariant> DEFAULTS = {
     {"uiScale", 100},
     {"language", "en"},
     {"recentFiles", QStringList{}},
-    {"recentHeightmaps", QStringList{"map1.txt", "map2.txt", "map3.txt"}},
+    {"recentHeightmaps", QStringList{}},
     {"autoScrollGCode", true},
     {"lastFileOpenDir", ""},
     {"lockWindows", true},

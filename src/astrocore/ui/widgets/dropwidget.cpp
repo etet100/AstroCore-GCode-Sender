@@ -75,7 +75,7 @@ void DropWidget::dragMoveEvent(QDragMoveEvent *dme)
             std::sort(yl.begin(), yl.end());
 
             int i = 0;
-            while (y >= yl.at(i) && i < yl.count()) i++;
+            while (i < yl.count() && y >= yl.at(i)) i++;
 
             if (i != m_layoutIndex) {
                 static_cast<QVBoxLayout*>(layout())->insertWidget(i - 1, f);

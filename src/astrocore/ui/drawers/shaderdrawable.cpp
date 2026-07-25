@@ -54,7 +54,7 @@ void ShaderDrawable::bindAttributes(QOpenGLShaderProgram *&shaderProgram)
 
     // Tell OpenGL programmable pipeline how to locate vertex line start point
     pos = shaderProgram->attributeLocation("a_normal");
-    if (pos > 0) {
+    if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 3, sizeof(VertexData));
     }
@@ -62,7 +62,7 @@ void ShaderDrawable::bindAttributes(QOpenGLShaderProgram *&shaderProgram)
     offset += sizeof(QVector3D);
 
     pos = shaderProgram->attributeLocation("a_cumSegPosition");
-    if (pos > 0) {
+    if (pos >= 0) {
         shaderProgram->enableAttributeArray(pos);
         shaderProgram->setAttributeBuffer(pos, GL_FLOAT, offset, 1, sizeof(VertexData));
     }

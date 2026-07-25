@@ -719,7 +719,7 @@ void GLWidget::updateProjection()
     // Reset projection
     m_projectionMatrix.setToIdentity();
 
-    double aspectRatio = (double)width() / height();
+    double aspectRatio = (double)width() / qMax(1, height());
 
     // perspective / orthographic projection
     if (m_mode == ViewMode::Perspective) {
@@ -1216,7 +1216,7 @@ QPointF GLWidget::calcPositionOnXYPlane(QPoint mouseClickPosition)
     QVector3D intersection = nearPlaneWorldPosition + direction * t;
 
     // Limit XY range
-    if (abs(intersection.x()) > 3000 || abs(intersection.y()) > 3000) {
+    if (qAbs(intersection.x()) > 3000 || qAbs(intersection.y()) > 3000) {
         return QPointF(NAN, NAN);
     }
 

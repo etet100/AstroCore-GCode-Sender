@@ -27,6 +27,10 @@ void CameraFrameProcessor::setVideoSinks(QVideoSink *inputSink, QVideoSink *outp
 
 void CameraFrameProcessor::processFrame(const QVideoFrame &frame)
 {
+    if (m_outputSink == nullptr) {
+        return;
+    }
+
     if (m_style == CrosshairStyle::None) {
         m_outputSink->setVideoFrame(frame);
 

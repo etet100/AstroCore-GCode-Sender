@@ -28,11 +28,11 @@ class GCodeLoaderWorker : public QThread
         void cancelled();
 
     private:
-        GCodeLoader *m_loader;
+        GCodeLoader *m_loader = nullptr;
         Source m_source;
         QString m_fileName;
         QStringList m_lines;
-        GCode* m_gcode;
+        GCode* m_gcode = nullptr;
 };
 
 class GCodeThreadedLoader : public AbstractGCodeLoader
@@ -48,7 +48,7 @@ class GCodeThreadedLoader : public AbstractGCodeLoader
         void cancel() override;
 
     private:
-        GCodeLoaderWorker *m_thread;
+        GCodeLoaderWorker *m_thread = nullptr;
         void connectSignals();
         void deleteThread();
 };

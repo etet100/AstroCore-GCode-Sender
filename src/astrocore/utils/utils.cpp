@@ -8,7 +8,7 @@ void Utils::positionDialog(QWidget *widget, QRect frameGeometry, bool maximized)
 {
     QSize screenSize = widget->screen()->availableSize();
     QSize geometrySize = frameGeometry.size();
-\
+
     // if geometry is not set, center it
     if (frameGeometry.x() == -1) {
         frameGeometry.setLeft(screenSize.width() / 2 - frameGeometry.width() / 2);

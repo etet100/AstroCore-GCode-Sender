@@ -391,8 +391,40 @@ jobs:
           name: astrocore-macos-${{ matrix.config }}-artifacts
           path: AstroCore-macos-arm64-${{ matrix.config }}.dmg
 
+  # Unit tests compile only core sources, so they need neither the vendor
+  # submodules nor the full build matrix — one fast Linux job is enough.
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Qt 6.11.1
+        uses: jurplel/install-qt-action@v4
+        with:
+          # see comment in the build job — remove aqtsource once aqtinstall 3.4.0 is released
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git"
+          version: "6.11.1"
+          host: "linux"
+          target: "desktop"
+          arch: "linux_gcc_64"
+          cache: true
+
+      - uses: actions/checkout@v4
+
+      - name: Build and run unit tests
+        shell: bash
+        run: |
+          mkdir -p build/tests
+          cd build/tests
+          qmake ../../tests/tests.pro
+          make -j$(nproc)
+          make check
+
   release:
-    needs: build
+    needs: [build, tests]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:

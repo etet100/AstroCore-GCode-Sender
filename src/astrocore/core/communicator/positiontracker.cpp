@@ -91,7 +91,7 @@ void PositionTracker::processOffsetsVars(const QStringList& response)
         }
 
         QStringList parts = line.split(":");
-        if (parts.size() != 2 && parts[0] != "PRB" && parts[0] != "HOME") {
+        if (parts.size() < 2 || (parts.size() != 2 && parts[0] != "PRB" && parts[0] != "HOME")) {
             qDebug() << "[PositionTracker] Bad offsets format:" << line;
             assert(false);
             return;
@@ -104,9 +104,10 @@ void PositionTracker::processOffsetsVars(const QStringList& response)
             axes.size() == 3 ? axes[2].toDouble() : axes[0].toDouble()
         );
 
+        // G92 is only a part of the total work offset (WCO = active CS + G92),
+        // so it must not overwrite m_workOffset — that value comes from status reports.
         if (parts[0] == "G92") {
             qDebug() << "[PositionTracker] G92 offset updated";
-            m_workOffset = pos;
         }
 
         // PRB and HOME have third value which indicates if last probing/home was successful — store it

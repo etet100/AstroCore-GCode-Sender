@@ -551,15 +551,22 @@ void FrmLog::restoreWindowState()
     int w = cache.getInt("log/window/w", 900);
     int h = cache.getInt("log/window/h", 600);
 
+    if (targetScreen == nullptr) {
+        setGeometry(x < 0 ? 0 : x, y < 0 ? 0 : y, w, h);
+
+        return;
+    }
+
     QRect screen = targetScreen->availableGeometry();
     if (x == -1 || y == -1) {
         x = screen.x() + (screen.width() - w) / 2;
         y = screen.y() + (screen.height() - h) / 2;
     }
 
-    // Clamp to screen bounds in case screen layout changed
-    x = qBound(screen.x(), x, screen.right() - w);
-    y = qBound(screen.y(), y, screen.bottom() - h);
+    // Clamp to screen bounds in case screen layout changed. qMax keeps the
+    // upper bound above the lower one for windows larger than the screen.
+    x = qBound(screen.x(), x, qMax(screen.x(), screen.right() - w));
+    y = qBound(screen.y(), y, qMax(screen.y(), screen.bottom() - h));
 
     setGeometry(x, y, w, h);
 

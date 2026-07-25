@@ -65,7 +65,7 @@ class GCodeLoader : public AbstractGCodeLoader
         void cancel() override;
 
     private:
-        bool m_cancel;
+        bool m_cancel = false;
         void loadFromIODevice(QIODevice& io, int size);
 };
 

@@ -13,7 +13,7 @@ AbstractStateBehavior::Result DisconnectingBehavior::doOnEntry(CommunicatorApi *
 {
     qDebug() << "[Behavior][Disconnecting] Entry";
 
-    if (communicator->connection()->isConnected()) {
+    if (communicator->connection() && communicator->connection()->isConnected()) {
         connect(communicator->connection(), &AbstractConnection::stateChanged, this, &DisconnectingBehavior::onConnectionStateChanged);
         m_disconnectionTimeoutId = setTimeout(2500, []() {
             qWarning() << "[Behavior][Disconnecting] Timeout: connection did not close within 2.5 seconds.";
@@ -49,7 +49,9 @@ void DisconnectingBehavior::onConnectionStateChanged(ConnectionState state)
 {
     qDebug() << "[Behavior][Disconnecting] AbstractConnection state changed:" << static_cast<int>(state);
     if (state == ConnectionState::Disconnected) {
-        disconnect(m_communicator->connection(), &AbstractConnection::stateChanged, this, &DisconnectingBehavior::onConnectionStateChanged);
+        if (m_communicator && m_communicator->connection()) {
+            disconnect(m_communicator->connection(), &AbstractConnection::stateChanged, this, &DisconnectingBehavior::onConnectionStateChanged);
+        }
         clearTimeout(m_disconnectionTimeoutId);
         qDebug() << "[Behavior][Disconnecting] AbstractConnection is disconnected";
     }

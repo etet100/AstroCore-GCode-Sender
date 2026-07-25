@@ -196,7 +196,7 @@ void PointSegment::convertToMetric()
     m_point->setY(m_point->y() * 25.4);
     m_point->setZ(m_point->z() * 25.4);
 
-    if (m_isArc && m_arcProperties != nullptr) {
+    if (m_isArc && m_arcProperties != nullptr && m_arcProperties->center != nullptr) {
         m_arcProperties->center->setX(m_arcProperties->center->x() * 25.4);
         m_arcProperties->center->setY(m_arcProperties->center->y() * 25.4);
         m_arcProperties->center->setZ(m_arcProperties->center->z() * 25.4);

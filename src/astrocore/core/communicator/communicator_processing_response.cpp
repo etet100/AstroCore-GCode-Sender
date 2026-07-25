@@ -187,6 +187,12 @@ void Communicator::processMachineState(MachineState state)
 
     // Update status
     AbstractStateBehavior* sb = m_sbManager.current();
+    if (!sb) {
+        emit machineStateReceived(state);
+
+        return;
+    }
+
     if (state != m_deviceContext.machineState()) {
         sb->onMachineStateChanged(state);
         emit machineStateChanged(state);

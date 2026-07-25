@@ -32,6 +32,8 @@ class XmlPersister : public AbstractPersister
         bool saveDocument();
         QDomElement getOrCreateGroup(const QString& group);
         QString variantToString(const QVariant& value);
+        // Replaces the element text, also when the element has no text node yet.
+        void setElementText(QDomElement& element, const QString& text);
 };
 
 #endif // XML_CONFIG_PERSISTER_H

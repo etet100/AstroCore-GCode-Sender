@@ -38,7 +38,7 @@ class GCodeItemDelegate : public QStyledItemDelegate
             {GCodeItem::States::Aborted, QColor("#4e2a2a")}
         };
 
-        bool m_dark;
+        bool m_dark = false;
 };
 
 #endif // GCODEITEMDELEGATE_H

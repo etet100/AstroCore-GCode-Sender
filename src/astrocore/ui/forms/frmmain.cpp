@@ -162,8 +162,8 @@ FrmMain::FrmMain(QWidget *parent) :
 
     initializeEventFilter();
 
-    // Pendant
-    Pendant *pendant = new Pendant(m_configuration, *communicator(), this);
+    // Pendant, owned by this form
+    new Pendant(m_configuration, *communicator(), this);
 
     initializeVirtualSettingsPanel();
 
@@ -897,7 +897,9 @@ void FrmMain::dropEvent(QDropEvent *de)
         }
     }
 
-    QString fileName = de->mimeData()->urls().at(0).toLocalFile();
+    // Plain text drops carry no urls at all.
+    const QList<QUrl> urls = de->mimeData()->urls();
+    QString fileName = urls.isEmpty() ? QString() : urls.at(0).toLocalFile();
 
     if (!m_heightmapMode) {
         if (!saveProgramChanges()) {
@@ -963,19 +965,39 @@ void FrmMain::fileOpen()
 void FrmMain::fileSave()
 {
     FilesManager& fm = FilesManager::instance();
+
+    // Without a known file path there is nothing to overwrite — ask the user first.
     if (!m_heightmapMode) {
         // G-code saving
-        if (fm.gcodeOpened()) fileSaveAs(); else {
+        if (!fm.gcodeOpened()) {
+            fileSaveAs();
+
+            return;
+        }
+
+        try {
             GCodeExporter exporter;
             exporter.exportToFile(program(), fm.gcodeFilePath());
             fm.setGcodeModified(false);
+        } catch (const std::runtime_error &err) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
         }
-    } else {
-        // Height map saving
-        if (fm.heightmapOpened()) fileSaveAs(); else {
-            HeightmapExporter exporter;
-            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
-        }
+
+        return;
+    }
+
+    // Height map saving
+    if (!fm.heightmapOpened()) {
+        fileSaveAs();
+
+        return;
+    }
+
+    try {
+        HeightmapExporter::exportToFile(heightmap(), fm.heightmapFilePath());
+        fm.setHeightmapModified(false);
+    } catch (const std::runtime_error &err) {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
     }
 }
 
@@ -987,8 +1009,14 @@ void FrmMain::fileSaveAs()
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr(FILE_FILTER_TEXT));
 
         if (!fileName.isEmpty()) {
-            GCodeExporter exporter;
-            exporter.exportToFile(program(), fm.gcodeFilePath());
+            try {
+                GCodeExporter exporter;
+                exporter.exportToFile(program(), fileName);
+            } catch (const std::runtime_error &err) {
+                QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
+
+                return;
+            }
 
             fm.setGcodeFilePath(fileName);
             fm.setGcodeModified(false);
@@ -1001,8 +1029,13 @@ void FrmMain::fileSaveAs()
         QString fileName = (QFileDialog::getSaveFileName(this, tr("Save file as"), lastUsedDirectory(), tr("Heightmap files (*.map)")));
 
         if (!fileName.isEmpty()) {
-            HeightmapExporter exporter;
-            exporter.exportToFile(heightmap(), fm.heightmapFilePath());
+            try {
+                HeightmapExporter::exportToFile(heightmap(), fileName);
+            } catch (const std::runtime_error &err) {
+                QMessageBox::critical(this, tr("Error"), tr("Failed to save file: %1").arg(err.what()));
+
+                return;
+            }
 
             fm.setHeightmapFilePath(fileName);
             fm.setHeightmapModified(false);
@@ -1259,7 +1292,7 @@ void FrmMain::onFileOpen(QString filePath)
         }
 
         if (filePath.isEmpty()) {
-            filePath = QFileDialog::getOpenFileName(this, tr("Open Heightmap"), lastUsedDirectory(),
+            filePath = QFileDialog::getOpenFileName(this, tr("Open G-Code"), lastUsedDirectory(),
                                    tr(FILE_FILTER_TEXT";;All files (*.*)"));
             if (filePath.isEmpty()) {
                 return;
@@ -1277,7 +1310,7 @@ void FrmMain::onFileOpen(QString filePath)
         }
 
         if (filePath.isEmpty()) {
-            QString filePath = QFileDialog::getOpenFileName(this, tr("Open G-Code"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
+            filePath = QFileDialog::getOpenFileName(this, tr("Open Heightmap"), lastUsedDirectory(), tr("Heightmap files (*.map)"));
             if (filePath.isEmpty()) {
                 return;
             }
@@ -1287,7 +1320,13 @@ void FrmMain::onFileOpen(QString filePath)
 
         Core::instance().addRecentHeightmap(filePath);
 
-        HeightmapLoader::loadFromFile(filePath, heightmap());
+        try {
+            HeightmapLoader::loadFromFile(filePath, heightmap());
+        } catch (const std::runtime_error &err) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to load heightmap: %1").arg(err.what()));
+
+            return;
+        }
     }
 }
 
@@ -2453,7 +2492,7 @@ void FrmMain::onHeightmapDataChangedByUser()
     // updateHeightmapInterpolationDrawer();
 }
 
-void FrmMain::onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep)
+void FrmMain::onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSizeF interpolationStep)
 {
     auto& cfg = ConfigurationHeightmap::instance();
     cfg.setProperty("gridX", gridSize.width());

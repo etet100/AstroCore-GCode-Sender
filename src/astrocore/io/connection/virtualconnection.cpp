@@ -262,7 +262,7 @@ void VirtualConnection::sendByteArray(QByteArray byteArray)
 
     flushOutgoingData();
 
-    m_socket->write(byteArray.data(), 1);
+    m_socket->write(byteArray.data(), byteArray.size());
     m_socket->flush();
 }
 

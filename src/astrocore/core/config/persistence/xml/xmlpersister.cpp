@@ -89,6 +89,23 @@ QDomElement XmlPersister::getOrCreateGroup(const QString& group)
     return newGroup;
 }
 
+// An entry saved with an empty value has no text node, so setNodeValue() on
+// firstChild() would silently do nothing and the new value would be lost.
+void XmlPersister::setElementText(QDomElement& element, const QString& text)
+{
+    QDomNode child = element.firstChild();
+    if (child.isNull() || !child.isText()) {
+        while (!element.firstChild().isNull()) {
+            element.removeChild(element.firstChild());
+        }
+        element.appendChild(m_doc.createTextNode(text));
+
+        return;
+    }
+
+    child.setNodeValue(text);
+}
+
 QString XmlPersister::variantToString(const QVariant& value)
 {
     if (value.typeId() == QMetaType::QStringList) {
@@ -115,7 +132,7 @@ bool XmlPersister::setInt(const QString group, const QString key, const int valu
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "int");
-            entry.firstChild().setNodeValue(QString::number(value));
+            setElementText(entry, QString::number(value));
             return true;
         }
     }
@@ -138,7 +155,7 @@ bool XmlPersister::setString(const QString group, const QString key, const QStri
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "string");
-            entry.firstChild().setNodeValue(value);
+            setElementText(entry, value);
             return true;
         }
     }
@@ -161,7 +178,7 @@ bool XmlPersister::setDouble(const QString group, const QString key, const doubl
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "double");
-            entry.firstChild().setNodeValue(QString::number(value));
+            setElementText(entry, QString::number(value));
             return true;
         }
     }
@@ -184,7 +201,7 @@ bool XmlPersister::setBool(const QString group, const QString key, const bool va
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "bool");
-            entry.firstChild().setNodeValue(value ? "true" : "false");
+            setElementText(entry, value ? "true" : "false");
             return true;
         }
     }
@@ -207,7 +224,7 @@ bool XmlPersister::setStringList(const QString group, const QString key, const Q
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "stringlist");
-            entry.firstChild().setNodeValue(value.join(","));
+            setElementText(entry, value.join(","));
             return true;
         }
     }
@@ -236,7 +253,7 @@ bool XmlPersister::setVariantMap(const QString group, const QString key, const Q
                 it.next();
                 parts.append(it.key() + "=" + it.value().toString());
             }
-            entry.firstChild().setNodeValue(parts.join(";"));
+            setElementText(entry, parts.join(";"));
             return true;
         }
     }
@@ -317,7 +334,7 @@ bool XmlPersister::setVariant(const QString group, const QString key, const QVar
         QDomElement entry = entries.at(i).toElement();
         if (entry.attribute("key") == key) {
             entry.setAttribute("type", "variant");
-            entry.firstChild().setNodeValue(variantToString(value));
+            setElementText(entry, variantToString(value));
             return true;
         }
     }

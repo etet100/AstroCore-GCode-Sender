@@ -26,7 +26,7 @@ class JsonPersister : public AbstractPersister
         QJsonObject m_rootObject;
         QString m_filePath;
         bool saveDocument();
-        QJsonObject& getOrCreateGroup(const QString& group);
+        QJsonObject groupObject(const QString& name) const;
 };
 
 #endif // JSON_CONFIG_PERSISTER_H

@@ -119,7 +119,12 @@ QMap<float, QList<float>> PartMainJogParameters2::groupSelections(const QList<fl
                 break;
             }
         }
-        assert(multiplier > 0.0f);
+        // Values above the largest group bound (user can configure any step/feed)
+        // fall into the last group instead of asserting.
+        if (multiplier <= 0.0f) {
+            multiplier = groups.isEmpty() ? 1.0f : std::prev(groups.end()).value();
+        }
+
         groupedSelections[multiplier].append(selection / multiplier);
     }
 
@@ -288,7 +293,7 @@ bool PartMainJogParameters2::eventFilter(QObject *watched, QEvent *event)
     m_updateTimer.stop();
     float val = btn->property("value").toFloat();
     if (event->type() == QEvent::Enter) {
-        if (abs(section->currentValue - val) > 0.01f) {
+        if (qAbs(section->currentValue - val) > 0.01f) {
             // not the current value, show temporary
             section->valueLabel->setText(QString::number(val));
             section->valueLabel->setProperty("tag", "temp_value");

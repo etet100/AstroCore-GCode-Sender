@@ -167,8 +167,14 @@ void Heightmap::setInterpolationStepSize(QSizeF stepSize)
 
 QPair<int, int> Heightmap::gridIndices(const QPointF &ptMm) const
 {
-    int i = static_cast<int>((ptMm.x() - m_startPos.x()) / m_stepSize.width());
-    int j = static_cast<int>((ptMm.y() - m_startPos.y()) / m_stepSize.height());
+    // Callers pass exact grid points, so round instead of truncating — float
+    // error would otherwise shift the index one cell down. Clamped to the grid.
+    int i = m_stepSize.width() > 0
+                ? qBound(0, qRound((ptMm.x() - m_startPos.x()) / m_stepSize.width()), m_size.width() - 1)
+                : 0;
+    int j = m_stepSize.height() > 0
+                ? qBound(0, qRound((ptMm.y() - m_startPos.y()) / m_stepSize.height()), m_size.height() - 1)
+                : 0;
 
     return QPair<int, int>(i, j);
 }
@@ -323,12 +329,10 @@ void Heightmap::generateSinCos()
 void Heightmap::updateMinMax()
 {
     m_valuesMinMax = {NAN, NAN};
-    for (auto& value : m_data) {
-        if (qIsNaN(m_valuesMinMax.min) || value < m_valuesMinMax.min) {
-            m_valuesMinMax.min = value;
-        }
-        if (qIsNaN(m_valuesMinMax.max) || value > m_valuesMinMax.max) {
-            m_valuesMinMax.max = value;
+    // Not probed points are NaN and must not take part in min/max.
+    for (const auto& value : m_data) {
+        if (!qIsNaN(value)) {
+            minMax(value);
         }
     }
 }

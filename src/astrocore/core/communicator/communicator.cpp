@@ -78,7 +78,7 @@ Communicator::Communicator(
             processDeviceConfiguration(lines);
         }
 
-        if (command == "$G" && status.ok) {
+        if (command == "$G" && status.ok && !lines.isEmpty()) {
             processGCodeParserState(attrs, lines[0]);
         }
 
@@ -191,7 +191,7 @@ SendCommandResult Communicator::sendCommand(
     CommandCallback callback
 ) {
     // Handle special console commands that should not go to the machine.
-    if (source == CommandSource::Console) {
+    if (source == CommandSource::Console && m_sbManager.hasCurrent()) {
         QString trimmed = GcodePreprocessorUtils::removeComment(commandLine);
         if (trimmed == "$H") {
             m_sbManager.current()->action(Action::Home);
@@ -199,7 +199,7 @@ SendCommandResult Communicator::sendCommand(
         }
     }
 
-    if (!m_connection->isConnected() || !m_resetCompleted) {
+    if (!m_connection || !m_connection->isConnected() || !m_resetCompleted) {
         return SendCommandResult::Status::Done;
     }
 
@@ -230,17 +230,19 @@ SendCommandResult Communicator::sendCommand(
 
 void Communicator::sendRealtimeCommand(QString command)
 {
-    if (!m_connection->isConnected() || !m_resetCompleted) return;
+    if (!m_connection || !m_connection->isConnected() || !m_resetCompleted) return;
     m_commandBuffer->sendRealtime(command);
 }
 
 void Communicator::sendRealtimeCommand(int command)
 {
+    if (!m_connection) return;
     m_commandBuffer->sendRealtime(command);
 }
 
 void Communicator::queryMachineState()
 {
+    if (!m_connection) return;
     m_connection->sendByteArray(QByteArray(1, '?'));
 }
 
@@ -407,7 +409,9 @@ void Communicator::onConnectionStateChanged(ConnectionState state)
         m_lastAlarmCode = 0;
     }
 
-    m_sbManager.current()->onConnectionStateChanged(state);
+    if (m_sbManager.hasCurrent()) {
+        m_sbManager.current()->onConnectionStateChanged(state);
+    }
 
     emit connectionStateChanged(state);
 }

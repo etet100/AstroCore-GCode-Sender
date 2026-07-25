@@ -49,6 +49,10 @@ LineSegment::LineSegment(LineSegment* initial)
     m_second = initial->getEnd();
     m_lineNumber = initial->getLineNumber();
     m_speed = initial->getSpeed();
+    m_spindleSpeed = initial->getSpindleSpeed();
+    m_dwell = initial->getDwell();
+    m_isClockwise = initial->isClockwise();
+    m_plane = initial->plane();
     m_isMetric = initial->isMetric();
     m_isAbsolute = initial->isAbsolute();
     m_isHightlight = initial->isHightlight();

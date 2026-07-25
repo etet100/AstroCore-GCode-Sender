@@ -157,6 +157,7 @@ QList<LineSegment>& GCodeViewParser::getLinesFromParser(GcodeParser *parser, dou
             } else {
                 LineSegment ls(*start, *end, lineIndex++);
                 ls.setIsArc(ps->isArc());
+                ls.setPlane(ps->plane());
                 ls.setIsFastTraverse(ps->isFastTraverse());
                 ls.setIsZMovement(ps->isZMovement());
                 ls.setIsMetric(isMetric);

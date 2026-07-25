@@ -85,7 +85,7 @@ void PartMainHeightmap::applyHeightmapConfiguration(ConfigurationHeightmap &conf
     ui->txtAreaY1->setValue(configurationHeightmap.areaY1());
     ui->txtAreaWidth->setValue(configurationHeightmap.areaX2() - configurationHeightmap.areaX1());
     ui->txtAreaHeight->setValue(configurationHeightmap.areaY2() - configurationHeightmap.areaY1());
-    ui->txtAreaX2->setValue(configurationHeightmap.areaY2());
+    ui->txtAreaX2->setValue(configurationHeightmap.areaX2());
     ui->txtAreaY2->setValue(configurationHeightmap.areaY2());
 
     ui->txtGridX->setValue(configurationHeightmap.gridX());
@@ -207,7 +207,7 @@ void PartMainHeightmap::emitGridParametersChanged()
         QSize(ui->txtGridX->value(), ui->txtGridY->value()),
         { ui->txtGridZBottom->value(), ui->txtGridZTop->value() },
         ui->txtProbeFeed->value(),
-        QSize(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
+        QSizeF(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
     );
 }
 
@@ -245,7 +245,7 @@ void PartMainHeightmap::onGridParametersChanged()
         QSize(ui->txtGridX->value(), ui->txtGridY->value()),
         { ui->txtGridZBottom->value(),  ui->txtGridZTop->value() },
         ui->txtProbeFeed->value(),
-        QSize(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
+        QSizeF(ui->txtInterpolationStepX->value(), ui->txtInterpolationStepY->value())
     );
 }
 

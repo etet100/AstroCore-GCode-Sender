@@ -42,7 +42,7 @@ class Utils
 
         static QVector3D colorToVector(QColor color)
         {
-            return QVector3D(255.0 / color.redF(), 255.0 / color.greenF(), 255.0 / color.blueF());
+            return QVector3D(color.redF(), color.greenF(), color.blueF());
         }
 
         static void waitEvents(int ms)

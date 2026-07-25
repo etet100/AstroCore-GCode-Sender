@@ -228,4 +228,5 @@ void GCodeLoader::update(GCode* gcode)
 
 void GCodeLoader::cancel()
 {
+    m_cancel = true;
 }

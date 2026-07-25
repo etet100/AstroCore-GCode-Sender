@@ -51,7 +51,11 @@ void RawTcpConnection::sendByteArray(QByteArray byteArray)
         qDebug() << "[IP][RawTCP] >> " << byteArray;
     #endif
 
-    m_socket->write(byteArray.data(), 1);
+    if (m_socket == nullptr) {
+        return;
+    }
+
+    m_socket->write(byteArray.data(), byteArray.size());
     m_socket->flush();
 
     flushOutgoingData();
@@ -62,6 +66,10 @@ void RawTcpConnection::sendLine(QString line)
     #ifdef DEBUG_RAW_TCP_COMMUNICATION
         qDebug() << "[IP][RawTCP] >> " << line;
     #endif
+
+    if (m_socket == nullptr) {
+        return;
+    }
 
     std::string str = QString(line + "\n").toStdString();
     m_socket->write(str.c_str(), str.length());

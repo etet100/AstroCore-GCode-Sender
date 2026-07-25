@@ -355,6 +355,9 @@ void FrmGrblConfigurator::itemChanged(QTreeWidgetItem *item, int column)
     Q_UNUSED(column);
 
     CBaseProperty *property = dynamic_cast<CBaseProperty*>(item);
+    if (property == nullptr) {
+        return;
+    }
 
     int entryIndex = property->data(0, Qt::UserRole).toInt();
     Axis axis = Axis::None;

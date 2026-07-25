@@ -188,7 +188,7 @@ private slots:
     // void onProgramLinesUpdated(int from, int to);
     // void updateHeightmapInterpolationDrawer(bool reset = false);
     void onHeightmapDataChangedByUser();
-    void onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSize interpolationStep);
+    void onGridParametersChanged(QSize gridSize, PartMainHeightmap::MinMax zMinMax, int probeFeed, QSizeF interpolationStep);
     void centralWidgetActionTriggered(bool checked);
 
 protected:

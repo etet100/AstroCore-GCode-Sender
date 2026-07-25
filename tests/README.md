@@ -13,6 +13,7 @@ tests/
   gcode/             GCode facade (cursor, responses, overlays, coalesced signals)
   gcodeprogram/      GCodeProgram — pure data model (no QObject/signals)
   gcodecursor/       GCodeCursor — execution cursor over a program
+  gcodepreprocessorutils/  static G-Code string + arc geometry helpers
   grblparsers/       StatusReportProcessor, ProbeResponseParser, ModalStateParser
   config/            config modules (derived logic) + JSON persister/provider round-trip
   persistence/       INI/JSON/XML providers read injected fixtures; INI/XML write→read round-trips
@@ -63,6 +64,16 @@ runner does this) or `mingw32-make check`, and rely on the exit code.
 2. Add `<name>` to `SUBDIRS` in `tests.pro`.
 3. Pick source files with few dependencies (no UI/OpenGL/hardware/singletons).
    See the testability survey for good candidates.
+
+## Tests that pin down known quirks
+
+Some tests assert surprising-but-shipping behavior on purpose, so a refactor
+cannot change it silently. They say so in a comment ("Known quirk/limitation").
+Current ones live in `gcodepreprocessorutils/`: nested `(...)` comments are only
+stripped up to the first `)`, a minus sign directly after a digit is dropped by
+the tokenizer, `parseGCodes` loses decimal subtypes (`G38.2` → `38`), and arc
+degree mode truncates the segment count while millimetre mode rounds up. If you
+intend to change any of these, update the test and its comment together.
 
 ## Note on GCode signals
 
